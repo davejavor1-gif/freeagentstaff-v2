@@ -9,6 +9,7 @@ export const freeAgentProfiles: FreeAgentProfile[] = [
     availability: "Available Now",
     topStrength: "Design systems",
     experienceYears: 8,
+    focusArea: "Product growth",
     summary:
       "Trusted by growth-stage teams for thoughtful product strategy and polished design execution.",
     skills: ["UI Design", "Design Systems", "Figma", "Strategy"],

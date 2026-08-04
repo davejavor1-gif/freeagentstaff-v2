@@ -7,6 +7,7 @@ interface AvailabilityBadgeProps {
 
 const statusStyles: Record<string, string> = {
   "Available Now": "bg-[#0f2744] text-[#f5e7c8] ring-[#cda64d]/50",
+  "Open to Opportunities": "bg-[#17355f] text-[#f5e7c8] ring-[#f2cc63]/40",
   "Open to new projects": "bg-[#17355f] text-[#f5e7c8] ring-[#f2cc63]/40",
   "Busy this month": "bg-[#5c4020] text-[#f7e0a4] ring-[#f2cc63]/40",
   Booked: "bg-[#4d1f24] text-[#ffd6d6] ring-[#f2cc63]/30",
