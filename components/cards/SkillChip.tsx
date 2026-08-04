@@ -9,7 +9,7 @@ export default function SkillChip({ label, className }: SkillChipProps) {
   return (
     <span
       className={cn(
-        "rounded-full border border-white/10 bg-white/10 px-3 py-1 text-sm text-slate-200/90",
+        "inline-flex items-center rounded-full border border-[#f2cc63]/70 bg-[#0f2744] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf] shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#f2cc63] hover:bg-[#17355f] hover:shadow-[0_8px_16px_rgba(7,20,38,0.16)]",
         className,
       )}
     >

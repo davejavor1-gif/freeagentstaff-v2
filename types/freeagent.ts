@@ -5,6 +5,17 @@ export type AvailabilityStatus =
   | "Busy this month"
   | "Booked";
 
+export interface CareerPosition {
+  id: string;
+  role: string;
+  company: string;
+  period: string;
+  location: string;
+  description: string;
+  achievements: string[];
+  skills: string[];
+}
+
 export interface FreeAgentProfile {
   id: string;
   name: string;
@@ -16,6 +27,7 @@ export interface FreeAgentProfile {
   focusArea: string;
   summary: string;
   skills: string[];
+  careerJourney: CareerPosition[];
   email?: string;
   imageAlt?: string;
   photoUrl?: string;

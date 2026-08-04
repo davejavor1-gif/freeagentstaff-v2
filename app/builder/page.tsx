@@ -3,8 +3,9 @@
 import Image from "next/image";
 import { useState, type ChangeEvent } from "react";
 import FreeAgentCard from "@/components/cards/FreeAgentCard";
+import SkillChip from "@/components/cards/SkillChip";
 import { freeAgentProfiles } from "@/data/freeagents";
-import type { FreeAgentProfile } from "@/types/freeagent";
+import type { CareerPosition, FreeAgentProfile } from "@/types/freeagent";
 
 const initialProfile = freeAgentProfiles[0];
 
@@ -55,6 +56,159 @@ export default function BuilderPage() {
       ...current,
       photoUrl: undefined,
       imageAlt: undefined,
+    }));
+  };
+
+  const createCareerPosition = (): CareerPosition => ({
+    id: `journey-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    role: "",
+    company: "",
+    period: "",
+    location: "",
+    description: "",
+    achievements: [],
+    skills: [],
+  });
+
+  const [skillInput, setSkillInput] = useState("");
+  const [journeyDrafts, setJourneyDrafts] = useState<Record<string, { achievement: string; skill: string }>>({});
+
+  const addSkill = () => {
+    const trimmedSkill = skillInput.trim();
+
+    if (!trimmedSkill) {
+      return;
+    }
+
+    setProfile((current) => {
+      const normalizedSkill = trimmedSkill.replace(/\s+/g, " ");
+      const alreadyExists = current.skills.some(
+        (skill) => skill.toLowerCase() === normalizedSkill.toLowerCase(),
+      );
+
+      if (alreadyExists) {
+        setSkillInput("");
+        return current;
+      }
+
+      return {
+        ...current,
+        skills: [...current.skills, normalizedSkill],
+      };
+    });
+    setSkillInput("");
+  };
+
+  const removeSkill = (skillToRemove: string) => {
+    setProfile((current) => ({
+      ...current,
+      skills: current.skills.filter((skill) => skill !== skillToRemove),
+    }));
+  };
+
+  const addCareerPosition = () => {
+    setProfile((current) => ({
+      ...current,
+      careerJourney: [...current.careerJourney, createCareerPosition()],
+    }));
+  };
+
+  const removeCareerPosition = (positionId: string) => {
+    setProfile((current) => ({
+      ...current,
+      careerJourney: current.careerJourney.filter((position) => position.id !== positionId),
+    }));
+  };
+
+  const moveCareerPosition = (positionId: string, direction: -1 | 1) => {
+    setProfile((current) => {
+      const index = current.careerJourney.findIndex((position) => position.id === positionId);
+
+      if (index < 0) {
+        return current;
+      }
+
+      const targetIndex = index + direction;
+
+      if (targetIndex < 0 || targetIndex >= current.careerJourney.length) {
+        return current;
+      }
+
+      const nextJourney = [...current.careerJourney];
+      const [movedItem] = nextJourney.splice(index, 1);
+      nextJourney.splice(targetIndex, 0, movedItem);
+
+      return {
+        ...current,
+        careerJourney: nextJourney,
+      };
+    });
+  };
+
+  const updateCareerPosition = (positionId: string, field: "role" | "company" | "period" | "location" | "description", value: string) => {
+    setProfile((current) => ({
+      ...current,
+      careerJourney: current.careerJourney.map((position) => (position.id === positionId ? { ...position, [field]: value } : position)),
+    }));
+  };
+
+  const updateJourneyDraft = (positionId: string, kind: "achievement" | "skill", value: string) => {
+    setJourneyDrafts((current) => ({
+      ...current,
+      [positionId]: {
+        achievement: current[positionId]?.achievement ?? "",
+        skill: current[positionId]?.skill ?? "",
+        [kind]: value,
+      },
+    }));
+  };
+
+  const addCareerListItem = (positionId: string, kind: "achievement" | "skill") => {
+    const draftValue = (journeyDrafts[positionId]?.[kind] ?? "").trim();
+
+    if (!draftValue) {
+      return;
+    }
+
+    setProfile((current) => ({
+      ...current,
+      careerJourney: current.careerJourney.map((position) => {
+        if (position.id !== positionId) {
+          return position;
+        }
+
+        const nextItems = kind === "achievement" ? [...position.achievements, draftValue] : [...position.skills, draftValue];
+        return {
+          ...position,
+          [kind === "achievement" ? "achievements" : "skills"]: nextItems,
+        };
+      }),
+    }));
+
+    setJourneyDrafts((current) => ({
+      ...current,
+      [positionId]: {
+        achievement: kind === "achievement" ? "" : current[positionId]?.achievement ?? "",
+        skill: kind === "skill" ? "" : current[positionId]?.skill ?? "",
+      },
+    }));
+  };
+
+  const removeCareerListItem = (positionId: string, kind: "achievement" | "skill", valueToRemove: string) => {
+    setProfile((current) => ({
+      ...current,
+      careerJourney: current.careerJourney.map((position) => {
+        if (position.id !== positionId) {
+          return position;
+        }
+
+        const nextItems = kind === "achievement" ? position.achievements.filter((item) => item !== valueToRemove) : position.skills.filter((item) => item !== valueToRemove);
+
+        return {
+          ...position,
+          [kind === "achievement" ? "achievements" : "skills"]: nextItems,
+        };
+      }),
     }));
   };
 
@@ -210,6 +364,257 @@ export default function BuilderPage() {
             <div className="space-y-3 rounded-[20px] border border-[#cda64d]/40 bg-white/70 p-4">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                  Skills
+                </p>
+                <p className="mt-1 text-sm text-[#27405f]">
+                  Build a skill set that appears on the card.
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <input
+                  value={skillInput}
+                  onChange={(event) => setSkillInput(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      addSkill();
+                    }
+                  }}
+                  className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] shadow-sm outline-none transition focus:border-[#0f2744]"
+                  placeholder="Type a skill..."
+                />
+                <button
+                  type="button"
+                  onClick={addSkill}
+                  className="rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f]"
+                >
+                  Add
+                </button>
+              </div>
+
+              {profile.skills.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {profile.skills.map((skill) => (
+                    <button
+                      key={skill}
+                      type="button"
+                      onClick={() => removeSkill(skill)}
+                      className="inline-flex items-center gap-2 rounded-full border border-[#f2cc63]/70 bg-[#0f2744] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf] shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#f2cc63] hover:bg-[#17355f] hover:shadow-[0_8px_16px_rgba(7,20,38,0.16)]"
+                    >
+                      <span>{skill}</span>
+                      <span className="flex h-4 w-4 items-center justify-center rounded-full border border-[#f2cc63]/40 bg-[#f7ebcf]/10 text-[10px] leading-none text-[#f7ebcf]">
+                        ×
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+
+            <div className="space-y-3 rounded-[20px] border border-[#cda64d]/40 bg-white/70 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                    Career Journey
+                  </p>
+                  <p className="mt-1 text-sm text-[#27405f]">
+                    Shape a rich timeline with multiple roles, achievements and skills.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={addCareerPosition}
+                  className="rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f]"
+                >
+                  Add role
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {profile.careerJourney.map((position, index) => {
+                  const draft = journeyDrafts[position.id] ?? { achievement: "", skill: "" };
+
+                  return (
+                    <div key={position.id} className="rounded-[24px] border border-[#cda64d]/40 bg-[#f7ebcf] p-4 shadow-sm">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                            Position {index + 1}
+                          </p>
+                          <p className="mt-1 text-sm font-semibold text-[#0f2744]">
+                            {position.role || "New position"}
+                          </p>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={() => moveCareerPosition(position.id, -1)}
+                            className="rounded-full border border-[#cda64d]/40 bg-white/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#0f2744]"
+                          >
+                            ↑
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => moveCareerPosition(position.id, 1)}
+                            className="rounded-full border border-[#cda64d]/40 bg-white/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#0f2744]"
+                          >
+                            ↓
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removeCareerPosition(position.id)}
+                            className="rounded-full border border-[#cda64d]/40 bg-white/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#0f2744]"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 grid gap-3 md:grid-cols-2">
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                            Role
+                          </label>
+                          <input
+                            value={position.role}
+                            onChange={(event) => updateCareerPosition(position.id, "role", event.target.value)}
+                            className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-3 py-2.5 text-sm text-[#071426] outline-none transition focus:border-[#0f2744]"
+                            placeholder="e.g. Lead Product Designer"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                            Company
+                          </label>
+                          <input
+                            value={position.company}
+                            onChange={(event) => updateCareerPosition(position.id, "company", event.target.value)}
+                            className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-3 py-2.5 text-sm text-[#071426] outline-none transition focus:border-[#0f2744]"
+                            placeholder="e.g. Northstar Labs"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                            Period
+                          </label>
+                          <input
+                            value={position.period}
+                            onChange={(event) => updateCareerPosition(position.id, "period", event.target.value)}
+                            className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-3 py-2.5 text-sm text-[#071426] outline-none transition focus:border-[#0f2744]"
+                            placeholder="e.g. 2022 — Present"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                            Location
+                          </label>
+                          <input
+                            value={position.location}
+                            onChange={(event) => updateCareerPosition(position.id, "location", event.target.value)}
+                            className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-3 py-2.5 text-sm text-[#071426] outline-none transition focus:border-[#0f2744]"
+                            placeholder="e.g. London, UK"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="mt-4 space-y-2">
+                        <label className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                          Description
+                        </label>
+                        <textarea
+                          value={position.description}
+                          onChange={(event) => updateCareerPosition(position.id, "description", event.target.value)}
+                          rows={4}
+                          className="min-h-[110px] w-full rounded-[20px] border border-[#cda64d]/50 bg-white/80 px-3 py-2.5 text-sm text-[#071426] outline-none transition focus:border-[#0f2744]"
+                          placeholder="Describe the role, scope and impact in a professional way."
+                        />
+                      </div>
+
+                      <div className="mt-4 grid gap-3 md:grid-cols-2">
+                        <div className="space-y-3 rounded-[20px] border border-[#cda64d]/35 bg-white/70 p-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                              Achievements
+                            </p>
+                            <span className="text-[11px] text-[#27405f]">{position.achievements.length}</span>
+                          </div>
+                          <div className="flex flex-col gap-2 sm:flex-row">
+                            <input
+                              value={draft.achievement}
+                              onChange={(event) => updateJourneyDraft(position.id, "achievement", event.target.value)}
+                              className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-3 py-2 text-sm text-[#071426] outline-none transition focus:border-[#0f2744]"
+                              placeholder="Add an achievement"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => addCareerListItem(position.id, "achievement")}
+                              className="rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f]"
+                            >
+                              Add
+                            </button>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {position.achievements.map((item) => (
+                              <button
+                                key={`${position.id}-${item}`}
+                                type="button"
+                                onClick={() => removeCareerListItem(position.id, "achievement", item)}
+                                className="inline-flex items-center gap-2 rounded-full border border-[#f2cc63]/70 bg-[#0f2744] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf]"
+                              >
+                                <span>{item}</span>
+                                <span className="text-[#f7ebcf]">×</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="space-y-3 rounded-[20px] border border-[#cda64d]/35 bg-white/70 p-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                              Skills used
+                            </p>
+                            <span className="text-[11px] text-[#27405f]">{position.skills.length}</span>
+                          </div>
+                          <div className="flex flex-col gap-2 sm:flex-row">
+                            <input
+                              value={draft.skill}
+                              onChange={(event) => updateJourneyDraft(position.id, "skill", event.target.value)}
+                              className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-3 py-2 text-sm text-[#071426] outline-none transition focus:border-[#0f2744]"
+                              placeholder="Add a skill"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => addCareerListItem(position.id, "skill")}
+                              className="rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f]"
+                            >
+                              Add
+                            </button>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {position.skills.map((item) => (
+                              <button
+                                key={`${position.id}-${item}`}
+                                type="button"
+                                onClick={() => removeCareerListItem(position.id, "skill", item)}
+                                className="inline-flex items-center gap-2 rounded-full border border-[#f2cc63]/70 bg-[#0f2744] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf]"
+                              >
+                                <span>{item}</span>
+                                <span className="text-[#f7ebcf]">×</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="space-y-3 rounded-[20px] border border-[#cda64d]/40 bg-white/70 p-4">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
                   Profile Photo
                 </p>
                 <p className="mt-1 text-sm text-[#27405f]">
@@ -252,7 +657,86 @@ export default function BuilderPage() {
         </section>
 
         <section className="flex w-full items-center justify-center rounded-[32px] border border-[#cda64d]/70 bg-[#f7ebcf]/70 p-4 shadow-[0_18px_55px_rgba(6,16,33,0.16)] lg:w-[60%] lg:min-h-[700px] lg:p-8">
-          <FreeAgentCard profile={profile} className="w-full max-w-[430px]" />
+          <div className="flex w-full max-w-[980px] flex-col gap-6">
+            <div className="flex justify-center">
+              <FreeAgentCard profile={profile} className="w-full max-w-[430px]" />
+            </div>
+
+            <div className="rounded-[30px] border border-[#cda64d]/70 bg-[#0f2744] p-6 text-[#f7ebcf] shadow-[0_12px_40px_rgba(6,16,33,0.2)] sm:p-8">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">
+                    Live career journey
+                  </p>
+                  <h2 className="mt-2 text-2xl font-black uppercase tracking-[0.16em] text-[#f7ebcf]">
+                    Premium timeline preview
+                  </h2>
+                </div>
+                <div className="rounded-full border border-[#f2cc63]/35 bg-[#f7ebcf]/10 px-3 py-2 text-sm font-semibold text-[#f7ebcf]">
+                  {profile.careerJourney.length} positions
+                </div>
+              </div>
+
+              <div className="mt-6 space-y-4">
+                {profile.careerJourney.length > 0 ? (
+                  profile.careerJourney.map((position, index) => (
+                    <div key={position.id} className="rounded-[24px] border border-[#f2cc63]/25 bg-[#f7ebcf]/10 p-5">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">
+                            {position.period || "Timeline entry"}
+                          </p>
+                          <h3 className="mt-2 text-xl font-semibold text-[#f7ebcf]">
+                            {position.role || "New role"}
+                          </h3>
+                          <p className="mt-1 text-sm font-semibold uppercase tracking-[0.2em] text-[#f2cc63]">
+                            {position.company || "Company"} · {position.location || "Location"}
+                          </p>
+                        </div>
+                        <div className="rounded-full border border-[#f2cc63]/35 bg-[#0f2744] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf]">
+                          {index + 1}
+                        </div>
+                      </div>
+
+                      <p className="mt-4 text-sm leading-7 text-[#dfe7ef]">
+                        {position.description || "Add a rich description to tell the story behind this role."}
+                      </p>
+
+                      {position.achievements.length > 0 ? (
+                        <div className="mt-4">
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#f2cc63]">
+                            Achievements
+                          </p>
+                          <ul className="mt-2 space-y-2 text-sm leading-7 text-[#dfe7ef]">
+                            {position.achievements.map((achievement) => (
+                              <li key={achievement} className="flex gap-2">
+                                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#f2cc63]" />
+                                <span>{achievement}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ) : null}
+
+                      {position.skills.length > 0 ? (
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          {position.skills.map((skill) => (
+                            <span key={skill} className="rounded-full border border-[#f2cc63]/70 bg-[#0f2744] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf]">
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
+                  ))
+                ) : (
+                  <div className="rounded-[24px] border border-dashed border-[#f2cc63]/35 bg-[#f7ebcf]/10 p-6 text-center text-sm text-[#dfe7ef]">
+                    Add your first role to start building a compelling timeline.
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </section>
       </div>
     </main>

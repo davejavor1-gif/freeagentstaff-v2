@@ -81,6 +81,23 @@ export default function FreeAgentFront({ profile }: FreeAgentFrontProps) {
             <p className="mt-3 text-base font-semibold leading-6 text-[#f8efe1] break-words sm:text-lg">
               {profile.topStrength}
             </p>
+            {profile.skills.length > 0 ? (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {profile.skills.slice(0, 4).map((skill) => (
+                  <span
+                    key={skill}
+                    className="inline-flex items-center rounded-full border border-[#f2cc63]/70 bg-[#0f2744] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf] shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#f2cc63] hover:bg-[#17355f] hover:shadow-[0_8px_16px_rgba(7,20,38,0.16)]"
+                  >
+                    {skill}
+                  </span>
+                ))}
+                {profile.skills.length > 4 ? (
+                  <span className="inline-flex items-center rounded-full border border-[#f2cc63]/70 bg-[#0f2744] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf] shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#f2cc63] hover:bg-[#17355f] hover:shadow-[0_8px_16px_rgba(7,20,38,0.16)]">
+                    +{profile.skills.length - 4} more
+                  </span>
+                ) : null}
+              </div>
+            ) : null}
           </div>
         </div>
 
