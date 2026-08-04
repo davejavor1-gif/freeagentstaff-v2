@@ -18,4 +18,5 @@ export interface FreeAgentProfile {
   skills: string[];
   email?: string;
   imageAlt?: string;
+  photoUrl?: string;
 }

@@ -30,19 +30,21 @@ export default function FreeAgentFront({ profile }: FreeAgentFrontProps) {
           </div>
         </div>
 
-        <div className="mt-3 relative overflow-hidden rounded-[24px] border border-[#cda64d]/40 bg-[#122744]">
-          <div className="absolute left-3 top-3 z-10 rounded-full border border-[#0f2744]/70 bg-[#f5e7c8] px-3 py-1 text-[11px] font-black uppercase tracking-[0.24em] text-[#071426]">
+        <div className="relative mt-3 overflow-visible rounded-[28px] border border-[#cda64d]/40 bg-[#122744] p-2 shadow-[0_18px_40px_rgba(2,9,24,0.38)]">
+          <div className="absolute left-4 top-4 z-20 rounded-full border border-[#0f2744]/70 bg-[#f5e7c8] px-3 py-1 text-[11px] font-black uppercase tracking-[0.24em] text-[#071426] shadow-[0_8px_18px_rgba(0,0,0,0.2)]">
             {profile.experienceYears} yrs
           </div>
-          <div className="relative h-56 overflow-hidden sm:h-64">
+          <div className="relative -mt-2 h-64 overflow-hidden rounded-[24px] border border-white/10 bg-[#0d1830] sm:h-[18rem]">
             <Image
-              src="/placeholder-avatar.svg"
+              src={profile.photoUrl ?? "/placeholder-avatar.svg"}
               alt={profile.imageAlt ?? profile.name}
-              width={420}
-              height={420}
-              className="h-full w-full object-cover"
+              width={520}
+              height={520}
+              className="h-full w-full object-cover object-center shadow-[inset_0_-20px_60px_rgba(0,0,0,0.25)]"
+              priority
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#071426]/80 via-[#071426]/20 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#071426]/85 via-[#071426]/20 to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#071426]/70 to-transparent" />
           </div>
         </div>
 

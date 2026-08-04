@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import Image from "next/image";
+import { useState, type ChangeEvent } from "react";
 import FreeAgentCard from "@/components/cards/FreeAgentCard";
 import { freeAgentProfiles } from "@/data/freeagents";
 import type { FreeAgentProfile } from "@/types/freeagent";
@@ -29,6 +30,34 @@ export default function BuilderPage() {
     }));
   };
 
+  const handlePhotoUpload = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (typeof reader.result === "string") {
+        setProfile((current) => ({
+          ...current,
+          photoUrl: reader.result as string,
+          imageAlt: file.name,
+        }));
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const clearPhoto = () => {
+    setProfile((current) => ({
+      ...current,
+      photoUrl: undefined,
+      imageAlt: undefined,
+    }));
+  };
+
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#f7ebcf_0%,_#f4e4bf_40%,_#e7d7a7_100%)] px-4 py-8 text-[#071426] sm:px-6 lg:px-8">
       <div className="mx-auto flex max-w-7xl flex-col gap-6 lg:flex-row lg:items-start">
@@ -44,6 +73,45 @@ export default function BuilderPage() {
           </p>
 
           <form className="mt-8 space-y-4 rounded-[24px] border border-[#f2cc63]/35 bg-[#f7ebcf] p-5 text-[#071426]">
+            <div className="space-y-3 rounded-[20px] border border-[#cda64d]/40 bg-white/70 p-4">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                  Profile Photo
+                </p>
+                <p className="mt-1 text-sm text-[#27405f]">
+                  Upload a JPG, PNG, or WebP image to personalize your card.
+                </p>
+              </div>
+
+              <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+                <label
+                  htmlFor="photoUpload"
+                  className="group flex h-24 w-24 cursor-pointer items-center justify-center overflow-hidden rounded-full border border-[#cda64d]/50 bg-[#0f2744] shadow-[0_10px_24px_rgba(7,20,38,0.18)] transition hover:scale-[1.01]"
+                >
+                  <Image
+                    src={profile.photoUrl ?? "/placeholder-avatar.svg"}
+                    alt={profile.imageAlt ?? profile.name}
+                    width={120}
+                    height={120}
+                    className="h-full w-full object-cover"
+                  />
+                </label>
+                <input id="photoUpload" type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handlePhotoUpload} />
+                <div className="flex flex-col gap-2">
+                  <label htmlFor="photoUpload" className="inline-flex cursor-pointer items-center justify-center rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f]">
+                    Upload photo
+                  </label>
+                  <button
+                    type="button"
+                    onClick={clearPhoto}
+                    className="rounded-full border border-[#cda64d]/40 bg-transparent px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#0f2744] transition hover:bg-white/70"
+                  >
+                    Remove photo
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <div className="space-y-2">
               <label htmlFor="name" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
                 Name
@@ -137,6 +205,48 @@ export default function BuilderPage() {
                 className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] shadow-sm outline-none transition focus:border-[#0f2744]"
                 placeholder="Enter your focus area"
               />
+            </div>
+
+            <div className="space-y-3 rounded-[20px] border border-[#cda64d]/40 bg-white/70 p-4">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                  Profile Photo
+                </p>
+                <p className="mt-1 text-sm text-[#27405f]">
+                  Upload a headshot or remove it to use the default placeholder.
+                </p>
+              </div>
+
+              <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+                <label
+                  htmlFor="photoUpload"
+                  className="group flex h-24 w-24 cursor-pointer items-center justify-center overflow-hidden rounded-full border border-[#cda64d]/50 bg-[#0f2744] shadow-[0_10px_24px_rgba(7,20,38,0.18)] transition hover:scale-[1.01]"
+                >
+                  <Image
+                    src={profile.photoUrl ?? "/placeholder-avatar.svg"}
+                    alt={profile.imageAlt ?? profile.name}
+                    width={120}
+                    height={120}
+                    className="h-full w-full object-cover"
+                  />
+                  <span className="absolute hidden text-[10px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] group-hover:block">
+                    Change
+                  </span>
+                </label>
+                <input id="photoUpload" type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
+                <div className="flex flex-col gap-2">
+                  <label htmlFor="photoUpload" className="inline-flex cursor-pointer items-center justify-center rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f]">
+                    Upload photo
+                  </label>
+                  <button
+                    type="button"
+                    onClick={clearPhoto}
+                    className="rounded-full border border-[#cda64d]/40 bg-transparent px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#0f2744] transition hover:bg-white/70"
+                  >
+                    Remove photo
+                  </button>
+                </div>
+              </div>
             </div>
           </form>
         </section>
