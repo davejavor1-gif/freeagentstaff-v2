@@ -11,7 +11,7 @@ const baseNavItems = [
   { label: "Home", href: "/" },
   { label: "Find talent", href: "/find-talent" },
   { label: "Dashboard", href: "/dashboard" },
-  { label: "Privacy", href: "/privacy" },
+  { label: "Privacy & Visibility", href: "/settings/privacy" },
   { label: "Pricing", href: "/pricing" },
   { label: "About", href: "/about" },
 ];

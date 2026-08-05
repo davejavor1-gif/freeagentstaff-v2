@@ -5,19 +5,17 @@ import { useEffect, useState, type ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 import type { Session } from "@supabase/supabase-js";
 import FreeAgentCard from "@/components/cards/FreeAgentCard";
-import SkillChip from "@/components/cards/SkillChip";
 import { freeAgentProfiles } from "@/data/freeagents";
 import { supabase } from "@/lib/supabase-client";
-import type { CareerPosition, FreeAgentProfile, ProfileVisibility } from "@/types/freeagent";
+import type { AccountType, CareerPosition, FreeAgentProfile, ProfileVisibility } from "@/types/freeagent";
 import type { Database, Json } from "@/types/supabase";
 
 const initialProfile = freeAgentProfiles[0];
 
 type ProfilesTable = Database["public"]["Tables"]["profiles"];
 type ProfileInsert = ProfilesTable["Insert"];
-type ProfileRow = ProfilesTable["Row"];
 
-type ProfileSelectResult = { slug?: string | null; profile: Json };
+type ProfileSelectResult = { slug?: string | null; profile: Json; account_type?: AccountType };
 
 const normalizeSlug = (value: string, fallback: string) => {
   const slug = value
@@ -32,18 +30,18 @@ const normalizeSlug = (value: string, fallback: string) => {
 const createSlugFromName = (name: string, fallback: string) => normalizeSlug(name || fallback, fallback);
 
 const ensureUniqueSlug = async (slug: string, userId: string) => {
-  const profilesTable = supabase.from("profiles") as any;
   let candidate = normalizeSlug(slug, `freeagent-${userId.slice(0, 8)}`);
   let suffix = 1;
 
   while (true) {
-    const { data, error } = await profilesTable.select("user_id").eq("slug", candidate).maybeSingle();
+    const { data, error } = await supabase.from("profiles").select("user_id").eq("slug", candidate).maybeSingle();
+    const row = data as { user_id?: string } | null;
 
     if (error) {
       break;
     }
 
-    if (!data || data.user_id === userId) {
+    if (!row || row.user_id === userId) {
       return candidate;
     }
 
@@ -109,9 +107,9 @@ export default function BuilderPage() {
 
       setSession(supabaseSession);
 
-      const profilesTable = supabase.from("profiles") as any;
-      const { data, error } = await profilesTable
-        .select("slug, profile")
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("slug, profile, account_type")
         .eq("user_id", supabaseSession.user.id)
         .maybeSingle();
 
@@ -129,6 +127,12 @@ export default function BuilderPage() {
 
       if (data && typeof data === "object" && "profile" in data) {
         const profileResult = data as ProfileSelectResult;
+
+        if (profileResult.account_type === "employer") {
+          router.replace("/dashboard");
+          return;
+        }
+
         const loadedProfile = profileResult.profile as unknown as FreeAgentProfile;
 
         if (profileResult.slug && !loadedProfile.slug) {
@@ -141,10 +145,11 @@ export default function BuilderPage() {
         const blankProfile = createBlankProfile(supabaseSession.user.id, supabaseSession.user.email);
         const insertPayload: ProfileInsert = {
           user_id: supabaseSession.user.id,
+          account_type: "talent",
           slug: blankProfile.slug,
           profile: blankProfile as unknown as Json,
         };
-        const { error: insertError } = await profilesTable.insert([insertPayload]);
+        const { error: insertError } = await supabase.from("profiles").insert([insertPayload] as never);
 
         if (!mounted) {
           return;
@@ -187,18 +192,18 @@ export default function BuilderPage() {
       return;
     }
 
-    const profilesTable = supabase.from("profiles") as any;
     const debounce = window.setTimeout(async () => {
       const upsertPayload: ProfileInsert = {
         user_id: session.user.id,
+        account_type: "talent",
         slug: profile.slug ?? null,
         profile: profile as unknown as Json,
       };
 
-      const { error } = await profilesTable.upsert([upsertPayload], {
+      const { error } = await supabase.from("profiles").upsert([upsertPayload] as never, {
         onConflict: "user_id",
         returning: "minimal",
-      });
+      } as never);
 
       if (error) {
         setSaveError(error.message);
@@ -239,19 +244,19 @@ export default function BuilderPage() {
     setSaveError(null);
     setSaveStatus(null);
 
-    const profilesTable = supabase.from("profiles") as any;
-    const { error } = await profilesTable.upsert(
+    const { error } = await supabase.from("profiles").upsert(
       [
         {
           user_id: session.user.id,
+          account_type: "talent",
           slug: uniqueSlug,
           profile: profileToSave as unknown as Json,
         },
-      ],
+      ] as never,
       {
         onConflict: "user_id",
         returning: "minimal",
-      },
+      } as never,
     );
 
     setIsSaving(false);
@@ -616,11 +621,11 @@ export default function BuilderPage() {
                 className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] shadow-sm outline-none transition focus:border-[#0f2744]"
               >
                 <option value="public">Public</option>
-                <option value="employer_network">Employer network</option>
+                <option value="verified_employer_network">Verified Employer Network</option>
                 <option value="confidential">Confidential</option>
               </select>
               <p className="text-xs text-[#27405f]">
-                Public profiles are visible on the talent search experience. Confidential profiles show an anonymised Talent Passport instead.
+                Public profiles are visible on talent search. Verified Employer Network is limited to verified employers, while Confidential shows an anonymised Talent Card.
               </p>
             </div>
 

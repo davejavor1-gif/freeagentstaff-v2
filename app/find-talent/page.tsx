@@ -15,7 +15,7 @@ export default function FindTalentPage() {
               Discover curated talent in one premium place.
             </h1>
             <p className="mt-6 max-w-xl text-base leading-8 text-[#27405f]">
-              Search public talent profiles built for hiring teams. Filter by availability, skills, focus area and location, then open the full talent page with a single click.
+              Search public talent profiles built for hiring teams. Access is reserved for verified employer accounts, with premium filters for availability, skills, focus area and location.
             </p>
           </div>
 
@@ -25,7 +25,7 @@ export default function FindTalentPage() {
                 Search premium talent
               </p>
               <p className="mt-3 text-sm leading-7">
-                Browse only public profiles that are ready to share, review and hire.
+                Browse only public profiles that are ready to share, review and hire once employer verification is complete.
               </p>
             </div>
             <div className="mt-4 rounded-[28px] border border-[#f2cc63]/20 bg-[#0f2744]/80 p-5">

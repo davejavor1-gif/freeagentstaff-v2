@@ -6,14 +6,54 @@ import { useRouter } from "next/navigation";
 import { CheckCircle2, MessageSquareText, XCircle } from "lucide-react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase-client";
-import type { FreeAgentProfile, IntroductionRequest } from "@/types/freeagent";
+import type {
+  AccountType,
+  EmployerProfileDetails,
+  EmployerVerificationStatus,
+  FreeAgentProfile,
+  IntroductionRequest,
+} from "@/types/freeagent";
+
+const createBlankTalentProfile = (userId: string, email?: string | null): FreeAgentProfile => ({
+  id: `freeagent-${userId.slice(0, 8)}`,
+  slug: `freeagent-${userId.slice(0, 8)}`,
+  visibility: "public",
+  name: "",
+  title: "",
+  location: "",
+  availability: "Available Now",
+  topStrength: "",
+  experienceYears: 0,
+  focusArea: "",
+  summary: "",
+  skills: [],
+  careerJourney: [],
+  email: email ?? "",
+});
+
+const verificationLabel: Record<EmployerVerificationStatus, string> = {
+  unverified: "Unverified",
+  pending: "Pending verification",
+  verified: "Verified",
+  rejected: "Rejected",
+};
 
 export default function DashboardPage() {
   const [session, setSession] = useState<Session | null>(null);
+  const [accountType, setAccountType] = useState<AccountType>("talent");
+  const [verificationStatus, setVerificationStatus] = useState<EmployerVerificationStatus>("unverified");
+  const [employerProfile, setEmployerProfile] = useState<EmployerProfileDetails>({
+    companyName: "",
+    abn: "",
+    website: "",
+    industry: "",
+    companySize: "",
+  });
   const [profile, setProfile] = useState<FreeAgentProfile | null>(null);
   const [requests, setRequests] = useState<IntroductionRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [isSavingEmployerProfile, setIsSavingEmployerProfile] = useState(false);
   const [questionDrafts, setQuestionDrafts] = useState<Record<string, string>>({});
   const [feedback, setFeedback] = useState<string | null>(null);
   const router = useRouter();
@@ -35,9 +75,12 @@ export default function DashboardPage() {
 
       setSession(data.session);
 
+      const metadataAccountType = data.session.user.user_metadata?.account_type;
+      const fallbackAccountType: AccountType = metadataAccountType === "employer" ? "employer" : "talent";
+
       const { data: profileRow } = await supabase
         .from("profiles")
-        .select("profile, slug")
+        .select("profile, slug, account_type, employer_company_name, employer_abn, employer_website, employer_industry, employer_company_size, employer_verification_status")
         .eq("user_id", data.session.user.id)
         .maybeSingle();
 
@@ -45,13 +88,68 @@ export default function DashboardPage() {
         return;
       }
 
-      const profileRowData = profileRow as { profile?: unknown; slug?: string | null } | null | undefined;
+      if (!profileRow) {
+        const defaultTalentProfile = createBlankTalentProfile(data.session.user.id, data.session.user.email);
+        const insertPayload = {
+          user_id: data.session.user.id,
+          account_type: fallbackAccountType,
+          employer_company_name: null,
+          employer_abn: null,
+          employer_website: null,
+          employer_industry: null,
+          employer_company_size: null,
+          employer_verification_status: fallbackAccountType === "employer" ? "pending" : "unverified",
+          slug: fallbackAccountType === "talent" ? defaultTalentProfile.slug ?? null : null,
+          profile: fallbackAccountType === "talent" ? (defaultTalentProfile as unknown as Record<string, unknown>) : {},
+        };
+
+        const { error: insertError } = await supabase.from("profiles").insert([insertPayload] as never);
+
+        if (!mounted) {
+          return;
+        }
+
+        if (insertError) {
+          setFeedback(insertError.message);
+        }
+
+        setAccountType(fallbackAccountType);
+        setVerificationStatus(fallbackAccountType === "employer" ? "pending" : "unverified");
+        setProfile(fallbackAccountType === "talent" ? defaultTalentProfile : null);
+        setRequests([]);
+        setLoading(false);
+        return;
+      }
+
+      const profileRowData = profileRow as {
+        profile?: unknown;
+        slug?: string | null;
+        account_type?: AccountType;
+        employer_company_name?: string | null;
+        employer_abn?: string | null;
+        employer_website?: string | null;
+        employer_industry?: string | null;
+        employer_company_size?: string | null;
+        employer_verification_status?: EmployerVerificationStatus;
+      } | null | undefined;
+      const resolvedAccountType = profileRowData?.account_type === "employer" ? "employer" : "talent";
       const profilePayload = profileRowData?.profile as FreeAgentProfile | undefined;
       const nextProfile = profilePayload
         ? { ...profilePayload, slug: (profilePayload as { slug?: string }).slug ?? profileRowData?.slug ?? undefined }
-        : null;
+        : resolvedAccountType === "talent"
+          ? createBlankTalentProfile(data.session.user.id, data.session.user.email)
+          : null;
       const nextRequests = Array.isArray(nextProfile?.introductionRequests) ? nextProfile.introductionRequests : [];
 
+      setAccountType(resolvedAccountType);
+      setVerificationStatus(profileRowData?.employer_verification_status ?? "unverified");
+      setEmployerProfile({
+        companyName: profileRowData?.employer_company_name ?? "",
+        abn: profileRowData?.employer_abn ?? "",
+        website: profileRowData?.employer_website ?? "",
+        industry: profileRowData?.employer_industry ?? "",
+        companySize: profileRowData?.employer_company_size ?? "",
+      });
       setProfile(nextProfile);
       setRequests(nextRequests);
       setLoading(false);
@@ -80,9 +178,10 @@ export default function DashboardPage() {
 
   const pendingCount = useMemo(() => requests.filter((request) => request.status === "pending").length, [requests]);
   const unreadCount = useMemo(() => requests.filter((request) => request.status === "pending" && !request.isRead).length, [requests]);
+  const isVerifiedEmployer = accountType === "employer" && verificationStatus === "verified";
 
   const saveRequests = async (nextRequests: IntroductionRequest[]) => {
-    if (!session || !profile) {
+    if (!session || !profile || accountType !== "talent") {
       return;
     }
 
@@ -90,6 +189,7 @@ export default function DashboardPage() {
       [
         {
           user_id: session.user.id,
+          account_type: "talent",
           slug: profile.slug ?? null,
           profile: { ...profile, introductionRequests: nextRequests } as unknown as Record<string, unknown>,
         } as never,
@@ -103,6 +203,46 @@ export default function DashboardPage() {
 
     setProfile((current) => (current ? { ...current, introductionRequests: nextRequests } : current));
     setRequests(nextRequests);
+  };
+
+  const saveEmployerDetails = async () => {
+    if (!session || accountType !== "employer") {
+      return;
+    }
+
+    setIsSavingEmployerProfile(true);
+    setFeedback(null);
+
+    const nextStatus: EmployerVerificationStatus =
+      verificationStatus === "verified" || verificationStatus === "rejected" ? verificationStatus : "pending";
+
+    const { error } = await supabase.from("profiles").upsert(
+      [
+        {
+          user_id: session.user.id,
+          account_type: "employer",
+          employer_company_name: employerProfile.companyName || null,
+          employer_abn: employerProfile.abn || null,
+          employer_website: employerProfile.website || null,
+          employer_industry: employerProfile.industry || null,
+          employer_company_size: employerProfile.companySize || null,
+          employer_verification_status: nextStatus,
+          slug: null,
+          profile: {},
+        } as never,
+      ],
+      { onConflict: "user_id" } as never,
+    );
+
+    setIsSavingEmployerProfile(false);
+
+    if (error) {
+      setFeedback(error.message);
+      return;
+    }
+
+    setVerificationStatus(nextStatus);
+    setFeedback("Employer profile saved. Verification status updated.");
   };
 
   const updateRequest = async (requestId: string, updates: Partial<IntroductionRequest>) => {
@@ -154,13 +294,21 @@ export default function DashboardPage() {
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-amber-500">Secure dashboard</p>
               <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-900">Welcome back, {session?.user.email ?? "Free Agent"}</h1>
               <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">
-                Review employer introduction requests, accept or decline them, and reply with a question when you want more context.
+                {accountType === "employer"
+                  ? "Manage your company profile, keep verification details current, and unlock premium talent search once verified."
+                  : "Review employer introduction requests, accept or decline them, and reply with a question when you want more context."}
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
-              <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700">
-                {pendingCount} pending · {unreadCount} new
-              </div>
+              {accountType === "talent" ? (
+                <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700">
+                  {pendingCount} pending · {unreadCount} new
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700">
+                  {verificationLabel[verificationStatus]}
+                </div>
+              )}
               <button
                 type="button"
                 onClick={signOut}
@@ -172,12 +320,38 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <Link href="/builder" className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
-              Edit your profile
-            </Link>
-            <Link href="/privacy" className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
-              Manage privacy
-            </Link>
+            {accountType === "talent" ? (
+              <>
+                <Link href="/builder" className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
+                  Edit your profile
+                </Link>
+                <Link href="/settings/privacy" className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
+                  Privacy & visibility
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/find-talent"
+                  className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${
+                    isVerifiedEmployer
+                      ? "border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100"
+                      : "cursor-not-allowed border border-slate-200 bg-slate-100 text-slate-400"
+                  }`}
+                  aria-disabled={!isVerifiedEmployer}
+                  onClick={(event) => {
+                    if (!isVerifiedEmployer) {
+                      event.preventDefault();
+                    }
+                  }}
+                >
+                  Find talent
+                </Link>
+                <Link href="/settings/privacy" className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
+                  Privacy & visibility
+                </Link>
+              </>
+            )}
           </div>
         </div>
 
@@ -187,86 +361,178 @@ export default function DashboardPage() {
           </div>
         ) : null}
 
-        <div className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-lg shadow-slate-200/40 sm:p-10">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Introduction requests</p>
-              <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900">Incoming employer requests</h2>
+        {accountType === "employer" ? (
+          <div className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-lg shadow-slate-200/40 sm:p-10">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Employer profile</p>
+                <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900">Verification details</h2>
+              </div>
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700">
+                Status: {verificationLabel[verificationStatus]}
+              </div>
             </div>
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-              {requests.length === 0 ? "No requests yet" : `${requests.length} total request${requests.length === 1 ? "" : "s"}`}
+
+            <div className="mt-8 grid gap-4 sm:grid-cols-2">
+              <label className="space-y-2 text-sm font-semibold text-slate-700">
+                Company name
+                <input
+                  value={employerProfile.companyName}
+                  onChange={(event) =>
+                    setEmployerProfile((current) => ({ ...current, companyName: event.target.value }))
+                  }
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
+                  placeholder="Acme Advisory"
+                />
+              </label>
+
+              <label className="space-y-2 text-sm font-semibold text-slate-700">
+                ABN
+                <input
+                  value={employerProfile.abn}
+                  onChange={(event) =>
+                    setEmployerProfile((current) => ({ ...current, abn: event.target.value }))
+                  }
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
+                  placeholder="11 222 333 444"
+                />
+              </label>
+
+              <label className="space-y-2 text-sm font-semibold text-slate-700">
+                Website
+                <input
+                  value={employerProfile.website}
+                  onChange={(event) =>
+                    setEmployerProfile((current) => ({ ...current, website: event.target.value }))
+                  }
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
+                  placeholder="https://example.com"
+                />
+              </label>
+
+              <label className="space-y-2 text-sm font-semibold text-slate-700">
+                Industry
+                <input
+                  value={employerProfile.industry}
+                  onChange={(event) =>
+                    setEmployerProfile((current) => ({ ...current, industry: event.target.value }))
+                  }
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
+                  placeholder="Technology"
+                />
+              </label>
+
+              <label className="space-y-2 text-sm font-semibold text-slate-700 sm:col-span-2">
+                Company size
+                <input
+                  value={employerProfile.companySize}
+                  onChange={(event) =>
+                    setEmployerProfile((current) => ({ ...current, companySize: event.target.value }))
+                  }
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
+                  placeholder="51-200 employees"
+                />
+              </label>
+            </div>
+
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                disabled={isSavingEmployerProfile}
+                onClick={saveEmployerDetails}
+                className="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isSavingEmployerProfile ? "Saving..." : "Save employer profile"}
+              </button>
+              {!isVerifiedEmployer ? (
+                <p className="text-sm leading-7 text-slate-600">
+                  Talent Search is unlocked after verification is marked as Verified.
+                </p>
+              ) : null}
             </div>
           </div>
-
-          {requests.length === 0 ? (
-            <div className="mt-8 rounded-[24px] border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-sm leading-7 text-slate-600">
-              Employers can request an introduction from your public profile. Once they do, the conversation will appear here.
+        ) : (
+          <div className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-lg shadow-slate-200/40 sm:p-10">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Introduction requests</p>
+                <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900">Incoming employer requests</h2>
+              </div>
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                {requests.length === 0 ? "No requests yet" : `${requests.length} total request${requests.length === 1 ? "" : "s"}`}
+              </div>
             </div>
-          ) : (
-            <div className="mt-8 space-y-5">
-              {requests.map((request) => (
-                <div key={request.id} className="rounded-[24px] border border-slate-200 bg-slate-50 p-6">
-                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                    <div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">{request.employerName}</p>
-                        <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-600">
-                          {request.status}
-                        </span>
+
+            {requests.length === 0 ? (
+              <div className="mt-8 rounded-[24px] border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-sm leading-7 text-slate-600">
+                Employers can request an introduction from your public profile. Once they do, the conversation will appear here.
+              </div>
+            ) : (
+              <div className="mt-8 space-y-5">
+                {requests.map((request) => (
+                  <div key={request.id} className="rounded-[24px] border border-slate-200 bg-slate-50 p-6">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">{request.employerName}</p>
+                          <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-600">
+                            {request.status}
+                          </span>
+                        </div>
+                        <p className="mt-3 text-sm leading-7 text-slate-600">{request.message ?? "No initial note was provided."}</p>
+                        {request.question ? <p className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">Question: {request.question}</p> : null}
                       </div>
-                      <p className="mt-3 text-sm leading-7 text-slate-600">{request.message ?? "No initial note was provided."}</p>
-                      {request.question ? <p className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">Question: {request.question}</p> : null}
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          disabled={updatingId === request.id}
+                          onClick={() => updateRequest(request.id, { status: "accepted" })}
+                          className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
+                        >
+                          <CheckCircle2 className="h-4 w-4" />
+                          Accept
+                        </button>
+                        <button
+                          type="button"
+                          disabled={updatingId === request.id}
+                          onClick={() => updateRequest(request.id, { status: "declined" })}
+                          className="inline-flex items-center gap-2 rounded-full bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-700"
+                        >
+                          <XCircle className="h-4 w-4" />
+                          Decline
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        disabled={updatingId === request.id}
-                        onClick={() => updateRequest(request.id, { status: "accepted" })}
-                        className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
-                      >
-                        <CheckCircle2 className="h-4 w-4" />
-                        Accept
-                      </button>
-                      <button
-                        type="button"
-                        disabled={updatingId === request.id}
-                        onClick={() => updateRequest(request.id, { status: "declined" })}
-                        className="inline-flex items-center gap-2 rounded-full bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-700"
-                      >
-                        <XCircle className="h-4 w-4" />
-                        Decline
-                      </button>
-                    </div>
-                  </div>
 
-                  <div className="mt-5 rounded-[20px] border border-slate-200 bg-white p-4">
-                    <label className="block text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
-                      Ask a question
-                      <textarea
-                        value={questionDrafts[request.id] ?? ""}
-                        onChange={(event) =>
-                          setQuestionDrafts((current) => ({ ...current, [request.id]: event.target.value }))
-                        }
-                        rows={3}
-                        className="mt-3 w-full rounded-[16px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none"
-                        placeholder="Ask them a question before you decide"
-                      />
-                    </label>
-                    <button
-                      type="button"
-                      disabled={updatingId === request.id}
-                      onClick={() => updateRequest(request.id, { question: questionDrafts[request.id] ?? "", status: request.status })}
-                      className="mt-3 inline-flex items-center gap-2 rounded-full border border-slate-300 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
-                    >
-                      <MessageSquareText className="h-4 w-4" />
-                      Send question
-                    </button>
+                    <div className="mt-5 rounded-[20px] border border-slate-200 bg-white p-4">
+                      <label className="block text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
+                        Ask a question
+                        <textarea
+                          value={questionDrafts[request.id] ?? ""}
+                          onChange={(event) =>
+                            setQuestionDrafts((current) => ({ ...current, [request.id]: event.target.value }))
+                          }
+                          rows={3}
+                          className="mt-3 w-full rounded-[16px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none"
+                          placeholder="Ask them a question before you decide"
+                        />
+                      </label>
+                      <button
+                        type="button"
+                        disabled={updatingId === request.id}
+                        onClick={() => updateRequest(request.id, { question: questionDrafts[request.id] ?? "", status: request.status })}
+                        className="mt-3 inline-flex items-center gap-2 rounded-full border border-slate-300 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
+                      >
+                        <MessageSquareText className="h-4 w-4" />
+                        Send question
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </main>
   );

@@ -249,60 +249,19 @@ export default function TalentProfileExperience({
             <aside id="request-introduction" className="rounded-[30px] border border-[#cda64d]/70 bg-[#0f2744] p-6 text-[#f7ebcf] shadow-[0_12px_40px_rgba(6,16,33,0.2)] sm:p-8">
               <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">
                 <BellRing className="h-4 w-4" />
-                Request introduction
+                Confidential Mode status
               </div>
               <p className="mt-4 text-sm leading-7 text-[#dfe7ef]">
-                Share why you want to connect. The candidate can accept, decline, or reply with a follow-up question.
+                Confidential Mode is active. Introduction requests are intentionally not enabled in this sprint.
               </p>
 
-              {loading ? (
-                <div className="mt-5 rounded-[20px] border border-[#f2cc63]/25 bg-[#f7ebcf]/10 p-4 text-sm leading-7 text-[#dfe7ef]">
-                  Loading request state...
-                </div>
-              ) : null}
+              <div className="mt-5 rounded-[20px] border border-[#f2cc63]/25 bg-[#f7ebcf]/10 p-4 text-sm leading-7 text-[#dfe7ef]">
+                Candidate identity is protected and direct outreach is paused until the introduction flow launches.
+              </div>
 
               {!loading && !session ? (
                 <div className="mt-5 rounded-[20px] border border-[#f2cc63]/25 bg-[#f7ebcf]/10 p-4 text-sm leading-7 text-[#dfe7ef]">
-                  Sign in to request an introduction.
-                </div>
-              ) : null}
-
-              {!loading && session && session.user.id !== candidateUserId ? (
-                <div className="mt-5 space-y-4">
-                  <label className="block text-sm font-semibold uppercase tracking-[0.24em] text-[#f2cc63]">
-                    Your note to the candidate
-                    <textarea
-                      value={message}
-                      onChange={(event) => setMessage(event.target.value)}
-                      rows={4}
-                      className="mt-3 w-full rounded-[20px] border border-[#f2cc63]/25 bg-[#f7ebcf]/10 px-4 py-3 text-sm text-[#f7ebcf] outline-none placeholder:text-[#dfe7ef]/70"
-                      placeholder="Describe what you are hoping to discuss"
-                    />
-                  </label>
-
-                  <button
-                    type="button"
-                    onClick={submitRequest}
-                    disabled={isSubmitting}
-                    className="inline-flex items-center gap-2 rounded-full border border-[#f2cc63]/30 bg-[#f2cc63] px-4 py-2.5 text-sm font-semibold uppercase tracking-[0.24em] text-[#0f2744] transition hover:bg-[#e8c85c]"
-                  >
-                    <Send className="h-4 w-4" />
-                    {isSubmitting ? "Sending..." : "Request introduction"}
-                  </button>
-                </div>
-              ) : null}
-
-              {!loading && session && session.user.id === candidateUserId ? (
-                <div className="mt-5 rounded-[20px] border border-[#f2cc63]/25 bg-[#f7ebcf]/10 p-4 text-sm leading-7 text-[#dfe7ef]">
-                  You are viewing your own confidential profile.
-                </div>
-              ) : null}
-
-              {requestState ? (
-                <div className="mt-5 rounded-[20px] border border-[#f2cc63]/25 bg-[#f7ebcf]/10 p-4 text-sm leading-7 text-[#dfe7ef]">
-                  <p className="font-semibold uppercase tracking-[0.24em] text-[#f2cc63]">Your request</p>
-                  <p className="mt-2">Status: {requestState.status}</p>
-                  {requestState.message ? <p className="mt-2">Note: {requestState.message}</p> : null}
+                  Sign in with a verified employer account to access future confidential introductions.
                 </div>
               ) : null}
 

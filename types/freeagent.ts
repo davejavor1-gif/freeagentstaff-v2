@@ -5,7 +5,21 @@ export type AvailabilityStatus =
   | "Busy this month"
   | "Booked";
 
-export type ProfileVisibility = "public" | "employer_network" | "confidential";
+export type ProfileVisibility = "public" | "verified_employer_network" | "confidential" | "employer_network";
+
+export type OpportunityStatus = "actively_open" | "exploring" | "not_open";
+
+export type AccountType = "talent" | "employer";
+
+export type EmployerVerificationStatus = "unverified" | "pending" | "verified" | "rejected";
+
+export interface EmployerProfileDetails {
+  companyName: string;
+  abn: string;
+  website: string;
+  industry: string;
+  companySize: string;
+}
 
 export interface CareerPosition {
   id: string;
@@ -36,6 +50,7 @@ export interface FreeAgentProfile {
   id: string;
   slug?: string;
   visibility?: ProfileVisibility;
+  opportunityStatus?: OpportunityStatus;
   name: string;
   title: string;
   location: string;
@@ -49,5 +64,6 @@ export interface FreeAgentProfile {
   email?: string;
   imageAlt?: string;
   photoUrl?: string;
+  currentEmployer?: string;
   introductionRequests?: IntroductionRequest[];
 }

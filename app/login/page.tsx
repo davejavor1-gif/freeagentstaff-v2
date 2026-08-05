@@ -3,9 +3,28 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase-client";
+import type { AccountType, EmployerVerificationStatus, FreeAgentProfile } from "@/types/freeagent";
+
+const createBlankTalentProfile = (userId: string, email?: string | null): FreeAgentProfile => ({
+  id: `freeagent-${userId.slice(0, 8)}`,
+  slug: `freeagent-${userId.slice(0, 8)}`,
+  visibility: "public",
+  name: "",
+  title: "",
+  location: "",
+  availability: "Available Now",
+  topStrength: "",
+  experienceYears: 0,
+  focusArea: "",
+  summary: "",
+  skills: [],
+  careerJourney: [],
+  email: email ?? "",
+});
 
 export default function LoginPage() {
   const [authMode, setAuthMode] = useState<"sign-in" | "sign-up">("sign-in");
+  const [accountType, setAccountType] = useState<AccountType>("talent");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState<string | null>(null);
@@ -44,7 +63,11 @@ export default function LoginPage() {
       return;
     }
 
-    const { data, error } = await supabase.auth.signUp({ email, password });
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { account_type: accountType } },
+    });
     setIsSubmitting(false);
 
     if (error) {
@@ -53,11 +76,39 @@ export default function LoginPage() {
     }
 
     if (data.session) {
+      const profilePayload =
+        accountType === "talent" ? (createBlankTalentProfile(data.session.user.id, data.session.user.email) as unknown as Record<string, unknown>) : {};
+      const verificationStatus: EmployerVerificationStatus = accountType === "employer" ? "pending" : "unverified";
+      const slug = accountType === "talent" ? `freeagent-${data.session.user.id.slice(0, 8)}` : null;
+
+      const { error: insertError } = await supabase.from("profiles").upsert(
+        [
+          {
+            user_id: data.session.user.id,
+            account_type: accountType,
+            employer_company_name: null,
+            employer_abn: null,
+            employer_website: null,
+            employer_industry: null,
+            employer_company_size: null,
+            employer_verification_status: verificationStatus,
+            slug,
+            profile: profilePayload,
+          } as never,
+        ],
+        { onConflict: "user_id" } as never,
+      );
+
+      if (insertError) {
+        setStatus(insertError.message);
+        return;
+      }
+
       router.replace("/dashboard");
       return;
     }
 
-    setStatus("Sign-up successful. Check your email for confirmation if required.");
+    setStatus("Sign-up successful. Check your email for confirmation if required, then complete your account in the dashboard.");
   };
 
   return (
@@ -96,6 +147,32 @@ export default function LoginPage() {
               Sign up
             </button>
           </div>
+
+          {authMode === "sign-up" ? (
+            <div className="mb-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-600">Create account as</p>
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setAccountType("talent")}
+                  className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
+                    accountType === "talent" ? "bg-slate-900 text-white" : "bg-white text-slate-700 hover:bg-slate-100"
+                  }`}
+                >
+                  Talent
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAccountType("employer")}
+                  className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
+                    accountType === "employer" ? "bg-slate-900 text-white" : "bg-white text-slate-700 hover:bg-slate-100"
+                  }`}
+                >
+                  Employer
+                </button>
+              </div>
+            </div>
+          ) : null}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>

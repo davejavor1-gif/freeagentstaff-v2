@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Search, Sparkles } from "lucide-react";
 import { supabase } from "@/lib/supabase-client";
 import FreeAgentCard from "@/components/cards/FreeAgentCard";
-import type { FreeAgentProfile } from "@/types/freeagent";
+import type { AccountType, EmployerVerificationStatus, FreeAgentProfile } from "@/types/freeagent";
 
 type ProfileRow = {
   slug: string;
@@ -14,7 +14,7 @@ type ProfileRow = {
 
 type ExperienceFilter = "All" | "0-3" | "4-7" | "8-12" | "13+";
 type ConfidentialFilter = "All" | "Confidential only" | "Non-confidential";
-type EmployerNetworkFilter = "All" | "Employer network only" | "Outside employer network";
+type EmployerNetworkFilter = "All" | "Verified network only" | "Outside verified network";
 
 const availabilityOptions = [
   "All",
@@ -27,7 +27,7 @@ const availabilityOptions = [
 
 const experienceOptions: ExperienceFilter[] = ["All", "0-3", "4-7", "8-12", "13+"];
 const confidentialOptions: ConfidentialFilter[] = ["All", "Confidential only", "Non-confidential"];
-const employerNetworkOptions: EmployerNetworkFilter[] = ["All", "Employer network only", "Outside employer network"];
+const employerNetworkOptions: EmployerNetworkFilter[] = ["All", "Verified network only", "Outside verified network"];
 
 const normalize = (value: string) => value.trim().toLowerCase();
 
@@ -99,7 +99,10 @@ const isPublishedProfile = (profile: FreeAgentProfile) => {
 };
 
 const isEmployerNetworkProfile = (profile: FreeAgentProfile) => {
-  if ((profile.visibility ?? "public") === "employer_network") {
+  if (
+    (profile.visibility ?? "public") === "verified_employer_network" ||
+    (profile.visibility ?? "public") === "employer_network"
+  ) {
     return true;
   }
 
@@ -118,7 +121,8 @@ const isEmployerNetworkProfile = (profile: FreeAgentProfile) => {
   }
 
   if (typeof meta.network === "string") {
-    return normalize(meta.network) === "employer_network";
+    const networkValue = normalize(meta.network);
+    return networkValue === "verified_employer_network" || networkValue === "employer_network";
   }
 
   return false;
@@ -147,6 +151,8 @@ const matchesExperience = (years: number, filter: ExperienceFilter) => {
 export default function EmployerTalentSearch() {
   const [profiles, setProfiles] = useState<ProfileRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [canAccessSearch, setCanAccessSearch] = useState(false);
+  const [accessStatus, setAccessStatus] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [availability, setAvailability] = useState<string>("All");
   const [industry, setIndustry] = useState<string>("All");
@@ -161,9 +167,74 @@ export default function EmployerTalentSearch() {
 
     async function loadProfiles() {
       setIsLoading(true);
+
+      const { data: sessionData } = await supabase.auth.getSession();
+      const currentSession = sessionData.session;
+
+      if (!currentSession) {
+        if (mounted) {
+          setCanAccessSearch(false);
+          setAccessStatus("Please sign in with a verified employer account to access Talent Search.");
+          setProfiles([]);
+          setIsLoading(false);
+        }
+        return;
+      }
+
+      const { data: accountData, error: accountError } = await supabase
+        .from("profiles")
+        .select("account_type, employer_verification_status")
+        .eq("user_id", currentSession.user.id)
+        .maybeSingle();
+
+      if (!mounted) {
+        return;
+      }
+
+      if (accountError) {
+        setCanAccessSearch(false);
+        setAccessStatus(accountError.message);
+        setProfiles([]);
+        setIsLoading(false);
+        return;
+      }
+
+      const accountRow = accountData as
+        | { account_type?: AccountType; employer_verification_status?: EmployerVerificationStatus }
+        | null
+        | undefined;
+      const accountType = accountRow?.account_type ?? "talent";
+      const verificationStatus = accountRow?.employer_verification_status ?? "unverified";
+
+      if (accountType !== "employer") {
+        setCanAccessSearch(false);
+        setAccessStatus("Talent Search is available only to employer accounts.");
+        setProfiles([]);
+        setIsLoading(false);
+        return;
+      }
+
+      if (verificationStatus !== "verified") {
+        setCanAccessSearch(false);
+        setAccessStatus(
+          verificationStatus === "pending"
+            ? "Your employer verification is pending. Talent Search unlocks once your account is verified."
+            : verificationStatus === "rejected"
+              ? "Your employer verification was rejected. Update company details in Dashboard and contact support."
+              : "Your employer account is not verified yet. Complete your details in Dashboard to begin verification.",
+        );
+        setProfiles([]);
+        setIsLoading(false);
+        return;
+      }
+
+      setCanAccessSearch(true);
+      setAccessStatus(null);
+
       const { data, error } = await supabase
         .from("profiles")
         .select("slug, profile")
+        .eq("account_type", "talent")
         .not("slug", "is", null)
         .order("updated_at", { ascending: false });
 
@@ -234,8 +305,8 @@ export default function EmployerTalentSearch() {
 
       const matchesEmployerNetwork =
         employerNetwork === "All" ||
-        (employerNetwork === "Employer network only" && isEmployerNetwork) ||
-        (employerNetwork === "Outside employer network" && !isEmployerNetwork);
+        (employerNetwork === "Verified network only" && isEmployerNetwork) ||
+        (employerNetwork === "Outside verified network" && !isEmployerNetwork);
 
       return (
         matchesQuery &&
@@ -248,6 +319,36 @@ export default function EmployerTalentSearch() {
       );
     });
   }, [profiles, availability, industry, location, experience, confidentialMode, employerNetwork, searchTerm]);
+
+  if (!isLoading && !canAccessSearch) {
+    return (
+      <section className="mx-auto max-w-7xl px-6 pb-20 sm:px-8 lg:px-12">
+        <div className="rounded-[36px] border border-[#cda64d]/45 bg-[#f7ebcf]/85 p-8 text-[#071426] shadow-[0_18px_55px_rgba(6,16,33,0.12)] sm:p-10">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Employer verification required</p>
+          <h2 className="mt-4 text-3xl font-black uppercase tracking-[0.12em] text-[#0f2744] sm:text-4xl">
+            Talent Search is restricted to verified employers.
+          </h2>
+          <p className="mt-4 max-w-3xl text-base leading-8 text-[#27405f]">
+            {accessStatus ?? "Please verify your employer account to continue."}
+          </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center justify-center rounded-full border border-[#0f2744]/25 bg-[#0f2744] px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f]"
+            >
+              Open dashboard
+            </Link>
+            <Link
+              href="/login"
+              className="inline-flex items-center justify-center rounded-full border border-[#cda64d]/40 bg-[#f7ebcf] px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#0f2744] transition hover:bg-[#e9d88f]"
+            >
+              Sign in
+            </Link>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="mx-auto max-w-7xl px-6 pb-20 sm:px-8 lg:px-12">
@@ -386,7 +487,7 @@ export default function EmployerTalentSearch() {
           </div>
 
           <div className="rounded-[24px] border border-[#cda64d]/30 bg-white/90 p-5 shadow-sm">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Employer network</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Verified employer network</p>
             <div className="mt-3 flex flex-wrap gap-2">
               {employerNetworkOptions.map((option) => (
                 <button
@@ -418,6 +519,15 @@ export default function EmployerTalentSearch() {
       </div>
 
       <div className="mx-auto grid max-w-7xl gap-8 px-6 sm:px-8 lg:px-12">
+        {!isLoading && filteredProfiles.some((item) => isConfidentialProfile(item.profile)) ? (
+          <div className="rounded-[30px] border border-[#cda64d]/55 bg-[#0f2744] p-6 text-[#f7ebcf] shadow-[0_12px_40px_rgba(6,16,33,0.2)]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">Confidential Mode</p>
+            <p className="mt-3 text-sm leading-7 text-[#dfe7ef]">
+              Confidential profiles are anonymised by design. Name, photo, current employer and contact details are hidden to protect candidate privacy.
+            </p>
+          </div>
+        ) : null}
+
         {isLoading ? (
           <div className="rounded-[36px] border border-[#cda64d]/45 bg-[#0f2744]/20 p-10 text-[#0f2744] shadow-[0_18px_55px_rgba(6,16,33,0.12)]">
             <p className="text-lg font-semibold uppercase tracking-[0.24em] text-[#0f2744]">Loading talent...</p>
@@ -448,16 +558,8 @@ export default function EmployerTalentSearch() {
                     href={`/talent/${item.slug}`}
                     className="inline-flex items-center justify-center rounded-full border border-[#cda64d]/40 bg-[#f7ebcf] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#0f2744] transition hover:bg-[#e9d88f]"
                   >
-                    Open Talent Passport
+                    {isConfidentialProfile(item.profile) ? "Open Anonymised Card" : "Open Talent Passport"}
                   </Link>
-                  {isConfidentialProfile(item.profile) ? (
-                    <Link
-                      href={`/talent/${item.slug}#request-introduction`}
-                      className="inline-flex items-center justify-center rounded-full border border-[#0f2744]/40 bg-[#0f2744] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f]"
-                    >
-                      Request Introduction
-                    </Link>
-                  ) : null}
                 </div>
               </div>
             ))}

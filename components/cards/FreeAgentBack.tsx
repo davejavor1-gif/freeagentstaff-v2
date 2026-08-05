@@ -38,7 +38,7 @@ export default function FreeAgentBack({ profile }: FreeAgentBackProps) {
             Contact
           </p>
           <p className="mt-2 text-sm text-slate-200 break-words">
-            {isConfidential(profile) ? "Contact shared privately on request" : profile.email ?? "Open for introductions"}
+            {isConfidential(profile) ? "Contact details are hidden in Confidential Mode" : profile.email ?? "Contact available via profile"}
           </p>
         </div>
       </div>
