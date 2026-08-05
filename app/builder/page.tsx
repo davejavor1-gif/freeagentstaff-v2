@@ -1,21 +1,214 @@
 "use client";
 
 import Image from "next/image";
-import { useState, type ChangeEvent } from "react";
+import { useEffect, useState, type ChangeEvent } from "react";
+import { useRouter } from "next/navigation";
+import type { Session } from "@supabase/supabase-js";
 import FreeAgentCard from "@/components/cards/FreeAgentCard";
 import SkillChip from "@/components/cards/SkillChip";
 import { freeAgentProfiles } from "@/data/freeagents";
+import { supabase } from "@/lib/supabase-client";
 import type { CareerPosition, FreeAgentProfile } from "@/types/freeagent";
+import type { Database, Json } from "@/types/supabase";
 
 const initialProfile = freeAgentProfiles[0];
 
+type ProfilesTable = Database["public"]["Tables"]["profiles"];
+type ProfileInsert = ProfilesTable["Insert"];
+type ProfileRow = ProfilesTable["Row"];
+
+type ProfileSelectResult = { profile: Json };
+
+const createBlankProfile = (userId: string, email?: string | null): FreeAgentProfile => ({
+  id: `freeagent-${userId.slice(0, 8)}`,
+  name: "",
+  title: "",
+  location: "",
+  availability: "Available Now",
+  topStrength: "",
+  experienceYears: 0,
+  focusArea: "",
+  summary: "",
+  skills: [],
+  careerJourney: [],
+  email: email ?? "",
+  imageAlt: "",
+  photoUrl: undefined,
+});
+
 export default function BuilderPage() {
+  const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<FreeAgentProfile>({
     ...initialProfile,
     name: initialProfile.name,
     title: initialProfile.title,
     location: initialProfile.location,
   });
+  const [profileLoaded, setProfileLoaded] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveStatus, setSaveStatus] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [skillInput, setSkillInput] = useState("");
+  const [journeyDrafts, setJourneyDrafts] = useState<Record<string, { achievement: string; skill: string }>>({});
+  const router = useRouter();
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadProfile() {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const supabaseSession = sessionData.session;
+
+      if (!mounted) {
+        return;
+      }
+
+      if (!supabaseSession) {
+        router.replace("/login");
+        return;
+      }
+
+      setSession(supabaseSession);
+
+      const profilesTable = supabase.from("profiles") as any;
+      const { data, error } = await profilesTable
+        .select("profile")
+        .eq("user_id", supabaseSession.user.id)
+        .maybeSingle();
+
+      if (!mounted) {
+        return;
+      }
+
+      if (error) {
+        setSaveError(error.message);
+        setProfile(createBlankProfile(supabaseSession.user.id, supabaseSession.user.email));
+        setProfileLoaded(true);
+        setIsLoading(false);
+        return;
+      }
+
+      if (data && typeof data === "object" && "profile" in data) {
+        const profileResult = data as ProfileSelectResult;
+        setProfile(profileResult.profile as unknown as FreeAgentProfile);
+      } else {
+        const blankProfile = createBlankProfile(supabaseSession.user.id, supabaseSession.user.email);
+        const insertPayload: ProfileInsert = {
+          user_id: supabaseSession.user.id,
+          profile: blankProfile as unknown as Json,
+        };
+        const { error: insertError } = await profilesTable.insert([insertPayload]);
+
+        if (!mounted) {
+          return;
+        }
+
+        if (insertError) {
+          setSaveError(insertError.message);
+        }
+
+        setProfile(blankProfile);
+      }
+
+      setProfileLoaded(true);
+      setIsLoading(false);
+    }
+
+    loadProfile();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((_, currentSession) => {
+      if (!mounted) {
+        return;
+      }
+
+      if (!currentSession) {
+        router.replace("/login");
+        return;
+      }
+
+      setSession(currentSession);
+    });
+
+    return () => {
+      mounted = false;
+      authListener.subscription.unsubscribe();
+    };
+  }, [router]);
+
+  useEffect(() => {
+    if (!profileLoaded || !session) {
+      return;
+    }
+
+    const profilesTable = supabase.from("profiles") as any;
+    const debounce = window.setTimeout(async () => {
+      const upsertPayload: ProfileInsert = {
+        user_id: session.user.id,
+        profile: profile as unknown as Json,
+      };
+
+      const { error } = await profilesTable.upsert([upsertPayload], {
+        onConflict: "user_id",
+        returning: "minimal",
+      });
+
+      if (error) {
+        setSaveError(error.message);
+      }
+    }, 700);
+
+    return () => {
+      window.clearTimeout(debounce);
+    };
+  }, [profile, profileLoaded, session]);
+
+  const saveProfile = async () => {
+    if (!session || !profileLoaded) {
+      return;
+    }
+
+    setIsSaving(true);
+    setSaveError(null);
+    setSaveStatus(null);
+
+    const profilesTable = supabase.from("profiles") as any;
+    const { error } = await profilesTable.upsert(
+      [
+        {
+          user_id: session.user.id,
+          profile: profile as unknown as Json,
+        },
+      ],
+      {
+        onConflict: "user_id",
+        returning: "minimal",
+      },
+    );
+
+    setIsSaving(false);
+
+    if (error) {
+      setSaveError(error.message);
+      return;
+    }
+
+    setSaveStatus("Profile saved successfully.");
+    window.setTimeout(() => setSaveStatus(null), 3000);
+  };
+
+  if (isLoading) {
+    return (
+      <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#f7ebcf_0%,_#f4e4bf_40%,_#e7d7a7_100%)] px-4 py-8 text-[#071426] sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-7xl items-center justify-center py-24">
+          <div className="rounded-[32px] border border-[#cda64d]/70 bg-[#0f2744] px-8 py-12 text-center text-[#f7ebcf] shadow-[0_18px_55px_rgba(6,16,33,0.28)]">
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">Loading profile</p>
+            <p className="mt-4 text-lg font-semibold">Please wait while we load your profile.</p>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   const updateTextField = (
     field: "name" | "title" | "location" | "topStrength" | "availability" | "focusArea",
@@ -69,9 +262,6 @@ export default function BuilderPage() {
     achievements: [],
     skills: [],
   });
-
-  const [skillInput, setSkillInput] = useState("");
-  const [journeyDrafts, setJourneyDrafts] = useState<Record<string, { achievement: string; skill: string }>>({});
 
   const addSkill = () => {
     const trimmedSkill = skillInput.trim();
@@ -225,6 +415,25 @@ export default function BuilderPage() {
           <p className="mt-4 max-w-xl text-base leading-7 text-[#dfe7ef]">
             Edit your profile and watch your card update live.
           </p>
+
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-1">
+              {saveStatus ? (
+                <p className="text-sm font-semibold text-emerald-700">{saveStatus}</p>
+              ) : null}
+              {saveError ? (
+                <p className="text-sm font-semibold text-rose-700">{saveError}</p>
+              ) : null}
+            </div>
+            <button
+              type="button"
+              onClick={saveProfile}
+              disabled={isSaving || !profileLoaded}
+              className="inline-flex items-center justify-center rounded-full bg-[#0f2744] px-5 py-3 text-sm font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isSaving ? "Saving..." : "Save profile"}
+            </button>
+          </div>
 
           <form className="mt-8 space-y-4 rounded-[24px] border border-[#f2cc63]/35 bg-[#f7ebcf] p-5 text-[#071426]">
             <div className="space-y-3 rounded-[20px] border border-[#cda64d]/40 bg-white/70 p-4">

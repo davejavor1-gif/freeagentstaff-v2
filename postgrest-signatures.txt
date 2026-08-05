@@ -1,0 +1,192 @@
+﻿
+LineNumber Line                                                                
+---------- ----                                                                
+       709    * const { data, error } = await supabase.from('users').select(...
+       759    * @example With `select()`                                       
+       763    *   .select()                                                    
+       767    * @exampleSql With `select()`                                    
+       779    * @exampleResponse With `select()`                               
+       833    *   .select()                                                    
+       864    *   .select()                                                    
+       870    *   .select()                                                    
+       882    *   .select()                                                    
+       895    *   .select()                                                    
+       909    *   .select()                                                    
+       922    *   .select()                                                    
+       937    *   .select()                                                    
+       943    *   .select()                                                    
+      1101    * By default, `.insert()`, `.update()`, `.upsert()`, and `.del...
+      1110    * @example With `upsert()`                                       
+      1114    *   .upsert({ id: 1, name: 'Han Solo' })                         
+      1115    *   .select()                                                    
+      1118    * @exampleSql With `upsert()`                                    
+      1129    * @exampleResponse With `upsert()`                               
+      1143   select<Query extends string = '*', NewResultOne = GetResult<Sch...
+      1202    * @example With `select()`                                       
+      1206    *   .select('name')                                              
+      1210    * @exampleSql With `select()`                                    
+      1223    * @exampleResponse With `select()`                               
+      1240    *   .select(`                                                    
+      1314    * @example With `select()`                                       
+      1318    *   .select('name')                                              
+      1322    * @exampleSql With `select()`                                    
+      1335    * @exampleResponse With `select()`                               
+      1379    *   .select()                                                    
+      1405    *   .select()                                                    
+      1434    * @example With `select()`                                       
+      1438    *   .select('name')                                              
+      1443    * @exampleSql With `select()`                                    
+      1456    * @exampleResponse With `select()`                               
+      1477    * @example With `select()`                                       
+      1481    *   .select()                                                    
+      1486    * @exampleSql With `select()`                                    
+      1499    * @exampleResponse With `select()`                               
+      1521    *   .select()                                                    
+      1590    *   .select()                                                    
+      1621    *   .select()                                                    
+      1689    *   .insert({ name: 'France' })                                  
+      1690    *   .select()                                                    
+      1712    *   .select()                                                    
+      1725    *   .select()                                                    
+      1771    * @example With `select()`                                       
+      1775    *   .select()                                                    
+      1779    * @exampleSql With `select()`                                    
+      1792    * @exampleResponse With `select()`                               
+      1819    * @example With `select()`                                       
+      1823    *   .select()                                                    
+      1827    * @exampleSql With `select()`                                    
+      1840    * @exampleResponse With `select()`                               
+      1868    * @exampleDescription With `select()`                            
+      1872    * @example With `select()`                                       
+      1876    *   .select()                                                    
+      1880    * @exampleSql With `select()`                                    
+      1893    * @exampleResponse With `select()`                               
+      1918    * @example With `select()`                                       
+      1922    *   .select()                                                    
+      1926    * @exampleSql With `select()`                                    
+      1939    * @exampleResponse With `select()`                               
+      1968    * @example With `select()`                                       
+      1972    *   .select()                                                    
+      1976    * @exampleSql With `select()`                                    
+      1989    * @exampleResponse With `select()`                               
+      2014    * @example With `select()`                                       
+      2018    *   .select()                                                    
+      2022    * @exampleSql With `select()`                                    
+      2035    * @exampleResponse With `select()`                               
+      2064    * @example With `select()`                                       
+      2068    *   .select()                                                    
+      2072    * @exampleSql With `select()`                                    
+      2085    * @exampleResponse With `select()`                               
+      2132    * @example With `select()`                                       
+      2136    *   .select()                                                    
+      2140    * @exampleSql With `select()`                                    
+      2153    * @exampleResponse With `select()`                               
+      2233    *   .select()                                                    
+      2285    * @example With `select()`                                       
+      2289    *   .select()                                                    
+      2293    * @exampleSql With `select()`                                    
+      2306    * @exampleResponse With `select()`                               
+      2346    *   .select()                                                    
+      2389    *   .select()                                                    
+      2428    *   .select('name')                                              
+      2477    *   .select('name')                                              
+      2520    *   .select()                                                    
+      2559    *   .select('name')                                              
+      2605    * @exampleDescription With `select()`                            
+      2611    * @example With `select()`                                       
+      2615    *   .select()                                                    
+      2619    * @exampleSql With `select()`                                    
+      2635    * @exampleResponse With `select()`                               
+      2664    * @exampleDescription With `select()`                            
+      2670    * @example With `select()`                                       
+      2674    *   .select()                                                    
+      2678    * @exampleSql With `select()`                                    
+      2694    * @exampleResponse With `select()`                               
+      2722    * @exampleDescription With `select()`                            
+      2728    * @example With `select()`                                       
+      2732    *   .select()                                                    
+      2736    * @exampleSql With `select()`                                    
+      2752    * @exampleResponse With `select()`                               
+      2780    * @exampleDescription With `select()`                            
+      2786    * @example With `select()`                                       
+      2790    *   .select()                                                    
+      2794    * @exampleSql With `select()`                                    
+      2810    * @exampleResponse With `select()`                               
+      2839    * @exampleDescription With `select()`                            
+      2845    * @example With `select()`                                       
+      2849    *   .select()                                                    
+      2853    * @exampleSql With `select()`                                    
+      2869    * @exampleResponse With `select()`                               
+      2900    *   .select('title')                                             
+      2943    *   .select()                                                    
+      3000    *   .select("content")                                           
+      3042    *   .select('catchphrase')                                       
+      3056    *   .select('catchphrase')                                       
+      3077    *   .select('catchphrase')                                       
+      3102    * @example With `select()`                                       
+      3106    *   .select('name')                                              
+      3110    * @exampleSql With `select()`                                    
+      3123    * @exampleResponse With `select()`                               
+      3183    * @example With `select()`                                       
+      3187    *   .select('name')                                              
+      3191    * @exampleSql With `select()`                                    
+      3204    * @exampleResponse With `select()`                               
+      3224    *   .select('name')                                              
+      3258    *   .select(`                                                    
+      3339    * @example With `select()`                                       
+      3343    *   .select()                                                    
+      3347    * @exampleSql With `select()`                                    
+      3360    * @exampleResponse With `select()`                               
+      3378    *   .select(`                                                    
+      3467    * const { data, error } = await supabase.from('users').select(...
+      3523      * - `select()` can be combined with [Filters](/docs/referenc...
+      3524      * - `select()` can be combined with [Modifiers](/docs/refere...
+      3532      *   .select()                                                  
+      3575      * const { data, error } = await supabase.from('characters')....
+      3601      *   .select('name')                                            
+      3643      *   .select(`                                                  
+      3707      *   .select(`                                                  
+      3767      * the `select()` method to query the related data. The join ...
+      3774      *   .select(`                                                  
+      3861      *   .select(`                                                  
+      3871      *   .select(`                                                  
+      3931      *     .select(`                                                
+      4040      *   .select('name, orchestral_sections(*)')                    
+      4093      *   .select(`*, instruments(count)`)                           
+      4143      *   .select('*', { count: 'exact', head: true })               
+      4178      *   .select(`                                                  
+      4216      * Like `.select('name, orchestral_sections!inner()')`.         
+      4222      *   .select('name, orchestral_sections!inner(name)')           
+      4274      *   .select()                                                  
+      4303   select<Query extends string = '*', ResultOne = GetResult<Schema...
+      4311    * with `.select()`.                                              
+      4339    *   .insert({ id: 1, name: 'Mordor' })                           
+      4361    * const { error } = await supabase.from('countries').insert({ ...
+      4369    *   .insert({ id: 1, name: 'Mordor' })                           
+      4370    *   .select()                                                    
+      4401    *   .insert([                                                    
+      4427   insert<Row extends (Relation$1 extends {                          
+      4442    * to `onConflict`, `.upsert()` allows you to perform the equiv...
+      4443    * `.insert()` if a row with the corresponding `onConflict` col...
+      4448    * with `.select()`.                                              
+      4483    *   .upsert({ username: 'supabot' }, { onConflict: 'username' }) 
+      4499    *   .upsert(                                                     
+      4534    *   .upsert({ id: 1, name: 'piano' })                            
+      4535    *   .select()                                                    
+      4568    * const { data, error } = await supabase.from('instruments').u...
+      4576    *   .upsert([                                                    
+      4580    *   .select()                                                    
+      4613    * In the following query, `upsert()` implicitly uses the `id`    
+      4615    * row with the same `id`, `upsert()` inserts a new row, which    
+      4617    * Using the `onConflict` option, you can instruct `upsert()` t...
+      4624    *   .upsert({ id: 42, handle: 'saoirse', display_name: 'Saoirs...
+      4625    *   .select()                                                    
+      4657   upsert<Row extends (Relation$1 extends {                          
+      4678    * with `.select()` after filters.                                
+      4742    *   .select()                                                    
+      4786    *   .select()                                                    
+      4835    * with `.select()` after filters.                                
+      4903    *   .select()                                                    
+      5043    * const { data, error } = await supabase.from('profiles').sele...
+
+
