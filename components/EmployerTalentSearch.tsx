@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Search, Sparkles } from "lucide-react";
 import { supabase } from "@/lib/supabase-client";
@@ -11,6 +12,10 @@ type ProfileRow = {
   profile: FreeAgentProfile;
 };
 
+type ExperienceFilter = "All" | "0-3" | "4-7" | "8-12" | "13+";
+type ConfidentialFilter = "All" | "Confidential only" | "Non-confidential";
+type EmployerNetworkFilter = "All" | "Employer network only" | "Outside employer network";
+
 const availabilityOptions = [
   "All",
   "Available Now",
@@ -20,13 +25,135 @@ const availabilityOptions = [
   "Booked",
 ] as const;
 
+const experienceOptions: ExperienceFilter[] = ["All", "0-3", "4-7", "8-12", "13+"];
+const confidentialOptions: ConfidentialFilter[] = ["All", "Confidential only", "Non-confidential"];
+const employerNetworkOptions: EmployerNetworkFilter[] = ["All", "Employer network only", "Outside employer network"];
+
+const normalize = (value: string) => value.trim().toLowerCase();
+
+const isConfidentialProfile = (profile: FreeAgentProfile) =>
+  (profile.visibility ?? "public") === "confidential";
+
+const getIndustry = (profile: FreeAgentProfile) => {
+  const metaIndustry = (profile as FreeAgentProfile & { industry?: unknown }).industry;
+
+  if (typeof metaIndustry === "string" && metaIndustry.trim().length > 0) {
+    return metaIndustry.trim();
+  }
+
+  return profile.focusArea || "General";
+};
+
+const toBoolean = (value: unknown): boolean | null => {
+  if (typeof value === "boolean") {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const lowered = value.trim().toLowerCase();
+
+    if (lowered === "true") {
+      return true;
+    }
+
+    if (lowered === "false") {
+      return false;
+    }
+  }
+
+  return null;
+};
+
+const isPublishedProfile = (profile: FreeAgentProfile) => {
+  const meta = profile as FreeAgentProfile & {
+    published?: unknown;
+    isPublished?: unknown;
+    searchPublished?: unknown;
+    status?: unknown;
+    profileStatus?: unknown;
+  };
+
+  const explicitFlags = [meta.published, meta.isPublished, meta.searchPublished]
+    .map(toBoolean)
+    .filter((flag): flag is boolean => flag !== null);
+
+  if (explicitFlags.length > 0) {
+    return explicitFlags.some((flag) => flag);
+  }
+
+  const status = typeof meta.status === "string" ? normalize(meta.status) : "";
+  const profileStatus = typeof meta.profileStatus === "string" ? normalize(meta.profileStatus) : "";
+  const statusValue = status || profileStatus;
+
+  if (statusValue) {
+    if (["draft", "unpublished", "private", "hidden", "archived"].includes(statusValue)) {
+      return false;
+    }
+
+    if (["published", "live", "active"].includes(statusValue)) {
+      return true;
+    }
+  }
+
+  return true;
+};
+
+const isEmployerNetworkProfile = (profile: FreeAgentProfile) => {
+  if ((profile.visibility ?? "public") === "employer_network") {
+    return true;
+  }
+
+  const meta = profile as FreeAgentProfile & {
+    employerNetwork?: unknown;
+    employer_network?: unknown;
+    network?: unknown;
+  };
+
+  const booleanMeta = [meta.employerNetwork, meta.employer_network]
+    .map(toBoolean)
+    .find((value): value is boolean => value !== null);
+
+  if (typeof booleanMeta === "boolean") {
+    return booleanMeta;
+  }
+
+  if (typeof meta.network === "string") {
+    return normalize(meta.network) === "employer_network";
+  }
+
+  return false;
+};
+
+const matchesExperience = (years: number, filter: ExperienceFilter) => {
+  if (filter === "All") {
+    return true;
+  }
+
+  if (filter === "0-3") {
+    return years <= 3;
+  }
+
+  if (filter === "4-7") {
+    return years >= 4 && years <= 7;
+  }
+
+  if (filter === "8-12") {
+    return years >= 8 && years <= 12;
+  }
+
+  return years >= 13;
+};
+
 export default function EmployerTalentSearch() {
   const [profiles, setProfiles] = useState<ProfileRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [availability, setAvailability] = useState<string>("All");
-  const [focusArea, setFocusArea] = useState<string>("All");
+  const [industry, setIndustry] = useState<string>("All");
   const [location, setLocation] = useState<string>("All");
+  const [experience, setExperience] = useState<ExperienceFilter>("All");
+  const [confidentialMode, setConfidentialMode] = useState<ConfidentialFilter>("All");
+  const [employerNetwork, setEmployerNetwork] = useState<EmployerNetworkFilter>("All");
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -53,7 +180,8 @@ export default function EmployerTalentSearch() {
           .map((row) => ({
             slug: row.slug,
             profile: row.profile as FreeAgentProfile,
-          })) ?? [];
+          }))
+          .filter((row) => isPublishedProfile(row.profile)) ?? [];
 
         setProfiles(rows);
       }
@@ -68,41 +196,58 @@ export default function EmployerTalentSearch() {
     };
   }, []);
 
-  const visibleProfiles = useMemo(
-    () => profiles.filter((item) => (item.profile.visibility ?? "public") === "public"),
+  const industries = useMemo(
+    () => ["All", ...new Set(profiles.map((item) => getIndustry(item.profile)).filter(Boolean))],
     [profiles],
   );
 
-  const focusAreas = useMemo(
-    () => ["All", ...new Set(visibleProfiles.map((item) => item.profile.focusArea).filter(Boolean))],
-    [visibleProfiles],
-  );
-
   const locations = useMemo(
-    () => ["All", ...new Set(visibleProfiles.map((item) => item.profile.location).filter(Boolean))],
-    [visibleProfiles],
+    () => ["All", ...new Set(profiles.map((item) => item.profile.location).filter(Boolean))],
+    [profiles],
   );
 
   const filteredProfiles = useMemo(() => {
     const query = searchTerm.trim().toLowerCase();
 
-    return visibleProfiles.filter((item) => {
+    return profiles.filter((item) => {
       const profile = item.profile;
+      const isConfidential = isConfidentialProfile(profile);
+      const isEmployerNetwork = isEmployerNetworkProfile(profile);
+      const profileIndustry = getIndustry(profile);
+
       const matchesQuery =
         query === "" ||
-        [profile.name, profile.title, profile.location, profile.focusArea, profile.topStrength]
+        [profile.name, profile.title, profile.location, profile.focusArea, profileIndustry, profile.topStrength]
           .join(" ")
           .toLowerCase()
           .includes(query) ||
         profile.skills.some((skill) => skill.toLowerCase().includes(query));
 
       const matchesAvailability = availability === "All" || profile.availability === availability;
-      const matchesFocus = focusArea === "All" || profile.focusArea === focusArea;
+      const matchesIndustry = industry === "All" || profileIndustry === industry;
       const matchesLocation = location === "All" || profile.location === location;
+      const matchesExperienceFilter = matchesExperience(profile.experienceYears, experience);
+      const matchesConfidentialMode =
+        confidentialMode === "All" ||
+        (confidentialMode === "Confidential only" && isConfidential) ||
+        (confidentialMode === "Non-confidential" && !isConfidential);
 
-      return matchesQuery && matchesAvailability && matchesFocus && matchesLocation;
+      const matchesEmployerNetwork =
+        employerNetwork === "All" ||
+        (employerNetwork === "Employer network only" && isEmployerNetwork) ||
+        (employerNetwork === "Outside employer network" && !isEmployerNetwork);
+
+      return (
+        matchesQuery &&
+        matchesAvailability &&
+        matchesIndustry &&
+        matchesLocation &&
+        matchesExperienceFilter &&
+        matchesConfidentialMode &&
+        matchesEmployerNetwork
+      );
     });
-  }, [visibleProfiles, availability, focusArea, location, searchTerm]);
+  }, [profiles, availability, industry, location, experience, confidentialMode, employerNetwork, searchTerm]);
 
   return (
     <section className="mx-auto max-w-7xl px-6 pb-20 sm:px-8 lg:px-12">
@@ -156,15 +301,15 @@ export default function EmployerTalentSearch() {
               </div>
             </div>
             <div className="rounded-[24px] border border-[#cda64d]/30 bg-white/90 p-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Focus area</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Industry</p>
               <div className="mt-3 flex flex-wrap gap-2">
-                {focusAreas.slice(0, 6).map((option) => (
+                {industries.slice(0, 8).map((option) => (
                   <button
                     key={option}
                     type="button"
-                    onClick={() => setFocusArea(option)}
+                    onClick={() => setIndustry(option)}
                     className={`rounded-full px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] transition ${
-                      focusArea === option
+                      industry === option
                         ? "bg-[#0f2744] text-[#f7ebcf]"
                         : "bg-[#f7ebcf]/80 text-[#0f2744] hover:bg-[#f7ebcf]"
                     }`}
@@ -177,11 +322,11 @@ export default function EmployerTalentSearch() {
           </div>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+        <div className="grid gap-4 lg:grid-cols-2">
           <div className="rounded-[24px] border border-[#cda64d]/30 bg-white/90 p-5 shadow-sm">
             <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Location</p>
             <div className="mt-3 flex flex-wrap gap-2">
-              {locations.slice(0, 6).map((option) => (
+              {locations.slice(0, 8).map((option) => (
                 <button
                   key={option}
                   type="button"
@@ -198,13 +343,75 @@ export default function EmployerTalentSearch() {
             </div>
           </div>
 
+          <div className="rounded-[24px] border border-[#cda64d]/30 bg-white/90 p-5 shadow-sm">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Experience</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {experienceOptions.map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => setExperience(option)}
+                  className={`rounded-full px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] transition ${
+                    experience === option
+                      ? "bg-[#0f2744] text-[#f7ebcf]"
+                      : "bg-[#f7ebcf]/80 text-[#0f2744] hover:bg-[#f7ebcf]"
+                  }`}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-[1.1fr_1.1fr_0.8fr]">
+          <div className="rounded-[24px] border border-[#cda64d]/30 bg-white/90 p-5 shadow-sm">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Confidential mode</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {confidentialOptions.map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => setConfidentialMode(option)}
+                  className={`rounded-full px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] transition ${
+                    confidentialMode === option
+                      ? "bg-[#0f2744] text-[#f7ebcf]"
+                      : "bg-[#f7ebcf]/80 text-[#0f2744] hover:bg-[#f7ebcf]"
+                  }`}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-[24px] border border-[#cda64d]/30 bg-white/90 p-5 shadow-sm">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Employer network</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {employerNetworkOptions.map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => setEmployerNetwork(option)}
+                  className={`rounded-full px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] transition ${
+                    employerNetwork === option
+                      ? "bg-[#0f2744] text-[#f7ebcf]"
+                      : "bg-[#f7ebcf]/80 text-[#0f2744] hover:bg-[#f7ebcf]"
+                  }`}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="rounded-[24px] border border-[#cda64d]/30 bg-[#0f2744] p-5 text-[#f7ebcf] shadow-sm">
             <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">
               <Sparkles className="h-4 w-4" />
               Premium filters
             </div>
             <p className="mt-3 text-sm leading-7 text-[#dfe7ef]">
-              Use search and filters to narrow talent by outcome, availability and experience quickly.
+              Search published Talent Passports and quickly narrow results for specific hiring outcomes.
             </p>
           </div>
         </div>
@@ -230,12 +437,28 @@ export default function EmployerTalentSearch() {
         ) : (
           <div className="grid gap-8 lg:grid-cols-2 xl:grid-cols-3">
             {filteredProfiles.map((item) => (
-              <div key={item.slug} className="group">
+              <div key={item.slug} className="group space-y-3">
                 <FreeAgentCard
                   profile={item.profile}
                   href={`/talent/${item.slug}`}
                   className="w-full"
                 />
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  <Link
+                    href={`/talent/${item.slug}`}
+                    className="inline-flex items-center justify-center rounded-full border border-[#cda64d]/40 bg-[#f7ebcf] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#0f2744] transition hover:bg-[#e9d88f]"
+                  >
+                    Open Talent Passport
+                  </Link>
+                  {isConfidentialProfile(item.profile) ? (
+                    <Link
+                      href={`/talent/${item.slug}#request-introduction`}
+                      className="inline-flex items-center justify-center rounded-full border border-[#0f2744]/40 bg-[#0f2744] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f]"
+                    >
+                      Request Introduction
+                    </Link>
+                  ) : null}
+                </div>
               </div>
             ))}
           </div>

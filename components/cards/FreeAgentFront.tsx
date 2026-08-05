@@ -39,7 +39,7 @@ export default function FreeAgentFront({ profile }: FreeAgentFrontProps) {
           <div className="relative -mt-2 h-64 overflow-hidden rounded-[24px] border border-white/10 bg-[#0d1830] sm:h-[18rem]">
             <Image
               src={isConfidential(profile) ? "/placeholder-avatar.svg" : profile.photoUrl ?? "/placeholder-avatar.svg"}
-              alt={profile.imageAlt ?? profile.name}
+              alt={isConfidential(profile) ? "Anonymous talent profile photo" : profile.imageAlt ?? profile.name}
               width={520}
               height={520}
               className="h-full w-full object-cover object-center shadow-[inset_0_-20px_60px_rgba(0,0,0,0.25)]"
@@ -59,7 +59,7 @@ export default function FreeAgentFront({ profile }: FreeAgentFrontProps) {
               {isConfidential(profile) ? "Anonymous profile" : profile.name}
             </h3>
             <p className="mt-2 text-sm font-semibold uppercase tracking-[0.24em] text-[#f2cc63] sm:text-[0.95rem]">
-              {isConfidential(profile) ? "Talent passport" : profile.title}
+              {profile.title}
             </p>
             <div className="mt-2 flex items-center gap-2 text-sm text-[#d6e0ec]">
               <MapPin className="h-4 w-4 shrink-0 text-[#f2cc63]" />
@@ -81,7 +81,7 @@ export default function FreeAgentFront({ profile }: FreeAgentFrontProps) {
               </p>
             </div>
             <p className="mt-3 text-base font-semibold leading-6 text-[#f8efe1] break-words sm:text-lg">
-              {isConfidential(profile) ? "Confidential profile" : profile.topStrength}
+              {profile.topStrength}
             </p>
             {profile.skills.length > 0 ? (
               <div className="mt-3 flex flex-wrap gap-2">

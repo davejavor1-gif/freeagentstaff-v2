@@ -234,15 +234,84 @@ export default function TalentProfileExperience({
       <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#f7ebcf_0%,_#f4e4bf_40%,_#e7d7a7_100%)] text-[#071426]">
         <Navbar />
         <div className="mx-auto max-w-6xl px-6 py-10 sm:px-8 lg:px-12">
-          <div className="rounded-[36px] border border-[#cda64d]/70 bg-[#0f2744] p-8 text-[#f7ebcf] shadow-[0_18px_55px_rgba(6,16,33,0.18)] sm:p-10">
-            <p className="text-sm font-semibold uppercase tracking-[0.32em] text-[#f2cc63]">Confidential talent passport</p>
-            <h1 className="mt-4 text-4xl font-black uppercase tracking-[0.12em] text-[#f7ebcf] sm:text-5xl">Anonymous profile</h1>
-            <p className="mt-6 max-w-3xl text-base leading-8 text-[#dfe7ef]">
-              This talent profile is intentionally private. Employers can still request an introduction and unlock visibility after acceptance.
-            </p>
-            <div className="mt-8 flex justify-center">
-              <FreeAgentCard profile={profile} className="w-full max-w-[430px]" />
+          <div className="grid gap-8 lg:grid-cols-[1fr_0.95fr] lg:items-start">
+            <div className="rounded-[36px] border border-[#cda64d]/70 bg-[#0f2744] p-8 text-[#f7ebcf] shadow-[0_18px_55px_rgba(6,16,33,0.18)] sm:p-10">
+              <p className="text-sm font-semibold uppercase tracking-[0.32em] text-[#f2cc63]">Confidential talent passport</p>
+              <h1 className="mt-4 text-4xl font-black uppercase tracking-[0.12em] text-[#f7ebcf] sm:text-5xl">Anonymous profile</h1>
+              <p className="mt-6 max-w-3xl text-base leading-8 text-[#dfe7ef]">
+                This talent profile is intentionally private. Employers can still request an introduction and begin a trusted conversation.
+              </p>
+              <div className="mt-8 flex justify-center">
+                <FreeAgentCard profile={profile} className="w-full max-w-[430px]" />
+              </div>
             </div>
+
+            <aside id="request-introduction" className="rounded-[30px] border border-[#cda64d]/70 bg-[#0f2744] p-6 text-[#f7ebcf] shadow-[0_12px_40px_rgba(6,16,33,0.2)] sm:p-8">
+              <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">
+                <BellRing className="h-4 w-4" />
+                Request introduction
+              </div>
+              <p className="mt-4 text-sm leading-7 text-[#dfe7ef]">
+                Share why you want to connect. The candidate can accept, decline, or reply with a follow-up question.
+              </p>
+
+              {loading ? (
+                <div className="mt-5 rounded-[20px] border border-[#f2cc63]/25 bg-[#f7ebcf]/10 p-4 text-sm leading-7 text-[#dfe7ef]">
+                  Loading request state...
+                </div>
+              ) : null}
+
+              {!loading && !session ? (
+                <div className="mt-5 rounded-[20px] border border-[#f2cc63]/25 bg-[#f7ebcf]/10 p-4 text-sm leading-7 text-[#dfe7ef]">
+                  Sign in to request an introduction.
+                </div>
+              ) : null}
+
+              {!loading && session && session.user.id !== candidateUserId ? (
+                <div className="mt-5 space-y-4">
+                  <label className="block text-sm font-semibold uppercase tracking-[0.24em] text-[#f2cc63]">
+                    Your note to the candidate
+                    <textarea
+                      value={message}
+                      onChange={(event) => setMessage(event.target.value)}
+                      rows={4}
+                      className="mt-3 w-full rounded-[20px] border border-[#f2cc63]/25 bg-[#f7ebcf]/10 px-4 py-3 text-sm text-[#f7ebcf] outline-none placeholder:text-[#dfe7ef]/70"
+                      placeholder="Describe what you are hoping to discuss"
+                    />
+                  </label>
+
+                  <button
+                    type="button"
+                    onClick={submitRequest}
+                    disabled={isSubmitting}
+                    className="inline-flex items-center gap-2 rounded-full border border-[#f2cc63]/30 bg-[#f2cc63] px-4 py-2.5 text-sm font-semibold uppercase tracking-[0.24em] text-[#0f2744] transition hover:bg-[#e8c85c]"
+                  >
+                    <Send className="h-4 w-4" />
+                    {isSubmitting ? "Sending..." : "Request introduction"}
+                  </button>
+                </div>
+              ) : null}
+
+              {!loading && session && session.user.id === candidateUserId ? (
+                <div className="mt-5 rounded-[20px] border border-[#f2cc63]/25 bg-[#f7ebcf]/10 p-4 text-sm leading-7 text-[#dfe7ef]">
+                  You are viewing your own confidential profile.
+                </div>
+              ) : null}
+
+              {requestState ? (
+                <div className="mt-5 rounded-[20px] border border-[#f2cc63]/25 bg-[#f7ebcf]/10 p-4 text-sm leading-7 text-[#dfe7ef]">
+                  <p className="font-semibold uppercase tracking-[0.24em] text-[#f2cc63]">Your request</p>
+                  <p className="mt-2">Status: {requestState.status}</p>
+                  {requestState.message ? <p className="mt-2">Note: {requestState.message}</p> : null}
+                </div>
+              ) : null}
+
+              {feedback ? (
+                <div className="mt-5 rounded-[20px] border border-[#f2cc63]/25 bg-[#f7ebcf]/10 p-4 text-sm leading-7 text-[#dfe7ef]">
+                  {feedback}
+                </div>
+              ) : null}
+            </aside>
           </div>
         </div>
       </main>
