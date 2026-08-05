@@ -8,7 +8,7 @@ import FreeAgentCard from "@/components/cards/FreeAgentCard";
 import SkillChip from "@/components/cards/SkillChip";
 import { freeAgentProfiles } from "@/data/freeagents";
 import { supabase } from "@/lib/supabase-client";
-import type { CareerPosition, FreeAgentProfile } from "@/types/freeagent";
+import type { CareerPosition, FreeAgentProfile, ProfileVisibility } from "@/types/freeagent";
 import type { Database, Json } from "@/types/supabase";
 
 const initialProfile = freeAgentProfiles[0];
@@ -17,10 +17,47 @@ type ProfilesTable = Database["public"]["Tables"]["profiles"];
 type ProfileInsert = ProfilesTable["Insert"];
 type ProfileRow = ProfilesTable["Row"];
 
-type ProfileSelectResult = { profile: Json };
+type ProfileSelectResult = { slug?: string | null; profile: Json };
+
+const normalizeSlug = (value: string, fallback: string) => {
+  const slug = value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+
+  return slug || fallback;
+};
+
+const createSlugFromName = (name: string, fallback: string) => normalizeSlug(name || fallback, fallback);
+
+const ensureUniqueSlug = async (slug: string, userId: string) => {
+  const profilesTable = supabase.from("profiles") as any;
+  let candidate = normalizeSlug(slug, `freeagent-${userId.slice(0, 8)}`);
+  let suffix = 1;
+
+  while (true) {
+    const { data, error } = await profilesTable.select("user_id").eq("slug", candidate).maybeSingle();
+
+    if (error) {
+      break;
+    }
+
+    if (!data || data.user_id === userId) {
+      return candidate;
+    }
+
+    candidate = `${normalizeSlug(slug, `freeagent-${userId.slice(0, 8)}`)}-${suffix}`;
+    suffix += 1;
+  }
+
+  return candidate;
+};
 
 const createBlankProfile = (userId: string, email?: string | null): FreeAgentProfile => ({
   id: `freeagent-${userId.slice(0, 8)}`,
+  slug: `freeagent-${userId.slice(0, 8)}`,
+  visibility: "public",
   name: "",
   title: "",
   location: "",
@@ -48,6 +85,7 @@ export default function BuilderPage() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isCopySuccess, setIsCopySuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [skillInput, setSkillInput] = useState("");
   const [journeyDrafts, setJourneyDrafts] = useState<Record<string, { achievement: string; skill: string }>>({});
@@ -73,7 +111,7 @@ export default function BuilderPage() {
 
       const profilesTable = supabase.from("profiles") as any;
       const { data, error } = await profilesTable
-        .select("profile")
+        .select("slug, profile")
         .eq("user_id", supabaseSession.user.id)
         .maybeSingle();
 
@@ -91,11 +129,19 @@ export default function BuilderPage() {
 
       if (data && typeof data === "object" && "profile" in data) {
         const profileResult = data as ProfileSelectResult;
-        setProfile(profileResult.profile as unknown as FreeAgentProfile);
+        const loadedProfile = profileResult.profile as unknown as FreeAgentProfile;
+
+        if (profileResult.slug && !loadedProfile.slug) {
+          loadedProfile.slug = profileResult.slug;
+        }
+
+        loadedProfile.visibility = loadedProfile.visibility ?? "public";
+        setProfile(loadedProfile);
       } else {
         const blankProfile = createBlankProfile(supabaseSession.user.id, supabaseSession.user.email);
         const insertPayload: ProfileInsert = {
           user_id: supabaseSession.user.id,
+          slug: blankProfile.slug,
           profile: blankProfile as unknown as Json,
         };
         const { error: insertError } = await profilesTable.insert([insertPayload]);
@@ -145,6 +191,7 @@ export default function BuilderPage() {
     const debounce = window.setTimeout(async () => {
       const upsertPayload: ProfileInsert = {
         user_id: session.user.id,
+        slug: profile.slug ?? null,
         profile: profile as unknown as Json,
       };
 
@@ -163,10 +210,30 @@ export default function BuilderPage() {
     };
   }, [profile, profileLoaded, session]);
 
+  const copyShareLink = async () => {
+    if (!profile.slug) {
+      return;
+    }
+
+    const shareUrl = `${window.location.origin}/profile/${profile.slug}`;
+
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setIsCopySuccess(true);
+      window.setTimeout(() => setIsCopySuccess(false), 2500);
+    } catch {
+      setSaveError("Unable to copy share link. Please try again.");
+    }
+  };
+
   const saveProfile = async () => {
     if (!session || !profileLoaded) {
       return;
     }
+
+    const preferredSlug = profile.slug?.trim() || createSlugFromName(profile.name, `freeagent-${session.user.id.slice(0, 8)}`);
+    const uniqueSlug = await ensureUniqueSlug(preferredSlug, session.user.id);
+    const profileToSave = { ...profile, slug: uniqueSlug };
 
     setIsSaving(true);
     setSaveError(null);
@@ -177,7 +244,8 @@ export default function BuilderPage() {
       [
         {
           user_id: session.user.id,
-          profile: profile as unknown as Json,
+          slug: uniqueSlug,
+          profile: profileToSave as unknown as Json,
         },
       ],
       {
@@ -193,6 +261,7 @@ export default function BuilderPage() {
       return;
     }
 
+    setProfile(profileToSave);
     setSaveStatus("Profile saved successfully.");
     window.setTimeout(() => setSaveStatus(null), 3000);
   };
@@ -211,10 +280,14 @@ export default function BuilderPage() {
   }
 
   const updateTextField = (
-    field: "name" | "title" | "location" | "topStrength" | "availability" | "focusArea",
+    field: "slug" | "name" | "title" | "location" | "topStrength" | "availability" | "focusArea",
     value: string,
   ) => {
     setProfile((current) => ({ ...current, [field]: value }));
+  };
+
+  const updateVisibility = (value: ProfileVisibility) => {
+    setProfile((current) => ({ ...current, visibility: value }));
   };
 
   const updateExperienceField = (value: string) => {
@@ -435,47 +508,62 @@ export default function BuilderPage() {
             </button>
           </div>
 
-          <form className="mt-8 space-y-4 rounded-[24px] border border-[#f2cc63]/35 bg-[#f7ebcf] p-5 text-[#071426]">
-            <div className="space-y-3 rounded-[20px] border border-[#cda64d]/40 bg-white/70 p-4">
+          <form
+            className="mt-8 space-y-4 rounded-[24px] border border-[#f2cc63]/35 bg-[#f7ebcf] p-5 text-[#071426]"
+            onSubmit={(event) => {
+              event.preventDefault();
+              saveProfile();
+            }}
+          >
+            <div className="mt-4 rounded-[24px] border border-[#cda64d]/40 bg-[#f7ebcf]/10 p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
-                  Profile Photo
-                </p>
-                <p className="mt-1 text-sm text-[#27405f]">
-                  Upload a JPG, PNG, or WebP image to personalize your card.
-                </p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Public profile URL</p>
+                <p className="mt-1 text-sm text-[#27405f]">Save your profile and share it with employers or collaborators.</p>
               </div>
-
-              <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-                <label
-                  htmlFor="photoUpload"
-                  className="group flex h-24 w-24 cursor-pointer items-center justify-center overflow-hidden rounded-full border border-[#cda64d]/50 bg-[#0f2744] shadow-[0_10px_24px_rgba(7,20,38,0.18)] transition hover:scale-[1.01]"
-                >
-                  <Image
-                    src={profile.photoUrl ?? "/placeholder-avatar.svg"}
-                    alt={profile.imageAlt ?? profile.name}
-                    width={120}
-                    height={120}
-                    className="h-full w-full object-cover"
-                  />
-                </label>
-                <input id="photoUpload" type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handlePhotoUpload} />
-                <div className="flex flex-col gap-2">
-                  <label htmlFor="photoUpload" className="inline-flex cursor-pointer items-center justify-center rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f]">
-                    Upload photo
-                  </label>
-                  <button
-                    type="button"
-                    onClick={clearPhoto}
-                    className="rounded-full border border-[#cda64d]/40 bg-transparent px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#0f2744] transition hover:bg-white/70"
-                  >
-                    Remove photo
-                  </button>
-                </div>
-              </div>
+              <button
+                type="button"
+                onClick={copyShareLink}
+                disabled={!profile.slug}
+                className="rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isCopySuccess ? "Copied!" : "Copy share link"}
+              </button>
             </div>
+            <div className="mt-3 rounded-2xl border border-[#0f2744]/20 bg-white/90 px-4 py-3 text-sm text-[#071426]">
+              {profile.slug ? `${window.location.origin}/profile/${profile.slug}` : "Save your profile to generate a shareable link."}
+            </div>
+          </div>
 
-            <div className="space-y-2">
+          <div className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+            <label
+              htmlFor="photoUpload"
+              className="group flex h-24 w-24 cursor-pointer items-center justify-center overflow-hidden rounded-full border border-[#cda64d]/50 bg-[#0f2744] shadow-[0_10px_24px_rgba(7,20,38,0.18)] transition hover:scale-[1.01]"
+            >
+              <Image
+                src={profile.photoUrl ?? "/placeholder-avatar.svg"}
+                alt={profile.imageAlt ?? profile.name}
+                width={120}
+                height={120}
+                className="h-full w-full object-cover"
+              />
+            </label>
+            <input id="photoUpload" type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handlePhotoUpload} />
+            <div className="flex flex-col gap-2">
+              <label htmlFor="photoUpload" className="inline-flex cursor-pointer items-center justify-center rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f]">
+                Upload photo
+              </label>
+              <button
+                type="button"
+                onClick={clearPhoto}
+                className="rounded-full border border-[#cda64d]/40 bg-transparent px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#0f2744] transition hover:bg-white/70"
+              >
+                Remove photo
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-2">
               <label htmlFor="name" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
                 Name
               </label>
@@ -489,6 +577,22 @@ export default function BuilderPage() {
             </div>
 
             <div className="space-y-2">
+              <label htmlFor="slug" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                Public profile slug
+              </label>
+              <input
+                id="slug"
+                value={profile.slug ?? ""}
+                onChange={(event) => updateTextField("slug", event.target.value)}
+                className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] shadow-sm outline-none ring-0 transition focus:border-[#0f2744]"
+                placeholder="Enter a short URL slug"
+              />
+              <p className="text-xs text-[#dfe7ef]">
+                A slug is used for your public profile URL: /profile/<span className="font-mono">{profile.slug ?? "your-slug"}</span>
+              </p>
+            </div>
+
+            <div className="space-y-2">
               <label htmlFor="title" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
                 Professional Title
               </label>
@@ -499,6 +603,25 @@ export default function BuilderPage() {
                 className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] shadow-sm outline-none transition focus:border-[#0f2744]"
                 placeholder="Enter your role"
               />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="visibility" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                Privacy & visibility
+              </label>
+              <select
+                id="visibility"
+                value={profile.visibility ?? "public"}
+                onChange={(event) => updateVisibility(event.target.value as ProfileVisibility)}
+                className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] shadow-sm outline-none transition focus:border-[#0f2744]"
+              >
+                <option value="public">Public</option>
+                <option value="employer_network">Employer network</option>
+                <option value="confidential">Confidential</option>
+              </select>
+              <p className="text-xs text-[#27405f]">
+                Public profiles are visible on the talent search experience. Confidential profiles show an anonymised Talent Passport instead.
+              </p>
             </div>
 
             <div className="space-y-2">

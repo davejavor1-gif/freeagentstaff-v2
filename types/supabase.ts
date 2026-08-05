@@ -3,6 +3,7 @@ export type Json = string | number | boolean | null | { [key: string]: Json } | 
 export interface ProfilesRow {
   id: string;
   user_id: string;
+  slug: string | null;
   profile: Json;
   created_at: string;
   updated_at: string;
@@ -10,10 +11,12 @@ export interface ProfilesRow {
 
 export interface ProfilesInsert {
   user_id: string;
+  slug?: string | null;
   profile: Json;
 }
 
 export interface ProfilesUpdate {
+  slug?: string | null;
   profile?: Json;
 }
 

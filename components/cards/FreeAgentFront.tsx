@@ -3,6 +3,8 @@ import { BadgeCheck, MapPin, Share2, Sparkles, Star } from "lucide-react";
 import type { FreeAgentProfile } from "@/types/freeagent";
 import AvailabilityBadge from "@/components/cards/AvailabilityBadge";
 
+const isConfidential = (profile: FreeAgentProfile) => (profile.visibility ?? "public") === "confidential";
+
 interface FreeAgentFrontProps {
   profile: FreeAgentProfile;
 }
@@ -21,7 +23,7 @@ export default function FreeAgentFront({ profile }: FreeAgentFrontProps) {
                 FreeAgent
               </p>
               <p className="mt-1 text-[9px] uppercase tracking-[0.3em] text-[#f5e7c8]/80">
-                Talent card
+                {isConfidential(profile) ? "Talent passport" : "Talent card"}
               </p>
             </div>
           </div>
@@ -36,7 +38,7 @@ export default function FreeAgentFront({ profile }: FreeAgentFrontProps) {
           </div>
           <div className="relative -mt-2 h-64 overflow-hidden rounded-[24px] border border-white/10 bg-[#0d1830] sm:h-[18rem]">
             <Image
-              src={profile.photoUrl ?? "/placeholder-avatar.svg"}
+              src={isConfidential(profile) ? "/placeholder-avatar.svg" : profile.photoUrl ?? "/placeholder-avatar.svg"}
               alt={profile.imageAlt ?? profile.name}
               width={520}
               height={520}
@@ -54,14 +56,14 @@ export default function FreeAgentFront({ profile }: FreeAgentFrontProps) {
               Premium specialist
             </p>
             <h3 className="mt-1 text-[1.35rem] font-black uppercase leading-none tracking-[0.16em] text-[#f8efe1] sm:text-[1.55rem]">
-              {profile.name}
+              {isConfidential(profile) ? "Anonymous profile" : profile.name}
             </h3>
             <p className="mt-2 text-sm font-semibold uppercase tracking-[0.24em] text-[#f2cc63] sm:text-[0.95rem]">
-              {profile.title}
+              {isConfidential(profile) ? "Talent passport" : profile.title}
             </p>
             <div className="mt-2 flex items-center gap-2 text-sm text-[#d6e0ec]">
               <MapPin className="h-4 w-4 shrink-0 text-[#f2cc63]" />
-              <span className="break-words">{profile.location}</span>
+              <span className="break-words">{isConfidential(profile) ? "Private location" : profile.location}</span>
             </div>
           </div>
 
@@ -79,7 +81,7 @@ export default function FreeAgentFront({ profile }: FreeAgentFrontProps) {
               </p>
             </div>
             <p className="mt-3 text-base font-semibold leading-6 text-[#f8efe1] break-words sm:text-lg">
-              {profile.topStrength}
+              {isConfidential(profile) ? "Confidential profile" : profile.topStrength}
             </p>
             {profile.skills.length > 0 ? (
               <div className="mt-3 flex flex-wrap gap-2">

@@ -1,6 +1,8 @@
 import type { FreeAgentProfile } from "@/types/freeagent";
 import SkillChip from "@/components/cards/SkillChip";
 
+const isConfidential = (profile: FreeAgentProfile) => (profile.visibility ?? "public") === "confidential";
+
 interface FreeAgentBackProps {
   profile: FreeAgentProfile;
 }
@@ -10,10 +12,12 @@ export default function FreeAgentBack({ profile }: FreeAgentBackProps) {
     <div className="flex h-full w-full max-w-full flex-col justify-between overflow-hidden rounded-[28px] border border-amber-300/20 bg-[linear-gradient(135deg,_#0f172a_0%,_#111d33_45%,_#0b1326_100%)] p-5 text-white shadow-[0_18px_60px_rgba(4,12,25,0.45)] sm:p-6">
       <div className="min-w-0">
         <p className="text-sm font-semibold uppercase tracking-[0.24em] text-amber-300">
-          About this specialist
+          {isConfidential(profile) ? "Protected profile" : "About this specialist"}
         </p>
         <p className="mt-4 text-sm leading-7 text-slate-300 break-words">
-          {profile.summary}
+          {isConfidential(profile)
+            ? "This professional has chosen a confidential visibility setting. Only a high-level Talent Passport is shared."
+            : profile.summary}
         </p>
       </div>
 
@@ -34,7 +38,7 @@ export default function FreeAgentBack({ profile }: FreeAgentBackProps) {
             Contact
           </p>
           <p className="mt-2 text-sm text-slate-200 break-words">
-            {profile.email ?? "Open for introductions"}
+            {isConfidential(profile) ? "Contact shared privately on request" : profile.email ?? "Open for introductions"}
           </p>
         </div>
       </div>

@@ -1,8 +1,10 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { ArrowUpRight, Award, BriefcaseBusiness, Compass, Layers3, Mail, Sparkles } from "lucide-react";
 import FreeAgentCard from "@/components/cards/FreeAgentCard";
 import SkillChip from "@/components/cards/SkillChip";
-import { freeAgentProfiles } from "@/data/freeagents";
+import { supabase } from "@/lib/supabase-client";
+import type { FreeAgentProfile } from "@/types/freeagent";
 
 const profileDetails: Record<string, { story: string; qualifications: string[]; contactPoints: Array<{ label: string; value: string }> }> = {
   "maya-chen": {
@@ -21,15 +23,29 @@ const profileDetails: Record<string, { story: string; qualifications: string[]; 
   },
 };
 
-export function generateStaticParams() {
-  return freeAgentProfiles.map((profile) => ({ slug: profile.id }));
+export async function generateStaticParams() {
+  const { data, error } = await supabase.from("profiles").select("slug").not("slug", "is", null);
+
+  if (error || !data) {
+    return [];
+  }
+
+  return (data as Array<{ slug?: string | null }> | null)
+    ?.filter((row) => typeof row.slug === "string")
+    .map((row) => ({ slug: row.slug as string })) ?? [];
 }
 
-export default async function ProfilePage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
-  const profile = freeAgentProfiles.find((item) => item.id === slug);
+export default async function ProfilePage({ params }: { params: { slug: string } }) {
+  const { slug } = params;
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("profile")
+    .eq("slug", slug)
+    .maybeSingle();
 
-  if (!profile) {
+  const profilePayload = (data as { profile?: unknown } | null | undefined)?.profile;
+
+  if (error || !data || typeof data !== "object" || !profilePayload) {
     return (
       <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#f7ebcf_0%,_#f4e4bf_40%,_#e7d7a7_100%)] px-4 py-8 text-[#071426] sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-3xl flex-col items-center rounded-[36px] border border-[#cda64d]/70 bg-[#0f2744] px-6 py-16 text-center shadow-[0_18px_55px_rgba(6,16,33,0.28)] sm:px-8 lg:px-12">
@@ -54,7 +70,74 @@ export default async function ProfilePage({ params }: { params: Promise<{ slug: 
     );
   }
 
+  const profile = profilePayload as unknown as FreeAgentProfile;
+  const profileVisibility = profile.visibility ?? "public";
   const details = profileDetails[profile.id] ?? profileDetails["maya-chen"];
+
+  if (profileVisibility === "confidential") {
+    return (
+      <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#f7ebcf_0%,_#f4e4bf_40%,_#e7d7a7_100%)] px-4 py-8 text-[#071426] sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-6xl flex-col gap-8">
+          <section className="overflow-hidden rounded-[36px] border border-[#cda64d]/70 bg-[#0f2744] p-6 shadow-[0_18px_55px_rgba(6,16,33,0.18)] sm:p-8">
+            <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+              <div className="max-w-2xl">
+                <div className="inline-flex items-center gap-2 rounded-full border border-[#f2cc63]/40 bg-[#f7ebcf]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Confidential talent passport
+                </div>
+                <h1 className="mt-5 text-3xl font-black uppercase leading-tight tracking-[0.16em] text-[#f7ebcf] sm:text-4xl lg:text-5xl">
+                  Anonymous profile
+                </h1>
+                <p className="mt-3 text-base leading-8 text-[#dfe7ef] sm:text-lg">
+                  This professional has chosen a confidential visibility setting. Only a high-level talent passport is shared.
+                </p>
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <div className="rounded-full border border-[#f2cc63]/35 bg-[#f7ebcf]/10 px-3 py-2 text-sm font-semibold text-[#f7ebcf]">
+                    Confidential
+                  </div>
+                  <div className="rounded-full border border-[#f2cc63]/35 bg-[#f7ebcf]/10 px-3 py-2 text-sm font-semibold text-[#f7ebcf]">
+                    Privacy protected
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-center">
+                <FreeAgentCard profile={profile} className="w-full max-w-[430px]" />
+              </div>
+            </div>
+          </section>
+
+          <section className="grid gap-6 lg:grid-cols-2">
+            <div className="rounded-[30px] border border-[#cda64d]/70 bg-[#f7ebcf]/80 p-6 shadow-[0_12px_40px_rgba(6,16,33,0.12)] sm:p-8">
+              <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                <Compass className="h-4 w-4" />
+                Profile summary
+              </div>
+              <p className="mt-4 text-base leading-8 text-[#27405f]">
+                This passport highlights capability, discipline and experience without exposing identity or employer details.
+              </p>
+            </div>
+            <div className="rounded-[30px] border border-[#cda64d]/70 bg-[#0f2744] p-6 text-[#f7ebcf] shadow-[0_12px_40px_rgba(6,16,33,0.2)] sm:p-8">
+              <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">
+                <Award className="h-4 w-4" />
+                High-level signals
+              </div>
+              <div className="mt-5 space-y-3">
+                <div className="rounded-[20px] border border-[#f2cc63]/20 bg-white/10 p-4 text-sm leading-7 text-[#dfe7ef]">
+                  Focus area: {profile.focusArea || "Available on request"}
+                </div>
+                <div className="rounded-[20px] border border-[#f2cc63]/20 bg-white/10 p-4 text-sm leading-7 text-[#dfe7ef]">
+                  Top strength: {profile.topStrength || "Available on request"}
+                </div>
+                <div className="rounded-[20px] border border-[#f2cc63]/20 bg-white/10 p-4 text-sm leading-7 text-[#dfe7ef]">
+                  Experience: {profile.experienceYears}+ years
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#f7ebcf_0%,_#f4e4bf_40%,_#e7d7a7_100%)] px-4 py-8 text-[#071426] sm:px-6 lg:px-8">
