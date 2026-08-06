@@ -145,6 +145,22 @@
   animation: faFloat 6s ease-in-out infinite;
 }
 
+@keyframes faFloatCompose {
+  0% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -10px;
+  }
+  100% {
+    translate: 0 0;
+  }
+}
+
+.fa-float-compose {
+  animation: faFloatCompose 6s ease-in-out infinite;
+}
+
 @keyframes faGlowPulse {
   0% {
     opacity: 0.65;
