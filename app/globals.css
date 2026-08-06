@@ -144,3 +144,37 @@
 .fa-float {
   animation: faFloat 6s ease-in-out infinite;
 }
+
+@keyframes faGlowPulse {
+  0% {
+    opacity: 0.65;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 0.65;
+    transform: scale(0.98);
+  }
+}
+
+@keyframes navFade {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fa-glow-pulse {
+  animation: faGlowPulse 7s ease-in-out infinite;
+}
+
+.nav-fade {
+  animation: navFade 500ms ease-out both;
+}

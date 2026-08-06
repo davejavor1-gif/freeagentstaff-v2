@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { Bell, Menu, X } from "lucide-react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase-client";
@@ -21,6 +22,7 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
   const [notificationCount, setNotificationCount] = useState(0);
+  const pathname = usePathname();
 
   useEffect(() => {
     let mounted = true;
@@ -71,22 +73,28 @@ export default function Navbar() {
   const navItems = baseNavItems.filter((item) => (item.href === "/dashboard" ? Boolean(session) : true));
 
   return (
-    <header className="border-b border-[#2bd7ef]/10 bg-[#061326] text-white">
+    <header className="border-b border-[#e8d9b6] bg-[#f7e8c6] text-[#071321]">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         <Link href="/" className="inline-flex items-center">
           <Image
-            src="/FullLogo (4).jpg"
+            src="/FullLogo-clean-v2.png"
             alt="FreeAgent Staff"
             width={960}
             height={768}
-            className="h-auto w-[126px] object-contain"
+            className="h-auto w-[136px] object-contain"
             priority
           />
         </Link>
 
         <nav className="hidden items-center gap-8 text-sm md:flex">
           {navItems.map((item) => (
-            <Link key={item.href} href={item.href} className="text-[#f7e8c6]/90 transition hover:text-[#2bd7ef]">
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`text-[1.04rem] transition hover:text-[#2bd7ef] ${
+                pathname === item.href ? "font-semibold text-[#8fdc3a]" : "text-[#071321]/92"
+              }`}
+            >
               {item.label}
             </Link>
           ))}
@@ -95,7 +103,7 @@ export default function Navbar() {
         <div className="flex items-center gap-3">
           <Link
             href="/dashboard"
-            className="hidden rounded-full border border-[#2bd7ef]/35 p-2 text-[#f7e8c6]/90 transition hover:border-[#2bd7ef]/75 hover:text-[#2bd7ef] sm:inline-flex"
+            className="hidden rounded-full border border-[#2bd7ef]/45 p-2 text-[#0b2a45] transition hover:border-[#2bd7ef]/75 hover:text-[#2bd7ef] sm:inline-flex"
             aria-label="Dashboard notifications"
           >
             <Bell className="h-4 w-4" />
@@ -105,8 +113,15 @@ export default function Navbar() {
           </Link>
 
           <Link
+            href={session ? "/dashboard" : "/login"}
+            className="hidden text-[1.04rem] text-[#071321]/92 transition hover:text-[#2bd7ef] lg:inline-flex"
+          >
+            {session ? "Dashboard" : "Sign in"}
+          </Link>
+
+          <Link
             href="/builder"
-            className="hidden rounded-xl bg-[#aff546] px-4 py-2 text-sm font-semibold text-[#071426] transition hover:bg-[#9fea37] md:inline-flex"
+            className="hidden rounded-xl bg-[#aff546] px-5 py-2 text-sm font-semibold text-[#071426] transition hover:-translate-y-0.5 hover:bg-[#9fea37] md:inline-flex"
           >
             Create your card
           </Link>
@@ -114,7 +129,7 @@ export default function Navbar() {
           <button
             type="button"
             onClick={() => setMenuOpen((open) => !open)}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#2cd3e8]/25 bg-[#06101f]/90 text-[#dff9ff] transition hover:border-[#2cd3e8]/60 md:hidden"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#2bd7ef]/45 bg-[#f7e8c6] text-[#0b2a45] transition hover:border-[#2cd3e8]/70 md:hidden"
             aria-label="Toggle navigation"
           >
             {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -122,13 +137,15 @@ export default function Navbar() {
         </div>
       </div>
 
-      <div className={`${menuOpen ? "block" : "hidden"} border-t border-white/10 bg-[#06111f] md:hidden`}>
+      <div className={`${menuOpen ? "block" : "hidden"} border-t border-[#e8d9b6] bg-[#f7e8c6] md:hidden`}>
         <div className="space-y-1 px-6 py-4">
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold text-white/90 transition hover:bg-[#2cd3e8]/12 hover:text-[#2cd3e8]"
+              className={`flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold transition hover:bg-[#2cd3e8]/12 hover:text-[#2cd3e8] ${
+                pathname === item.href ? "text-[#8fdc3a]" : "text-[#071321]/92"
+              }`}
               onClick={() => setMenuOpen(false)}
             >
               <span>{item.label}</span>
@@ -143,7 +160,7 @@ export default function Navbar() {
           </Link>
           <Link
             href={session ? "/dashboard" : "/login"}
-            className="block rounded-2xl border border-white/10 px-4 py-3 text-sm font-semibold text-white/90 transition hover:bg-white/5"
+            className="block rounded-2xl border border-[#d7c79f] px-4 py-3 text-sm font-semibold text-[#071321]/92 transition hover:bg-[#2cd3e8]/8"
             onClick={() => setMenuOpen(false)}
           >
             {session ? "Open dashboard" : "Sign in"}
