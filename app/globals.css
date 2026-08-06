@@ -128,3 +128,19 @@
     @apply font-sans;
   }
 }
+
+@keyframes faFloat {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.fa-float {
+  animation: faFloat 6s ease-in-out infinite;
+}

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Bell, Menu, X } from "lucide-react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase-client";
@@ -70,37 +71,42 @@ export default function Navbar() {
   const navItems = baseNavItems.filter((item) => (item.href === "/dashboard" ? Boolean(session) : true));
 
   return (
-    <header className="border-b border-white/10 bg-[#07111f] text-white">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-        <Link href="/" className="text-xl font-bold tracking-[0.2em]">
-          FREEAGENT
+    <header className="border-b border-[#2bd7ef]/10 bg-[#061326] text-white">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+        <Link href="/" className="inline-flex items-center">
+          <Image
+            src="/FullLogo (4).jpg"
+            alt="FreeAgent Staff"
+            width={960}
+            height={768}
+            className="h-auto w-[126px] object-contain"
+            priority
+          />
         </Link>
 
         <nav className="hidden items-center gap-8 text-sm md:flex">
           {navItems.map((item) => (
-            <Link key={item.href} href={item.href} className="flex items-center gap-2 text-white/75 transition hover:text-white">
-              <span>{item.label}</span>
-              {item.href === "/dashboard" && notificationCount > 0 ? (
-                <span className="rounded-full bg-[#f2cc63] px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.22em] text-[#07111f]">
-                  {notificationCount}
-                </span>
-              ) : null}
+            <Link key={item.href} href={item.href} className="text-[#f7e8c6]/90 transition hover:text-[#2bd7ef]">
+              {item.label}
             </Link>
           ))}
         </nav>
 
         <div className="flex items-center gap-3">
           <Link
-            href={session ? "/dashboard" : "/login"}
-            className="hidden rounded-xl px-4 py-2 text-sm font-semibold text-white/80 hover:text-white sm:flex sm:items-center sm:gap-2"
+            href="/dashboard"
+            className="hidden rounded-full border border-[#2bd7ef]/35 p-2 text-[#f7e8c6]/90 transition hover:border-[#2bd7ef]/75 hover:text-[#2bd7ef] sm:inline-flex"
+            aria-label="Dashboard notifications"
           >
             <Bell className="h-4 w-4" />
-            {session ? "Dashboard" : "Sign in"}
+            {notificationCount > 0 ? (
+              <span className="ml-1 rounded-full bg-[#aff546] px-1.5 text-[10px] font-black text-[#071426]">{notificationCount}</span>
+            ) : null}
           </Link>
 
           <Link
             href="/builder"
-            className="hidden rounded-xl bg-[#c79e4f] px-4 py-2 text-sm font-bold text-[#07111f] transition hover:bg-[#d8b568] md:inline-flex"
+            className="hidden rounded-xl bg-[#aff546] px-4 py-2 text-sm font-semibold text-[#071426] transition hover:bg-[#9fea37] md:inline-flex"
           >
             Create your card
           </Link>
@@ -108,7 +114,7 @@ export default function Navbar() {
           <button
             type="button"
             onClick={() => setMenuOpen((open) => !open)}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-[#06101f]/90 text-white transition hover:border-white/20 md:hidden"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#2cd3e8]/25 bg-[#06101f]/90 text-[#dff9ff] transition hover:border-[#2cd3e8]/60 md:hidden"
             aria-label="Toggle navigation"
           >
             {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -122,20 +128,15 @@ export default function Navbar() {
             <Link
               key={item.href}
               href={item.href}
-              className="flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold text-white/90 transition hover:bg-white/5"
+              className="flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold text-white/90 transition hover:bg-[#2cd3e8]/12 hover:text-[#2cd3e8]"
               onClick={() => setMenuOpen(false)}
             >
               <span>{item.label}</span>
-              {item.href === "/dashboard" && notificationCount > 0 ? (
-                <span className="rounded-full bg-[#f2cc63] px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.22em] text-[#07111f]">
-                  {notificationCount}
-                </span>
-              ) : null}
             </Link>
           ))}
           <Link
             href="/builder"
-            className="block rounded-2xl bg-[#c79e4f] px-4 py-3 text-sm font-bold text-[#07111f] transition hover:bg-[#d8b568]"
+            className="block rounded-2xl bg-[#acf75a] px-4 py-3 text-sm font-bold text-[#07111f] transition hover:bg-[#98eb46]"
             onClick={() => setMenuOpen(false)}
           >
             Create your card
