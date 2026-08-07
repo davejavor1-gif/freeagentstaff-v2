@@ -24,6 +24,29 @@ const featureCards = [
   },
 ];
 
+const howItWorksSteps = [
+  {
+    number: "01",
+    title: "Create your Talent Passport",
+    description:
+      "Build a professional, visual profile that showcases your skills, experience and achievements beyond a traditional CV.",
+    tone: "lime" as const,
+  },
+  {
+    number: "02",
+    title: "Control your visibility",
+    description: "Choose what employers can see and when. Explore opportunities openly or privately, on your terms.",
+    tone: "cyan" as const,
+  },
+  {
+    number: "03",
+    title: "Get discovered",
+    description:
+      "Verified employers can discover talent based on skills and experience, creating opportunities without relying solely on job applications.",
+    tone: "lime" as const,
+  },
+];
+
 function SocialProofRow() {
   return (
     <div className="mt-6 flex flex-wrap items-center gap-4 max-sm:mt-2 max-sm:gap-2.5">
@@ -227,6 +250,59 @@ export default function Home() {
               </article>
             );
           })}
+        </div>
+      </section>
+
+      <section className="relative overflow-hidden bg-[#0B111D] text-[#f7e8c6]">
+        <div className="pointer-events-none absolute -left-20 top-16 h-48 w-48 rounded-full border border-[#2bd7ef]/18" />
+        <div className="pointer-events-none absolute -right-24 bottom-20 h-56 w-56 rounded-full border border-[#aff546]/14" />
+
+        <div className="relative mx-auto max-w-7xl px-6 py-14 sm:px-8 lg:px-12 lg:py-14">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#2bd7ef]">How it works</p>
+          <h2 className="mt-3 max-w-4xl font-serif text-[2.5rem] font-semibold uppercase leading-[0.95] text-[#f7e8c6] sm:text-[2.9rem] lg:text-[3.02rem]">
+            HOW FREE AGENT STAFF WORKS
+          </h2>
+
+          <div className="relative mt-7 hidden lg:block">
+            <span className="pointer-events-none absolute left-0 right-0 top-[89px] h-px bg-gradient-to-r from-[#2bd7ef]/22 via-[#aff546]/40 to-[#2bd7ef]/22" />
+            <span className="pointer-events-none absolute left-1/3 top-[84px] h-[11px] w-[11px] -translate-x-1/2 rounded-full border border-[#2bd7ef]/42 bg-[#0B111D]" />
+            <span className="pointer-events-none absolute left-2/3 top-[84px] h-[11px] w-[11px] -translate-x-1/2 rounded-full border border-[#aff546]/46 bg-[#0B111D]" />
+            <div className="grid grid-cols-3 gap-12">
+              {howItWorksSteps.map((step) => {
+                const stepTone = step.tone === "lime" ? "text-[#aff546]" : "text-[#2bd7ef]";
+
+                return (
+                  <article key={step.number} className="relative min-w-0">
+                    <p className={`h-[5.25rem] font-serif text-[5rem] leading-none ${stepTone}`}>{step.number}</p>
+                    <h3 className="mt-3 min-h-[7rem] max-w-[18.5rem] font-serif text-[2.2rem] leading-[1.04] text-[#f7e8c6]">{step.title}</h3>
+                    <p className="mt-8 max-w-[19rem] text-[1.11rem] leading-8 text-[#f7e8c6]/84">{step.description}</p>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="relative mt-9 lg:hidden">
+            <span className="pointer-events-none absolute left-[26px] top-6 bottom-10 w-px bg-gradient-to-b from-[#2bd7ef]/38 via-[#aff546]/45 to-[#2bd7ef]/25" />
+            <div className="space-y-6">
+              {howItWorksSteps.map((step, index) => {
+                const stepTone = step.tone === "lime" ? "text-[#aff546]" : "text-[#2bd7ef]";
+
+                return (
+                  <article key={step.number} className="relative grid grid-cols-[52px_1fr] gap-4">
+                    <div className="flex flex-col items-center">
+                      <p className={`font-serif text-[2.4rem] leading-none ${stepTone}`}>{step.number}</p>
+                      {index < howItWorksSteps.length - 1 ? <span className="mt-2 text-sm text-[#f7e8c6]/55">↓</span> : null}
+                    </div>
+                    <div>
+                      <h3 className="font-serif text-[1.75rem] leading-tight text-[#f7e8c6]">{step.title}</h3>
+                      <p className="mt-2 text-[0.98rem] leading-6 text-[#f7e8c6]/84">{step.description}</p>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </section>
     </main>
