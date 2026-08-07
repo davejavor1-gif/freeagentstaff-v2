@@ -46,7 +46,7 @@ function SocialProofRow() {
 
 function TalentPassportCard() {
   return (
-    <div className="mx-auto flex w-full justify-center max-sm:h-[662px]">
+    <div className="mx-auto flex w-full justify-center max-sm:h-[746px] max-[360px]:!h-[772px]">
       <div className="relative w-full overflow-visible">
         <article className="fa-float-compose relative origin-center rotate-[2.5deg] rounded-[36px] border border-[#f7e8c6]/90 bg-[#f7e8c6] p-3 shadow-[0_38px_110px_rgba(2,9,24,0.62)] transition duration-500 hover:-translate-y-1 hover:rotate-[4.2deg] max-sm:absolute max-sm:inset-x-0 max-sm:top-0 max-sm:mx-auto max-sm:w-full max-sm:origin-center max-sm:scale-[0.8] max-sm:rotate-[1deg] sm:rotate-[4.5deg]">
           <div className="overflow-hidden rounded-[28px] border border-[#2bd7ef]/26 bg-[#081a31]">
