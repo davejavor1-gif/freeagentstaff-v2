@@ -259,7 +259,7 @@ export default function Home() {
 
         <div className="relative mx-auto max-w-7xl px-6 py-14 sm:px-8 lg:px-12 lg:py-14">
           <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#2bd7ef]">How it works</p>
-          <h2 className="mt-3 max-w-4xl font-serif text-[2.5rem] font-semibold uppercase leading-[0.95] text-[#f7e8c6] sm:text-[2.9rem] lg:text-[3.02rem]">
+          <h2 className="mt-3 max-w-4xl font-serif text-[2.125rem] font-semibold uppercase leading-[0.95] text-[#f7e8c6] sm:text-[2.9rem] lg:text-[3.02rem]">
             HOW FREE AGENT STAFF WORKS
           </h2>
 
@@ -284,7 +284,7 @@ export default function Home() {
 
           <div className="relative mt-9 lg:hidden">
             <span className="pointer-events-none absolute left-[26px] top-6 bottom-10 w-px bg-gradient-to-b from-[#2bd7ef]/38 via-[#aff546]/45 to-[#2bd7ef]/25" />
-            <div className="space-y-6">
+            <div className="space-y-9">
               {howItWorksSteps.map((step, index) => {
                 const stepTone = step.tone === "lime" ? "text-[#aff546]" : "text-[#2bd7ef]";
 
@@ -294,8 +294,8 @@ export default function Home() {
                       <p className={`font-serif text-[2.4rem] leading-none ${stepTone}`}>{step.number}</p>
                       {index < howItWorksSteps.length - 1 ? <span className="mt-2 text-sm text-[#f7e8c6]/55">↓</span> : null}
                     </div>
-                    <div>
-                      <h3 className="font-serif text-[1.75rem] leading-tight text-[#f7e8c6]">{step.title}</h3>
+                    <div className="pr-1">
+                      <h3 className="font-serif text-[1.6rem] leading-tight text-[#f7e8c6]">{step.title}</h3>
                       <p className="mt-2 text-[0.98rem] leading-6 text-[#f7e8c6]/84">{step.description}</p>
                     </div>
                   </article>
