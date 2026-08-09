@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import Navbar from "@/components/layout/Navbar";
-import { IdCard, Lock, ShieldCheck, CheckCircle2, MapPin } from "lucide-react";
+import { IdCard, Lock, ShieldCheck, CheckCircle2, MapPin, Search, Eye } from "lucide-react";
 
 const featureCards = [
   {
@@ -44,6 +44,107 @@ const howItWorksSteps = [
     description:
       "Verified employers can discover talent based on skills and experience, creating opportunities without relying solely on job applications.",
     tone: "lime" as const,
+  },
+];
+
+const showcaseProfiles = [
+  {
+    name: "Maya Rodriguez",
+    initials: "MR",
+    role: "Event Manager",
+    location: "Sydney, Australia",
+    skills: ["Event Production", "Leadership", "Budgets", "Client Relations"],
+    highlight: "Turns high-pressure launches into seamless live experiences.",
+    availability: "Open for major events",
+    tone: "lime" as const,
+    badge: "Live",
+    desktopClass: "left-[10%] top-[22%] z-40 rotate-[-5deg] xl:left-[11%]",
+  },
+  {
+    name: "James Walker",
+    initials: "JW",
+    role: "Electrician",
+    location: "Newcastle, Australia",
+    skills: ["Commercial Electrical", "Fault Finding", "Solar", "Site Safety"],
+    highlight: "Trusted on complex sites where speed, safety and precision matter.",
+    availability: "Available for site work",
+    tone: "cyan" as const,
+    badge: "Verified",
+    desktopClass: "right-[12%] top-[13%] z-20 rotate-[7deg] xl:right-[13%]",
+  },
+  {
+    name: "Amelia Tran",
+    initials: "AT",
+    role: "Graphic Designer",
+    location: "Melbourne, Australia",
+    skills: ["Brand Identity", "Adobe Creative Suite", "Typography", "Digital Design"],
+    highlight: "Builds visual identities that feel considered, premium and instantly memorable.",
+    availability: "Taking new briefs",
+    tone: "lime" as const,
+    badge: "Creative",
+    desktopClass: "left-[4%] bottom-[9%] z-10 rotate-[6deg] xl:left-[7%]",
+  },
+  {
+    name: "Marcus Johnson",
+    initials: "MJ",
+    role: "Bartender",
+    location: "Sydney, Australia",
+    skills: ["Cocktails", "Customer Experience", "Team Leadership", "Events"],
+    highlight: "Brings energy, polish and crowd-reading instincts to every service.",
+    availability: "Booked for events",
+    tone: "cyan" as const,
+    badge: "Popular",
+    desktopClass: "right-[5%] bottom-[15%] z-30 rotate-[-6deg] xl:right-[7%]",
+  },
+];
+
+const employerDiscoveryFilters = ["Sydney", "Hospitality", "Leadership", "Available now"];
+
+const employerDiscoveryResults = [
+  {
+    name: "Maya Rodriguez",
+    initials: "MR",
+    role: "Event Manager",
+    location: "Sydney, Australia",
+    skills: ["Event Production", "Leadership", "Budgets"],
+    availability: "Open for major events",
+    tone: "lime" as const,
+  },
+  {
+    name: "Marcus Johnson",
+    initials: "MJ",
+    role: "Bartender",
+    location: "Sydney, Australia",
+    skills: ["Cocktails", "Customer Experience", "Team Leadership"],
+    availability: "Booked for events",
+    tone: "cyan" as const,
+  },
+  {
+    name: "James Walker",
+    initials: "JW",
+    role: "Electrician",
+    location: "Newcastle, Australia",
+    skills: ["Commercial Electrical", "Fault Finding", "Site Safety"],
+    availability: "Available for site work",
+    tone: "lime" as const,
+  },
+];
+
+const visibilityStates = [
+  {
+    key: "open" as const,
+    title: "Open to opportunities",
+    description: "Employers can discover your Talent Passport.",
+  },
+  {
+    key: "selective" as const,
+    title: "Selective",
+    description: "Choose who can discover you.",
+  },
+  {
+    key: "private" as const,
+    title: "Private",
+    description: "Your Talent Passport stays hidden until you're ready.",
   },
 ];
 
@@ -153,6 +254,273 @@ function TalentPassportCard() {
         </div>
           </div>
         </article>
+      </div>
+    </div>
+  );
+}
+
+function ShowcasePassportPreview({
+  profile,
+  className = "",
+}: {
+  profile: (typeof showcaseProfiles)[number];
+  className?: string;
+}) {
+  const toneClasses =
+    profile.tone === "lime"
+      ? {
+          accentText: "text-[#7fcf2e]",
+          accentBorder: "border-[#9be645]/52",
+          accentSurface: "bg-[#aff546]/14",
+          accentDot: "bg-[#aff546]",
+          avatarSurface: "bg-[#d8efb2]",
+        }
+      : {
+          accentText: "text-[#1bc8e4]",
+          accentBorder: "border-[#2bd7ef]/52",
+          accentSurface: "bg-[#2bd7ef]/14",
+          accentDot: "bg-[#2bd7ef]",
+          avatarSurface: "bg-[#caeff5]",
+        };
+
+  return (
+    <div className={className}>
+      <article className="relative">
+        <div className="pointer-events-none absolute -right-6 -top-6 h-16 w-16 rounded-full border border-[#071321]/10 sm:h-20 sm:w-20" />
+        <div className={`pointer-events-none absolute -left-4 top-10 h-10 w-10 rounded-full border ${toneClasses.accentBorder} ${toneClasses.accentSurface}`} />
+
+        <div className="relative overflow-hidden rounded-[30px] border border-[#071321]/12 bg-[#f7e8c6] p-3 shadow-[0_24px_70px_rgba(7,19,33,0.16)] sm:p-4">
+          <div className="rounded-[24px] border border-[#071321]/10 bg-[linear-gradient(180deg,rgba(247,232,198,0.95),rgba(244,225,187,0.96))] p-4 text-[#071321] sm:p-5">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex min-w-0 items-start gap-3">
+              <div className="relative shrink-0">
+                <div
+                  className={`absolute -inset-1 rounded-full border ${toneClasses.accentBorder} [border-right-color:transparent] [border-bottom-color:transparent]`}
+                />
+                <div
+                  className={`flex h-12 w-12 items-center justify-center rounded-full border border-[#071321]/12 font-serif text-lg font-semibold text-[#071321] sm:h-14 sm:w-14 sm:text-xl ${toneClasses.avatarSurface}`}
+                >
+                  {profile.initials}
+                </div>
+              </div>
+
+              <div className="min-w-0">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#071321]/55 sm:text-[10px]">Talent Passport</p>
+                <h3 className="mt-1 font-serif text-[1.52rem] leading-[0.96] text-[#071321] sm:text-[1.68rem]">{profile.name}</h3>
+                <p className={`mt-1 text-[0.97rem] font-medium leading-tight sm:text-[0.98rem] ${toneClasses.accentText}`}>{profile.role}</p>
+              </div>
+            </div>
+
+            <span className={`shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] sm:text-[10px] ${toneClasses.accentBorder} ${toneClasses.accentText}`}>
+              {profile.badge}
+            </span>
+          </div>
+
+          <div className="mt-4 rounded-[22px] bg-[#071321] px-3.5 py-3 text-[#f7e8c6] sm:px-4 sm:py-3.5">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#2bd7ef] sm:text-[10px]">What stands out</p>
+            <p className="mt-2 font-serif text-[1.22rem] leading-tight sm:text-[1.34rem]">{profile.highlight}</p>
+          </div>
+
+          <div className="mt-4">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#071321]/55 sm:text-[10px]">Skills</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {profile.skills.map((skill) => (
+                <span key={skill} className="rounded-full border border-[#071321]/14 bg-[#f7e8c6]/76 px-2.5 py-1 text-[0.74rem] text-[#071321]/88 sm:text-[0.72rem]">
+                  {skill}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-4 flex items-center justify-between gap-3 border-t border-[#071321]/10 pt-3">
+            <p className="inline-flex min-w-0 items-center gap-1.5 text-[0.77rem] text-[#071321]/72 sm:text-xs">
+              <MapPin className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{profile.location}</span>
+            </p>
+            <p className={`inline-flex shrink-0 items-center gap-1.5 text-[0.72rem] font-medium sm:text-[0.72rem] ${toneClasses.accentText}`}>
+              <span className={`h-2 w-2 rounded-full ${toneClasses.accentDot}`} />
+              {profile.availability}
+            </p>
+          </div>
+        </div>
+        </div>
+      </article>
+    </div>
+  );
+}
+
+function EmployerDiscoveryResult({
+  result,
+}: {
+  result: (typeof employerDiscoveryResults)[number];
+}) {
+  const toneClasses =
+    result.tone === "lime"
+      ? {
+          accentText: "text-[#7fcf2e]",
+          accentBorder: "border-[#9be645]/50",
+          accentSurface: "bg-[#aff546]/12",
+          accentDot: "bg-[#aff546]",
+          avatarSurface: "bg-[#d8efb2]",
+        }
+      : {
+          accentText: "text-[#1bc8e4]",
+          accentBorder: "border-[#2bd7ef]/50",
+          accentSurface: "bg-[#2bd7ef]/12",
+          accentDot: "bg-[#2bd7ef]",
+          avatarSurface: "bg-[#caeff5]",
+        };
+
+  return (
+    <article className="rounded-[24px] border border-[#071321]/10 bg-[linear-gradient(180deg,rgba(247,232,198,0.72),rgba(244,225,187,0.9))] px-4 py-4 sm:px-5">
+      <div className="flex flex-col gap-3 min-[420px]:flex-row min-[420px]:items-start min-[420px]:justify-between">
+        <div className="flex min-w-0 items-start gap-3">
+          <div className="relative mt-0.5 shrink-0">
+            <div className={`absolute -inset-1 rounded-full border ${toneClasses.accentBorder} [border-right-color:transparent] [border-bottom-color:transparent]`} />
+            <div className={`flex h-11 w-11 items-center justify-center rounded-full border border-[#071321]/12 font-serif text-base font-semibold text-[#071321] ${toneClasses.avatarSurface}`}>
+              {result.initials}
+            </div>
+          </div>
+
+          <div className="min-w-0">
+            <h3 className="font-serif text-[1.22rem] leading-none text-[#071321] sm:text-[1.32rem]">{result.name}</h3>
+            <p className={`mt-1 text-[0.94rem] font-medium leading-tight sm:text-[0.98rem] ${toneClasses.accentText}`}>{result.role}</p>
+            <p className="mt-1 inline-flex min-w-0 flex-wrap items-center gap-1.5 text-[0.78rem] text-[#071321]/72 sm:text-[0.82rem]">
+              <MapPin className="h-3.5 w-3.5 shrink-0" />
+              <span>{result.location}</span>
+            </p>
+          </div>
+        </div>
+
+        <span className={`mt-0.5 inline-flex w-fit shrink-0 rounded-full border px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.18em] ${toneClasses.accentBorder} ${toneClasses.accentText} ${toneClasses.accentSurface}`}>
+          Live
+        </span>
+      </div>
+
+      <div className="mt-3 flex flex-wrap gap-2">
+        {result.skills.map((skill) => (
+          <span key={skill} className="rounded-full border border-[#071321]/12 bg-[#f7e8c6]/85 px-2.5 py-1 text-[0.72rem] text-[#071321]/86 sm:text-[0.76rem]">
+            {skill}
+          </span>
+        ))}
+      </div>
+
+      <div className="mt-4 flex flex-col items-start gap-2.5 border-t border-[#071321]/10 pt-3 min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between">
+        <p className={`inline-flex items-center gap-1.5 text-[0.78rem] font-medium sm:text-[0.82rem] ${toneClasses.accentText}`}>
+          <span className={`h-2 w-2 rounded-full ${toneClasses.accentDot}`} />
+          {result.availability}
+        </p>
+        <Link href="/find-talent" className="inline-flex items-center text-[0.82rem] font-medium text-[#071321] transition hover:translate-x-0.5 sm:text-[0.88rem]">
+          View Talent Passport
+          <span className="ml-2 text-[#1bc8e4]">→</span>
+        </Link>
+      </div>
+    </article>
+  );
+}
+
+function EmployerDiscoveryPanel() {
+  return (
+    <div className="relative mx-auto w-full max-w-[38rem] min-w-0 lg:rotate-[-1.5deg]">
+      <div className="pointer-events-none absolute -left-8 top-12 h-20 w-20 rounded-full border border-[#2bd7ef]/18" />
+      <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full border border-[#aff546]/18" />
+
+      <div className="rounded-[30px] border border-[#f7e8c6]/12 bg-[linear-gradient(180deg,rgba(247,232,198,0.08),rgba(247,232,198,0.03))] p-2.5 sm:p-3">
+        <div className="rounded-[26px] border border-[#071321]/12 bg-[linear-gradient(180deg,rgba(247,232,198,0.96),rgba(243,224,186,0.98))] p-4 text-[#071321] sm:p-5">
+          <div className="flex flex-col gap-3 border-b border-[#071321]/10 pb-4 min-[430px]:flex-row min-[430px]:items-center min-[430px]:justify-between">
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#1bc8e4]">Discover Talent</p>
+              <p className="mt-2 max-w-[22rem] font-serif text-[1.22rem] leading-tight text-[#071321] sm:text-[1.55rem]">
+                Search beyond job applications.
+              </p>
+            </div>
+            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-[#9be645]/50 bg-[#aff546]/12 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#071321]">
+              <ShieldCheck className="h-3.5 w-3.5 text-[#7fcf2e]" />
+              Verified Employer
+            </div>
+          </div>
+
+          <div className="mt-4 rounded-[18px] border border-[#071321]/10 bg-[#f7e8c6]/85 px-3.5 py-3.5 sm:px-4">
+            <div className="flex items-center gap-3 text-[#071321]/54">
+              <Search className="h-4 w-4 shrink-0 text-[#1bc8e4]" />
+              <span className="text-[0.88rem] leading-5 sm:text-[0.96rem]">Search by role, skill or experience...</span>
+            </div>
+          </div>
+
+          <div className="mt-4 flex flex-wrap gap-2.5">
+            {employerDiscoveryFilters.map((filter, index) => {
+              const accentClass = index % 2 === 0
+                ? "border-[#9be645]/44 bg-[#aff546]/12 text-[#071321]"
+                : "border-[#2bd7ef]/44 bg-[#2bd7ef]/12 text-[#071321]";
+
+              return (
+                <span key={filter} className={`rounded-full border px-3 py-1.5 text-[0.72rem] font-medium leading-none sm:text-[0.78rem] ${accentClass}`}>
+                  {filter}
+                </span>
+              );
+            })}
+          </div>
+
+          <div className="mt-5 space-y-3">
+            {employerDiscoveryResults.map((result) => (
+              <EmployerDiscoveryResult key={result.name} result={result} />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function VisibilityControlPanel() {
+  return (
+    <div className="relative mx-auto w-full max-w-[44rem]">
+      <div className="pointer-events-none absolute -left-6 -top-6 h-16 w-16 rounded-full border border-[#2bd7ef]/22" />
+      <div className="pointer-events-none absolute -right-8 bottom-8 h-20 w-20 rounded-full border border-[#aff546]/26" />
+
+      <div className="rounded-[30px] border border-[#071321]/12 bg-[linear-gradient(180deg,rgba(247,232,198,0.88),rgba(244,225,187,0.95))] p-3 sm:p-4">
+        <div className="grid gap-2.5 rounded-[22px] border border-[#071321]/10 bg-[#f7e8c6]/80 p-2.5 sm:grid-cols-3 sm:gap-2 sm:p-3">
+          {visibilityStates.map((state) => {
+            const isActive = state.key === "selective";
+
+            const Icon =
+              state.key === "open" ? Eye : state.key === "private" ? Lock : ShieldCheck;
+
+            return (
+              <div
+                key={state.key}
+                className={`rounded-[16px] border px-3 py-3 text-left sm:px-3.5 ${
+                  isActive
+                    ? "border-[#2bd7ef]/55 bg-[linear-gradient(180deg,rgba(43,215,239,0.12),rgba(175,245,70,0.08))]"
+                    : "border-[#071321]/10 bg-[#f7e8c6]/86"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Icon className={`h-4 w-4 ${isActive ? "text-[#1bc8e4]" : "text-[#071321]/56"}`} />
+                  <p className={`text-[0.67rem] font-semibold uppercase tracking-[0.16em] ${isActive ? "text-[#071321]" : "text-[#071321]/75"}`}>
+                    {state.title}
+                  </p>
+                </div>
+                <p className="mt-2 text-[0.76rem] leading-5 text-[#071321]/78">{state.description}</p>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="mt-3 rounded-[22px] border border-[#071321]/10 bg-[#f7e8c6] px-4 py-4 sm:px-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#1bc8e4]">Selected: Selective</p>
+            <p className="inline-flex items-center gap-1.5 rounded-full border border-[#9be645]/45 bg-[#aff546]/12 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#071321]">
+              <ShieldCheck className="h-3.5 w-3.5 text-[#7fcf2e]" />
+              Verified employers only
+            </p>
+          </div>
+          <div className="mt-3 rounded-[16px] border border-[#071321]/10 bg-[linear-gradient(180deg,rgba(7,19,33,0.97),rgba(8,24,44,0.99))] px-3.5 py-3 text-[#f7e8c6]">
+            <p className="text-[0.79rem] leading-6 text-[#f7e8c6]/86">
+              Employers see your profile when you allow discovery, while your details remain under your control.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -302,6 +670,138 @@ export default function Home() {
                 );
               })}
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="relative overflow-hidden bg-[#f7e8c6] text-[#071321]">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[linear-gradient(180deg,rgba(7,19,33,0.06),transparent)]" />
+        <div className="pointer-events-none absolute -left-16 top-12 h-44 w-44 rounded-full border border-[#071321]/8" />
+        <div className="pointer-events-none absolute right-[-3.5rem] top-20 h-52 w-52 rounded-full border border-[#2bd7ef]/24" />
+        <div className="pointer-events-none absolute bottom-10 left-[42%] h-36 w-36 rounded-full border border-[#aff546]/28" />
+
+        <div className="relative mx-auto max-w-7xl px-6 py-14 sm:px-8 sm:py-16 lg:px-12 lg:py-20">
+          <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1.12fr)_minmax(0,0.88fr)] lg:gap-9 xl:gap-12">
+            <div className="max-w-[43rem]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#1bc8e4]">Be more than a CV</p>
+              <h2 className="mt-3 max-w-[14.75ch] font-serif text-[2.5rem] font-semibold uppercase leading-[0.92] text-[#071321] max-sm:max-w-[13.8ch] max-sm:text-[1.82rem] max-sm:leading-[0.95] max-[360px]:text-[1.72rem] sm:mt-4 sm:text-[3.25rem] lg:text-[2.78rem] xl:text-[3.16rem]">
+                <span className="inline sm:block">RESUMES LOOK THE SAME.</span>{" "}
+                <span className="inline sm:block">PEOPLE DON&apos;T.</span>
+              </h2>
+              <p className="mt-4 max-w-lg text-[1rem] leading-7 text-[#071321]/78 sm:mt-5 sm:text-[1.08rem] sm:leading-8">
+                Your experience is more than a list of job titles. Free Agent Staff gives you a place to show employers what you can do,
+                what you&apos;ve achieved and what makes you different.
+              </p>
+              <Link
+                href="/builder"
+                className="mt-5 inline-flex items-center text-[1rem] font-medium text-[#071321] transition hover:translate-x-0.5 sm:mt-7 sm:text-lg"
+              >
+                Create your Talent Passport
+                <span className="ml-2 text-[#1bc8e4]">→</span>
+              </Link>
+            </div>
+
+            <div className="relative hidden h-[620px] lg:block xl:h-[660px]">
+              <div className="absolute inset-0 rounded-[40px] bg-[radial-gradient(circle_at_18%_20%,rgba(43,215,239,0.14),transparent_34%),radial-gradient(circle_at_82%_18%,rgba(175,245,70,0.16),transparent_30%),radial-gradient(circle_at_55%_78%,rgba(7,19,33,0.08),transparent_36%)]" />
+              {showcaseProfiles.map((profile) => (
+                <ShowcasePassportPreview
+                  key={profile.name}
+                  profile={profile}
+                  className={`absolute w-[248px] xl:w-[272px] ${profile.desktopClass}`}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-7 lg:hidden">
+            <div className="-mx-6 snap-x snap-mandatory overflow-x-auto overflow-y-visible pb-2 pl-6 pr-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              <div className="flex gap-3 pr-6">
+                {showcaseProfiles.map((profile) => (
+                  <ShowcasePassportPreview
+                    key={profile.name}
+                    profile={profile}
+                    className="w-[78vw] min-w-[244px] max-w-[336px] shrink-0 snap-start"
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="relative overflow-hidden bg-[#0B111D] text-[#f7e8c6]">
+        <div className="pointer-events-none absolute left-[-4.5rem] top-14 h-44 w-44 rounded-full border border-[#2bd7ef]/16" />
+        <div className="pointer-events-none absolute right-[-5rem] bottom-16 h-52 w-52 rounded-full border border-[#aff546]/14" />
+        <div className="pointer-events-none absolute left-[46%] top-24 hidden h-28 w-28 rounded-full border border-[#f7e8c6]/8 lg:block" />
+
+        <div className="relative mx-auto max-w-7xl px-6 py-14 sm:px-8 sm:py-16 lg:px-12 lg:py-20">
+          <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-12 xl:gap-16">
+            <div className="max-w-[35rem]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#2bd7ef]">Looking for talent?</p>
+              <h2 className="mt-3 max-w-[11.8ch] font-serif text-[2.55rem] font-semibold uppercase leading-[0.92] text-[#f7e8c6] max-sm:max-w-[12.8ch] max-sm:text-[1.86rem] max-sm:leading-[0.95] sm:mt-4 sm:text-[3.05rem] lg:text-[3.35rem] xl:text-[3.65rem]">
+                <span className="block">YOUR NEXT GREAT HIRE</span>
+                <span className="block">ISN&apos;T ALWAYS</span>
+                <span className="block">LOOKING FOR YOU.</span>
+              </h2>
+              <p className="mt-5 max-w-xl text-[1rem] leading-7 text-[#f7e8c6]/84 sm:text-[1.08rem] sm:leading-8">
+                The right person might not be applying for jobs. Free Agent Staff helps verified employers discover people based on their skills, experience and potential and connect when the opportunity is right.
+              </p>
+              <div className="mt-6 flex flex-wrap gap-3 max-[359px]:flex-col sm:mt-8">
+                <Link
+                  href="/find-talent"
+                  className="inline-flex items-center justify-center rounded-full bg-[#aff546] px-5 py-2.5 text-[0.84rem] font-semibold text-[#071321] transition duration-300 hover:-translate-y-0.5 hover:bg-[#9fea37] max-[359px]:w-full sm:px-6 sm:py-3 sm:text-sm"
+                >
+                  Find talent
+                  <span className="ml-2">→</span>
+                </Link>
+                <Link
+                  href="/login"
+                  className="inline-flex items-center justify-center rounded-full border border-[#2bd7ef]/60 bg-transparent px-5 py-2.5 text-[0.84rem] font-semibold text-[#f7e8c6] transition duration-300 hover:-translate-y-0.5 hover:bg-[#2bd7ef]/10 max-[359px]:w-full sm:px-6 sm:py-3 sm:text-sm"
+                >
+                  For employers
+                  <span className="ml-2 text-[#2bd7ef]">→</span>
+                </Link>
+              </div>
+            </div>
+
+            <EmployerDiscoveryPanel />
+          </div>
+        </div>
+      </section>
+
+      <section className="relative overflow-hidden bg-[#f7e8c6] text-[#071321]">
+        <div className="pointer-events-none absolute -left-16 top-20 h-44 w-44 rounded-full border border-[#2bd7ef]/20" />
+        <div className="pointer-events-none absolute right-[-4rem] bottom-16 h-52 w-52 rounded-full border border-[#aff546]/24" />
+
+        <div className="relative mx-auto max-w-7xl px-6 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24">
+          <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1.02fr)_minmax(0,0.98fr)] lg:gap-12">
+            <div className="max-w-[38rem]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#1bc8e4]">Your career. Your terms.</p>
+              <h2 className="mt-4 max-w-[12.5ch] font-serif text-[2.52rem] font-semibold uppercase leading-[0.92] text-[#071321] max-sm:max-w-[13ch] max-sm:text-[1.95rem] max-sm:leading-[0.95] sm:text-[3.06rem] lg:text-[3.3rem]">
+                <span className="block">VISIBLE WHEN YOU WANT TO BE.</span>
+                <span className="block">INVISIBLE WHEN YOU DON&apos;T.</span>
+              </h2>
+              <p className="mt-5 max-w-xl text-[1rem] leading-7 text-[#071321]/78 sm:text-[1.08rem] sm:leading-8">
+                Explore what&apos;s out there without announcing it to the world. You control your visibility, what employers can see and when you&apos;re ready to be discovered.
+              </p>
+            </div>
+
+            <VisibilityControlPanel />
+          </div>
+
+          <div className="mt-8 flex flex-col gap-4 sm:mt-9 sm:flex-row sm:items-center sm:justify-between">
+            <p className="inline-flex w-fit items-center gap-2 rounded-full border border-[#071321]/12 bg-[#f7e8c6] px-3.5 py-2 text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-[#071321]">
+              <Lock className="h-3.5 w-3.5 text-[#1bc8e4]" />
+              You&apos;re always in control.
+            </p>
+
+            <Link
+              href="/settings/privacy"
+              className="inline-flex items-center text-[0.98rem] font-medium text-[#071321] transition hover:translate-x-0.5 sm:text-[1.05rem]"
+            >
+              Explore Privacy & Visibility
+              <span className="ml-2 text-[#1bc8e4]">→</span>
+            </Link>
           </div>
         </div>
       </section>
