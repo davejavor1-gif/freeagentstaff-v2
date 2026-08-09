@@ -9,18 +9,21 @@ const featureCards = [
     description: "Showcase your skills, experience and achievements in one powerful profile.",
     icon: IdCard,
     tone: "lime" as const,
+    href: "/builder",
   },
   {
     title: "Confidential Mode",
     description: "Explore opportunities privately. You control who sees what and when.",
     icon: Lock,
     tone: "cyan" as const,
+    href: "/settings/privacy",
   },
   {
     title: "Verified Employers",
     description: "Connect with trusted employers who are verified for your peace of mind.",
     icon: ShieldCheck,
     tone: "lime" as const,
+    href: "/find-talent",
   },
 ];
 
@@ -526,6 +529,161 @@ function VisibilityControlPanel() {
   );
 }
 
+function FinalConversionSection() {
+  return (
+    <section className="relative overflow-hidden border-t border-[#2bd7ef]/12 bg-[#0B111D] text-[#f7e8c6]">
+      <div className="pointer-events-none absolute left-[-3rem] top-12 h-36 w-36 rounded-full border border-[#2bd7ef]/18" />
+      <div className="pointer-events-none absolute bottom-16 right-[-3rem] h-44 w-44 rounded-full border border-[#aff546]/16" />
+      <div className="pointer-events-none absolute left-[54%] top-24 hidden h-24 w-24 rounded-full border border-[#f7e8c6]/12 lg:block" />
+
+      <div className="relative mx-auto max-w-7xl px-6 py-8 sm:px-8 sm:py-12 lg:px-12 lg:py-16">
+        <div className="max-w-3xl">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#2bd7ef]">Your Next Move</p>
+          <h2 className="mt-3 max-w-[11.5ch] font-serif text-[clamp(2.2rem,4.5vw,3.4rem)] font-semibold uppercase leading-[0.95] text-[#f7e8c6] sm:max-w-[13ch] sm:text-[3rem] lg:text-[3.5rem]">
+            READY TO DO
+            <span className="block">CAREERS DIFFERENTLY?</span>
+          </h2>
+          <p className="mt-4 max-w-2xl text-[1rem] leading-7 text-[#f7e8c6]/84 sm:text-[1.05rem] sm:leading-8">
+            Whether you&apos;re ready for your next opportunity or looking for the person who can make a difference, start here.
+          </p>
+        </div>
+
+        <div className="mt-6 grid gap-5 sm:mt-8 sm:gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-0 xl:gap-4">
+          <div className="relative lg:pr-8 xl:pr-12">
+            <div className="pointer-events-none absolute right-[-0.25rem] top-0 hidden h-full w-px bg-gradient-to-b from-[#2bd7ef]/25 via-[#f7e8c6]/15 to-transparent lg:block" />
+            <p className="font-serif text-[3.2rem] leading-none text-[#aff546] sm:text-[4rem]">01</p>
+            <p className="mt-4 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#aff546]">FOR TALENT</p>
+            <h3 className="mt-3 max-w-[12ch] font-serif text-[1.95rem] leading-[0.95] text-[#f7e8c6] sm:text-[2.28rem] lg:text-[2.4rem] xl:text-[2.5rem]">
+              BE SEEN FOR
+              <span className="block">WHAT YOU CAN DO.</span>
+            </h3>
+            <p className="mt-4 max-w-[28rem] text-[0.96rem] leading-7 text-[#f7e8c6]/82 sm:text-[1rem]">
+              Create a Talent Passport that brings your skills, experience and potential together in one place.
+            </p>
+            <Link
+              href="/builder"
+              className="mt-6 inline-flex items-center rounded-full bg-[#aff546] px-5 py-2.75 text-[0.86rem] font-semibold text-[#071321] transition duration-300 hover:-translate-y-0.5 hover:bg-[#9fea37] max-[359px]:w-full sm:px-6 sm:py-3 sm:text-sm"
+            >
+              Create your Talent Passport
+              <span className="ml-2">→</span>
+            </Link>
+          </div>
+
+          <div className="relative border-t border-[#f7e8c6]/12 pt-7 sm:pt-8 lg:border-t-0 lg:pl-8 lg:pt-0 xl:pl-12">
+            <p className="font-serif text-[3.2rem] leading-none text-[#2bd7ef] sm:text-[4rem]">02</p>
+            <p className="mt-4 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#2bd7ef]">FOR EMPLOYERS</p>
+            <h3 className="mt-3 max-w-[12ch] font-serif text-[1.95rem] leading-[0.95] text-[#f7e8c6] sm:text-[2.28rem] lg:text-[2.4rem] xl:text-[2.5rem]">
+              FIND PEOPLE
+              <span className="block">WORTH FINDING.</span>
+            </h3>
+            <p className="mt-4 max-w-[28rem] text-[0.96rem] leading-7 text-[#f7e8c6]/82 sm:text-[1rem]">
+              Discover people based on their skills and experience, not simply who happened to apply.
+            </p>
+            <Link
+              href="/find-talent"
+              className="mt-6 inline-flex items-center rounded-full border border-[#2bd7ef]/70 bg-transparent px-5 py-2.75 text-[0.86rem] font-semibold text-[#f7e8c6] transition duration-300 hover:-translate-y-0.5 hover:bg-[#2bd7ef]/12 max-[359px]:w-full sm:px-6 sm:py-3 sm:text-sm"
+            >
+              Find talent
+              <span className="ml-2 text-[#2bd7ef]">→</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function HomeFooter() {
+  const groups = [
+    {
+      title: "TALENT",
+      items: [
+        { label: "Create your Talent Passport", href: "/builder" },
+        { label: "Find opportunities", href: "/find-talent" },
+        { label: "Privacy & Visibility", href: "/settings/privacy" },
+      ],
+    },
+    {
+      title: "EMPLOYERS",
+      items: [
+        { label: "Find talent", href: "/find-talent" },
+        { label: "For employers", href: "/login" },
+        { label: "Employer verification", href: undefined, disabled: true },
+      ],
+    },
+    {
+      title: "FREE AGENT STAFF",
+      items: [
+        { label: "About", href: "/about" },
+        { label: "Pricing", href: "/pricing" },
+        { label: "Contact", href: undefined, disabled: true },
+      ],
+    },
+  ];
+
+  return (
+    <footer className="relative overflow-hidden border-t border-[#071321]/12 bg-[#f7e8c6] text-[#071321]">
+      <div className="pointer-events-none absolute left-[-2rem] top-10 h-28 w-28 rounded-full border border-[#2bd7ef]/18" />
+      <div className="pointer-events-none absolute bottom-8 right-[-1.5rem] h-36 w-36 rounded-full border border-[#aff546]/16" />
+
+      <div className="relative mx-auto flex max-w-7xl flex-col gap-4 px-5 py-5 sm:px-8 sm:py-8 lg:px-12 lg:py-8">
+        <div className="grid gap-6 lg:grid-cols-[1.15fr_0.8fr_0.8fr_0.8fr]">
+          <div className="max-w-[20rem]">
+            <Link href="/" className="inline-flex items-center">
+              <Image src="/FullLogo-clean-v2.png" alt="Free Agent Staff" width={220} height={76} className="h-auto w-[170px] object-contain sm:w-[190px]" />
+            </Link>
+            <p className="mt-2.5 text-[0.9rem] font-semibold uppercase tracking-[0.28em] text-[#071321]/82 sm:text-[0.95rem]">
+              CAREERS, ON YOUR TERMS.
+            </p>
+          </div>
+
+          {groups.map((group) => (
+            <div key={group.title} className="min-w-0">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#2bd7ef]">{group.title}</p>
+              <ul className="mt-3 space-y-2">
+                {group.items.map((item) => {
+                  const itemClassName = "block text-[0.95rem] leading-6 text-[#071321]/82 transition duration-200 hover:-translate-x-0.5 hover:text-[#2bd7ef]";
+
+                  if (item.disabled || !item.href) {
+                    return (
+                      <li key={item.label}>
+                        <span className={`${itemClassName} cursor-default opacity-70`}>
+                          {item.label}
+                          <span className="ml-2 text-[0.72rem] uppercase tracking-[0.18em] text-[#aff546]/80">soon</span>
+                        </span>
+                      </li>
+                    );
+                  }
+
+                  return (
+                    <li key={item.label}>
+                      <Link href={item.href} className={itemClassName}>
+                        {item.label}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        <div className="border-t border-[#071321]/12 pt-4">
+          <div className="flex flex-col gap-2.5 text-[0.9rem] text-[#071321]/72 sm:flex-row sm:items-center sm:justify-between">
+            <p>© 2026 Free Agent Staff</p>
+            <div className="flex flex-wrap items-center gap-4">
+              <Link href="/privacy" className="transition hover:text-[#2bd7ef]">
+                Privacy
+              </Link>
+              <span className="cursor-default opacity-70">Terms</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
 export default function Home() {
   return (
     <main className="bg-[#0B111D] text-[#f7e8c6]">
@@ -606,13 +764,20 @@ export default function Home() {
                     <p className="mt-1.5 text-[0.98rem] leading-6 text-[#071321]/86 sm:mt-3 sm:text-lg sm:leading-8">
                       {feature.description}
                     </p>
-                    <Link
-                      href="#"
-                      className={`mt-2 inline-flex items-center text-[0.98rem] font-medium transition hover:translate-x-0.5 sm:mt-5 sm:text-lg ${linkClass}`}
-                    >
-                      Learn more
-                      <span className="ml-2">→</span>
-                    </Link>
+                    {feature.href ? (
+                      <Link
+                        href={feature.href}
+                        className={`mt-2 inline-flex items-center text-[0.98rem] font-medium transition hover:translate-x-0.5 sm:mt-5 sm:text-lg ${linkClass}`}
+                      >
+                        Learn more
+                        <span className="ml-2">→</span>
+                      </Link>
+                    ) : (
+                      <span className={`mt-2 inline-flex items-center text-[0.98rem] font-medium sm:mt-5 sm:text-lg ${linkClass} opacity-70`}>
+                        Learn more
+                        <span className="ml-2">→</span>
+                      </span>
+                    )}
                   </div>
                 </div>
               </article>
@@ -805,6 +970,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <FinalConversionSection />
+      <HomeFooter />
     </main>
   );
 }
