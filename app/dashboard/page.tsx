@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, MessageSquareText, XCircle } from "lucide-react";
 import type { Session } from "@supabase/supabase-js";
-import { supabase } from "@/lib/supabase-client";
+import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
 import type {
   AccountType,
   EmployerProfileDetails,
@@ -62,26 +62,26 @@ export default function DashboardPage() {
     let mounted = true;
 
     async function loadSession() {
-      const { data } = await supabase.auth.getSession();
+      const session = await getSessionWithRetry();
 
       if (!mounted) {
         return;
       }
 
-      if (!data.session) {
+      if (!session) {
         router.replace("/login");
         return;
       }
 
-      setSession(data.session);
+      setSession(session);
 
-      const metadataAccountType = data.session.user.user_metadata?.account_type;
+      const metadataAccountType = session.user.user_metadata?.account_type;
       const fallbackAccountType: AccountType = metadataAccountType === "employer" ? "employer" : "talent";
 
       const { data: profileRow } = await supabase
         .from("profiles")
         .select("profile, slug, account_type, employer_company_name, employer_abn, employer_website, employer_industry, employer_company_size, employer_verification_status")
-        .eq("user_id", data.session.user.id)
+        .eq("user_id", session.user.id)
         .maybeSingle();
 
       if (!mounted) {
@@ -89,9 +89,9 @@ export default function DashboardPage() {
       }
 
       if (!profileRow) {
-        const defaultTalentProfile = createBlankTalentProfile(data.session.user.id, data.session.user.email);
+        const defaultTalentProfile = createBlankTalentProfile(session.user.id, session.user.email);
         const insertPayload = {
-          user_id: data.session.user.id,
+          user_id: session.user.id,
           account_type: fallbackAccountType,
           employer_company_name: null,
           employer_abn: null,
@@ -137,7 +137,7 @@ export default function DashboardPage() {
       const nextProfile = profilePayload
         ? { ...profilePayload, slug: (profilePayload as { slug?: string }).slug ?? profileRowData?.slug ?? undefined }
         : resolvedAccountType === "talent"
-          ? createBlankTalentProfile(data.session.user.id, data.session.user.email)
+          ? createBlankTalentProfile(session.user.id, session.user.email)
           : null;
       const nextRequests = Array.isArray(nextProfile?.introductionRequests) ? nextProfile.introductionRequests : [];
 

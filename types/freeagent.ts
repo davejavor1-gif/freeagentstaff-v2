@@ -61,9 +61,14 @@ export interface FreeAgentProfile {
   summary: string;
   skills: string[];
   careerJourney: CareerPosition[];
+  qualifications?: string[];
+  intro_video_url?: string | null;
+  intro_video_thumbnail_url?: string | null;
+  intro_video_storage_path?: string | null;
   email?: string;
   imageAlt?: string;
   photoUrl?: string;
+  photo_storage_path?: string | null;
   currentEmployer?: string;
   introductionRequests?: IntroductionRequest[];
 }

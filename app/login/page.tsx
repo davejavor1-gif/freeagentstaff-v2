@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase-client";
+import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
 import type { AccountType, EmployerVerificationStatus, FreeAgentProfile } from "@/types/freeagent";
 
 const createBlankTalentProfile = (userId: string, email?: string | null): FreeAgentProfile => ({
@@ -32,11 +32,25 @@ export default function LoginPage() {
   const router = useRouter();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) {
+    let mounted = true;
+
+    const restoreSession = async () => {
+      const session = await getSessionWithRetry();
+
+      if (!mounted) {
+        return;
+      }
+
+      if (session) {
         router.replace("/dashboard");
       }
-    });
+    };
+
+    restoreSession();
+
+    return () => {
+      mounted = false;
+    };
   }, [router]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -51,7 +65,7 @@ export default function LoginPage() {
     }
 
     if (authMode === "sign-in") {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       setIsSubmitting(false);
 
       if (error) {
@@ -59,7 +73,14 @@ export default function LoginPage() {
         return;
       }
 
-      router.replace("/dashboard");
+      const session = data.session ?? (await getSessionWithRetry());
+
+      if (session) {
+        router.replace("/dashboard");
+        return;
+      }
+
+      setStatus("We couldn’t restore your session yet. Please try again in a moment.");
       return;
     }
 

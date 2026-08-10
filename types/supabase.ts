@@ -5,7 +5,7 @@ export interface ProfilesRow {
   user_id: string;
   account_type: "talent" | "employer";
   slug: string | null;
-  visibility: "public" | "verified_employer_network" | "confidential";
+  visibility: "public" | "verified_employer_network" | "confidential" | "employer_network";
   opportunity_status: "actively_open" | "exploring" | "not_open";
   blocked_companies: string[];
   verification_status: "unverified" | "pending" | "verified" | "rejected";
@@ -29,7 +29,10 @@ export interface ProfilesRow {
   email: string | null;
   image_alt: string | null;
   photo_url: string | null;
+  photo_storage_path: string | null;
   current_employer: string | null;
+  intro_video_url: string | null;
+  intro_video_storage_path: string | null;
   profile: Json;
   created_at: string;
   updated_at: string;
@@ -39,7 +42,7 @@ export interface ProfilesInsert {
   user_id: string;
   account_type?: "talent" | "employer";
   slug?: string | null;
-  visibility?: "public" | "verified_employer_network" | "confidential";
+  visibility?: "public" | "verified_employer_network" | "confidential" | "employer_network";
   opportunity_status?: "actively_open" | "exploring" | "not_open";
   blocked_companies?: string[];
   verification_status?: "unverified" | "pending" | "verified" | "rejected";
@@ -63,14 +66,17 @@ export interface ProfilesInsert {
   email?: string | null;
   image_alt?: string | null;
   photo_url?: string | null;
+  photo_storage_path?: string | null;
   current_employer?: string | null;
+  intro_video_url?: string | null;
+  intro_video_storage_path?: string | null;
   profile: Json;
 }
 
 export interface ProfilesUpdate {
   account_type?: "talent" | "employer";
   slug?: string | null;
-  visibility?: "public" | "verified_employer_network" | "confidential";
+  visibility?: "public" | "verified_employer_network" | "confidential" | "employer_network";
   opportunity_status?: "actively_open" | "exploring" | "not_open";
   blocked_companies?: string[];
   verification_status?: "unverified" | "pending" | "verified" | "rejected";
@@ -94,7 +100,10 @@ export interface ProfilesUpdate {
   email?: string | null;
   image_alt?: string | null;
   photo_url?: string | null;
+  photo_storage_path?: string | null;
   current_employer?: string | null;
+  intro_video_url?: string | null;
+  intro_video_storage_path?: string | null;
   profile?: Json;
 }
 

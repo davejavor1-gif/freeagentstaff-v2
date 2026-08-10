@@ -1,12 +1,12 @@
 "use client";
 
-import Image from "next/image";
-import { useEffect, useState, type ChangeEvent } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Session } from "@supabase/supabase-js";
 import FreeAgentCard from "@/components/cards/FreeAgentCard";
 import { freeAgentProfiles } from "@/data/freeagents";
-import { supabase } from "@/lib/supabase-client";
+import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
+import VideoIntroductionSection from "@/components/settings/VideoIntroductionSection";
 import type { AccountType, CareerPosition, FreeAgentProfile, ProfileVisibility } from "@/types/freeagent";
 import type { Database, Json } from "@/types/supabase";
 
@@ -15,7 +15,15 @@ const initialProfile = freeAgentProfiles[0];
 type ProfilesTable = Database["public"]["Tables"]["profiles"];
 type ProfileInsert = ProfilesTable["Insert"];
 
-type ProfileSelectResult = { slug?: string | null; profile: Json; account_type?: AccountType };
+type ProfileSelectResult = {
+  slug?: string | null;
+  profile: Json;
+  account_type?: AccountType;
+  intro_video_url?: string | null;
+  photo_url?: string | null;
+  photo_storage_path?: string | null;
+  intro_video_storage_path?: string | null;
+};
 
 const normalizeSlug = (value: string, fallback: string) => {
   const slug = value
@@ -69,6 +77,9 @@ const createBlankProfile = (userId: string, email?: string | null): FreeAgentPro
   email: email ?? "",
   imageAlt: "",
   photoUrl: undefined,
+  photo_storage_path: null,
+  intro_video_url: null,
+  intro_video_storage_path: null,
 });
 
 export default function BuilderPage() {
@@ -93,8 +104,7 @@ export default function BuilderPage() {
     let mounted = true;
 
     async function loadProfile() {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const supabaseSession = sessionData.session;
+      const supabaseSession = await getSessionWithRetry();
 
       if (!mounted) {
         return;
@@ -109,7 +119,7 @@ export default function BuilderPage() {
 
       const { data, error } = await supabase
         .from("profiles")
-        .select("slug, profile, account_type")
+        .select("slug, profile, account_type, intro_video_url, photo_url, photo_storage_path, intro_video_storage_path")
         .eq("user_id", supabaseSession.user.id)
         .maybeSingle();
 
@@ -140,6 +150,10 @@ export default function BuilderPage() {
         }
 
         loadedProfile.visibility = loadedProfile.visibility ?? "public";
+        loadedProfile.photoUrl = loadedProfile.photoUrl ?? profileResult.photo_url ?? undefined;
+        loadedProfile.photo_storage_path = loadedProfile.photo_storage_path ?? profileResult.photo_storage_path ?? null;
+        loadedProfile.intro_video_url = loadedProfile.intro_video_url ?? profileResult.intro_video_url ?? null;
+        loadedProfile.intro_video_storage_path = loadedProfile.intro_video_storage_path ?? profileResult.intro_video_storage_path ?? null;
         setProfile(loadedProfile);
       } else {
         const blankProfile = createBlankProfile(supabaseSession.user.id, supabaseSession.user.email);
@@ -197,6 +211,11 @@ export default function BuilderPage() {
         user_id: session.user.id,
         account_type: "talent",
         slug: profile.slug ?? null,
+        visibility: profile.visibility ?? "public",
+        intro_video_url: profile.intro_video_url ?? null,
+        intro_video_storage_path: profile.intro_video_storage_path ?? null,
+        photo_url: profile.photoUrl ?? null,
+        photo_storage_path: profile.photo_storage_path ?? null,
         profile: profile as unknown as Json,
       };
 
@@ -250,6 +269,11 @@ export default function BuilderPage() {
           user_id: session.user.id,
           account_type: "talent",
           slug: uniqueSlug,
+          visibility: profileToSave.visibility ?? "public",
+          intro_video_url: profileToSave.intro_video_url ?? null,
+          intro_video_storage_path: profileToSave.intro_video_storage_path ?? null,
+          photo_url: profileToSave.photoUrl ?? null,
+          photo_storage_path: profileToSave.photo_storage_path ?? null,
           profile: profileToSave as unknown as Json,
         },
       ] as never,
@@ -299,34 +323,6 @@ export default function BuilderPage() {
     setProfile((current) => ({
       ...current,
       experienceYears: Number(value) || 0,
-    }));
-  };
-
-  const handlePhotoUpload = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-
-    if (!file) {
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      if (typeof reader.result === "string") {
-        setProfile((current) => ({
-          ...current,
-          photoUrl: reader.result as string,
-          imageAlt: file.name,
-        }));
-      }
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const clearPhoto = () => {
-    setProfile((current) => ({
-      ...current,
-      photoUrl: undefined,
-      imageAlt: undefined,
     }));
   };
 
@@ -540,32 +536,13 @@ export default function BuilderPage() {
             </div>
           </div>
 
-          <div className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-            <label
-              htmlFor="photoUpload"
-              className="group flex h-24 w-24 cursor-pointer items-center justify-center overflow-hidden rounded-full border border-[#cda64d]/50 bg-[#0f2744] shadow-[0_10px_24px_rgba(7,20,38,0.18)] transition hover:scale-[1.01]"
-            >
-              <Image
-                src={profile.photoUrl ?? "/placeholder-avatar.svg"}
-                alt={profile.imageAlt ?? profile.name}
-                width={120}
-                height={120}
-                className="h-full w-full object-cover"
-              />
-            </label>
-            <input id="photoUpload" type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handlePhotoUpload} />
-            <div className="flex flex-col gap-2">
-              <label htmlFor="photoUpload" className="inline-flex cursor-pointer items-center justify-center rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f]">
-                Upload photo
-              </label>
-              <button
-                type="button"
-                onClick={clearPhoto}
-                className="rounded-full border border-[#cda64d]/40 bg-transparent px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#0f2744] transition hover:bg-white/70"
-              >
-                Remove photo
-              </button>
-            </div>
+          <div className="mt-6">
+            <VideoIntroductionSection
+              profile={profile}
+              onProfileChange={(nextProfile) => setProfile(nextProfile)}
+              isSaving={isSaving}
+              visibility={profile.visibility}
+            />
           </div>
 
           <div className="space-y-2">
@@ -949,47 +926,6 @@ export default function BuilderPage() {
               </div>
             </div>
 
-            <div className="space-y-3 rounded-[20px] border border-[#cda64d]/40 bg-white/70 p-4">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
-                  Profile Photo
-                </p>
-                <p className="mt-1 text-sm text-[#27405f]">
-                  Upload a headshot or remove it to use the default placeholder.
-                </p>
-              </div>
-
-              <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-                <label
-                  htmlFor="photoUpload"
-                  className="group flex h-24 w-24 cursor-pointer items-center justify-center overflow-hidden rounded-full border border-[#cda64d]/50 bg-[#0f2744] shadow-[0_10px_24px_rgba(7,20,38,0.18)] transition hover:scale-[1.01]"
-                >
-                  <Image
-                    src={profile.photoUrl ?? "/placeholder-avatar.svg"}
-                    alt={profile.imageAlt ?? profile.name}
-                    width={120}
-                    height={120}
-                    className="h-full w-full object-cover"
-                  />
-                  <span className="absolute hidden text-[10px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] group-hover:block">
-                    Change
-                  </span>
-                </label>
-                <input id="photoUpload" type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
-                <div className="flex flex-col gap-2">
-                  <label htmlFor="photoUpload" className="inline-flex cursor-pointer items-center justify-center rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f]">
-                    Upload photo
-                  </label>
-                  <button
-                    type="button"
-                    onClick={clearPhoto}
-                    className="rounded-full border border-[#cda64d]/40 bg-transparent px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#0f2744] transition hover:bg-white/70"
-                  >
-                    Remove photo
-                  </button>
-                </div>
-              </div>
-            </div>
           </form>
         </section>
 

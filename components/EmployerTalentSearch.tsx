@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Search, Sparkles } from "lucide-react";
 import { supabase } from "@/lib/supabase-client";
-import FreeAgentCard from "@/components/cards/FreeAgentCard";
+import TalentCard from "@/components/TalentCard";
 import type { AccountType, EmployerVerificationStatus, FreeAgentProfile } from "@/types/freeagent";
 
 type ProfileRow = {
@@ -545,23 +545,15 @@ export default function EmployerTalentSearch() {
             </p>
           </div>
         ) : (
-          <div className="grid gap-8 lg:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
             {filteredProfiles.map((item) => (
-              <div key={item.slug} className="group space-y-3">
-                <FreeAgentCard
-                  profile={item.profile}
-                  href={`/talent/${item.slug}`}
-                  className="w-full"
-                />
-                <div className="flex flex-wrap items-center justify-center gap-2">
-                  <Link
-                    href={`/talent/${item.slug}`}
-                    className="inline-flex items-center justify-center rounded-full border border-[#cda64d]/40 bg-[#f7ebcf] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#0f2744] transition hover:bg-[#e9d88f]"
-                  >
-                    {isConfidentialProfile(item.profile) ? "Open Anonymised Card" : "Open Talent Passport"}
-                  </Link>
-                </div>
-              </div>
+              <TalentCard
+                key={item.slug}
+                profile={item.profile}
+                href={`/talent/${item.slug}`}
+                verificationStatus={null}
+                className="w-full"
+              />
             ))}
           </div>
         )}
