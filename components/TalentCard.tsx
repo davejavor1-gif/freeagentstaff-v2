@@ -3,8 +3,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Lock, MapPin, Pause, Play, RotateCw, Volume2, VolumeX, X } from "lucide-react";
+import { Heart, Lock, MapPin, Pause, Play, RotateCw, Volume2, VolumeX, X } from "lucide-react";
 import type { FreeAgentProfile } from "@/types/freeagent";
+import { getSessionWithRetry } from "@/lib/supabase-client";
 import { resolveProfilePhotoUrl, resolveProfileVideoUrl } from "@/lib/profile-media";
 import { cn } from "@/lib/utils";
 
@@ -14,6 +15,9 @@ interface TalentCardProps {
   verificationStatus?: "unverified" | "pending" | "verified" | "rejected" | null;
   className?: string;
   initiallyFlipped?: boolean;
+  showSaveAction?: boolean;
+  initiallySaved?: boolean;
+  onSavedChange?: (nextSaved: boolean) => void;
 }
 
 const isConfidential = (profile: FreeAgentProfile) => (profile.visibility ?? "public") === "confidential";
@@ -54,7 +58,16 @@ function ConfidentialSymbol() {
   );
 }
 
-export default function TalentCard({ profile, href, verificationStatus, className, initiallyFlipped = false }: TalentCardProps) {
+export default function TalentCard({
+  profile,
+  href,
+  verificationStatus,
+  className,
+  initiallyFlipped = false,
+  showSaveAction = false,
+  initiallySaved = false,
+  onSavedChange,
+}: TalentCardProps) {
   const confidential = isConfidential(profile);
   const verified = isVerified(verificationStatus) || profile.visibility === "verified_employer_network" || profile.visibility === "employer_network";
   const [isFlipped, setIsFlipped] = useState(initiallyFlipped);
@@ -65,10 +78,15 @@ export default function TalentCard({ profile, href, verificationStatus, classNam
   const [reducedMotion, setReducedMotion] = useState(false);
   const [resolvedPhotoUrl, setResolvedPhotoUrl] = useState<string | null>(null);
   const [resolvedVideoUrl, setResolvedVideoUrl] = useState<string | null>(null);
+  const [optimisticSaved, setOptimisticSaved] = useState<boolean | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const isSaved = optimisticSaved ?? initiallySaved;
 
   const hasVideo = Boolean(resolvedVideoUrl ?? profile.intro_video_url) && !confidential;
   const mediaAlt = profile.imageAlt ?? profile.name;
+
   const initials = useMemo(() => buildInitials(confidential ? "Confidential Profile" : profile.name), [confidential, profile.name]);
   const hasProfilePhoto = Boolean((resolvedPhotoUrl ?? profile.photoUrl) && !/(logo|fullLogo|placeholder-avatar)/i.test((resolvedPhotoUrl ?? profile.photoUrl ?? "")));
 
@@ -94,7 +112,7 @@ export default function TalentCard({ profile, href, verificationStatus, classNam
     return () => {
       active = false;
     };
-  }, [profile.photo_storage_path, profile.intro_video_storage_path, profile.photoUrl, profile.intro_video_url, confidential]);
+  }, [profile, confidential]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -244,6 +262,58 @@ export default function TalentCard({ profile, href, verificationStatus, classNam
     setIsFlipped((prev) => !prev);
   };
 
+  const handleSaveToggle = async () => {
+    if (!showSaveAction || isSaving) {
+      return;
+    }
+
+    const slug = profile.slug;
+    if (!slug) {
+      setSaveError("Unable to save this profile right now.");
+      return;
+    }
+
+    setIsSaving(true);
+    setSaveError(null);
+    const previousValue = isSaved;
+    const nextValue = !previousValue;
+    setOptimisticSaved(nextValue);
+
+    try {
+      const session = await getSessionWithRetry();
+      const method = nextValue ? "POST" : "DELETE";
+      const endpoint = nextValue ? "/api/saved-talent" : `/api/saved-talent/${encodeURIComponent(slug)}`;
+      const response = await fetch(endpoint, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          ...(session?.access_token
+            ? {
+                Authorization: `Bearer ${session.access_token}`,
+              }
+            : {}),
+        },
+        body: nextValue ? JSON.stringify({ slug }) : undefined,
+      });
+
+      const payload = (await response.json().catch(() => null)) as { ok?: boolean; message?: string } | null;
+
+      if (!response.ok || !payload?.ok) {
+        setOptimisticSaved(previousValue);
+        setSaveError(payload?.message ?? "Unable to update saved talent.");
+        return;
+      }
+
+      setOptimisticSaved(null);
+      onSavedChange?.(nextValue);
+    } catch {
+      setOptimisticSaved(previousValue);
+      setSaveError("Unable to update saved talent.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const recentRoles = profile.careerJourney?.slice(0, 2) ?? [];
 
   return (
@@ -253,6 +323,25 @@ export default function TalentCard({ profile, href, verificationStatus, classNam
         className,
       )}
     >
+      {showSaveAction ? (
+        <div className="pointer-events-none absolute right-3 top-3 z-30 flex flex-col items-end gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              void handleSaveToggle();
+            }}
+            aria-pressed={isSaved}
+            aria-label={isSaved ? "Remove from saved talent" : "Save talent"}
+            className="pointer-events-auto inline-flex min-h-11 items-center gap-2 rounded-full border border-[#f2cc63]/45 bg-[#071426]/85 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf] backdrop-blur transition hover:bg-[#17355f] disabled:cursor-not-allowed disabled:opacity-70"
+            disabled={isSaving}
+          >
+            <Heart className={cn("h-3.5 w-3.5", isSaved ? "fill-[#f2cc63] text-[#f2cc63]" : "text-[#f7ebcf]")} />
+            {isSaving ? "Saving" : isSaved ? "Saved" : "Save talent"}
+          </button>
+          {saveError ? <span className="max-w-[220px] rounded-full bg-[#5c1d1d]/90 px-3 py-1 text-[9px] uppercase tracking-[0.18em] text-[#f7d4d4]">{saveError}</span> : null}
+        </div>
+      ) : null}
+
       <div className={cn("relative aspect-[2.5/3.5] w-full [perspective:1800px]", reducedMotion ? "" : "transition-transform duration-500") }>
         <div
           className={cn(

@@ -12,6 +12,7 @@ import type { TalentPassportApiResponse } from "@/types/discovery";
 export default function TalentProfileExperience({ slug }: { slug: string }) {
   const [payload, setPayload] = useState<TalentPassportApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isSaved, setIsSaved] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -36,6 +37,28 @@ export default function TalentProfileExperience({ slug }: { slug: string }) {
         }
 
         setPayload(nextPayload);
+
+        if (nextPayload.allowed && nextPayload.accessScope && !nextPayload.isOwner && session?.access_token) {
+          const savedResponse = await fetch("/api/saved-talent", {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
+            cache: "no-store",
+          });
+
+          const savedPayload = (await savedResponse.json().catch(() => null)) as
+            | { ok?: boolean; items?: Array<{ slug?: string }> }
+            | null;
+
+          if (savedPayload?.ok && Array.isArray(savedPayload.items)) {
+            setIsSaved(savedPayload.items.some((item) => item.slug === slug));
+          } else {
+            setIsSaved(false);
+          }
+        } else {
+          setIsSaved(false);
+        }
       } catch (error) {
         if (!mounted) {
           return;
@@ -132,7 +155,15 @@ export default function TalentProfileExperience({ slug }: { slug: string }) {
                 </Link>
               </div>
               <div className="mt-8 flex justify-center">
-                <TalentCard profile={profile} href={cardHref} verificationStatus={payload.verificationStatus} className="w-full max-w-[430px]" />
+                <TalentCard
+                  profile={profile}
+                  href={cardHref}
+                  verificationStatus={payload.verificationStatus}
+                  className="w-full max-w-[430px]"
+                  showSaveAction
+                  initiallySaved={isSaved}
+                  onSavedChange={setIsSaved}
+                />
               </div>
             </div>
 
@@ -212,7 +243,15 @@ export default function TalentProfileExperience({ slug }: { slug: string }) {
                   </div>
                 </div>
                 <div className="flex justify-center">
-                  <TalentCard profile={profile} href={cardHref} verificationStatus={payload.verificationStatus} className="w-full max-w-[430px]" />
+                  <TalentCard
+                    profile={profile}
+                    href={cardHref}
+                    verificationStatus={payload.verificationStatus}
+                    className="w-full max-w-[430px]"
+                    showSaveAction={!isOwner}
+                    initiallySaved={isSaved}
+                    onSavedChange={setIsSaved}
+                  />
                 </div>
               </div>
             </div>

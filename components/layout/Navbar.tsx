@@ -81,6 +81,7 @@ export default function Navbar() {
   const visibleNavItems = isEmployerSession
     ? [
         { label: "Find talent", href: "/find-talent" },
+        { label: "Saved talent", href: "/saved-talent" },
         { label: "Dashboard", href: "/dashboard" },
         { label: "Employer account", href: "/onboarding/employer" },
       ]

@@ -92,6 +92,7 @@ const getAccessGateCopy = (reason?: DiscoveryApiResponse["reason"]) => {
 
 export default function EmployerTalentSearch() {
   const [profiles, setProfiles] = useState<ProfileRow[]>([]);
+  const [savedSlugs, setSavedSlugs] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
   const [canAccessSearch, setCanAccessSearch] = useState(false);
   const [accessReason, setAccessReason] = useState<DiscoveryApiResponse["reason"]>();
@@ -129,6 +130,7 @@ export default function EmployerTalentSearch() {
         setCanAccessSearch(false);
         setAccessReason(payload.reason);
         setProfiles([]);
+        setSavedSlugs(new Set());
         return;
       }
 
@@ -141,9 +143,38 @@ export default function EmployerTalentSearch() {
           verificationStatus: item.verificationStatus,
         })),
       );
+
+      if (currentSession?.access_token) {
+        const savedResponse = await fetch("/api/saved-talent", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${currentSession.access_token}`,
+          },
+          cache: "no-store",
+        });
+
+        const savedPayload = (await savedResponse.json().catch(() => null)) as
+          | { ok?: boolean; items?: Array<{ slug?: string }> }
+          | null;
+
+        if (savedPayload?.ok && Array.isArray(savedPayload.items)) {
+          setSavedSlugs(
+            new Set(
+              savedPayload.items
+                .map((item) => item.slug)
+                .filter((slug): slug is string => typeof slug === "string" && slug.length > 0),
+            ),
+          );
+        } else {
+          setSavedSlugs(new Set());
+        }
+      } else {
+        setSavedSlugs(new Set());
+      }
     } catch {
       setError(true);
       setProfiles([]);
+      setSavedSlugs(new Set());
     } finally {
       setIsLoading(false);
     }
@@ -511,6 +542,19 @@ export default function EmployerTalentSearch() {
                 profile={item.profile}
                 href={`/talent/${item.slug}`}
                 verificationStatus={item.verificationStatus}
+                showSaveAction
+                initiallySaved={savedSlugs.has(item.slug)}
+                onSavedChange={(nextSaved) => {
+                  setSavedSlugs((previous) => {
+                    const next = new Set(previous);
+                    if (nextSaved) {
+                      next.add(item.slug);
+                    } else {
+                      next.delete(item.slug);
+                    }
+                    return next;
+                  });
+                }}
                 className="w-full"
               />
             ))}

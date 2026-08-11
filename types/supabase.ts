@@ -125,9 +125,79 @@ export interface ProfilesUpdate {
   profile?: Json;
 }
 
+export interface EmployerSavedTalentRow {
+  id: string;
+  employer_user_id: string;
+  talent_user_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface EmployerSavedTalentInsert {
+  employer_user_id: string;
+  talent_user_id: string;
+}
+
+export interface EmployerSavedTalentUpdate {
+  employer_user_id?: string;
+  talent_user_id?: string;
+}
+
+export interface EmployerShortlistsRow {
+  id: string;
+  employer_user_id: string;
+  name: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface EmployerShortlistsInsert {
+  employer_user_id: string;
+  name: string;
+}
+
+export interface EmployerShortlistsUpdate {
+  employer_user_id?: string;
+  name?: string;
+}
+
+export interface EmployerShortlistMembersRow {
+  shortlist_id: string;
+  employer_user_id: string;
+  talent_user_id: string;
+  created_at: string;
+}
+
+export interface EmployerShortlistMembersInsert {
+  shortlist_id: string;
+  employer_user_id: string;
+  talent_user_id: string;
+}
+
+export interface EmployerShortlistMembersUpdate {
+  shortlist_id?: string;
+  employer_user_id?: string;
+  talent_user_id?: string;
+}
+
 export interface Database {
   public: {
     Tables: {
+      employer_saved_talent: {
+        Row: EmployerSavedTalentRow;
+        Insert: EmployerSavedTalentInsert;
+        Update: EmployerSavedTalentUpdate;
+      };
+      employer_shortlist_members: {
+        Row: EmployerShortlistMembersRow;
+        Insert: EmployerShortlistMembersInsert;
+        Update: EmployerShortlistMembersUpdate;
+      };
+      employer_shortlists: {
+        Row: EmployerShortlistsRow;
+        Insert: EmployerShortlistsInsert;
+        Update: EmployerShortlistsUpdate;
+      };
       profiles: {
         Row: ProfilesRow;
         Insert: ProfilesInsert;
@@ -208,6 +278,110 @@ export interface Database {
           verification_reviewed_by: string | null;
           verification_rejection_reason: string | null;
           message: string | null;
+        }>;
+      };
+      save_talent_for_employer: {
+        Args: {
+          p_slug: string;
+          p_shortlist_ids?: string[] | null;
+        };
+        Returns: Array<{
+          success: boolean;
+          already_saved: boolean;
+          saved_talent_id: string;
+          saved_at: string;
+        }>;
+      };
+      unsave_talent_for_employer: {
+        Args: { p_slug: string };
+        Returns: Array<{
+          success: boolean;
+          removed: boolean;
+        }>;
+      };
+      create_employer_shortlist: {
+        Args: { p_name: string };
+        Returns: Array<{
+          shortlist_id: string;
+          name: string;
+          created_at: string;
+          updated_at: string;
+        }>;
+      };
+      rename_employer_shortlist: {
+        Args: {
+          p_shortlist_id: string;
+          p_name: string;
+        };
+        Returns: Array<{
+          shortlist_id: string;
+          name: string;
+          updated_at: string;
+        }>;
+      };
+      delete_employer_shortlist: {
+        Args: { p_shortlist_id: string };
+        Returns: Array<{
+          success: boolean;
+          removed: boolean;
+        }>;
+      };
+      add_saved_talent_to_shortlist: {
+        Args: {
+          p_slug: string;
+          p_shortlist_id: string;
+        };
+        Returns: Array<{
+          success: boolean;
+        }>;
+      };
+      remove_saved_talent_from_shortlist: {
+        Args: {
+          p_slug: string;
+          p_shortlist_id: string;
+        };
+        Returns: Array<{
+          success: boolean;
+          removed: boolean;
+        }>;
+      };
+      list_employer_shortlists: {
+        Args: Record<string, never>;
+        Returns: Array<{
+          id: string;
+          name: string;
+          created_at: string;
+          updated_at: string;
+          member_count: number;
+        }>;
+      };
+      list_saved_talent_for_employer: {
+        Args: {
+          p_shortlist_id: string | null;
+        };
+        Returns: Array<{
+          saved_talent_id: string;
+          saved_at: string;
+          slug: string;
+          access_scope: "owner_full" | "employer_full" | "employer_confidential" | null;
+          visibility: "public" | "verified_employer_network" | "confidential" | null;
+          verification_status: "unverified" | "pending" | "verified" | "rejected" | null;
+          availability: string | null;
+          opportunity_status: "actively_open" | "exploring" | "not_open" | null;
+          experience_years: number | null;
+          focus_area: string | null;
+          top_strength: string | null;
+          skills: string[] | null;
+          location: string | null;
+          name: string | null;
+          title: string | null;
+          summary: string | null;
+          current_employer: string | null;
+          email: string | null;
+          career_journey: Json | null;
+          photo_storage_path: string | null;
+          intro_video_storage_path: string | null;
+          shortlist_ids: string[] | null;
         }>;
       };
     };
