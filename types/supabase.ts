@@ -11,11 +11,17 @@ export interface ProfilesRow {
   verification_status: "unverified" | "pending" | "verified" | "rejected";
   is_published: boolean;
   employer_company_name: string | null;
+  employer_contact_name: string | null;
+  employer_contact_role: string | null;
   employer_abn: string | null;
   employer_website: string | null;
   employer_industry: string | null;
   employer_company_size: string | null;
   employer_verification_status: "unverified" | "pending" | "verified" | "rejected";
+  verification_requested_at: string | null;
+  verification_reviewed_at: string | null;
+  verification_reviewed_by: string | null;
+  verification_rejection_reason: string | null;
   name: string | null;
   title: string | null;
   location: string | null;
@@ -48,11 +54,17 @@ export interface ProfilesInsert {
   verification_status?: "unverified" | "pending" | "verified" | "rejected";
   is_published?: boolean;
   employer_company_name?: string | null;
+  employer_contact_name?: string | null;
+  employer_contact_role?: string | null;
   employer_abn?: string | null;
   employer_website?: string | null;
   employer_industry?: string | null;
   employer_company_size?: string | null;
   employer_verification_status?: "unverified" | "pending" | "verified" | "rejected";
+  verification_requested_at?: string | null;
+  verification_reviewed_at?: string | null;
+  verification_reviewed_by?: string | null;
+  verification_rejection_reason?: string | null;
   name?: string | null;
   title?: string | null;
   location?: string | null;
@@ -82,11 +94,17 @@ export interface ProfilesUpdate {
   verification_status?: "unverified" | "pending" | "verified" | "rejected";
   is_published?: boolean;
   employer_company_name?: string | null;
+  employer_contact_name?: string | null;
+  employer_contact_role?: string | null;
   employer_abn?: string | null;
   employer_website?: string | null;
   employer_industry?: string | null;
   employer_company_size?: string | null;
   employer_verification_status?: "unverified" | "pending" | "verified" | "rejected";
+  verification_requested_at?: string | null;
+  verification_reviewed_at?: string | null;
+  verification_reviewed_by?: string | null;
+  verification_rejection_reason?: string | null;
   name?: string | null;
   title?: string | null;
   location?: string | null;
@@ -117,7 +135,82 @@ export interface Database {
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      discovery_profiles_for_verified_employer: {
+        Args: Record<string, never>;
+        Returns: Array<{
+          slug: string;
+          visibility: "public" | "verified_employer_network" | "confidential" | null;
+          verification_status: "unverified" | "pending" | "verified" | "rejected" | null;
+          availability: string | null;
+          opportunity_status: "actively_open" | "exploring" | "not_open" | null;
+          experience_years: number | null;
+          focus_area: string | null;
+          top_strength: string | null;
+          skills: string[] | null;
+          location: string | null;
+          name: string | null;
+          title: string | null;
+          summary: string | null;
+          current_employer: string | null;
+          photo_storage_path: string | null;
+          intro_video_storage_path: string | null;
+          can_view_identifying_info: boolean | null;
+          can_view_media: boolean | null;
+        }>;
+      };
+      talent_passport_for_viewer: {
+        Args: { p_slug: string };
+        Returns: Array<{
+          slug: string;
+          visibility: "public" | "verified_employer_network" | "confidential" | null;
+          is_owner: boolean;
+          access_scope: "owner_full" | "employer_full" | "employer_confidential" | null;
+          verification_status: "unverified" | "pending" | "verified" | "rejected" | null;
+          availability: string | null;
+          opportunity_status: "actively_open" | "exploring" | "not_open" | null;
+          experience_years: number | null;
+          focus_area: string | null;
+          top_strength: string | null;
+          skills: string[] | null;
+          location: string | null;
+          name: string | null;
+          title: string | null;
+          summary: string | null;
+          current_employer: string | null;
+          email: string | null;
+          career_journey: Json | null;
+          photo_storage_path: string | null;
+          intro_video_storage_path: string | null;
+        }>;
+      };
+      submit_employer_verification: {
+        Args: Record<string, never>;
+        Returns: Array<{
+          success: boolean;
+          employer_verification_status: "unverified" | "pending" | "verified" | "rejected" | null;
+          verification_requested_at: string | null;
+          normalized_abn: string | null;
+          message: string | null;
+        }>;
+      };
+      admin_review_employer_verification: {
+        Args: {
+          p_user_id: string;
+          p_decision: "verified" | "rejected";
+          p_reason?: string | null;
+          p_reviewer?: string | null;
+        };
+        Returns: Array<{
+          success: boolean;
+          employer_verification_status: "unverified" | "pending" | "verified" | "rejected" | null;
+          verification_reviewed_at: string | null;
+          verification_reviewed_by: string | null;
+          verification_rejection_reason: string | null;
+          message: string | null;
+        }>;
+      };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };

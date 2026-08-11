@@ -540,7 +540,7 @@ export default function TalentCard({ profile, href, verificationStatus, classNam
                 <Link href={href} className="flex w-full items-center justify-between gap-3 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:text-[#8be4c5]">
                   <span className="inline-flex items-center gap-2">
                     <span className="h-1.5 w-1.5 rounded-full bg-[#8be4c5]" />
-                    {confidential ? "Request introduction" : "View full talent passport"}
+                    {confidential ? "View confidential passport" : "View full talent passport"}
                   </span>
                   <span className="text-base leading-none">→</span>
                 </Link>

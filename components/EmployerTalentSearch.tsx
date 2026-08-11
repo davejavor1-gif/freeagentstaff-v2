@@ -1,135 +1,63 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { Search, Sparkles } from "lucide-react";
-import { supabase } from "@/lib/supabase-client";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Search, SlidersHorizontal } from "lucide-react";
+import { getSessionWithRetry } from "@/lib/supabase-client";
 import TalentCard from "@/components/TalentCard";
-import type { AccountType, EmployerVerificationStatus, FreeAgentProfile } from "@/types/freeagent";
+import type { DiscoveryApiResponse, DiscoveryProfileCard } from "@/types/discovery";
+import type { FreeAgentProfile } from "@/types/freeagent";
 
 type ProfileRow = {
   slug: string;
   profile: FreeAgentProfile;
+  verificationStatus: DiscoveryProfileCard["verificationStatus"];
 };
 
-type ExperienceFilter = "All" | "0-3" | "4-7" | "8-12" | "13+";
-type ConfidentialFilter = "All" | "Confidential only" | "Non-confidential";
-type EmployerNetworkFilter = "All" | "Verified network only" | "Outside verified network";
+type ExperienceFilter = "all" | "0-3" | "4-7" | "8-12" | "13+";
+type SortOption = "recommended" | "most_experienced" | "availability";
 
-const availabilityOptions = [
-  "All",
+const availabilityOptions: ReadonlyArray<string> = [
+  "Any availability",
   "Available Now",
   "Open to Opportunities",
   "Open to new projects",
   "Busy this month",
   "Booked",
-] as const;
+];
 
-const experienceOptions: ExperienceFilter[] = ["All", "0-3", "4-7", "8-12", "13+"];
-const confidentialOptions: ConfidentialFilter[] = ["All", "Confidential only", "Non-confidential"];
-const employerNetworkOptions: EmployerNetworkFilter[] = ["All", "Verified network only", "Outside verified network"];
+const experienceOptions: ReadonlyArray<{ value: ExperienceFilter; label: string }> = [
+  { value: "all", label: "Any experience" },
+  { value: "0-3", label: "0-3 years" },
+  { value: "4-7", label: "4-7 years" },
+  { value: "8-12", label: "8-12 years" },
+  { value: "13+", label: "13+ years" },
+];
 
-const normalize = (value: string) => value.trim().toLowerCase();
+const sortOptions: ReadonlyArray<{ value: SortOption; label: string }> = [
+  { value: "recommended", label: "Recommended" },
+  { value: "most_experienced", label: "Most experienced" },
+  { value: "availability", label: "Availability" },
+];
+
+const defaultAvailability = availabilityOptions[0];
+const defaultLocation = "All locations";
+const defaultFocusArea = "All focus areas";
+const defaultSkill = "All skills";
+
+const availabilityRank: Record<string, number> = {
+  "Available Now": 0,
+  "Open to Opportunities": 1,
+  "Open to new projects": 2,
+  "Busy this month": 3,
+  Booked: 4,
+};
 
 const isConfidentialProfile = (profile: FreeAgentProfile) =>
   (profile.visibility ?? "public") === "confidential";
 
-const getIndustry = (profile: FreeAgentProfile) => {
-  const metaIndustry = (profile as FreeAgentProfile & { industry?: unknown }).industry;
-
-  if (typeof metaIndustry === "string" && metaIndustry.trim().length > 0) {
-    return metaIndustry.trim();
-  }
-
-  return profile.focusArea || "General";
-};
-
-const toBoolean = (value: unknown): boolean | null => {
-  if (typeof value === "boolean") {
-    return value;
-  }
-
-  if (typeof value === "string") {
-    const lowered = value.trim().toLowerCase();
-
-    if (lowered === "true") {
-      return true;
-    }
-
-    if (lowered === "false") {
-      return false;
-    }
-  }
-
-  return null;
-};
-
-const isPublishedProfile = (profile: FreeAgentProfile) => {
-  const meta = profile as FreeAgentProfile & {
-    published?: unknown;
-    isPublished?: unknown;
-    searchPublished?: unknown;
-    status?: unknown;
-    profileStatus?: unknown;
-  };
-
-  const explicitFlags = [meta.published, meta.isPublished, meta.searchPublished]
-    .map(toBoolean)
-    .filter((flag): flag is boolean => flag !== null);
-
-  if (explicitFlags.length > 0) {
-    return explicitFlags.some((flag) => flag);
-  }
-
-  const status = typeof meta.status === "string" ? normalize(meta.status) : "";
-  const profileStatus = typeof meta.profileStatus === "string" ? normalize(meta.profileStatus) : "";
-  const statusValue = status || profileStatus;
-
-  if (statusValue) {
-    if (["draft", "unpublished", "private", "hidden", "archived"].includes(statusValue)) {
-      return false;
-    }
-
-    if (["published", "live", "active"].includes(statusValue)) {
-      return true;
-    }
-  }
-
-  return true;
-};
-
-const isEmployerNetworkProfile = (profile: FreeAgentProfile) => {
-  if (
-    (profile.visibility ?? "public") === "verified_employer_network" ||
-    (profile.visibility ?? "public") === "employer_network"
-  ) {
-    return true;
-  }
-
-  const meta = profile as FreeAgentProfile & {
-    employerNetwork?: unknown;
-    employer_network?: unknown;
-    network?: unknown;
-  };
-
-  const booleanMeta = [meta.employerNetwork, meta.employer_network]
-    .map(toBoolean)
-    .find((value): value is boolean => value !== null);
-
-  if (typeof booleanMeta === "boolean") {
-    return booleanMeta;
-  }
-
-  if (typeof meta.network === "string") {
-    const networkValue = normalize(meta.network);
-    return networkValue === "verified_employer_network" || networkValue === "employer_network";
-  }
-
-  return false;
-};
-
 const matchesExperience = (years: number, filter: ExperienceFilter) => {
-  if (filter === "All") {
+  if (filter === "all") {
     return true;
   }
 
@@ -148,202 +76,206 @@ const matchesExperience = (years: number, filter: ExperienceFilter) => {
   return years >= 13;
 };
 
+const normalizeSearchableText = (value: string | undefined | null) => (value ?? "").toLowerCase();
+
+const getAccessGateCopy = (reason?: DiscoveryApiResponse["reason"]) => {
+  if (reason === "wrong_account_type") {
+    return "FreeAgent verifies employers before providing access to our talent network, helping create a trusted space for everyone.";
+  }
+
+  if (reason === "not_signed_in") {
+    return "Sign in with your employer account to continue to Talent Search.";
+  }
+
+  return "FreeAgent verifies employers before providing access to our talent network, helping create a trusted space for everyone.";
+};
+
 export default function EmployerTalentSearch() {
   const [profiles, setProfiles] = useState<ProfileRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [canAccessSearch, setCanAccessSearch] = useState(false);
-  const [accessStatus, setAccessStatus] = useState<string | null>(null);
+  const [accessReason, setAccessReason] = useState<DiscoveryApiResponse["reason"]>();
+  const [hasSession, setHasSession] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [availability, setAvailability] = useState<string>("All");
-  const [industry, setIndustry] = useState<string>("All");
-  const [location, setLocation] = useState<string>("All");
-  const [experience, setExperience] = useState<ExperienceFilter>("All");
-  const [confidentialMode, setConfidentialMode] = useState<ConfidentialFilter>("All");
-  const [employerNetwork, setEmployerNetwork] = useState<EmployerNetworkFilter>("All");
-  const [error, setError] = useState<string | null>(null);
+  const [availability, setAvailability] = useState<string>(defaultAvailability);
+  const [focusArea, setFocusArea] = useState<string>(defaultFocusArea);
+  const [location, setLocation] = useState<string>(defaultLocation);
+  const [experience, setExperience] = useState<ExperienceFilter>("all");
+  const [skill, setSkill] = useState<string>(defaultSkill);
+  const [sort, setSort] = useState<SortOption>("recommended");
+  const [error, setError] = useState(false);
 
-  useEffect(() => {
-    let mounted = true;
+  const loadProfiles = useCallback(async () => {
+    setIsLoading(true);
+    setError(false);
 
-    async function loadProfiles() {
-      setIsLoading(true);
+    try {
+      const currentSession = await getSessionWithRetry();
+      setHasSession(Boolean(currentSession));
 
-      const { data: sessionData } = await supabase.auth.getSession();
-      const currentSession = sessionData.session;
+      const response = await fetch("/api/discovery", {
+        method: "GET",
+        headers: currentSession?.access_token
+          ? {
+              Authorization: `Bearer ${currentSession.access_token}`,
+            }
+          : undefined,
+        cache: "no-store",
+      });
 
-      if (!currentSession) {
-        if (mounted) {
-          setCanAccessSearch(false);
-          setAccessStatus("Please sign in with a verified employer account to access Talent Search.");
-          setProfiles([]);
-          setIsLoading(false);
-        }
-        return;
-      }
+      const payload = (await response.json()) as DiscoveryApiResponse;
 
-      const { data: accountData, error: accountError } = await supabase
-        .from("profiles")
-        .select("account_type, employer_verification_status")
-        .eq("user_id", currentSession.user.id)
-        .maybeSingle();
-
-      if (!mounted) {
-        return;
-      }
-
-      if (accountError) {
+      if (!payload.allowed) {
         setCanAccessSearch(false);
-        setAccessStatus(accountError.message);
+        setAccessReason(payload.reason);
         setProfiles([]);
-        setIsLoading(false);
-        return;
-      }
-
-      const accountRow = accountData as
-        | { account_type?: AccountType; employer_verification_status?: EmployerVerificationStatus }
-        | null
-        | undefined;
-      const accountType = accountRow?.account_type ?? "talent";
-      const verificationStatus = accountRow?.employer_verification_status ?? "unverified";
-
-      if (accountType !== "employer") {
-        setCanAccessSearch(false);
-        setAccessStatus("Talent Search is available only to employer accounts.");
-        setProfiles([]);
-        setIsLoading(false);
-        return;
-      }
-
-      if (verificationStatus !== "verified") {
-        setCanAccessSearch(false);
-        setAccessStatus(
-          verificationStatus === "pending"
-            ? "Your employer verification is pending. Talent Search unlocks once your account is verified."
-            : verificationStatus === "rejected"
-              ? "Your employer verification was rejected. Update company details in Dashboard and contact support."
-              : "Your employer account is not verified yet. Complete your details in Dashboard to begin verification.",
-        );
-        setProfiles([]);
-        setIsLoading(false);
         return;
       }
 
       setCanAccessSearch(true);
-      setAccessStatus(null);
-
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("slug, profile")
-        .eq("account_type", "talent")
-        .not("slug", "is", null)
-        .order("updated_at", { ascending: false });
-
-      if (!mounted) {
-        return;
-      }
-
-      if (error) {
-        setError(error.message);
-        setProfiles([]);
-      } else if (data) {
-        const rows = (data as Array<{ slug?: string | null; profile?: unknown }> | null)
-          ?.filter((row): row is { slug: string; profile: unknown } => typeof row.slug === "string" && row.profile !== null)
-          .map((row) => ({
-            slug: row.slug,
-            profile: row.profile as FreeAgentProfile,
-          }))
-          .filter((row) => isPublishedProfile(row.profile)) ?? [];
-
-        setProfiles(rows);
-      }
-
+      setAccessReason(undefined);
+      setProfiles(
+        payload.profiles.map((item) => ({
+          slug: item.slug,
+          profile: item.profile,
+          verificationStatus: item.verificationStatus,
+        })),
+      );
+    } catch {
+      setError(true);
+      setProfiles([]);
+    } finally {
       setIsLoading(false);
     }
-
-    loadProfiles();
-
-    return () => {
-      mounted = false;
-    };
   }, []);
 
-  const industries = useMemo(
-    () => ["All", ...new Set(profiles.map((item) => getIndustry(item.profile)).filter(Boolean))],
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      void loadProfiles();
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [loadProfiles]);
+
+  const focusAreas = useMemo(
+    () => [defaultFocusArea, ...new Set(profiles.map((item) => item.profile.focusArea).filter((value) => Boolean(value)))],
     [profiles],
   );
 
   const locations = useMemo(
-    () => ["All", ...new Set(profiles.map((item) => item.profile.location).filter(Boolean))],
+    () => [defaultLocation, ...new Set(profiles.map((item) => item.profile.location).filter((value) => Boolean(value)))],
     [profiles],
   );
+
+  const skills = useMemo(
+    () => [
+      defaultSkill,
+      ...new Set(
+        profiles.flatMap((item) => item.profile.skills).filter((value) => Boolean(value)),
+      ),
+    ],
+    [profiles],
+  );
+
+  const clearFilters = () => {
+    setSearchTerm("");
+    setAvailability(defaultAvailability);
+    setFocusArea(defaultFocusArea);
+    setLocation(defaultLocation);
+    setExperience("all");
+    setSkill(defaultSkill);
+    setSort("recommended");
+  };
+
+  const hasActiveFilters =
+    searchTerm.trim().length > 0 ||
+    availability !== defaultAvailability ||
+    focusArea !== defaultFocusArea ||
+    location !== defaultLocation ||
+    experience !== "all" ||
+    skill !== defaultSkill;
 
   const filteredProfiles = useMemo(() => {
     const query = searchTerm.trim().toLowerCase();
 
     return profiles.filter((item) => {
       const profile = item.profile;
-      const isConfidential = isConfidentialProfile(profile);
-      const isEmployerNetwork = isEmployerNetworkProfile(profile);
-      const profileIndustry = getIndustry(profile);
+      const profileSearchText = [
+        normalizeSearchableText(profile.title),
+        normalizeSearchableText(profile.focusArea),
+        normalizeSearchableText(profile.topStrength),
+        normalizeSearchableText(profile.location),
+        normalizeSearchableText(profile.summary),
+        normalizeSearchableText(profile.name),
+        profile.skills.map((itemSkill) => itemSkill.toLowerCase()).join(" "),
+      ].join(" ");
 
-      const matchesQuery =
-        query === "" ||
-        [profile.name, profile.title, profile.location, profile.focusArea, profileIndustry, profile.topStrength]
-          .join(" ")
-          .toLowerCase()
-          .includes(query) ||
-        profile.skills.some((skill) => skill.toLowerCase().includes(query));
-
-      const matchesAvailability = availability === "All" || profile.availability === availability;
-      const matchesIndustry = industry === "All" || profileIndustry === industry;
-      const matchesLocation = location === "All" || profile.location === location;
+      const matchesQuery = query.length === 0 || profileSearchText.includes(query);
+      const matchesAvailability = availability === defaultAvailability || profile.availability === availability;
+      const matchesFocusArea = focusArea === defaultFocusArea || profile.focusArea === focusArea;
+      const matchesLocation = location === defaultLocation || profile.location === location;
+      const matchesSkill = skill === defaultSkill || profile.skills.includes(skill);
       const matchesExperienceFilter = matchesExperience(profile.experienceYears, experience);
-      const matchesConfidentialMode =
-        confidentialMode === "All" ||
-        (confidentialMode === "Confidential only" && isConfidential) ||
-        (confidentialMode === "Non-confidential" && !isConfidential);
 
-      const matchesEmployerNetwork =
-        employerNetwork === "All" ||
-        (employerNetwork === "Verified network only" && isEmployerNetwork) ||
-        (employerNetwork === "Outside verified network" && !isEmployerNetwork);
-
-      return (
-        matchesQuery &&
-        matchesAvailability &&
-        matchesIndustry &&
-        matchesLocation &&
-        matchesExperienceFilter &&
-        matchesConfidentialMode &&
-        matchesEmployerNetwork
-      );
+      return matchesQuery && matchesAvailability && matchesFocusArea && matchesLocation && matchesExperienceFilter && matchesSkill;
     });
-  }, [profiles, availability, industry, location, experience, confidentialMode, employerNetwork, searchTerm]);
+  }, [profiles, searchTerm, availability, focusArea, location, experience, skill]);
+
+  const sortedProfiles = useMemo(() => {
+    if (sort === "recommended") {
+      return filteredProfiles;
+    }
+
+    const rows = [...filteredProfiles];
+
+    if (sort === "most_experienced") {
+      rows.sort((a, b) => b.profile.experienceYears - a.profile.experienceYears);
+      return rows;
+    }
+
+    rows.sort((a, b) => {
+      const aRank = availabilityRank[a.profile.availability] ?? 999;
+      const bRank = availabilityRank[b.profile.availability] ?? 999;
+
+      if (aRank !== bRank) {
+        return aRank - bRank;
+      }
+
+      return b.profile.experienceYears - a.profile.experienceYears;
+    });
+
+    return rows;
+  }, [filteredProfiles, sort]);
 
   if (!isLoading && !canAccessSearch) {
     return (
-      <section className="mx-auto max-w-7xl px-6 pb-20 sm:px-8 lg:px-12">
-        <div className="rounded-[36px] border border-[#cda64d]/45 bg-[#f7ebcf]/85 p-8 text-[#071426] shadow-[0_18px_55px_rgba(6,16,33,0.12)] sm:p-10">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Employer verification required</p>
+      <section className="mx-auto max-w-7xl px-6 py-12 sm:px-8 lg:px-12">
+        <div className="rounded-[36px] border border-[#cda64d]/45 bg-[#f7ebcf]/90 p-8 text-[#071426] shadow-[0_18px_55px_rgba(6,16,33,0.12)] sm:p-10">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">EMPLOYER VERIFICATION REQUIRED</p>
           <h2 className="mt-4 text-3xl font-black uppercase tracking-[0.12em] text-[#0f2744] sm:text-4xl">
-            Talent Search is restricted to verified employers.
+            UNLOCK TALENT SEARCH
           </h2>
           <p className="mt-4 max-w-3xl text-base leading-8 text-[#27405f]">
-            {accessStatus ?? "Please verify your employer account to continue."}
+            {getAccessGateCopy(accessReason)}
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center justify-center rounded-full border border-[#0f2744]/25 bg-[#0f2744] px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f]"
-            >
-              Open dashboard
-            </Link>
-            <Link
-              href="/login"
-              className="inline-flex items-center justify-center rounded-full border border-[#cda64d]/40 bg-[#f7ebcf] px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#0f2744] transition hover:bg-[#e9d88f]"
-            >
-              Sign in
-            </Link>
+            {hasSession ? (
+              <Link
+                href="/dashboard"
+                className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#0f2744]/25 bg-[#0f2744] px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f]"
+              >
+                Complete employer verification
+              </Link>
+            ) : (
+              <Link
+                href="/employer/auth"
+                className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#0f2744]/25 bg-[#0f2744] px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f]"
+              >
+                Create employer account
+              </Link>
+            )}
           </div>
         </div>
       </section>
@@ -351,212 +283,240 @@ export default function EmployerTalentSearch() {
   }
 
   return (
-    <section className="mx-auto max-w-7xl px-6 pb-20 sm:px-8 lg:px-12">
-      <div className="grid gap-8 rounded-[36px] border border-[#cda64d]/45 bg-[#f7ebcf]/70 p-6 shadow-[0_18px_55px_rgba(6,16,33,0.12)] sm:p-8">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
-              Live talent search
+    <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-10 lg:py-12">
+      <div className="rounded-[36px] border border-[#cda64d]/45 bg-[#f7ebcf]/78 p-5 shadow-[0_18px_55px_rgba(6,16,33,0.12)] sm:p-7 lg:p-8">
+        <header className="grid gap-6 border-b border-[#cda64d]/30 pb-7 lg:grid-cols-[1.1fr_1fr] lg:items-end">
+          <div className="max-w-2xl">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">PREMIUM TALENT</p>
+            <h1 className="mt-3 text-4xl font-black uppercase tracking-[0.12em] text-[#0f2744] sm:text-5xl">FIND TALENT</h1>
+            <p className="mt-3 text-base font-semibold text-[#17355f] sm:text-lg">Discover people worth meeting.</p>
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-[#27405f] sm:text-base">
+              Discover experienced professionals open to their next move - including talent exploring opportunities discreetly.
             </p>
-            <h2 className="mt-3 text-3xl font-black uppercase tracking-[0.12em] text-[#0f2744] sm:text-4xl">
-              Filter public profiles the way hiring teams expect.
-            </h2>
           </div>
           <div className="rounded-[24px] border border-[#cda64d]/35 bg-[#0f2744] p-4 text-[#f7ebcf] shadow-[0_12px_40px_rgba(6,16,33,0.14)]">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">Talent live count</p>
-            <p className="mt-3 text-3xl font-black text-[#f7ebcf]">{filteredProfiles.length}</p>
-            <p className="mt-2 text-sm text-[#dfe7ef]">public profiles available now</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">{sortedProfiles.length} TALENT PROFILES</p>
+            <p className="mt-3 text-sm leading-7 text-[#dfe7ef]">People open to the right opportunity.</p>
+            <div className="mt-4 flex items-center gap-2 text-[10px] uppercase tracking-[0.24em] text-[#f2cc63]">
+              <SlidersHorizontal className="h-3.5 w-3.5" />
+              Sort: {sortOptions.find((option) => option.value === sort)?.label}
+            </div>
           </div>
-        </div>
+        </header>
 
-        <div className="grid gap-4 sm:grid-cols-[1.3fr_0.7fr] lg:grid-cols-[1.6fr_1fr]">
-          <label className="relative block w-full rounded-[24px] border border-[#cda64d]/30 bg-white/90 shadow-sm">
-            <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-[#9a6d15]">
+        <div className="mt-5 rounded-[24px] border border-[#cda64d]/30 bg-white/90 p-3 shadow-sm sm:p-4">
+          <label htmlFor="talent-search" className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">
+            Search
+          </label>
+          <div className="relative">
+            <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-[#9a6d15]">
               <Search className="h-4 w-4" />
             </span>
             <input
+              id="talent-search"
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Search name, title, skill or location"
-              className="w-full rounded-[24px] border-none bg-transparent px-12 py-4 text-sm font-semibold text-[#071426] outline-none placeholder:text-slate-400"
+              placeholder="Search by role, skill or keyword"
+              className="h-12 w-full rounded-[16px] border border-[#cda64d]/30 bg-[#fffdf7] px-10 text-sm font-semibold text-[#071426] outline-none transition placeholder:text-[#6f7f92] focus:border-[#0f2744]"
             />
-          </label>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-[24px] border border-[#cda64d]/30 bg-white/90 p-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Availability</p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {availabilityOptions.map((option) => (
-                  <button
-                    key={option}
-                    type="button"
-                    onClick={() => setAvailability(option)}
-                    className={`rounded-full px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] transition ${
-                      availability === option
-                        ? "bg-[#0f2744] text-[#f7ebcf]"
-                        : "bg-[#f7ebcf]/80 text-[#0f2744] hover:bg-[#f7ebcf]"
-                    }`}
-                  >
+          </div>
+          <p className="mt-2 text-xs text-[#4e5f74]">e.g. Venue Manager, events, operations, leadership</p>
+        </div>
+
+        <div className="mt-5 rounded-[24px] border border-[#cda64d]/30 bg-white/90 p-3 shadow-sm sm:p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Filters</p>
+            <button
+              type="button"
+              onClick={clearFilters}
+              disabled={!hasActiveFilters}
+              className="inline-flex min-h-11 items-center rounded-full border border-[#0f2744]/20 px-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#0f2744] transition disabled:cursor-not-allowed disabled:opacity-45 hover:bg-[#f3e8c8]"
+            >
+              Clear filters
+            </button>
+          </div>
+
+          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-[1.15fr_1fr_1fr_1fr_1fr_0.9fr]">
+            <div>
+              <label htmlFor="filter-location" className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6a7a91]">
+                Location
+              </label>
+              <select
+                id="filter-location"
+                value={location}
+                onChange={(event) => setLocation(event.target.value)}
+                className="h-11 w-full rounded-[14px] border border-[#cda64d]/35 bg-[#fffdf7] px-3 text-sm text-[#0f2744] outline-none focus:border-[#0f2744]"
+              >
+                {locations.map((option) => (
+                  <option key={option} value={option}>
                     {option}
-                  </button>
+                  </option>
                 ))}
-              </div>
+              </select>
             </div>
-            <div className="rounded-[24px] border border-[#cda64d]/30 bg-white/90 p-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Industry</p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {industries.slice(0, 8).map((option) => (
-                  <button
-                    key={option}
-                    type="button"
-                    onClick={() => setIndustry(option)}
-                    className={`rounded-full px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] transition ${
-                      industry === option
-                        ? "bg-[#0f2744] text-[#f7ebcf]"
-                        : "bg-[#f7ebcf]/80 text-[#0f2744] hover:bg-[#f7ebcf]"
-                    }`}
-                  >
-                    {option}
-                  </button>
+
+              <div>
+                <label htmlFor="filter-experience" className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6a7a91]">
+                  Experience
+                </label>
+                <select
+                  id="filter-experience"
+                  value={experience}
+                  onChange={(event) => setExperience(event.target.value as ExperienceFilter)}
+                  className="h-11 w-full rounded-[14px] border border-[#cda64d]/35 bg-[#fffdf7] px-3 text-sm text-[#0f2744] outline-none focus:border-[#0f2744]"
+                >
+                  {experienceOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="filter-availability" className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6a7a91]">
+                  Availability
+                </label>
+                <select
+                  id="filter-availability"
+                  value={availability}
+                  onChange={(event) => setAvailability(event.target.value)}
+                  className="h-11 w-full rounded-[14px] border border-[#cda64d]/35 bg-[#fffdf7] px-3 text-sm text-[#0f2744] outline-none focus:border-[#0f2744]"
+                >
+                  {availabilityOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="filter-skills" className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6a7a91]">
+                  Skills
+                </label>
+                <select
+                  id="filter-skills"
+                  value={skill}
+                  onChange={(event) => setSkill(event.target.value)}
+                  className="h-11 w-full rounded-[14px] border border-[#cda64d]/35 bg-[#fffdf7] px-3 text-sm text-[#0f2744] outline-none focus:border-[#0f2744]"
+                >
+                  {skills.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="filter-focus" className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6a7a91]">
+                  Focus area
+                </label>
+                <select
+                  id="filter-focus"
+                  value={focusArea}
+                  onChange={(event) => setFocusArea(event.target.value)}
+                  className="h-11 w-full rounded-[14px] border border-[#cda64d]/35 bg-[#fffdf7] px-3 text-sm text-[#0f2744] outline-none focus:border-[#0f2744]"
+                >
+                  {focusAreas.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+            <div>
+              <label htmlFor="sort-results" className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6a7a91]">
+                Sort
+              </label>
+              <select
+                id="sort-results"
+                value={sort}
+                onChange={(event) => setSort(event.target.value as SortOption)}
+                className="h-11 w-full rounded-[14px] border border-[#cda64d]/35 bg-[#fffdf7] px-3 text-sm text-[#0f2744] outline-none focus:border-[#0f2744]"
+              >
+                {sortOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
                 ))}
-              </div>
+              </select>
             </div>
           </div>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-2">
-          <div className="rounded-[24px] border border-[#cda64d]/30 bg-white/90 p-5 shadow-sm">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Location</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {locations.slice(0, 8).map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={() => setLocation(option)}
-                  className={`rounded-full px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] transition ${
-                    location === option
-                      ? "bg-[#0f2744] text-[#f7ebcf]"
-                      : "bg-[#f7ebcf]/80 text-[#0f2744] hover:bg-[#f7ebcf]"
-                  }`}
-                >
-                  {option}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-[24px] border border-[#cda64d]/30 bg-white/90 p-5 shadow-sm">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Experience</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {experienceOptions.map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={() => setExperience(option)}
-                  className={`rounded-full px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] transition ${
-                    experience === option
-                      ? "bg-[#0f2744] text-[#f7ebcf]"
-                      : "bg-[#f7ebcf]/80 text-[#0f2744] hover:bg-[#f7ebcf]"
-                  }`}
-                >
-                  {option}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="grid gap-4 lg:grid-cols-[1.1fr_1.1fr_0.8fr]">
-          <div className="rounded-[24px] border border-[#cda64d]/30 bg-white/90 p-5 shadow-sm">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Confidential mode</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {confidentialOptions.map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={() => setConfidentialMode(option)}
-                  className={`rounded-full px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] transition ${
-                    confidentialMode === option
-                      ? "bg-[#0f2744] text-[#f7ebcf]"
-                      : "bg-[#f7ebcf]/80 text-[#0f2744] hover:bg-[#f7ebcf]"
-                  }`}
-                >
-                  {option}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-[24px] border border-[#cda64d]/30 bg-white/90 p-5 shadow-sm">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Verified employer network</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {employerNetworkOptions.map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={() => setEmployerNetwork(option)}
-                  className={`rounded-full px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] transition ${
-                    employerNetwork === option
-                      ? "bg-[#0f2744] text-[#f7ebcf]"
-                      : "bg-[#f7ebcf]/80 text-[#0f2744] hover:bg-[#f7ebcf]"
-                  }`}
-                >
-                  {option}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-[24px] border border-[#cda64d]/30 bg-[#0f2744] p-5 text-[#f7ebcf] shadow-sm">
-            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">
-              <Sparkles className="h-4 w-4" />
-              Premium filters
-            </div>
-            <p className="mt-3 text-sm leading-7 text-[#dfe7ef]">
-              Search published Talent Passports and quickly narrow results for specific hiring outcomes.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="mx-auto grid max-w-7xl gap-8 px-6 sm:px-8 lg:px-12">
-        {!isLoading && filteredProfiles.some((item) => isConfidentialProfile(item.profile)) ? (
+        {!isLoading && sortedProfiles.some((item) => isConfidentialProfile(item.profile)) ? (
           <div className="rounded-[30px] border border-[#cda64d]/55 bg-[#0f2744] p-6 text-[#f7ebcf] shadow-[0_12px_40px_rgba(6,16,33,0.2)]">
             <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">Confidential Mode</p>
             <p className="mt-3 text-sm leading-7 text-[#dfe7ef]">
-              Confidential profiles are anonymised by design. Name, photo, current employer and contact details are hidden to protect candidate privacy.
+              Confidential profiles remain anonymised by design and are surfaced only through employer-authorized information.
             </p>
           </div>
         ) : null}
 
+        <div className="mt-6">
+
         {isLoading ? (
-          <div className="rounded-[36px] border border-[#cda64d]/45 bg-[#0f2744]/20 p-10 text-[#0f2744] shadow-[0_18px_55px_rgba(6,16,33,0.12)]">
-            <p className="text-lg font-semibold uppercase tracking-[0.24em] text-[#0f2744]">Loading talent...</p>
+          <div role="status" aria-live="polite" className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <div
+                key={`loading-skeleton-${index}`}
+                className="aspect-[2.5/3.5] w-full rounded-[28px] border border-[#cda64d]/35 bg-[#fff5db]/70 p-4 shadow-[0_10px_28px_rgba(7,19,38,0.1)]"
+              >
+                <div className="h-full w-full animate-pulse rounded-[20px] bg-[linear-gradient(135deg,rgba(15,39,68,0.08)_0%,rgba(15,39,68,0.2)_100%)]" />
+              </div>
+            ))}
+            <span className="sr-only">Loading talent profiles</span>
           </div>
         ) : error ? (
-          <div className="rounded-[36px] border border-[#cda64d]/45 bg-[#fee3b6]/30 p-10 text-[#0f2744] shadow-[0_18px_55px_rgba(6,16,33,0.12)]">
-            <p className="text-lg font-semibold uppercase tracking-[0.24em] text-[#0f2744]">Unable to load profiles</p>
-            <p className="mt-3 text-sm leading-7">{error}</p>
+          <div role="alert" className="rounded-[36px] border border-[#cda64d]/45 bg-[#fee3b6]/30 p-10 text-[#0f2744] shadow-[0_18px_55px_rgba(6,16,33,0.12)]">
+            <p className="text-lg font-semibold uppercase tracking-[0.24em] text-[#0f2744]">WE COULDN&apos;T LOAD TALENT</p>
+            <p className="mt-3 text-sm leading-7">Something went wrong while loading the talent network.</p>
+            <button
+              type="button"
+              onClick={() => void loadProfiles()}
+              className="mt-5 inline-flex min-h-11 items-center rounded-full border border-[#0f2744]/25 bg-[#0f2744] px-5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f]"
+            >
+              Try again
+            </button>
           </div>
-        ) : filteredProfiles.length === 0 ? (
+        ) : profiles.length === 0 ? (
           <div className="rounded-[36px] border border-[#cda64d]/45 bg-[#f7ebcf]/90 p-10 text-[#071426] shadow-[0_18px_55px_rgba(6,16,33,0.12)]">
-            <p className="text-lg font-black uppercase tracking-[0.24em] text-[#0f2744]">No talent matched yet</p>
+            <p className="text-lg font-black uppercase tracking-[0.24em] text-[#0f2744]">NEW TALENT IS ON THE WAY</p>
             <p className="mt-4 max-w-2xl text-base leading-8 text-[#27405f]">
-              Try broadening your search, clearing the filters, or checking back once more profiles are published.
+              There aren&apos;t any matching profiles available right now. Check back as the FreeAgent network grows.
             </p>
           </div>
+        ) : sortedProfiles.length === 0 ? (
+          <div className="rounded-[36px] border border-[#cda64d]/45 bg-[#f7ebcf]/90 p-10 text-[#071426] shadow-[0_18px_55px_rgba(6,16,33,0.12)]">
+            <p className="text-lg font-black uppercase tracking-[0.24em] text-[#0f2744]">NO EXACT MATCHES YET</p>
+            <p className="mt-4 max-w-2xl text-base leading-8 text-[#27405f]">
+              Try broadening your search or clearing a filter.
+            </p>
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="mt-5 inline-flex min-h-11 items-center rounded-full border border-[#0f2744]/25 bg-[#0f2744] px-5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f]"
+            >
+              Clear filters
+            </button>
+          </div>
         ) : (
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {filteredProfiles.map((item) => (
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            {sortedProfiles.map((item) => (
               <TalentCard
                 key={item.slug}
                 profile={item.profile}
                 href={`/talent/${item.slug}`}
-                verificationStatus={null}
+                verificationStatus={item.verificationStatus}
                 className="w-full"
               />
             ))}
           </div>
         )}
+        </div>
       </div>
     </section>
   );

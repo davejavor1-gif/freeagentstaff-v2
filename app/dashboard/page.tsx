@@ -8,7 +8,6 @@ import type { Session } from "@supabase/supabase-js";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
 import type {
   AccountType,
-  EmployerProfileDetails,
   EmployerVerificationStatus,
   FreeAgentProfile,
   IntroductionRequest,
@@ -42,18 +41,13 @@ export default function DashboardPage() {
   const [session, setSession] = useState<Session | null>(null);
   const [accountType, setAccountType] = useState<AccountType>("talent");
   const [verificationStatus, setVerificationStatus] = useState<EmployerVerificationStatus>("unverified");
-  const [employerProfile, setEmployerProfile] = useState<EmployerProfileDetails>({
-    companyName: "",
-    abn: "",
-    website: "",
-    industry: "",
-    companySize: "",
-  });
+  const [verificationRequestedAt, setVerificationRequestedAt] = useState<string | null>(null);
+  const [verificationRejectionReason, setVerificationRejectionReason] = useState<string | null>(null);
+  const [employerCompanyName, setEmployerCompanyName] = useState("");
   const [profile, setProfile] = useState<FreeAgentProfile | null>(null);
   const [requests, setRequests] = useState<IntroductionRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
-  const [isSavingEmployerProfile, setIsSavingEmployerProfile] = useState(false);
   const [questionDrafts, setQuestionDrafts] = useState<Record<string, string>>({});
   const [feedback, setFeedback] = useState<string | null>(null);
   const router = useRouter();
@@ -80,7 +74,7 @@ export default function DashboardPage() {
 
       const { data: profileRow } = await supabase
         .from("profiles")
-        .select("profile, slug, account_type, employer_company_name, employer_abn, employer_website, employer_industry, employer_company_size, employer_verification_status")
+        .select("profile, slug, account_type, employer_contact_name, employer_contact_role, employer_company_name, employer_abn, employer_website, employer_industry, employer_company_size, employer_verification_status, verification_requested_at, verification_rejection_reason")
         .eq("user_id", session.user.id)
         .maybeSingle();
 
@@ -93,12 +87,14 @@ export default function DashboardPage() {
         const insertPayload = {
           user_id: session.user.id,
           account_type: fallbackAccountType,
+          employer_contact_name: null,
+          employer_contact_role: null,
           employer_company_name: null,
           employer_abn: null,
           employer_website: null,
           employer_industry: null,
           employer_company_size: null,
-          employer_verification_status: fallbackAccountType === "employer" ? "pending" : "unverified",
+          employer_verification_status: "unverified",
           slug: fallbackAccountType === "talent" ? defaultTalentProfile.slug ?? null : null,
           profile: fallbackAccountType === "talent" ? (defaultTalentProfile as unknown as Record<string, unknown>) : {},
         };
@@ -114,7 +110,10 @@ export default function DashboardPage() {
         }
 
         setAccountType(fallbackAccountType);
-        setVerificationStatus(fallbackAccountType === "employer" ? "pending" : "unverified");
+        setVerificationStatus("unverified");
+        setVerificationRequestedAt(null);
+        setVerificationRejectionReason(null);
+        setEmployerCompanyName("");
         setProfile(fallbackAccountType === "talent" ? defaultTalentProfile : null);
         setRequests([]);
         setLoading(false);
@@ -125,12 +124,16 @@ export default function DashboardPage() {
         profile?: unknown;
         slug?: string | null;
         account_type?: AccountType;
+        employer_contact_name?: string | null;
+        employer_contact_role?: string | null;
         employer_company_name?: string | null;
         employer_abn?: string | null;
         employer_website?: string | null;
         employer_industry?: string | null;
         employer_company_size?: string | null;
         employer_verification_status?: EmployerVerificationStatus;
+        verification_requested_at?: string | null;
+        verification_rejection_reason?: string | null;
       } | null | undefined;
       const resolvedAccountType = profileRowData?.account_type === "employer" ? "employer" : "talent";
       const profilePayload = profileRowData?.profile as FreeAgentProfile | undefined;
@@ -143,13 +146,9 @@ export default function DashboardPage() {
 
       setAccountType(resolvedAccountType);
       setVerificationStatus(profileRowData?.employer_verification_status ?? "unverified");
-      setEmployerProfile({
-        companyName: profileRowData?.employer_company_name ?? "",
-        abn: profileRowData?.employer_abn ?? "",
-        website: profileRowData?.employer_website ?? "",
-        industry: profileRowData?.employer_industry ?? "",
-        companySize: profileRowData?.employer_company_size ?? "",
-      });
+      setVerificationRequestedAt(profileRowData?.verification_requested_at ?? null);
+      setVerificationRejectionReason(profileRowData?.verification_rejection_reason ?? null);
+      setEmployerCompanyName(profileRowData?.employer_company_name ?? "");
       setProfile(nextProfile);
       setRequests(nextRequests);
       setLoading(false);
@@ -179,23 +178,31 @@ export default function DashboardPage() {
   const pendingCount = useMemo(() => requests.filter((request) => request.status === "pending").length, [requests]);
   const unreadCount = useMemo(() => requests.filter((request) => request.status === "pending" && !request.isRead).length, [requests]);
   const isVerifiedEmployer = accountType === "employer" && verificationStatus === "verified";
+  const formattedRequestedAt = useMemo(() => {
+    if (!verificationRequestedAt) {
+      return "Pending confirmation";
+    }
+
+    const value = new Date(verificationRequestedAt);
+    if (Number.isNaN(value.getTime())) {
+      return "Pending confirmation";
+    }
+
+    return value.toLocaleString();
+  }, [verificationRequestedAt]);
 
   const saveRequests = async (nextRequests: IntroductionRequest[]) => {
     if (!session || !profile || accountType !== "talent") {
       return;
     }
 
-    const { error } = await supabase.from("profiles").upsert(
-      [
-        {
-          user_id: session.user.id,
-          account_type: "talent",
-          slug: profile.slug ?? null,
-          profile: { ...profile, introductionRequests: nextRequests } as unknown as Record<string, unknown>,
-        } as never,
-      ],
-      { onConflict: "user_id" } as never,
-    );
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        slug: profile.slug ?? null,
+        profile: { ...profile, introductionRequests: nextRequests } as unknown as Record<string, unknown>,
+      } as never)
+      .eq("user_id", session.user.id);
 
     if (error) {
       throw error;
@@ -203,46 +210,6 @@ export default function DashboardPage() {
 
     setProfile((current) => (current ? { ...current, introductionRequests: nextRequests } : current));
     setRequests(nextRequests);
-  };
-
-  const saveEmployerDetails = async () => {
-    if (!session || accountType !== "employer") {
-      return;
-    }
-
-    setIsSavingEmployerProfile(true);
-    setFeedback(null);
-
-    const nextStatus: EmployerVerificationStatus =
-      verificationStatus === "verified" || verificationStatus === "rejected" ? verificationStatus : "pending";
-
-    const { error } = await supabase.from("profiles").upsert(
-      [
-        {
-          user_id: session.user.id,
-          account_type: "employer",
-          employer_company_name: employerProfile.companyName || null,
-          employer_abn: employerProfile.abn || null,
-          employer_website: employerProfile.website || null,
-          employer_industry: employerProfile.industry || null,
-          employer_company_size: employerProfile.companySize || null,
-          employer_verification_status: nextStatus,
-          slug: null,
-          profile: {},
-        } as never,
-      ],
-      { onConflict: "user_id" } as never,
-    );
-
-    setIsSavingEmployerProfile(false);
-
-    if (error) {
-      setFeedback(error.message);
-      return;
-    }
-
-    setVerificationStatus(nextStatus);
-    setFeedback("Employer profile saved. Verification status updated.");
   };
 
   const updateRequest = async (requestId: string, updates: Partial<IntroductionRequest>) => {
@@ -270,7 +237,7 @@ export default function DashboardPage() {
 
   const signOut = async () => {
     await supabase.auth.signOut();
-    router.replace("/login");
+    router.replace(accountType === "employer" ? "/employer/auth" : "/login");
   };
 
   if (loading) {
@@ -331,6 +298,9 @@ export default function DashboardPage() {
               </>
             ) : (
               <>
+                <Link href="/onboarding/employer" className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
+                  Employer account
+                </Link>
                 <Link
                   href="/find-talent"
                   className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${
@@ -346,9 +316,6 @@ export default function DashboardPage() {
                   }}
                 >
                   Find talent
-                </Link>
-                <Link href="/settings/privacy" className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
-                  Privacy & visibility
                 </Link>
               </>
             )}
@@ -366,88 +333,105 @@ export default function DashboardPage() {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Employer profile</p>
-                <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900">Verification details</h2>
+                <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900">Employer verification</h2>
               </div>
               <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700">
                 Status: {verificationLabel[verificationStatus]}
               </div>
             </div>
 
-            <div className="mt-8 grid gap-4 sm:grid-cols-2">
-              <label className="space-y-2 text-sm font-semibold text-slate-700">
-                Company name
-                <input
-                  value={employerProfile.companyName}
-                  onChange={(event) =>
-                    setEmployerProfile((current) => ({ ...current, companyName: event.target.value }))
-                  }
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
-                  placeholder="Acme Advisory"
-                />
-              </label>
+            <div className="mt-8 rounded-[24px] border border-slate-200 bg-slate-50 p-6">
+              {verificationStatus === "unverified" ? (
+                <>
+                  <h3 className="text-lg font-black uppercase tracking-[0.08em] text-slate-900">Complete employer setup</h3>
+                  <p className="mt-3 text-sm leading-7 text-slate-600">
+                    Complete your employer profile and submit it for review before talent search unlocks.
+                  </p>
 
-              <label className="space-y-2 text-sm font-semibold text-slate-700">
-                ABN
-                <input
-                  value={employerProfile.abn}
-                  onChange={(event) =>
-                    setEmployerProfile((current) => ({ ...current, abn: event.target.value }))
-                  }
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
-                  placeholder="11 222 333 444"
-                />
-              </label>
+                  <div className="mt-5 flex flex-wrap gap-3">
+                    <Link
+                      href="/onboarding/employer"
+                      className="inline-flex min-h-[44px] items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-slate-800"
+                    >
+                      Complete employer setup
+                    </Link>
+                  </div>
+                </>
+              ) : null}
 
-              <label className="space-y-2 text-sm font-semibold text-slate-700">
-                Website
-                <input
-                  value={employerProfile.website}
-                  onChange={(event) =>
-                    setEmployerProfile((current) => ({ ...current, website: event.target.value }))
-                  }
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
-                  placeholder="https://example.com"
-                />
-              </label>
+              {verificationStatus === "pending" ? (
+                <>
+                  <div className="rounded-[22px] border border-amber-200 bg-amber-50 p-5">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-amber-700">Verification in review</p>
+                    <h3 className="mt-2 text-lg font-black uppercase tracking-[0.08em] text-slate-900">Submission received</h3>
+                    <p className="mt-3 text-sm leading-7 text-slate-600">
+                      Your employer verification is in review. FreeAgent will notify you once the assessment is complete.
+                    </p>
+                    <p className="mt-3 text-sm font-semibold text-slate-700">Submitted: {formattedRequestedAt}</p>
 
-              <label className="space-y-2 text-sm font-semibold text-slate-700">
-                Industry
-                <input
-                  value={employerProfile.industry}
-                  onChange={(event) =>
-                    setEmployerProfile((current) => ({ ...current, industry: event.target.value }))
-                  }
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
-                  placeholder="Technology"
-                />
-              </label>
+                    <div className="mt-4 flex flex-wrap gap-3">
+                      <Link
+                        href="/onboarding/employer"
+                        className="inline-flex min-h-[44px] items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-slate-800"
+                      >
+                        View submission
+                      </Link>
+                      <span className="inline-flex min-h-[44px] items-center justify-center rounded-2xl border border-slate-300 bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-500">
+                        Find Talent locked until verified
+                      </span>
+                    </div>
+                  </div>
+                </>
+              ) : null}
 
-              <label className="space-y-2 text-sm font-semibold text-slate-700 sm:col-span-2">
-                Company size
-                <input
-                  value={employerProfile.companySize}
-                  onChange={(event) =>
-                    setEmployerProfile((current) => ({ ...current, companySize: event.target.value }))
-                  }
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
-                  placeholder="51-200 employees"
-                />
-              </label>
-            </div>
+              {verificationStatus === "verified" ? (
+                <>
+                  <h3 className="text-lg font-black uppercase tracking-[0.08em] text-slate-900">Verified access enabled</h3>
+                  <p className="mt-3 text-sm leading-7 text-slate-600">
+                    {employerCompanyName
+                      ? `${employerCompanyName} is verified. You can access the FreeAgent talent network now.`
+                      : "Your employer account is verified. You can access the FreeAgent talent network now."}
+                  </p>
 
-            <div className="mt-6 flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                disabled={isSavingEmployerProfile}
-                onClick={saveEmployerDetails}
-                className="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isSavingEmployerProfile ? "Saving..." : "Save employer profile"}
-              </button>
-              {!isVerifiedEmployer ? (
-                <p className="text-sm leading-7 text-slate-600">
-                  Talent Search is unlocked after verification is marked as Verified.
-                </p>
+                  <div className="mt-5 flex flex-wrap gap-3">
+                    <Link
+                      href="/find-talent"
+                      className="inline-flex min-h-[44px] items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-slate-800"
+                    >
+                      Find talent
+                    </Link>
+                    <Link
+                      href="/onboarding/employer"
+                      className="inline-flex min-h-[44px] items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+                    >
+                      View employer profile
+                    </Link>
+                  </div>
+                </>
+              ) : null}
+
+              {verificationStatus === "rejected" ? (
+                <>
+                  <h3 className="text-lg font-black uppercase tracking-[0.08em] text-slate-900">Verification needs attention</h3>
+                  <p className="mt-3 text-sm leading-7 text-slate-600">
+                    We couldn&apos;t verify your employer account. Update your details and resubmit.
+                  </p>
+
+                  {verificationRejectionReason ? (
+                    <p className="mt-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm leading-7 text-rose-800">
+                      Reason: {verificationRejectionReason}
+                    </p>
+                  ) : null}
+
+                  <div className="mt-5 flex flex-wrap gap-3">
+                    <Link
+                      href="/onboarding/employer"
+                      className="inline-flex min-h-[44px] items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-slate-800"
+                    >
+                      Review and resubmit
+                    </Link>
+                  </div>
+                </>
               ) : null}
             </div>
           </div>

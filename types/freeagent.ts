@@ -14,6 +14,8 @@ export type AccountType = "talent" | "employer";
 export type EmployerVerificationStatus = "unverified" | "pending" | "verified" | "rejected";
 
 export interface EmployerProfileDetails {
+  contactName: string;
+  contactRole: string;
   companyName: string;
   abn: string;
   website: string;

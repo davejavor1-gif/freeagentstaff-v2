@@ -99,7 +99,7 @@ export default function LoginPage() {
     if (data.session) {
       const profilePayload =
         accountType === "talent" ? (createBlankTalentProfile(data.session.user.id, data.session.user.email) as unknown as Record<string, unknown>) : {};
-      const verificationStatus: EmployerVerificationStatus = accountType === "employer" ? "pending" : "unverified";
+      const verificationStatus: EmployerVerificationStatus = "unverified";
       const slug = accountType === "talent" ? `freeagent-${data.session.user.id.slice(0, 8)}` : null;
 
       const { error: insertError } = await supabase.from("profiles").upsert(
@@ -107,6 +107,8 @@ export default function LoginPage() {
           {
             user_id: data.session.user.id,
             account_type: accountType,
+            employer_contact_name: null,
+            employer_contact_role: null,
             employer_company_name: null,
             employer_abn: null,
             employer_website: null,
@@ -125,7 +127,7 @@ export default function LoginPage() {
         return;
       }
 
-      router.replace("/dashboard");
+      router.replace(accountType === "employer" ? "/onboarding/employer" : "/dashboard");
       return;
     }
 
@@ -172,24 +174,36 @@ export default function LoginPage() {
           {authMode === "sign-up" ? (
             <div className="mb-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-600">Create account as</p>
-              <div className="mt-3 grid grid-cols-2 gap-2">
+              <div className="mt-3 grid gap-3">
                 <button
                   type="button"
                   onClick={() => setAccountType("talent")}
-                  className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
-                    accountType === "talent" ? "bg-slate-900 text-white" : "bg-white text-slate-700 hover:bg-slate-100"
+                  className={`rounded-2xl border px-4 py-4 text-left transition ${
+                    accountType === "talent"
+                      ? "border-slate-900 bg-slate-900 text-white"
+                      : "border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
                   }`}
                 >
-                  Talent
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em]">I&apos;m looking for opportunities</p>
+                  <p className="mt-1 text-base font-black uppercase tracking-[0.08em]">Talent</p>
+                  <p className={`mt-2 text-sm ${accountType === "talent" ? "text-slate-200" : "text-slate-600"}`}>
+                    Create your FreeAgent profile and be discovered by verified employers.
+                  </p>
                 </button>
                 <button
                   type="button"
                   onClick={() => setAccountType("employer")}
-                  className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
-                    accountType === "employer" ? "bg-slate-900 text-white" : "bg-white text-slate-700 hover:bg-slate-100"
+                  className={`rounded-2xl border px-4 py-4 text-left transition ${
+                    accountType === "employer"
+                      ? "border-slate-900 bg-slate-900 text-white"
+                      : "border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
                   }`}
                 >
-                  Employer
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em]">I&apos;m looking for talent</p>
+                  <p className="mt-1 text-base font-black uppercase tracking-[0.08em]">Employer</p>
+                  <p className={`mt-2 text-sm ${accountType === "employer" ? "text-slate-200" : "text-slate-600"}`}>
+                    Create an employer account and discover professionals open to their next move.
+                  </p>
                 </button>
               </div>
             </div>

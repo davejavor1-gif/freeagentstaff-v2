@@ -607,7 +607,7 @@ function HomeFooter() {
       title: "EMPLOYERS",
       items: [
         { label: "Find talent", href: "/find-talent" },
-        { label: "For employers", href: "/login" },
+        { label: "For employers", href: "/employer/auth" },
         { label: "Employer verification", href: undefined, disabled: true },
       ],
     },
@@ -920,7 +920,7 @@ export default function Home() {
                   <span className="ml-2">→</span>
                 </Link>
                 <Link
-                  href="/login"
+                  href="/employer/auth"
                   className="inline-flex items-center justify-center rounded-full border border-[#2bd7ef]/60 bg-transparent px-5 py-2.5 text-[0.84rem] font-semibold text-[#f7e8c6] transition duration-300 hover:-translate-y-0.5 hover:bg-[#2bd7ef]/10 max-[359px]:w-full sm:px-6 sm:py-3 sm:text-sm"
                 >
                   For employers
