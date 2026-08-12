@@ -182,6 +182,10 @@ export default function LoginPage() {
             </button>
           </div>
 
+          <p className="mb-6 text-center text-xs leading-5 text-slate-500">
+            When you choose Sign up, you agree to the <Link href="/terms" className="font-semibold text-slate-900 underline underline-offset-4">Terms of Use</Link> and acknowledge the <Link href="/privacy" className="font-semibold text-slate-900 underline underline-offset-4">Privacy Policy</Link>.
+          </p>
+
           {authMode === "sign-up" ? (
             <div className="mb-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-600">Create account as</p>

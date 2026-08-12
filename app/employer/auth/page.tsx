@@ -308,6 +308,12 @@ export default function EmployerAuthPage() {
                 >
                   {isSubmitting ? "Processing..." : authMode === "sign-in" ? "Sign in" : "Create employer account"}
                 </button>
+
+                {authMode === "sign-up" ? (
+                  <p className="text-xs leading-5 text-[#27405f]">
+                    By creating an account, you agree to the <Link href="/terms" className="font-semibold text-[#0f2744] underline decoration-[#2bd7ef]/70 underline-offset-4">Terms of Use</Link> and acknowledge the <Link href="/privacy" className="font-semibold text-[#0f2744] underline decoration-[#2bd7ef]/70 underline-offset-4">Privacy Policy</Link>.
+                  </p>
+                ) : null}
               </form>
 
               <p className="mt-6 text-center text-xs leading-5 text-[#27405f]">
