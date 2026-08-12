@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Building2, ShieldCheck, Sparkles } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
 import type { AccountType, EmployerVerificationStatus } from "@/types/freeagent";
 
@@ -315,10 +316,22 @@ export default function EmployerAuthPage() {
                   Go to talent login
                 </Link>
               </p>
+
+              <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-xs text-[#27405f]">
+                <Link href="/forgot-password" className="font-semibold text-[#0f2744] underline decoration-[#2bd7ef]/70 underline-offset-4">
+                  Forgot password?
+                </Link>
+                <div className="flex flex-wrap items-center gap-4">
+                  <Link href="/privacy" className="underline decoration-[#2bd7ef]/50 underline-offset-4">Privacy</Link>
+                  <Link href="/terms" className="underline decoration-[#2bd7ef]/50 underline-offset-4">Terms</Link>
+                  <Link href="/support" className="underline decoration-[#2bd7ef]/50 underline-offset-4">Support</Link>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
+      <Footer />
     </main>
   );
 }

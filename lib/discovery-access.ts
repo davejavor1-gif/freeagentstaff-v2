@@ -245,7 +245,6 @@ function buildPassportProfile(row: PassportRpcRow, photoUrl: string | null, vide
     photoUrl: photoUrl ?? undefined,
     intro_video_url: videoUrl,
     intro_video_thumbnail_url: photoUrl,
-    email: row.email ?? undefined,
     currentEmployer: row.current_employer ?? undefined,
     imageAlt: row.name ?? undefined,
   };

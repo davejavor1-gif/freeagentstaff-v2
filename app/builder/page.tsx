@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Session } from "@supabase/supabase-js";
@@ -19,10 +20,20 @@ type ProfileSelectResult = {
   slug?: string | null;
   profile: Json;
   account_type?: AccountType;
+  visibility?: ProfileVisibility | null;
+  opportunity_status?: string | null;
   intro_video_url?: string | null;
   photo_url?: string | null;
   photo_storage_path?: string | null;
   intro_video_storage_path?: string | null;
+};
+
+const normalizeVisibility = (value: ProfileVisibility | null | undefined): Exclude<ProfileVisibility, "employer_network"> => {
+  if (value === "verified_employer_network" || value === "confidential" || value === "public") {
+    return value;
+  }
+
+  return "public";
 };
 
 const normalizeSlug = (value: string, fallback: string) => {
@@ -119,7 +130,7 @@ export default function BuilderPage() {
 
       const { data, error } = await supabase
         .from("profiles")
-        .select("slug, profile, account_type, intro_video_url, photo_url, photo_storage_path, intro_video_storage_path")
+        .select("slug, profile, account_type, visibility, opportunity_status, intro_video_url, photo_url, photo_storage_path, intro_video_storage_path")
         .eq("user_id", supabaseSession.user.id)
         .maybeSingle();
 
@@ -150,6 +161,10 @@ export default function BuilderPage() {
         }
 
         loadedProfile.visibility = loadedProfile.visibility ?? "public";
+        loadedProfile.visibility = normalizeVisibility(profileResult.visibility ?? loadedProfile.visibility);
+        loadedProfile.opportunityStatus = (profileResult.opportunity_status === "exploring" || profileResult.opportunity_status === "not_open" || profileResult.opportunity_status === "actively_open")
+          ? profileResult.opportunity_status
+          : (loadedProfile.opportunityStatus ?? "actively_open");
         loadedProfile.photoUrl = loadedProfile.photoUrl ?? profileResult.photo_url ?? undefined;
         loadedProfile.photo_storage_path = loadedProfile.photo_storage_path ?? profileResult.photo_storage_path ?? null;
         loadedProfile.intro_video_url = loadedProfile.intro_video_url ?? profileResult.intro_video_url ?? null;
@@ -211,7 +226,6 @@ export default function BuilderPage() {
         user_id: session.user.id,
         account_type: "talent",
         slug: profile.slug ?? null,
-        visibility: profile.visibility ?? "public",
         intro_video_url: profile.intro_video_url ?? null,
         intro_video_storage_path: profile.intro_video_storage_path ?? null,
         photo_url: profile.photoUrl ?? null,
@@ -269,7 +283,6 @@ export default function BuilderPage() {
           user_id: session.user.id,
           account_type: "talent",
           slug: uniqueSlug,
-          visibility: profileToSave.visibility ?? "public",
           intro_video_url: profileToSave.intro_video_url ?? null,
           intro_video_storage_path: profileToSave.intro_video_storage_path ?? null,
           photo_url: profileToSave.photoUrl ?? null,
@@ -313,10 +326,6 @@ export default function BuilderPage() {
     value: string,
   ) => {
     setProfile((current) => ({ ...current, [field]: value }));
-  };
-
-  const updateVisibility = (value: ProfileVisibility) => {
-    setProfile((current) => ({ ...current, visibility: value }));
   };
 
   const updateExperienceField = (value: string) => {
@@ -587,23 +596,17 @@ export default function BuilderPage() {
               />
             </div>
 
-            <div className="space-y-2">
-              <label htmlFor="visibility" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
-                Privacy & visibility
-              </label>
-              <select
-                id="visibility"
-                value={profile.visibility ?? "public"}
-                onChange={(event) => updateVisibility(event.target.value as ProfileVisibility)}
-                className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] shadow-sm outline-none transition focus:border-[#0f2744]"
-              >
-                <option value="public">Public</option>
-                <option value="verified_employer_network">Verified Employer Network</option>
-                <option value="confidential">Confidential</option>
-              </select>
-              <p className="text-xs text-[#27405f]">
-                Public profiles are visible on talent search. Verified Employer Network is limited to verified employers, while Confidential shows an anonymised Talent Card.
+            <div className="space-y-2 rounded-2xl border border-[#cda64d]/35 bg-white/70 px-4 py-4 text-sm text-[#27405f]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Privacy & visibility</p>
+              <p>
+                Marketplace visibility, publish state, and blocked companies are now managed from Privacy & Visibility so the canonical access-control settings stay in one place.
               </p>
+              <Link
+                href="/settings/privacy"
+                className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f]"
+              >
+                Open privacy settings
+              </Link>
             </div>
 
             <div className="space-y-2">

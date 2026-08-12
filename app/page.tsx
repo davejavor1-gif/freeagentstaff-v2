@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
 import { IdCard, Lock, ShieldCheck, CheckCircle2, MapPin, Search, Eye } from "lucide-react";
 
 const featureCards = [
@@ -594,94 +595,7 @@ function FinalConversionSection() {
 }
 
 function HomeFooter() {
-  const groups = [
-    {
-      title: "TALENT",
-      items: [
-        { label: "Create your Talent Passport", href: "/builder" },
-        { label: "Find opportunities", href: "/find-talent" },
-        { label: "Privacy & Visibility", href: "/settings/privacy" },
-      ],
-    },
-    {
-      title: "EMPLOYERS",
-      items: [
-        { label: "Find talent", href: "/find-talent" },
-        { label: "For employers", href: "/employer/auth" },
-        { label: "Employer verification", href: undefined, disabled: true },
-      ],
-    },
-    {
-      title: "FREE AGENT STAFF",
-      items: [
-        { label: "About", href: "/about" },
-        { label: "Pricing", href: "/pricing" },
-        { label: "Contact", href: undefined, disabled: true },
-      ],
-    },
-  ];
-
-  return (
-    <footer className="relative overflow-hidden border-t border-[#071321]/12 bg-[#f7e8c6] text-[#071321]">
-      <div className="pointer-events-none absolute left-[-2rem] top-10 h-28 w-28 rounded-full border border-[#2bd7ef]/18" />
-      <div className="pointer-events-none absolute bottom-8 right-[-1.5rem] h-36 w-36 rounded-full border border-[#aff546]/16" />
-
-      <div className="relative mx-auto flex max-w-7xl flex-col gap-4 px-5 py-5 sm:px-8 sm:py-8 lg:px-12 lg:py-8">
-        <div className="grid gap-6 lg:grid-cols-[1.15fr_0.8fr_0.8fr_0.8fr]">
-          <div className="max-w-[20rem]">
-            <Link href="/" className="inline-flex items-center">
-              <Image src="/FullLogo-clean-v2.png" alt="Free Agent Staff" width={220} height={76} className="h-auto w-[170px] object-contain sm:w-[190px]" />
-            </Link>
-            <p className="mt-2.5 text-[0.9rem] font-semibold uppercase tracking-[0.28em] text-[#071321]/82 sm:text-[0.95rem]">
-              CAREERS, ON YOUR TERMS.
-            </p>
-          </div>
-
-          {groups.map((group) => (
-            <div key={group.title} className="min-w-0">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#2bd7ef]">{group.title}</p>
-              <ul className="mt-3 space-y-2">
-                {group.items.map((item) => {
-                  const itemClassName = "block text-[0.95rem] leading-6 text-[#071321]/82 transition duration-200 hover:-translate-x-0.5 hover:text-[#2bd7ef]";
-
-                  if (item.disabled || !item.href) {
-                    return (
-                      <li key={item.label}>
-                        <span className={`${itemClassName} cursor-default opacity-70`}>
-                          {item.label}
-                          <span className="ml-2 text-[0.72rem] uppercase tracking-[0.18em] text-[#aff546]/80">soon</span>
-                        </span>
-                      </li>
-                    );
-                  }
-
-                  return (
-                    <li key={item.label}>
-                      <Link href={item.href} className={itemClassName}>
-                        {item.label}
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          ))}
-        </div>
-
-        <div className="border-t border-[#071321]/12 pt-4">
-          <div className="flex flex-col gap-2.5 text-[0.9rem] text-[#071321]/72 sm:flex-row sm:items-center sm:justify-between">
-            <p>© 2026 Free Agent Staff</p>
-            <div className="flex flex-wrap items-center gap-4">
-              <Link href="/privacy" className="transition hover:text-[#2bd7ef]">
-                Privacy
-              </Link>
-              <span className="cursor-default opacity-70">Terms</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </footer>
-  );
+  return <Footer />;
 }
 
 export default function Home() {

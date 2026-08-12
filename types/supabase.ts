@@ -332,7 +332,6 @@ export interface Database {
           title: string | null;
           summary: string | null;
           current_employer: string | null;
-          email: string | null;
           career_journey: Json | null;
           photo_storage_path: string | null;
           intro_video_storage_path: string | null;
@@ -461,7 +460,6 @@ export interface Database {
           title: string | null;
           summary: string | null;
           current_employer: string | null;
-          email: string | null;
           career_journey: Json | null;
           photo_storage_path: string | null;
           intro_video_storage_path: string | null;
@@ -557,6 +555,35 @@ export interface Database {
         Args: Record<string, never>;
         Returns: Array<{
           unread_count: number;
+        }>;
+      };
+      update_talent_privacy_settings: {
+        Args: {
+          p_visibility: string;
+          p_opportunity_status: string;
+          p_is_published: boolean;
+        };
+        Returns: Array<{
+          visibility: "public" | "verified_employer_network" | "confidential" | null;
+          opportunity_status: "actively_open" | "exploring" | "not_open" | null;
+          is_published: boolean;
+          blocked_companies: string[] | null;
+        }>;
+      };
+      add_talent_blocked_company: {
+        Args: { p_identifier: string };
+        Returns: Array<{
+          success: boolean;
+          blocked_key: string;
+          blocked_companies: string[] | null;
+        }>;
+      };
+      remove_talent_blocked_company: {
+        Args: { p_key: string };
+        Returns: Array<{
+          success: boolean;
+          removed: boolean;
+          blocked_companies: string[] | null;
         }>;
       };
     };

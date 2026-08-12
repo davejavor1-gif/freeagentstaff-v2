@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Footer from "@/components/layout/Footer";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
 import type { AccountType, EmployerVerificationStatus, FreeAgentProfile } from "@/types/freeagent";
 
@@ -254,8 +256,20 @@ export default function LoginPage() {
               {isSubmitting ? "Processing..." : authMode === "sign-in" ? "Sign in" : "Create account"}
             </button>
           </form>
+
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-600">
+            <Link href="/forgot-password" className="font-semibold text-slate-900 underline underline-offset-4">
+              Forgot password?
+            </Link>
+            <div className="flex flex-wrap items-center gap-4 text-xs">
+              <Link href="/privacy" className="underline underline-offset-4">Privacy</Link>
+              <Link href="/terms" className="underline underline-offset-4">Terms</Link>
+              <Link href="/support" className="underline underline-offset-4">Support</Link>
+            </div>
+          </div>
         </div>
       </div>
+      <Footer />
     </main>
   );
 }

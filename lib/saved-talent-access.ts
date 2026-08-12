@@ -177,7 +177,6 @@ function mapSavedItem(row: ListSavedRow, photoUrl: string | null, videoUrl: stri
         intro_video_url: videoUrl,
         intro_video_thumbnail_url: photoUrl,
         currentEmployer: row.current_employer ?? undefined,
-        email: row.email ?? undefined,
         imageAlt: row.name ?? undefined,
       };
 
