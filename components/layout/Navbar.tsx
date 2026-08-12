@@ -8,12 +8,19 @@ import { Bell, Menu, X } from "lucide-react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase-client";
 
-const baseNavItems = [
+const guestNavItems = [
   { label: "Home", href: "/" },
   { label: "Find talent", href: "/find-talent" },
+  { label: "Pricing", href: "/pricing" },
+  { label: "About", href: "/about" },
+];
+
+const talentNavItems = [
+  { label: "Home", href: "/" },
   { label: "Dashboard", href: "/dashboard" },
   { label: "Connections", href: "/connections" },
   { label: "Privacy & Visibility", href: "/settings/privacy" },
+  { label: "Profile", href: "/builder" },
   { label: "Pricing", href: "/pricing" },
   { label: "About", href: "/about" },
 ];
@@ -93,14 +100,8 @@ export default function Navbar() {
     };
   }, []);
 
-  const navItems = baseNavItems.filter((item) => {
-    if (item.href === "/dashboard" || item.href === "/connections") {
-      return Boolean(session);
-    }
-
-    return true;
-  });
   const isEmployerSession = Boolean(session) && accountType === "employer";
+  const isTalentSession = Boolean(session) && accountType !== "employer";
   const visibleNavItems = isEmployerSession
     ? [
         { label: "Find talent", href: "/find-talent" },
@@ -109,7 +110,9 @@ export default function Navbar() {
         { label: "Dashboard", href: "/dashboard" },
         { label: "Employer account", href: "/onboarding/employer" },
       ]
-    : navItems;
+    : isTalentSession
+      ? talentNavItems
+      : guestNavItems;
 
   async function handleEmployerSignOut() {
     if (signingOut) {

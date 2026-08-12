@@ -519,3 +519,61 @@ export async function removeSavedTalentFromShortlist(accessToken: string | null 
     removed: data?.[0]?.removed ?? false,
   };
 }
+
+export async function getEmployerSavedTalentAndShortlistCounts(
+  accessToken: string | null | undefined,
+): Promise<{
+  ok: boolean;
+  reason?: SavedTalentErrorReason;
+  message?: string;
+  savedTalentCount: number;
+  activeShortlists: number;
+}> {
+  const userClient = getUserClient(accessToken);
+
+  if (!userClient) {
+    return {
+      ok: false,
+      reason: "not_signed_in",
+      message: "Sign in required.",
+      savedTalentCount: 0,
+      activeShortlists: 0,
+    };
+  }
+
+  const [savedResult, shortlistResult] = await Promise.all([
+    callRpc<ListSavedRow[]>(userClient, "list_saved_talent_for_employer", {
+      p_shortlist_id: null,
+    }),
+    callRpc<ListShortlistRow[]>(userClient, "list_employer_shortlists"),
+  ]);
+
+  if (savedResult.error) {
+    return {
+      ok: false,
+      reason: mapReasonFromError(savedResult.error.message),
+      message: savedResult.error.message,
+      savedTalentCount: 0,
+      activeShortlists: 0,
+    };
+  }
+
+  if (shortlistResult.error) {
+    return {
+      ok: false,
+      reason: mapReasonFromError(shortlistResult.error.message),
+      message: shortlistResult.error.message,
+      savedTalentCount: 0,
+      activeShortlists: 0,
+    };
+  }
+
+  const savedTalentCount = (savedResult.data ?? []).length;
+  const activeShortlists = (shortlistResult.data ?? []).filter((item) => (item.member_count ?? 0) > 0).length;
+
+  return {
+    ok: true,
+    savedTalentCount,
+    activeShortlists,
+  };
+}

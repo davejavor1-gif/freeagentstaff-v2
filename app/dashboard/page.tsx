@@ -12,9 +12,11 @@ import type {
   FreeAgentProfile,
 } from "@/types/freeagent";
 import type {
-  EmployerIntroductionRequestItem,
-  TalentIntroductionRequestItem,
-} from "@/types/introduction-requests";
+  EmployerSummaryPayload,
+  EmployerSummaryResponse,
+  TalentSummaryPayload,
+  TalentSummaryResponse,
+} from "@/types/dashboard";
 
 const createBlankTalentProfile = (userId: string, email?: string | null): FreeAgentProfile => ({
   id: `freeagent-${userId.slice(0, 8)}`,
@@ -40,19 +42,49 @@ const verificationLabel: Record<EmployerVerificationStatus, string> = {
   rejected: "Rejected",
 };
 
-type IncomingRequestsResponse = {
-  ok: boolean;
-  items: TalentIntroductionRequestItem[];
-  reason?: string;
-  message?: string;
+type ProfileRow = {
+  account_type?: AccountType;
+  employer_company_name?: string | null;
+  employer_verification_status?: EmployerVerificationStatus;
+  verification_requested_at?: string | null;
+  verification_rejection_reason?: string | null;
 };
 
-type SentRequestsResponse = {
-  ok: boolean;
-  items: EmployerIntroductionRequestItem[];
-  reason?: string;
-  message?: string;
-};
+const summaryCardClassName = "rounded-2xl border border-slate-200 bg-white p-5 shadow-sm";
+
+function formatDateTime(value: string | null | undefined) {
+  if (!value) {
+    return "Not available";
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return "Not available";
+  }
+
+  return parsed.toLocaleString();
+}
+
+function formatVerificationSubmittedAt(value: string | null) {
+  if (!value) {
+    return "Pending confirmation";
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return "Pending confirmation";
+  }
+
+  return parsed.toLocaleString();
+}
+
+function visibilityLabel(value: string) {
+  if (value === "verified_employer_network") {
+    return "Employer network";
+  }
+
+  return value === "confidential" ? "Confidential" : "Public";
+}
 
 export default function DashboardPage() {
   const [session, setSession] = useState<Session | null>(null);
@@ -61,22 +93,22 @@ export default function DashboardPage() {
   const [verificationRequestedAt, setVerificationRequestedAt] = useState<string | null>(null);
   const [verificationRejectionReason, setVerificationRejectionReason] = useState<string | null>(null);
   const [employerCompanyName, setEmployerCompanyName] = useState("");
-  const [incomingRequests, setIncomingRequests] = useState<TalentIntroductionRequestItem[]>([]);
-  const [sentRequests, setSentRequests] = useState<EmployerIntroductionRequestItem[]>([]);
+  const [employerSummary, setEmployerSummary] = useState<EmployerSummaryPayload | null>(null);
+  const [talentSummary, setTalentSummary] = useState<TalentSummaryPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const router = useRouter();
 
-  const loadRequests = useCallback(async (currentSession: Session | null, currentAccountType: AccountType) => {
-    if (!currentSession?.access_token) {
-      setIncomingRequests([]);
-      setSentRequests([]);
+  const loadDashboardSummary = useCallback(async (currentSession: Session, currentAccountType: AccountType) => {
+    if (!currentSession.access_token) {
+      setEmployerSummary(null);
+      setTalentSummary(null);
       return;
     }
 
-    if (currentAccountType === "talent") {
-      const response = await fetch("/api/introduction-requests/incoming", {
+    if (currentAccountType === "employer") {
+      const response = await fetch("/api/dashboard/employer-summary", {
         method: "GET",
         headers: {
           Authorization: `Bearer ${currentSession.access_token}`,
@@ -84,17 +116,21 @@ export default function DashboardPage() {
         cache: "no-store",
       });
 
-      const payload = (await response.json().catch(() => null)) as IncomingRequestsResponse | null;
-      if (payload?.ok && Array.isArray(payload.items)) {
-        setIncomingRequests(payload.items);
-      } else {
-        setIncomingRequests([]);
+      const payload = (await response.json().catch(() => null)) as EmployerSummaryResponse | null;
+
+      if (!response.ok || !payload?.ok || !payload.summary) {
+        setFeedback(payload?.message ?? "Unable to load dashboard summary right now.");
+        setEmployerSummary(null);
+        setTalentSummary(null);
+        return;
       }
-      setSentRequests([]);
+
+      setEmployerSummary(payload.summary);
+      setTalentSummary(null);
       return;
     }
 
-    const response = await fetch("/api/introduction-requests/sent", {
+    const response = await fetch("/api/dashboard/talent-summary", {
       method: "GET",
       headers: {
         Authorization: `Bearer ${currentSession.access_token}`,
@@ -102,19 +138,23 @@ export default function DashboardPage() {
       cache: "no-store",
     });
 
-    const payload = (await response.json().catch(() => null)) as SentRequestsResponse | null;
-    if (payload?.ok && Array.isArray(payload.items)) {
-      setSentRequests(payload.items);
-    } else {
-      setSentRequests([]);
+    const payload = (await response.json().catch(() => null)) as TalentSummaryResponse | null;
+
+    if (!response.ok || !payload?.ok || !payload.summary) {
+      setFeedback(payload?.message ?? "Unable to load dashboard summary right now.");
+      setEmployerSummary(null);
+      setTalentSummary(null);
+      return;
     }
-    setIncomingRequests([]);
+
+    setTalentSummary(payload.summary);
+    setEmployerSummary(null);
   }, []);
 
   useEffect(() => {
     let mounted = true;
 
-    async function loadSession() {
+    async function hydrateDashboard() {
       const activeSession = await getSessionWithRetry();
 
       if (!mounted) {
@@ -127,6 +167,7 @@ export default function DashboardPage() {
       }
 
       setSession(activeSession);
+      setFeedback(null);
 
       const metadataAccountType = activeSession.user.user_metadata?.account_type;
       const fallbackAccountType: AccountType = metadataAccountType === "employer" ? "employer" : "talent";
@@ -173,19 +214,12 @@ export default function DashboardPage() {
         setVerificationRequestedAt(null);
         setVerificationRejectionReason(null);
         setEmployerCompanyName("");
-        await loadRequests(activeSession, fallbackAccountType);
+        await loadDashboardSummary(activeSession, fallbackAccountType);
         setLoading(false);
         return;
       }
 
-      const profileRowData = profileRow as {
-        account_type?: AccountType;
-        employer_company_name?: string | null;
-        employer_verification_status?: EmployerVerificationStatus;
-        verification_requested_at?: string | null;
-        verification_rejection_reason?: string | null;
-      } | null | undefined;
-
+      const profileRowData = profileRow as ProfileRow | null | undefined;
       const resolvedAccountType = profileRowData?.account_type === "employer" ? "employer" : "talent";
 
       setAccountType(resolvedAccountType);
@@ -193,11 +227,11 @@ export default function DashboardPage() {
       setVerificationRequestedAt(profileRowData?.verification_requested_at ?? null);
       setVerificationRejectionReason(profileRowData?.verification_rejection_reason ?? null);
       setEmployerCompanyName(profileRowData?.employer_company_name ?? "");
-      await loadRequests(activeSession, resolvedAccountType);
+      await loadDashboardSummary(activeSession, resolvedAccountType);
       setLoading(false);
     }
 
-    void loadSession();
+    void hydrateDashboard();
 
     const { data: listener } = supabase.auth.onAuthStateChange((_, currentSession) => {
       if (!mounted) {
@@ -210,34 +244,30 @@ export default function DashboardPage() {
       }
 
       setSession(currentSession);
-      void loadRequests(currentSession, accountType);
+      const sessionAccountType: AccountType = currentSession.user.user_metadata?.account_type === "employer"
+        ? "employer"
+        : "talent";
+      setAccountType(sessionAccountType);
+      setFeedback(null);
+      void loadDashboardSummary(currentSession, sessionAccountType);
     });
 
     return () => {
       mounted = false;
       listener.subscription.unsubscribe();
     };
-  }, [accountType, loadRequests, router]);
+  }, [accountType, loadDashboardSummary, router]);
 
-  const pendingCount = useMemo(
-    () => incomingRequests.filter((request) => request.status === "pending" && request.canTalentRespond).length,
-    [incomingRequests],
-  );
+  const pendingCount = talentSummary?.pendingIntroductionRequests ?? 0;
+  const isPublished = talentSummary?.isPublished ?? false;
+  const visibility = talentSummary?.visibility ?? "public";
 
   const isVerifiedEmployer = accountType === "employer" && verificationStatus === "verified";
 
-  const formattedRequestedAt = useMemo(() => {
-    if (!verificationRequestedAt) {
-      return "Pending confirmation";
-    }
-
-    const value = new Date(verificationRequestedAt);
-    if (Number.isNaN(value.getTime())) {
-      return "Pending confirmation";
-    }
-
-    return value.toLocaleString();
-  }, [verificationRequestedAt]);
+  const formattedRequestedAt = useMemo(
+    () => formatVerificationSubmittedAt(verificationRequestedAt),
+    [verificationRequestedAt],
+  );
 
   const updateTalentRequest = async (requestId: string, action: "accept" | "decline") => {
     if (!session?.access_token) {
@@ -262,7 +292,7 @@ export default function DashboardPage() {
         return;
       }
 
-      await loadRequests(session, "talent");
+      await loadDashboardSummary(session, "talent");
       setFeedback(action === "accept" ? "Introduction request accepted." : "Introduction request declined.");
     } catch {
       setFeedback("Unable to update this request right now.");
@@ -294,7 +324,7 @@ export default function DashboardPage() {
         return;
       }
 
-      await loadRequests(session, "employer");
+      await loadDashboardSummary(session, "employer");
       setFeedback("Introduction request withdrawn.");
     } catch {
       setFeedback("Unable to withdraw this request right now.");
@@ -320,29 +350,42 @@ export default function DashboardPage() {
     );
   }
 
+  const employerRequestPreview = employerSummary?.requestPreview ?? [];
+  const employerConnectionPreview = employerSummary?.connectionPreview ?? [];
+  const talentRequestPreview = talentSummary?.requestPreview ?? [];
+  const talentConnectionPreview = talentSummary?.connectionPreview ?? [];
+
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
-      <div className="mx-auto max-w-6xl px-6 py-16 sm:px-10">
-        <div className="mb-8 flex flex-col gap-4 rounded-[32px] border border-slate-200 bg-white p-8 shadow-lg shadow-slate-200/40 sm:p-10">
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-8 sm:py-12 lg:py-14">
+        <div className="mb-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-lg shadow-slate-200/35 sm:p-8">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-amber-500">Secure dashboard</p>
               <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-900">Welcome back, {session?.user.email ?? "Free Agent"}</h1>
               <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">
                 {accountType === "employer"
-                  ? "Manage your company profile, keep verification details current, and track introduction requests."
-                  : "Review incoming employer introduction requests and decide which conversations to start."}
+                  ? "Track your verification status and run hiring workflows from one operational home."
+                  : "Check discoverability, act on incoming requests, and manage active employer connections."}
               </p>
             </div>
-            <div className="flex flex-wrap items-center gap-3">
-              {accountType === "talent" ? (
-                <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700">
-                  {pendingCount} pending
-                </div>
-              ) : (
-                <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+              {accountType === "employer" ? (
+                <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700">
                   {verificationLabel[verificationStatus]}
-                </div>
+                </span>
+              ) : (
+                <>
+                  <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700">
+                    {isPublished ? "Published" : "Unpublished"}
+                  </span>
+                  <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700">
+                    {visibilityLabel(visibility)}
+                  </span>
+                  <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700">
+                    {pendingCount} pending
+                  </span>
+                </>
               )}
               <button
                 type="button"
@@ -353,154 +396,63 @@ export default function DashboardPage() {
               </button>
             </div>
           </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            {accountType === "talent" ? (
-              <>
-                <Link href="/builder" className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
-                  Edit your profile
-                </Link>
-                <Link href="/connections" className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
-                  Connections
-                </Link>
-                <Link href="/settings/privacy" className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
-                  Privacy & visibility
-                </Link>
-              </>
-            ) : (
-              <>
-                <Link href="/onboarding/employer" className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
-                  Employer account
-                </Link>
-                <Link
-                  href="/find-talent"
-                  className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${
-                    isVerifiedEmployer
-                      ? "border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100"
-                      : "cursor-not-allowed border border-slate-200 bg-slate-100 text-slate-400"
-                  }`}
-                  aria-disabled={!isVerifiedEmployer}
-                  onClick={(event) => {
-                    if (!isVerifiedEmployer) {
-                      event.preventDefault();
-                    }
-                  }}
-                >
-                  Find talent
-                </Link>
-                <Link
-                  href="/connections"
-                  className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${
-                    isVerifiedEmployer
-                      ? "border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100"
-                      : "cursor-not-allowed border border-slate-200 bg-slate-100 text-slate-400"
-                  }`}
-                  aria-disabled={!isVerifiedEmployer}
-                  onClick={(event) => {
-                    if (!isVerifiedEmployer) {
-                      event.preventDefault();
-                    }
-                  }}
-                >
-                  Connections
-                </Link>
-              </>
-            )}
-          </div>
         </div>
 
         {feedback ? (
-          <div className="mb-8 rounded-[28px] border border-amber-200 bg-amber-50 px-5 py-4 text-sm font-medium text-amber-800">
+          <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm font-medium text-amber-800">
             {feedback}
           </div>
         ) : null}
 
         {accountType === "employer" ? (
-          <div className="space-y-8">
-            <div className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-lg shadow-slate-200/40 sm:p-10">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Employer profile</p>
-                  <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900">Employer verification</h2>
-                </div>
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700">
-                  Status: {verificationLabel[verificationStatus]}
-                </div>
+          <div className="space-y-6">
+            {isVerifiedEmployer ? (
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <Link href="/find-talent" className={`${summaryCardClassName} text-sm font-semibold text-slate-700 transition hover:bg-slate-50`}>
+                  Find Talent
+                </Link>
+                <Link href="/saved-talent" className={`${summaryCardClassName} text-sm font-semibold text-slate-700 transition hover:bg-slate-50`}>
+                  Saved Talent
+                </Link>
+                <Link href="/connections" className={`${summaryCardClassName} text-sm font-semibold text-slate-700 transition hover:bg-slate-50`}>
+                  Connections
+                </Link>
+                <Link href="/onboarding/employer" className={`${summaryCardClassName} text-sm font-semibold text-slate-700 transition hover:bg-slate-50`}>
+                  Employer Account
+                </Link>
               </div>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Link href="/onboarding/employer" className={`${summaryCardClassName} text-sm font-semibold text-slate-700 transition hover:bg-slate-50`}>
+                  Employer Account
+                </Link>
+              </div>
+            )}
 
-              <div className="mt-8 rounded-[24px] border border-slate-200 bg-slate-50 p-6">
+            {!isVerifiedEmployer ? (
+              <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg shadow-slate-200/35 sm:p-8">
                 {verificationStatus === "unverified" ? (
                   <>
-                    <h3 className="text-lg font-black uppercase tracking-[0.08em] text-slate-900">Complete employer setup</h3>
+                    <h2 className="text-2xl font-black tracking-tight text-slate-900">Verification required</h2>
                     <p className="mt-3 text-sm leading-7 text-slate-600">
                       Complete your employer profile and submit it for review before talent search unlocks.
                     </p>
-
-                    <div className="mt-5 flex flex-wrap gap-3">
-                      <Link
-                        href="/onboarding/employer"
-                        className="inline-flex min-h-[44px] items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-slate-800"
-                      >
-                        Complete employer setup
-                      </Link>
-                    </div>
                   </>
                 ) : null}
 
                 {verificationStatus === "pending" ? (
                   <>
-                    <div className="rounded-[22px] border border-amber-200 bg-amber-50 p-5">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-amber-700">Verification in review</p>
-                      <h3 className="mt-2 text-lg font-black uppercase tracking-[0.08em] text-slate-900">Submission received</h3>
-                      <p className="mt-3 text-sm leading-7 text-slate-600">
-                        Your employer verification is in review. FreeAgent will notify you once the assessment is complete.
-                      </p>
-                      <p className="mt-3 text-sm font-semibold text-slate-700">Submitted: {formattedRequestedAt}</p>
-
-                      <div className="mt-4 flex flex-wrap gap-3">
-                        <Link
-                          href="/onboarding/employer"
-                          className="inline-flex min-h-[44px] items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-slate-800"
-                        >
-                          View submission
-                        </Link>
-                        <span className="inline-flex min-h-[44px] items-center justify-center rounded-2xl border border-slate-300 bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-500">
-                          Find Talent locked until verified
-                        </span>
-                      </div>
-                    </div>
-                  </>
-                ) : null}
-
-                {verificationStatus === "verified" ? (
-                  <>
-                    <h3 className="text-lg font-black uppercase tracking-[0.08em] text-slate-900">Verified access enabled</h3>
+                    <h2 className="text-2xl font-black tracking-tight text-slate-900">Verification in review</h2>
                     <p className="mt-3 text-sm leading-7 text-slate-600">
-                      {employerCompanyName
-                        ? `${employerCompanyName} is verified. You can access the FreeAgent talent network now.`
-                        : "Your employer account is verified. You can access the FreeAgent talent network now."}
+                      Your submission is under review. Verified employer workflows remain locked until approval.
                     </p>
-
-                    <div className="mt-5 flex flex-wrap gap-3">
-                      <Link
-                        href="/find-talent"
-                        className="inline-flex min-h-[44px] items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-slate-800"
-                      >
-                        Find talent
-                      </Link>
-                      <Link
-                        href="/onboarding/employer"
-                        className="inline-flex min-h-[44px] items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
-                      >
-                        View employer profile
-                      </Link>
-                    </div>
+                    <p className="mt-3 text-sm font-semibold text-slate-700">Submitted: {formattedRequestedAt}</p>
                   </>
                 ) : null}
 
                 {verificationStatus === "rejected" ? (
                   <>
-                    <h3 className="text-lg font-black uppercase tracking-[0.08em] text-slate-900">Verification needs attention</h3>
+                    <h2 className="text-2xl font-black tracking-tight text-slate-900">Verification rejected</h2>
                     <p className="mt-3 text-sm leading-7 text-slate-600">
                       We couldn&apos;t verify your employer account. Update your details and resubmit.
                     </p>
@@ -510,156 +462,321 @@ export default function DashboardPage() {
                         Reason: {verificationRejectionReason}
                       </p>
                     ) : null}
-
-                    <div className="mt-5 flex flex-wrap gap-3">
-                      <Link
-                        href="/onboarding/employer"
-                        className="inline-flex min-h-[44px] items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-slate-800"
-                      >
-                        Review and resubmit
-                      </Link>
-                    </div>
                   </>
                 ) : null}
-              </div>
-            </div>
+
+                <div className="mt-5">
+                  <Link
+                    href="/onboarding/employer"
+                    className="inline-flex min-h-[44px] items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-slate-800"
+                  >
+                    {verificationStatus === "rejected" ? "Review and resubmit" : "Open employer account"}
+                  </Link>
+                </div>
+              </section>
+            ) : null}
 
             {isVerifiedEmployer ? (
-              <div className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-lg shadow-slate-200/40 sm:p-10">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                  <div>
-                    <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Introduction requests</p>
-                    <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900">Sent requests</h2>
+              <>
+                <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  <Link href="/saved-talent" className={`${summaryCardClassName} transition hover:bg-slate-50`}>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Saved talent</p>
+                    <p className="mt-2 text-2xl font-black text-slate-900">{employerSummary?.savedTalentCount ?? 0}</p>
+                  </Link>
+                  <div className={summaryCardClassName}>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Pending introductions</p>
+                    <p className="mt-2 text-2xl font-black text-slate-900">{employerSummary?.pendingIntroductionRequests ?? 0}</p>
                   </div>
-                  <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-                    {sentRequests.length === 0 ? "No requests yet" : `${sentRequests.length} total request${sentRequests.length === 1 ? "" : "s"}`}
-                  </div>
-                </div>
+                  <Link href="/connections" className={`${summaryCardClassName} transition hover:bg-slate-50`}>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Active connections</p>
+                    <p className="mt-2 text-2xl font-black text-slate-900">{employerSummary?.activeConnections ?? 0}</p>
+                  </Link>
+                  <Link href="/saved-talent" className={`${summaryCardClassName} transition hover:bg-slate-50`}>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Active shortlists</p>
+                    <p className="mt-2 text-2xl font-black text-slate-900">{employerSummary?.activeShortlists ?? 0}</p>
+                  </Link>
+                </section>
 
-                {sentRequests.length === 0 ? (
-                  <div className="mt-8 rounded-[24px] border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-sm leading-7 text-slate-600">
-                    Request introductions from Talent Passport or Saved Talent.
+                <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg shadow-slate-200/35 sm:p-8">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                      <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Introduction requests</p>
+                      <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900">Sent preview</h2>
+                    </div>
+                    <Link href="/find-talent" className="text-sm font-semibold text-slate-700 underline-offset-2 hover:underline">
+                      Request more introductions
+                    </Link>
                   </div>
-                ) : (
-                  <div className="mt-8 space-y-4">
-                    {sentRequests.map((request) => (
-                      <div key={request.requestId} className="rounded-[24px] border border-slate-200 bg-slate-50 p-6">
-                        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                          <div>
-                            <div className="flex flex-wrap items-center gap-2">
-                              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
-                                {request.talentName}
+
+                  {employerRequestPreview.length === 0 ? (
+                    <div className="mt-6 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-sm leading-7 text-slate-600">
+                      No introduction requests yet. Request introductions from eligible talent profiles.
+                    </div>
+                  ) : (
+                    <div className="mt-6 space-y-3">
+                      {employerRequestPreview.map((request) => (
+                        <div key={request.requestId} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-600">{request.talentName}</p>
+                                <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-600">
+                                  {request.status}
+                                </span>
+                              </div>
+                              <p className="mt-2 text-sm text-slate-600">Sent {formatDateTime(request.createdAt)}</p>
+                              <p className="mt-1 text-sm text-slate-600">
+                                {request.isCurrentlyEligible
+                                  ? "Talent currently eligible for employer access."
+                                  : "Talent currently unavailable due to privacy or blocking constraints."}
                               </p>
-                              <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-600">
-                                {request.status}
-                              </span>
                             </div>
-                            <p className="mt-2 text-sm leading-7 text-slate-600">
-                              Sent {new Date(request.createdAt).toLocaleString()}
-                            </p>
-                            <p className="text-sm leading-7 text-slate-600">
-                              {request.isCurrentlyEligible ? "Talent currently eligible for employer access." : "Talent currently unavailable due to current visibility/block state."}
-                            </p>
-                            {request.message ? <p className="mt-3 text-sm leading-7 text-slate-600">Message: {request.message}</p> : null}
+                            {request.status === "pending" ? (
+                              <button
+                                type="button"
+                                disabled={updatingId === request.requestId}
+                                onClick={() => {
+                                  void withdrawRequest(request.requestId);
+                                }}
+                                className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+                              >
+                                <Undo2 className="h-4 w-4" />
+                                Withdraw
+                              </button>
+                            ) : null}
                           </div>
-                          {request.status === "pending" ? (
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </section>
+
+                <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg shadow-slate-200/35 sm:p-8">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                      <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Connections</p>
+                      <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900">Recent connections</h2>
+                    </div>
+                    <Link href="/connections" className="text-sm font-semibold text-slate-700 underline-offset-2 hover:underline">
+                      Open connections
+                    </Link>
+                  </div>
+
+                  {employerConnectionPreview.length === 0 ? (
+                    <div className="mt-6 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-sm leading-7 text-slate-600">
+                      No connections yet. Connections are created when introductions are accepted.
+                    </div>
+                  ) : (
+                    <div className="mt-6 space-y-3">
+                      {employerConnectionPreview.map((item) => (
+                        <div key={item.connectionId} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-600">
+                                {item.talentName ?? "Confidential candidate"}
+                              </p>
+                              <p className="mt-1 text-sm text-slate-600">{item.talentTitle ?? "Professional profile"}</p>
+                              <p className="mt-1 text-sm text-slate-600">
+                                {item.status === "active"
+                                  ? `Connected ${formatDateTime(item.connectedAt)}`
+                                  : `Revoked ${formatDateTime(item.revokedAt ?? item.connectedAt)}`}
+                              </p>
+                            </div>
+                            <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-600">
+                              {item.status}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </section>
+              </>
+            ) : null}
+          </div>
+        ) : (
+          <div className="space-y-6">
+            <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg shadow-slate-200/35 sm:p-8">
+              <h2 className="text-2xl font-black tracking-tight text-slate-900">Your visibility snapshot</h2>
+              <p className="mt-3 text-sm leading-7 text-slate-600">
+                {isPublished
+                  ? "Your profile is currently discoverable to eligible employers."
+                  : "Your profile is unpublished and currently not discoverable by employers."}
+              </p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <div className={summaryCardClassName}>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Publication</p>
+                  <p className="mt-2 text-lg font-bold text-slate-900">{isPublished ? "Published" : "Unpublished"}</p>
+                </div>
+                <div className={summaryCardClassName}>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Visibility</p>
+                  <p className="mt-2 text-lg font-bold text-slate-900">{visibilityLabel(visibility)}</p>
+                </div>
+                <div className={summaryCardClassName}>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Pending requests</p>
+                  <p className="mt-2 text-lg font-bold text-slate-900">{talentSummary?.pendingIntroductionRequests ?? 0}</p>
+                </div>
+                <Link href="/connections" className={`${summaryCardClassName} transition hover:bg-slate-50`}>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Active connections</p>
+                  <p className="mt-2 text-lg font-bold text-slate-900">{talentSummary?.activeConnections ?? 0}</p>
+                </Link>
+              </div>
+            </section>
+
+            <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg shadow-slate-200/35 sm:p-8">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Introduction requests</p>
+                  <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900">Incoming employer requests</h2>
+                </div>
+                <span className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                  {talentRequestPreview.length === 0 ? "No requests yet" : `${talentRequestPreview.length} in recent preview`}
+                </span>
+              </div>
+
+              {talentRequestPreview.length === 0 ? (
+                <div className="mt-6 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-sm leading-7 text-slate-600">
+                  No incoming requests yet. Employers can request introductions from your eligible profile.
+                </div>
+              ) : (
+                <div className="mt-6 space-y-3">
+                  {talentRequestPreview.map((request) => (
+                    <div key={request.requestId} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                        <div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-600">
+                              {request.employerCompanyName ?? "Verified employer"}
+                            </p>
+                            <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-600">
+                              {request.status}
+                            </span>
+                          </div>
+                          {request.employerContactName ? (
+                            <p className="mt-2 text-sm text-slate-600">
+                              Contact: {request.employerContactName}
+                              {request.employerContactRole ? ` · ${request.employerContactRole}` : ""}
+                            </p>
+                          ) : null}
+                          <p className="mt-2 text-sm leading-7 text-slate-600">{request.message ?? "No initial note was provided."}</p>
+                          <p className="mt-2 text-sm text-slate-600">Received {formatDateTime(request.createdAt)}</p>
+                          {!request.canTalentRespond && request.status === "pending" ? (
+                            <p className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                              This request can no longer be actioned because current privacy/block settings no longer allow this relationship.
+                            </p>
+                          ) : null}
+                        </div>
+                        {request.status === "pending" && request.canTalentRespond ? (
+                          <div className="flex flex-wrap gap-2">
                             <button
                               type="button"
                               disabled={updatingId === request.requestId}
                               onClick={() => {
-                                void withdrawRequest(request.requestId);
+                                void updateTalentRequest(request.requestId, "accept");
                               }}
-                              className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+                              className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
                             >
-                              <Undo2 className="h-4 w-4" />
-                              Withdraw
+                              <CheckCircle2 className="h-4 w-4" />
+                              Accept
                             </button>
-                          ) : null}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ) : null}
-          </div>
-        ) : (
-          <div className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-lg shadow-slate-200/40 sm:p-10">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Introduction requests</p>
-                <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900">Incoming employer requests</h2>
-              </div>
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-                {incomingRequests.length === 0 ? "No requests yet" : `${incomingRequests.length} total request${incomingRequests.length === 1 ? "" : "s"}`}
-              </div>
-            </div>
-
-            {incomingRequests.length === 0 ? (
-              <div className="mt-8 rounded-[24px] border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-sm leading-7 text-slate-600">
-                Employers can request an introduction from your eligible profile. Requests will appear here.
-              </div>
-            ) : (
-              <div className="mt-8 space-y-5">
-                {incomingRequests.map((request) => (
-                  <div key={request.requestId} className="rounded-[24px] border border-slate-200 bg-slate-50 p-6">
-                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                      <div>
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">
-                            {request.employerCompanyName ?? "Verified employer"}
-                          </p>
-                          <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-600">
-                            {request.status}
-                          </span>
-                        </div>
-                        {request.employerContactName ? (
-                          <p className="mt-2 text-sm text-slate-600">
-                            Contact: {request.employerContactName}
-                            {request.employerContactRole ? ` · ${request.employerContactRole}` : ""}
-                          </p>
-                        ) : null}
-                        <p className="mt-2 text-sm leading-7 text-slate-600">{request.message ?? "No initial note was provided."}</p>
-                        <p className="mt-2 text-sm text-slate-600">Received {new Date(request.createdAt).toLocaleString()}</p>
-                        {!request.canTalentRespond && request.status === "pending" ? (
-                          <p className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                            This request can no longer be actioned because current privacy/block settings no longer allow this relationship.
-                          </p>
+                            <button
+                              type="button"
+                              disabled={updatingId === request.requestId}
+                              onClick={() => {
+                                void updateTalentRequest(request.requestId, "decline");
+                              }}
+                              className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-700"
+                            >
+                              <XCircle className="h-4 w-4" />
+                              Decline
+                            </button>
+                          </div>
                         ) : null}
                       </div>
-                      {request.status === "pending" && request.canTalentRespond ? (
-                        <div className="flex flex-wrap gap-2">
-                          <button
-                            type="button"
-                            disabled={updatingId === request.requestId}
-                            onClick={() => {
-                              void updateTalentRequest(request.requestId, "accept");
-                            }}
-                            className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
-                          >
-                            <CheckCircle2 className="h-4 w-4" />
-                            Accept
-                          </button>
-                          <button
-                            type="button"
-                            disabled={updatingId === request.requestId}
-                            onClick={() => {
-                              void updateTalentRequest(request.requestId, "decline");
-                            }}
-                            className="inline-flex items-center gap-2 rounded-full bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-700"
-                          >
-                            <XCircle className="h-4 w-4" />
-                            Decline
-                          </button>
-                        </div>
-                      ) : null}
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              )}
+            </section>
+
+            <section className="grid gap-3 sm:grid-cols-3">
+              <Link href="/builder" className={`${summaryCardClassName} text-sm font-semibold text-slate-700 transition hover:bg-slate-50`}>
+                View/Edit Profile
+              </Link>
+              <Link href="/settings/privacy" className={`${summaryCardClassName} text-sm font-semibold text-slate-700 transition hover:bg-slate-50`}>
+                Privacy & Visibility
+              </Link>
+              <Link href="/connections" className={`${summaryCardClassName} text-sm font-semibold text-slate-700 transition hover:bg-slate-50`}>
+                Connections
+              </Link>
+            </section>
+
+            <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg shadow-slate-200/35 sm:p-8">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Connections</p>
+                  <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900">Recent connection activity</h2>
+                </div>
+                <Link href="/connections" className="text-sm font-semibold text-slate-700 underline-offset-2 hover:underline">
+                  Open connections
+                </Link>
               </div>
-            )}
+
+              {talentConnectionPreview.length === 0 ? (
+                <div className="mt-6 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-sm leading-7 text-slate-600">
+                  No connections yet. Connections are created when an introduction request is accepted.
+                </div>
+              ) : (
+                <div className="mt-6 space-y-3">
+                  {talentConnectionPreview.map((item) => (
+                    <div key={item.connectionId} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-600">
+                            {item.employerCompanyName ?? "Verified employer"}
+                          </p>
+                          <p className="mt-1 text-sm text-slate-600">
+                            {item.status === "active"
+                              ? `Connected ${formatDateTime(item.connectedAt)}`
+                              : `Revoked ${formatDateTime(item.revokedAt ?? item.connectedAt)}`}
+                          </p>
+                        </div>
+                        <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-600">
+                          {item.status}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg shadow-slate-200/35 sm:p-8">
+              <h2 className="text-xl font-black tracking-tight text-slate-900">Privacy snapshot</h2>
+              <p className="mt-3 text-sm leading-7 text-slate-600">
+                Visibility: {visibilityLabel(visibility)}. Publication: {isPublished ? "Published" : "Unpublished"}.
+              </p>
+              {!isPublished ? (
+                <p className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                  Your profile is not currently discoverable by employers. Publish and review your privacy settings to be considered for introductions.
+                </p>
+              ) : null}
+
+              <div className="mt-5">
+                <Link
+                  href="/settings/privacy"
+                  className="inline-flex min-h-[44px] items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-slate-800"
+                >
+                  Open privacy settings
+                </Link>
+              </div>
+            </section>
           </div>
         )}
+
+        {accountType === "employer" && isVerifiedEmployer && employerCompanyName ? (
+          <p className="mt-6 text-center text-sm text-slate-500">Verified employer: {employerCompanyName}</p>
+        ) : null}
       </div>
     </main>
   );
