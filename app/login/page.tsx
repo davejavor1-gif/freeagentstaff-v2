@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Footer from "@/components/layout/Footer";
+import { buildCanonicalTalentColumns } from "@/lib/talent-profile-columns";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
 import type { AccountType, EmployerVerificationStatus, FreeAgentProfile } from "@/types/freeagent";
 
@@ -99,8 +100,12 @@ export default function LoginPage() {
     }
 
     if (data.session) {
-      const profilePayload =
-        accountType === "talent" ? (createBlankTalentProfile(data.session.user.id, data.session.user.email) as unknown as Record<string, unknown>) : {};
+      const blankTalentProfile = accountType === "talent"
+        ? createBlankTalentProfile(data.session.user.id, data.session.user.email)
+        : null;
+      const profilePayload = blankTalentProfile
+        ? (blankTalentProfile as unknown as Record<string, unknown>)
+        : {};
       const verificationStatus: EmployerVerificationStatus = "unverified";
       const slug = accountType === "talent" ? `freeagent-${data.session.user.id.slice(0, 8)}` : null;
 
@@ -117,8 +122,12 @@ export default function LoginPage() {
             employer_industry: null,
             employer_company_size: null,
             employer_verification_status: verificationStatus,
-            slug,
-            profile: profilePayload,
+            ...(accountType === "talent"
+              ? buildCanonicalTalentColumns(blankTalentProfile as FreeAgentProfile, data.session.user.email)
+              : {
+                  slug,
+                  profile: profilePayload,
+                }),
           } as never,
         ],
         { onConflict: "user_id" } as never,

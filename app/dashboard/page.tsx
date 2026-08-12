@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Undo2, XCircle } from "lucide-react";
 import type { Session } from "@supabase/supabase-js";
+import { buildCanonicalTalentColumns } from "@/lib/talent-profile-columns";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
 import type {
   AccountType,
@@ -195,8 +196,12 @@ export default function DashboardPage() {
           employer_industry: null,
           employer_company_size: null,
           employer_verification_status: "unverified",
-          slug: fallbackAccountType === "talent" ? defaultTalentProfile.slug ?? null : null,
-          profile: fallbackAccountType === "talent" ? (defaultTalentProfile as unknown as Record<string, unknown>) : {},
+          ...(fallbackAccountType === "talent"
+            ? buildCanonicalTalentColumns(defaultTalentProfile, activeSession.user.email)
+            : {
+                slug: null,
+                profile: {},
+              }),
         };
 
         const { error: insertError } = await supabase.from("profiles").insert([insertPayload] as never);

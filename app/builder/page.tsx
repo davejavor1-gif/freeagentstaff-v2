@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import type { Session } from "@supabase/supabase-js";
 import FreeAgentCard from "@/components/cards/FreeAgentCard";
 import { freeAgentProfiles } from "@/data/freeagents";
+import { buildCanonicalTalentColumns } from "@/lib/talent-profile-columns";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
 import VideoIntroductionSection from "@/components/settings/VideoIntroductionSection";
 import type { AccountType, CareerPosition, FreeAgentProfile, ProfileVisibility } from "@/types/freeagent";
@@ -22,6 +23,19 @@ type ProfileSelectResult = {
   account_type?: AccountType;
   visibility?: ProfileVisibility | null;
   opportunity_status?: string | null;
+  name?: string | null;
+  title?: string | null;
+  location?: string | null;
+  availability?: string | null;
+  top_strength?: string | null;
+  experience_years?: number | null;
+  focus_area?: string | null;
+  summary?: string | null;
+  skills?: string[] | null;
+  career_journey?: Json;
+  email?: string | null;
+  image_alt?: string | null;
+  current_employer?: string | null;
   intro_video_url?: string | null;
   photo_url?: string | null;
   photo_storage_path?: string | null;
@@ -35,6 +49,57 @@ const normalizeVisibility = (value: ProfileVisibility | null | undefined): Exclu
 
   return "public";
 };
+
+const normalizeOpportunityStatus = (value: string | null | undefined): FreeAgentProfile["opportunityStatus"] => {
+  if (value === "actively_open" || value === "exploring" || value === "not_open") {
+    return value;
+  }
+
+  return "actively_open";
+};
+
+const normalizeAvailability = (value: string | null | undefined): FreeAgentProfile["availability"] => {
+  if (
+    value === "Available Now" ||
+    value === "Open to Opportunities" ||
+    value === "Open to new projects" ||
+    value === "Busy this month" ||
+    value === "Booked"
+  ) {
+    return value;
+  }
+
+  return "Available Now";
+};
+
+function hydrateBuilderProfile(profileResult: ProfileSelectResult, fallbackEmail?: string | null): FreeAgentProfile {
+  const loadedProfile = profileResult.profile as unknown as FreeAgentProfile;
+
+  loadedProfile.slug = profileResult.slug ?? loadedProfile.slug;
+  loadedProfile.visibility = normalizeVisibility(profileResult.visibility ?? loadedProfile.visibility);
+  loadedProfile.opportunityStatus = normalizeOpportunityStatus(profileResult.opportunity_status ?? loadedProfile.opportunityStatus);
+  loadedProfile.name = profileResult.name ?? loadedProfile.name ?? "";
+  loadedProfile.title = profileResult.title ?? loadedProfile.title ?? "";
+  loadedProfile.location = profileResult.location ?? loadedProfile.location ?? "";
+  loadedProfile.availability = normalizeAvailability(profileResult.availability ?? loadedProfile.availability);
+  loadedProfile.topStrength = profileResult.top_strength ?? loadedProfile.topStrength ?? "";
+  loadedProfile.experienceYears = profileResult.experience_years ?? loadedProfile.experienceYears ?? 0;
+  loadedProfile.focusArea = profileResult.focus_area ?? loadedProfile.focusArea ?? "";
+  loadedProfile.summary = profileResult.summary ?? loadedProfile.summary ?? "";
+  loadedProfile.skills = profileResult.skills ?? loadedProfile.skills ?? [];
+  loadedProfile.careerJourney = Array.isArray(profileResult.career_journey)
+    ? (profileResult.career_journey as unknown as FreeAgentProfile["careerJourney"])
+    : (loadedProfile.careerJourney ?? []);
+  loadedProfile.email = profileResult.email ?? loadedProfile.email ?? fallbackEmail ?? "";
+  loadedProfile.imageAlt = profileResult.image_alt ?? loadedProfile.imageAlt ?? "";
+  loadedProfile.currentEmployer = profileResult.current_employer ?? loadedProfile.currentEmployer;
+  loadedProfile.photoUrl = loadedProfile.photoUrl ?? profileResult.photo_url ?? undefined;
+  loadedProfile.photo_storage_path = loadedProfile.photo_storage_path ?? profileResult.photo_storage_path ?? null;
+  loadedProfile.intro_video_url = loadedProfile.intro_video_url ?? profileResult.intro_video_url ?? null;
+  loadedProfile.intro_video_storage_path = loadedProfile.intro_video_storage_path ?? profileResult.intro_video_storage_path ?? null;
+
+  return loadedProfile;
+}
 
 const normalizeSlug = (value: string, fallback: string) => {
   const slug = value
@@ -130,7 +195,7 @@ export default function BuilderPage() {
 
       const { data, error } = await supabase
         .from("profiles")
-        .select("slug, profile, account_type, visibility, opportunity_status, intro_video_url, photo_url, photo_storage_path, intro_video_storage_path")
+        .select("slug, profile, account_type, visibility, opportunity_status, name, title, location, availability, top_strength, experience_years, focus_area, summary, skills, career_journey, email, image_alt, current_employer, intro_video_url, photo_url, photo_storage_path, intro_video_storage_path")
         .eq("user_id", supabaseSession.user.id)
         .maybeSingle();
 
@@ -154,29 +219,13 @@ export default function BuilderPage() {
           return;
         }
 
-        const loadedProfile = profileResult.profile as unknown as FreeAgentProfile;
-
-        if (profileResult.slug && !loadedProfile.slug) {
-          loadedProfile.slug = profileResult.slug;
-        }
-
-        loadedProfile.visibility = loadedProfile.visibility ?? "public";
-        loadedProfile.visibility = normalizeVisibility(profileResult.visibility ?? loadedProfile.visibility);
-        loadedProfile.opportunityStatus = (profileResult.opportunity_status === "exploring" || profileResult.opportunity_status === "not_open" || profileResult.opportunity_status === "actively_open")
-          ? profileResult.opportunity_status
-          : (loadedProfile.opportunityStatus ?? "actively_open");
-        loadedProfile.photoUrl = loadedProfile.photoUrl ?? profileResult.photo_url ?? undefined;
-        loadedProfile.photo_storage_path = loadedProfile.photo_storage_path ?? profileResult.photo_storage_path ?? null;
-        loadedProfile.intro_video_url = loadedProfile.intro_video_url ?? profileResult.intro_video_url ?? null;
-        loadedProfile.intro_video_storage_path = loadedProfile.intro_video_storage_path ?? profileResult.intro_video_storage_path ?? null;
-        setProfile(loadedProfile);
+        setProfile(hydrateBuilderProfile(profileResult, supabaseSession.user.email));
       } else {
         const blankProfile = createBlankProfile(supabaseSession.user.id, supabaseSession.user.email);
         const insertPayload: ProfileInsert = {
           user_id: supabaseSession.user.id,
           account_type: "talent",
-          slug: blankProfile.slug,
-          profile: blankProfile as unknown as Json,
+          ...buildCanonicalTalentColumns(blankProfile, supabaseSession.user.email),
         };
         const { error: insertError } = await supabase.from("profiles").insert([insertPayload] as never);
 
@@ -225,12 +274,7 @@ export default function BuilderPage() {
       const upsertPayload: ProfileInsert = {
         user_id: session.user.id,
         account_type: "talent",
-        slug: profile.slug ?? null,
-        intro_video_url: profile.intro_video_url ?? null,
-        intro_video_storage_path: profile.intro_video_storage_path ?? null,
-        photo_url: profile.photoUrl ?? null,
-        photo_storage_path: profile.photo_storage_path ?? null,
-        profile: profile as unknown as Json,
+        ...buildCanonicalTalentColumns(profile, session.user.email),
       };
 
       const { error } = await supabase.from("profiles").upsert([upsertPayload] as never, {
@@ -282,12 +326,7 @@ export default function BuilderPage() {
         {
           user_id: session.user.id,
           account_type: "talent",
-          slug: uniqueSlug,
-          intro_video_url: profileToSave.intro_video_url ?? null,
-          intro_video_storage_path: profileToSave.intro_video_storage_path ?? null,
-          photo_url: profileToSave.photoUrl ?? null,
-          photo_storage_path: profileToSave.photo_storage_path ?? null,
-          profile: profileToSave as unknown as Json,
+          ...buildCanonicalTalentColumns(profileToSave, session.user.email),
         },
       ] as never,
       {

@@ -3,6 +3,7 @@ create table if not exists profiles (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null unique references auth.users (id),
   account_type text not null default 'talent' check (account_type in ('talent', 'employer')),
+  -- Employer-facing talent fields are canonical at the top level; `profile` remains a compatibility mirror for editor state.
   slug text,
   visibility text not null default 'public' check (visibility in ('public', 'verified_employer_network', 'confidential', 'employer_network')),
   opportunity_status text not null default 'actively_open' check (opportunity_status in ('actively_open', 'exploring', 'not_open')),
