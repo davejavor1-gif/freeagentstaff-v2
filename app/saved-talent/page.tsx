@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import TalentCard from "@/components/TalentCard";
 import { getSessionWithRetry } from "@/lib/supabase-client";
+import type { EmployerIntroductionRequestItem } from "@/types/introduction-requests";
 import type { SavedTalentItem, ShortlistSummary } from "@/types/saved-talent";
 
 type SavedTalentResponse = {
@@ -21,6 +22,13 @@ type ShortlistResponse = {
   message?: string;
 };
 
+type SentRequestsResponse = {
+  ok: boolean;
+  items: EmployerIntroductionRequestItem[];
+  reason?: string;
+  message?: string;
+};
+
 const allSavedOption = "all";
 
 export default function SavedTalentPage() {
@@ -31,6 +39,8 @@ export default function SavedTalentPage() {
   const [isMutating, setIsMutating] = useState(false);
   const [newShortlistName, setNewShortlistName] = useState("");
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [requestBySlug, setRequestBySlug] = useState<Record<string, EmployerIntroductionRequestItem | undefined>>({});
+  const [requestBusySlug, setRequestBusySlug] = useState<string | null>(null);
   const renameInputRef = useRef<HTMLInputElement | null>(null);
 
   const getAuthHeaders = useCallback(async () => {
@@ -108,6 +118,37 @@ export default function SavedTalentPage() {
     }
   }, [getAuthHeaders, selectedShortlistId]);
 
+  const loadSentRequests = useCallback(async () => {
+    const headers = await getAuthHeaders();
+
+    if (!headers) {
+      setRequestBySlug({});
+      return;
+    }
+
+    const response = await fetch("/api/introduction-requests/sent", {
+      method: "GET",
+      headers,
+      cache: "no-store",
+    });
+
+    const payload = (await response.json().catch(() => null)) as SentRequestsResponse | null;
+
+    if (!payload?.ok || !Array.isArray(payload.items)) {
+      setRequestBySlug({});
+      return;
+    }
+
+    const nextMap: Record<string, EmployerIntroductionRequestItem | undefined> = {};
+    for (const item of payload.items) {
+      if (!nextMap[item.talentSlug]) {
+        nextMap[item.talentSlug] = item;
+      }
+    }
+
+    setRequestBySlug(nextMap);
+  }, [getAuthHeaders]);
+
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       void loadShortlists();
@@ -120,13 +161,13 @@ export default function SavedTalentPage() {
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      void loadSavedTalent();
+      void Promise.all([loadSavedTalent(), loadSentRequests()]);
     }, 0);
 
     return () => {
       clearTimeout(timeoutId);
     };
-  }, [loadSavedTalent]);
+  }, [loadSavedTalent, loadSentRequests]);
 
   const selectedShortlist = useMemo(
     () => shortlists.find((shortlist) => shortlist.id === selectedShortlistId) ?? null,
@@ -134,7 +175,76 @@ export default function SavedTalentPage() {
   );
 
   const refreshAll = async () => {
-    await Promise.all([loadShortlists(), loadSavedTalent()]);
+    await Promise.all([loadShortlists(), loadSavedTalent(), loadSentRequests()]);
+  };
+
+  const createIntroductionRequest = async (slug: string) => {
+    if (isMutating || requestBusySlug) {
+      return;
+    }
+
+    setRequestBusySlug(slug);
+    setFeedback(null);
+
+    try {
+      const headers = await getAuthHeaders();
+      if (!headers) {
+        setFeedback("Sign in required.");
+        return;
+      }
+
+      const response = await fetch("/api/introduction-requests", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ slug }),
+      });
+
+      const payload = (await response.json().catch(() => null)) as { ok?: boolean; message?: string } | null;
+
+      if (!response.ok || !payload?.ok) {
+        setFeedback(payload?.message ?? "Unable to request introduction.");
+        return;
+      }
+
+      await Promise.all([loadSavedTalent(), loadSentRequests()]);
+      setFeedback("Introduction request sent.");
+    } finally {
+      setRequestBusySlug(null);
+    }
+  };
+
+  const withdrawIntroductionRequest = async (requestId: string, slug: string) => {
+    if (isMutating || requestBusySlug) {
+      return;
+    }
+
+    setRequestBusySlug(slug);
+    setFeedback(null);
+
+    try {
+      const headers = await getAuthHeaders();
+      if (!headers) {
+        setFeedback("Sign in required.");
+        return;
+      }
+
+      const response = await fetch(`/api/introduction-requests/${encodeURIComponent(requestId)}/withdraw`, {
+        method: "POST",
+        headers,
+      });
+
+      const payload = (await response.json().catch(() => null)) as { ok?: boolean; message?: string } | null;
+
+      if (!response.ok || !payload?.ok) {
+        setFeedback(payload?.message ?? "Unable to withdraw introduction request.");
+        return;
+      }
+
+      await loadSentRequests();
+      setFeedback("Introduction request withdrawn.");
+    } finally {
+      setRequestBusySlug(null);
+    }
   };
 
   const createShortlist = async () => {
@@ -457,6 +567,72 @@ export default function SavedTalentPage() {
                     />
 
                     <div className="rounded-[20px] border border-[#cda64d]/30 bg-white/90 p-3">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">Introduction</p>
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                        {requestBySlug[item.slug]?.status === "pending" ? (
+                          <>
+                            <span className="inline-flex min-h-10 items-center rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf]">
+                              Introduction requested
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const requestId = requestBySlug[item.slug]?.requestId;
+                                if (requestId) {
+                                  void withdrawIntroductionRequest(requestId, item.slug);
+                                }
+                              }}
+                              disabled={requestBusySlug === item.slug}
+                              className="inline-flex min-h-10 items-center rounded-full border border-[#0f2744]/25 bg-[#f7ebcf] px-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#0f2744] transition hover:bg-[#e9d88f] disabled:opacity-50"
+                            >
+                              Withdraw
+                            </button>
+                          </>
+                        ) : requestBySlug[item.slug]?.status === "accepted" ? (
+                          <span className="inline-flex min-h-10 items-center rounded-full border border-emerald-300/60 bg-emerald-50 px-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-700">
+                            Introduction accepted
+                          </span>
+                        ) : requestBySlug[item.slug]?.status === "declined" ? (
+                          <>
+                            <span className="inline-flex min-h-10 items-center rounded-full border border-rose-200 bg-rose-50 px-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-700">
+                              Introduction declined
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                void createIntroductionRequest(item.slug);
+                              }}
+                              disabled={requestBusySlug === item.slug}
+                              className="inline-flex min-h-10 items-center rounded-full border border-[#0f2744]/25 bg-[#f7ebcf] px-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#0f2744] transition hover:bg-[#e9d88f] disabled:opacity-50"
+                            >
+                              Request again
+                            </button>
+                          </>
+                        ) : requestBySlug[item.slug]?.status === "withdrawn" ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              void createIntroductionRequest(item.slug);
+                            }}
+                            disabled={requestBusySlug === item.slug}
+                            className="inline-flex min-h-10 items-center rounded-full border border-[#0f2744]/25 bg-[#f7ebcf] px-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#0f2744] transition hover:bg-[#e9d88f] disabled:opacity-50"
+                          >
+                            Request introduction
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              void createIntroductionRequest(item.slug);
+                            }}
+                            disabled={requestBusySlug === item.slug}
+                            className="inline-flex min-h-10 items-center rounded-full border border-[#0f2744]/25 bg-[#0f2744] px-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf] transition hover:bg-[#17355f] disabled:opacity-50"
+                          >
+                            Request introduction
+                          </button>
+                        )}
+                      </div>
+
                       <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">Shortlists</p>
                       <div className="mt-2 space-y-2">
                         {shortlists.map((shortlist) => {

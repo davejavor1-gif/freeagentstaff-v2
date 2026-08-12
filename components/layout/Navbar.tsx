@@ -7,7 +7,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { Bell, Menu, X } from "lucide-react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase-client";
-import type { IntroductionRequest } from "@/types/freeagent";
 
 const baseNavItems = [
   { label: "Home", href: "/" },
@@ -39,14 +38,31 @@ export default function Navbar() {
         return;
       }
 
-      const { data: profileRow } = await supabase.from("profiles").select("profile, account_type").eq("user_id", currentSession.user.id).maybeSingle();
-      const profilePayload = (profileRow as { profile?: unknown } | null | undefined)?.profile as
-        | { introductionRequests?: IntroductionRequest[] }
-        | undefined;
+      const { data: profileRow } = await supabase
+        .from("profiles")
+        .select("account_type")
+        .eq("user_id", currentSession.user.id)
+        .maybeSingle();
       const rowAccountType = (profileRow as { account_type?: string } | null | undefined)?.account_type;
-      const count = Array.isArray(profilePayload?.introductionRequests)
-        ? profilePayload.introductionRequests.filter((request) => request.status === "pending").length
-        : 0;
+      let count = 0;
+
+      if (rowAccountType !== "employer" && currentSession.access_token) {
+        const response = await fetch("/api/introduction-requests/incoming", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${currentSession.access_token}`,
+          },
+          cache: "no-store",
+        });
+
+        const payload = (await response.json().catch(() => null)) as
+          | { ok?: boolean; items?: Array<{ status?: string; canTalentRespond?: boolean }> }
+          | null;
+
+        if (payload?.ok && Array.isArray(payload.items)) {
+          count = payload.items.filter((request) => request.status === "pending" && request.canTalentRespond !== false).length;
+        }
+      }
 
       if (mounted) {
         setNotificationCount(count);

@@ -13,6 +13,10 @@ export default function TalentProfileExperience({ slug }: { slug: string }) {
   const [payload, setPayload] = useState<TalentPassportApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSaved, setIsSaved] = useState(false);
+  const [requestState, setRequestState] = useState<"idle" | "pending" | "accepted" | "declined" | "withdrawn">("idle");
+  const [requestId, setRequestId] = useState<string | null>(null);
+  const [requestBusy, setRequestBusy] = useState(false);
+  const [requestFeedback, setRequestFeedback] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -39,16 +43,28 @@ export default function TalentProfileExperience({ slug }: { slug: string }) {
         setPayload(nextPayload);
 
         if (nextPayload.allowed && nextPayload.accessScope && !nextPayload.isOwner && session?.access_token) {
-          const savedResponse = await fetch("/api/saved-talent", {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${session.access_token}`,
-            },
-            cache: "no-store",
-          });
+          const [savedResponse, sentResponse] = await Promise.all([
+            fetch("/api/saved-talent", {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${session.access_token}`,
+              },
+              cache: "no-store",
+            }),
+            fetch("/api/introduction-requests/sent", {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${session.access_token}`,
+              },
+              cache: "no-store",
+            }),
+          ]);
 
           const savedPayload = (await savedResponse.json().catch(() => null)) as
             | { ok?: boolean; items?: Array<{ slug?: string }> }
+            | null;
+          const sentPayload = (await sentResponse.json().catch(() => null)) as
+            | { ok?: boolean; items?: Array<{ requestId: string; talentSlug: string; status: "pending" | "accepted" | "declined" | "withdrawn" }> }
             | null;
 
           if (savedPayload?.ok && Array.isArray(savedPayload.items)) {
@@ -56,8 +72,22 @@ export default function TalentProfileExperience({ slug }: { slug: string }) {
           } else {
             setIsSaved(false);
           }
+
+          const matchingRequest = sentPayload?.ok && Array.isArray(sentPayload.items)
+            ? sentPayload.items.find((item) => item.talentSlug === slug)
+            : null;
+
+          if (matchingRequest) {
+            setRequestState(matchingRequest.status);
+            setRequestId(matchingRequest.requestId);
+          } else {
+            setRequestState("idle");
+            setRequestId(null);
+          }
         } else {
           setIsSaved(false);
+          setRequestState("idle");
+          setRequestId(null);
         }
       } catch (error) {
         if (!mounted) {
@@ -82,6 +112,80 @@ export default function TalentProfileExperience({ slug }: { slug: string }) {
       mounted = false;
     };
   }, [slug]);
+
+  const requestIntroduction = async () => {
+    const session = await getSessionWithRetry();
+
+    if (!session?.access_token || requestBusy) {
+      return;
+    }
+
+    setRequestBusy(true);
+    setRequestFeedback(null);
+
+    try {
+      const response = await fetch("/api/introduction-requests", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ slug }),
+      });
+
+      const result = (await response.json().catch(() => null)) as
+        | { ok?: boolean; requestId?: string; status?: "pending" | "accepted" | "declined" | "withdrawn"; alreadyExists?: boolean; message?: string }
+        | null;
+
+      if (!response.ok || !result?.ok || !result.requestId || !result.status) {
+        setRequestFeedback(result?.message ?? "Unable to create introduction request.");
+        return;
+      }
+
+      setRequestId(result.requestId);
+      setRequestState(result.status);
+      setIsSaved(true);
+      setRequestFeedback(result.alreadyExists ? "Introduction request already pending." : "Introduction request sent.");
+    } catch {
+      setRequestFeedback("Unable to create introduction request.");
+    } finally {
+      setRequestBusy(false);
+    }
+  };
+
+  const withdrawIntroduction = async () => {
+    const session = await getSessionWithRetry();
+
+    if (!session?.access_token || !requestId || requestBusy) {
+      return;
+    }
+
+    setRequestBusy(true);
+    setRequestFeedback(null);
+
+    try {
+      const response = await fetch(`/api/introduction-requests/${encodeURIComponent(requestId)}/withdraw`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      const result = (await response.json().catch(() => null)) as { ok?: boolean; status?: "withdrawn"; message?: string } | null;
+
+      if (!response.ok || !result?.ok || result.status !== "withdrawn") {
+        setRequestFeedback(result?.message ?? "Unable to withdraw request.");
+        return;
+      }
+
+      setRequestState("withdrawn");
+      setRequestFeedback("Introduction request withdrawn.");
+    } catch {
+      setRequestFeedback("Unable to withdraw request.");
+    } finally {
+      setRequestBusy(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -179,6 +283,82 @@ export default function TalentProfileExperience({ slug }: { slug: string }) {
               <div className="mt-5 rounded-[20px] border border-[#f2cc63]/25 bg-[#f7ebcf]/10 p-4 text-sm leading-7 text-[#dfe7ef]">
                 Anonymous signals remain available: focus area, availability, opportunity status, experience, top strength, and skills.
               </div>
+
+              {!isOwner ? (
+                <div className="mt-5 rounded-[20px] border border-[#f2cc63]/25 bg-[#f7ebcf]/10 p-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f2cc63]">Introduction</p>
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    {requestState === "idle" ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          void requestIntroduction();
+                        }}
+                        disabled={requestBusy}
+                        className="inline-flex min-h-11 items-center rounded-full border border-[#f2cc63]/35 bg-[#f2cc63] px-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#0f2744] transition hover:bg-[#f5d987] disabled:opacity-50"
+                      >
+                        Request introduction
+                      </button>
+                    ) : null}
+
+                    {requestState === "pending" ? (
+                      <>
+                        <span className="inline-flex min-h-11 items-center rounded-full border border-[#f2cc63]/35 bg-[#f7ebcf]/10 px-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf]">
+                          Introduction requested
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            void withdrawIntroduction();
+                          }}
+                          disabled={requestBusy}
+                          className="inline-flex min-h-11 items-center rounded-full border border-[#f2cc63]/35 bg-transparent px-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f2cc63] transition hover:bg-[#f7ebcf]/10 disabled:opacity-50"
+                        >
+                          Withdraw
+                        </button>
+                      </>
+                    ) : null}
+
+                    {requestState === "accepted" ? (
+                      <span className="inline-flex min-h-11 items-center rounded-full border border-emerald-400/45 bg-emerald-500/15 px-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-200">
+                        Introduction accepted
+                      </span>
+                    ) : null}
+
+                    {requestState === "declined" ? (
+                      <>
+                        <span className="inline-flex min-h-11 items-center rounded-full border border-rose-300/45 bg-rose-500/15 px-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-rose-100">
+                          Introduction declined
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            void requestIntroduction();
+                          }}
+                          disabled={requestBusy}
+                          className="inline-flex min-h-11 items-center rounded-full border border-[#f2cc63]/35 bg-transparent px-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f2cc63] transition hover:bg-[#f7ebcf]/10 disabled:opacity-50"
+                        >
+                          Request again
+                        </button>
+                      </>
+                    ) : null}
+
+                    {requestState === "withdrawn" ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          void requestIntroduction();
+                        }}
+                        disabled={requestBusy}
+                        className="inline-flex min-h-11 items-center rounded-full border border-[#f2cc63]/35 bg-[#f7ebcf]/10 px-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f2cc63] transition hover:bg-[#f7ebcf]/20 disabled:opacity-50"
+                      >
+                        Request introduction
+                      </button>
+                    ) : null}
+                  </div>
+                  {requestFeedback ? <p className="mt-3 text-sm text-[#dfe7ef]">{requestFeedback}</p> : null}
+                </div>
+              ) : null}
             </aside>
           </div>
         </div>
@@ -287,6 +467,82 @@ export default function TalentProfileExperience({ slug }: { slug: string }) {
                 </span>
                 {isOwner ? "Private contact information remains owner-only." : "Email, phone, and private contact fields are withheld in V1."}
               </div>
+
+              {!isOwner ? (
+                <div className="mt-5 rounded-[20px] border border-[#f2cc63]/30 bg-white/10 p-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f2cc63]">Introduction</p>
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    {requestState === "idle" ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          void requestIntroduction();
+                        }}
+                        disabled={requestBusy}
+                        className="inline-flex min-h-11 items-center rounded-full border border-[#f2cc63]/35 bg-[#f2cc63] px-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#0f2744] transition hover:bg-[#f5d987] disabled:opacity-50"
+                      >
+                        Request introduction
+                      </button>
+                    ) : null}
+
+                    {requestState === "pending" ? (
+                      <>
+                        <span className="inline-flex min-h-11 items-center rounded-full border border-[#f2cc63]/35 bg-[#f7ebcf]/10 px-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf]">
+                          Introduction requested
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            void withdrawIntroduction();
+                          }}
+                          disabled={requestBusy}
+                          className="inline-flex min-h-11 items-center rounded-full border border-[#f2cc63]/35 bg-transparent px-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f2cc63] transition hover:bg-[#f7ebcf]/10 disabled:opacity-50"
+                        >
+                          Withdraw
+                        </button>
+                      </>
+                    ) : null}
+
+                    {requestState === "accepted" ? (
+                      <span className="inline-flex min-h-11 items-center rounded-full border border-emerald-400/45 bg-emerald-500/15 px-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-200">
+                        Introduction accepted
+                      </span>
+                    ) : null}
+
+                    {requestState === "declined" ? (
+                      <>
+                        <span className="inline-flex min-h-11 items-center rounded-full border border-rose-300/45 bg-rose-500/15 px-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-rose-100">
+                          Introduction declined
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            void requestIntroduction();
+                          }}
+                          disabled={requestBusy}
+                          className="inline-flex min-h-11 items-center rounded-full border border-[#f2cc63]/35 bg-transparent px-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f2cc63] transition hover:bg-[#f7ebcf]/10 disabled:opacity-50"
+                        >
+                          Request again
+                        </button>
+                      </>
+                    ) : null}
+
+                    {requestState === "withdrawn" ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          void requestIntroduction();
+                        }}
+                        disabled={requestBusy}
+                        className="inline-flex min-h-11 items-center rounded-full border border-[#f2cc63]/35 bg-[#f7ebcf]/10 px-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f2cc63] transition hover:bg-[#f7ebcf]/20 disabled:opacity-50"
+                      >
+                        Request introduction
+                      </button>
+                    ) : null}
+                  </div>
+                  {requestFeedback ? <p className="mt-3 text-sm text-[#dfe7ef]">{requestFeedback}</p> : null}
+                </div>
+              ) : null}
             </div>
 
             {isOwner ? (

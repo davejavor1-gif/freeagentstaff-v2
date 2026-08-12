@@ -34,20 +34,6 @@ export interface CareerPosition {
   skills: string[];
 }
 
-export interface IntroductionRequest {
-  id: string;
-  createdAt: string;
-  status: "pending" | "accepted" | "declined";
-  employerUserId: string;
-  employerName: string;
-  employerEmail?: string;
-  candidateSlug: string;
-  candidateUserId: string;
-  message?: string;
-  question?: string;
-  isRead?: boolean;
-}
-
 export interface FreeAgentProfile {
   id: string;
   slug?: string;
@@ -72,5 +58,4 @@ export interface FreeAgentProfile {
   photoUrl?: string;
   photo_storage_path?: string | null;
   currentEmployer?: string;
-  introductionRequests?: IntroductionRequest[];
 }
