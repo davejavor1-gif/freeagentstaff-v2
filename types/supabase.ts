@@ -185,6 +185,9 @@ export interface EmployerTalentConnectionsRow {
   employer_user_id: string;
   talent_user_id: string;
   introduction_request_id: string | null;
+  status: "active" | "revoked";
+  revoked_at: string | null;
+  revoked_by: "talent" | null;
   connected_at: string;
   created_at: string;
 }
@@ -193,6 +196,9 @@ export interface EmployerTalentConnectionsInsert {
   employer_user_id: string;
   talent_user_id: string;
   introduction_request_id?: string | null;
+  status?: "active" | "revoked";
+  revoked_at?: string | null;
+  revoked_by?: "talent" | null;
   connected_at?: string;
   created_at?: string;
 }
@@ -201,6 +207,9 @@ export interface EmployerTalentConnectionsUpdate {
   employer_user_id?: string;
   talent_user_id?: string;
   introduction_request_id?: string | null;
+  status?: "active" | "revoked";
+  revoked_at?: string | null;
+  revoked_by?: "talent" | null;
   connected_at?: string;
   created_at?: string;
 }
@@ -419,6 +428,52 @@ export interface Database {
         Returns: Array<{
           talent_slug: string;
           email: string;
+        }>;
+      };
+      list_employer_connections: {
+        Args: Record<string, never>;
+        Returns: Array<{
+          connection_id: string;
+          status: "active" | "revoked" | null;
+          connected_at: string;
+          revoked_at: string | null;
+          is_currently_eligible: boolean;
+          talent_slug: string | null;
+          access_scope: "owner_full" | "employer_full" | "employer_confidential" | null;
+          visibility: "public" | "verified_employer_network" | "confidential" | null;
+          verification_status: "unverified" | "pending" | "verified" | "rejected" | null;
+          availability: string | null;
+          opportunity_status: "actively_open" | "exploring" | "not_open" | null;
+          experience_years: number | null;
+          focus_area: string | null;
+          top_strength: string | null;
+          skills: string[] | null;
+          location: string | null;
+          name: string | null;
+          title: string | null;
+          summary: string | null;
+          current_employer: string | null;
+        }>;
+      };
+      list_talent_connections: {
+        Args: Record<string, never>;
+        Returns: Array<{
+          connection_id: string;
+          status: "active" | "revoked" | null;
+          connected_at: string;
+          revoked_at: string | null;
+          employer_company_name: string | null;
+          employer_contact_name: string | null;
+          employer_contact_role: string | null;
+        }>;
+      };
+      talent_revoke_connection: {
+        Args: { p_connection_id: string };
+        Returns: Array<{
+          connection_id: string;
+          status: "active" | "revoked" | null;
+          revoked_at: string | null;
+          revoked_by: "talent" | null;
         }>;
       };
     };

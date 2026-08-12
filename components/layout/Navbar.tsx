@@ -12,6 +12,7 @@ const baseNavItems = [
   { label: "Home", href: "/" },
   { label: "Find talent", href: "/find-talent" },
   { label: "Dashboard", href: "/dashboard" },
+  { label: "Connections", href: "/connections" },
   { label: "Privacy & Visibility", href: "/settings/privacy" },
   { label: "Pricing", href: "/pricing" },
   { label: "About", href: "/about" },
@@ -92,12 +93,19 @@ export default function Navbar() {
     };
   }, []);
 
-  const navItems = baseNavItems.filter((item) => (item.href === "/dashboard" ? Boolean(session) : true));
+  const navItems = baseNavItems.filter((item) => {
+    if (item.href === "/dashboard" || item.href === "/connections") {
+      return Boolean(session);
+    }
+
+    return true;
+  });
   const isEmployerSession = Boolean(session) && accountType === "employer";
   const visibleNavItems = isEmployerSession
     ? [
         { label: "Find talent", href: "/find-talent" },
         { label: "Saved talent", href: "/saved-talent" },
+        { label: "Connections", href: "/connections" },
         { label: "Dashboard", href: "/dashboard" },
         { label: "Employer account", href: "/onboarding/employer" },
       ]

@@ -360,6 +360,9 @@ export default function DashboardPage() {
                 <Link href="/builder" className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
                   Edit your profile
                 </Link>
+                <Link href="/connections" className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
+                  Connections
+                </Link>
                 <Link href="/settings/privacy" className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
                   Privacy & visibility
                 </Link>
@@ -384,6 +387,22 @@ export default function DashboardPage() {
                   }}
                 >
                   Find talent
+                </Link>
+                <Link
+                  href="/connections"
+                  className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${
+                    isVerifiedEmployer
+                      ? "border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100"
+                      : "cursor-not-allowed border border-slate-200 bg-slate-100 text-slate-400"
+                  }`}
+                  aria-disabled={!isVerifiedEmployer}
+                  onClick={(event) => {
+                    if (!isVerifiedEmployer) {
+                      event.preventDefault();
+                    }
+                  }}
+                >
+                  Connections
                 </Link>
               </>
             )}

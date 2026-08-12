@@ -1139,9 +1139,14 @@ create table if not exists public.employer_talent_connections (
   employer_user_id uuid not null references public.profiles(user_id) on delete cascade,
   talent_user_id uuid not null references public.profiles(user_id) on delete cascade,
   introduction_request_id uuid references public.employer_introduction_requests(id) on delete set null,
+  status text not null default 'active',
+  revoked_at timestamptz,
+  revoked_by text,
   connected_at timestamptz not null default now(),
   created_at timestamptz not null default now(),
-  constraint employer_talent_connections_actor_pair_check check (employer_user_id <> talent_user_id)
+  constraint employer_talent_connections_actor_pair_check check (employer_user_id <> talent_user_id),
+  constraint employer_talent_connections_status_check check (status in ('active', 'revoked')),
+  constraint employer_talent_connections_revoked_by_check check (revoked_by is null or revoked_by in ('talent'))
 );
 
 create unique index if not exists employer_talent_connections_pair_uq
@@ -1554,18 +1559,29 @@ begin
       talent_user_id,
       introduction_request_id,
       connected_at,
-      created_at
+      created_at,
+      status,
+      revoked_at,
+      revoked_by
     )
     values (
       v_request.employer_user_id,
       v_talent_uid,
       p_request_id,
       coalesce(v_responded_at, now()),
-      now()
+      now(),
+      'active',
+      null,
+      null
     )
     on conflict (employer_user_id, talent_user_id)
     do update
-    set introduction_request_id = coalesce(public.employer_talent_connections.introduction_request_id, excluded.introduction_request_id);
+    set
+      introduction_request_id = coalesce(public.employer_talent_connections.introduction_request_id, excluded.introduction_request_id),
+      connected_at = excluded.connected_at,
+      status = 'active',
+      revoked_at = null,
+      revoked_by = null;
   end if;
 
   return query
@@ -1611,6 +1627,7 @@ begin
     from public.employer_talent_connections c
     where c.employer_user_id = v_employer_uid
       and c.talent_user_id = v_talent_user_id
+      and c.status = 'active'
   ) then
     raise exception 'contact_unavailable' using errcode = '42501';
   end if;
@@ -1626,6 +1643,181 @@ begin
   return query
   select v_slug, v_email;
 end
+$$;
+
+create or replace function public.talent_revoke_connection(
+  p_connection_id uuid
+)
+returns table (
+  connection_id uuid,
+  status text,
+  revoked_at timestamptz,
+  revoked_by text
+)
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_talent_uid uuid := public.require_talent_actor();
+  v_connection_id uuid;
+  v_talent_user_id uuid;
+  v_status text;
+  v_revoked_at timestamptz;
+  v_revoked_by text;
+begin
+  if p_connection_id is null then
+    raise exception 'missing_connection_id' using errcode = '23502';
+  end if;
+
+  select c.id, c.talent_user_id, c.status, c.revoked_at, c.revoked_by
+  into v_connection_id, v_talent_user_id, v_status, v_revoked_at, v_revoked_by
+  from public.employer_talent_connections c
+  where c.id = p_connection_id
+  for update;
+
+  if v_connection_id is null then
+    raise exception 'connection_not_found' using errcode = 'P0002';
+  end if;
+
+  if v_talent_user_id <> v_talent_uid then
+    raise exception 'not_authorized_connection' using errcode = '42501';
+  end if;
+
+  if v_status = 'revoked' then
+    return query
+    select v_connection_id, v_status, v_revoked_at, v_revoked_by;
+    return;
+  end if;
+
+  if v_status <> 'active' then
+    raise exception 'invalid_state' using errcode = 'P0001';
+  end if;
+
+  update public.employer_talent_connections c
+  set
+    status = 'revoked',
+    revoked_at = now(),
+    revoked_by = 'talent'
+  where c.id = p_connection_id
+  returning c.id, c.status, c.revoked_at, c.revoked_by
+  into v_connection_id, v_status, v_revoked_at, v_revoked_by;
+
+  return query
+  select v_connection_id, v_status, v_revoked_at, v_revoked_by;
+end
+$$;
+
+create or replace function public.list_employer_connections()
+returns table (
+  connection_id uuid,
+  status text,
+  connected_at timestamptz,
+  revoked_at timestamptz,
+  is_currently_eligible boolean,
+  talent_slug text,
+  access_scope text,
+  visibility text,
+  verification_status text,
+  availability text,
+  opportunity_status text,
+  experience_years integer,
+  focus_area text,
+  top_strength text,
+  skills text[],
+  location text,
+  name text,
+  title text,
+  summary text,
+  current_employer text
+)
+language sql
+security definer
+stable
+set search_path = public, pg_temp
+as $$
+  with actor as (
+    select public.require_verified_employer_actor() as employer_user_id
+  ),
+  base as (
+    select
+      c.id as connection_id,
+      c.employer_user_id,
+      c.status,
+      c.connected_at,
+      c.revoked_at,
+      t.slug as talent_slug
+    from public.employer_talent_connections c
+    join actor a
+      on a.employer_user_id = c.employer_user_id
+    join public.profiles t
+      on t.user_id = c.talent_user_id
+     and t.account_type = 'talent'
+  )
+  select
+    b.connection_id,
+    b.status,
+    b.connected_at,
+    b.revoked_at,
+    (
+      b.status = 'active'
+      and b.talent_slug is not null
+      and public.employer_can_access_talent(b.employer_user_id, b.talent_slug)
+    ) as is_currently_eligible,
+    p.slug as talent_slug,
+    p.access_scope,
+    p.visibility,
+    p.verification_status,
+    p.availability,
+    p.opportunity_status,
+    p.experience_years,
+    p.focus_area,
+    p.top_strength,
+    p.skills,
+    p.location,
+    p.name,
+    p.title,
+    p.summary,
+    p.current_employer
+  from base b
+  left join lateral public.talent_passport_for_viewer(b.talent_slug) p
+    on b.talent_slug is not null
+  order by b.connected_at desc;
+$$;
+
+create or replace function public.list_talent_connections()
+returns table (
+  connection_id uuid,
+  status text,
+  connected_at timestamptz,
+  revoked_at timestamptz,
+  employer_company_name text,
+  employer_contact_name text,
+  employer_contact_role text
+)
+language sql
+security definer
+stable
+set search_path = public, pg_temp
+as $$
+  with actor as (
+    select public.require_talent_actor() as talent_user_id
+  )
+  select
+    c.id as connection_id,
+    c.status,
+    c.connected_at,
+    c.revoked_at,
+    p.employer_company_name,
+    p.employer_contact_name,
+    p.employer_contact_role
+  from public.employer_talent_connections c
+  join actor a
+    on a.talent_user_id = c.talent_user_id
+  join public.profiles p
+    on p.user_id = c.employer_user_id
+   and p.account_type = 'employer'
+  order by c.connected_at desc;
 $$;
 
 create or replace function public.talent_accept_introduction_request(
@@ -1685,6 +1877,9 @@ revoke all on function public.list_talent_introduction_requests() from public, a
 revoke all on function public.talent_accept_introduction_request(uuid) from public, anon;
 revoke all on function public.talent_decline_introduction_request(uuid) from public, anon;
 revoke all on function public.talent_contact_for_connected_employer(text) from public, anon;
+revoke all on function public.talent_revoke_connection(uuid) from public, anon;
+revoke all on function public.list_employer_connections() from public, anon;
+revoke all on function public.list_talent_connections() from public, anon;
 
 grant execute on function public.save_talent_for_employer(text, uuid[]) to authenticated;
 grant execute on function public.unsave_talent_for_employer(text) to authenticated;
@@ -1702,3 +1897,6 @@ grant execute on function public.list_talent_introduction_requests() to authenti
 grant execute on function public.talent_accept_introduction_request(uuid) to authenticated;
 grant execute on function public.talent_decline_introduction_request(uuid) to authenticated;
 grant execute on function public.talent_contact_for_connected_employer(text) to authenticated;
+grant execute on function public.talent_revoke_connection(uuid) to authenticated;
+grant execute on function public.list_employer_connections() to authenticated;
+grant execute on function public.list_talent_connections() to authenticated;
