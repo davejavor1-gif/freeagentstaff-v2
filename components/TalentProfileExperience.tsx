@@ -17,6 +17,9 @@ export default function TalentProfileExperience({ slug }: { slug: string }) {
   const [requestId, setRequestId] = useState<string | null>(null);
   const [requestBusy, setRequestBusy] = useState(false);
   const [requestFeedback, setRequestFeedback] = useState<string | null>(null);
+  const [contactEmail, setContactEmail] = useState<string | null>(null);
+  const [contactBusy, setContactBusy] = useState(false);
+  const [contactFeedback, setContactFeedback] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -80,14 +83,22 @@ export default function TalentProfileExperience({ slug }: { slug: string }) {
           if (matchingRequest) {
             setRequestState(matchingRequest.status);
             setRequestId(matchingRequest.requestId);
+            if (matchingRequest.status !== "accepted") {
+              setContactEmail(null);
+              setContactFeedback(null);
+            }
           } else {
             setRequestState("idle");
             setRequestId(null);
+            setContactEmail(null);
+            setContactFeedback(null);
           }
         } else {
           setIsSaved(false);
           setRequestState("idle");
           setRequestId(null);
+          setContactEmail(null);
+          setContactFeedback(null);
         }
       } catch (error) {
         if (!mounted) {
@@ -179,11 +190,51 @@ export default function TalentProfileExperience({ slug }: { slug: string }) {
       }
 
       setRequestState("withdrawn");
+      setContactEmail(null);
+      setContactFeedback(null);
       setRequestFeedback("Introduction request withdrawn.");
     } catch {
       setRequestFeedback("Unable to withdraw request.");
     } finally {
       setRequestBusy(false);
+    }
+  };
+
+  const loadContactDetails = async () => {
+    const session = await getSessionWithRetry();
+
+    if (!session?.access_token || contactBusy) {
+      return;
+    }
+
+    setContactBusy(true);
+    setContactFeedback(null);
+
+    try {
+      const response = await fetch(`/api/talent/${encodeURIComponent(slug)}/contact`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        cache: "no-store",
+      });
+
+      const result = (await response.json().catch(() => null)) as
+        | { ok?: boolean; contact?: { email?: string }; message?: string }
+        | null;
+
+      if (!response.ok || !result?.ok || !result.contact?.email) {
+        setContactEmail(null);
+        setContactFeedback(result?.message ?? "Contact details are currently unavailable.");
+        return;
+      }
+
+      setContactEmail(result.contact.email);
+    } catch {
+      setContactEmail(null);
+      setContactFeedback("Contact details are currently unavailable.");
+    } finally {
+      setContactBusy(false);
     }
   };
 
@@ -320,9 +371,21 @@ export default function TalentProfileExperience({ slug }: { slug: string }) {
                     ) : null}
 
                     {requestState === "accepted" ? (
-                      <span className="inline-flex min-h-11 items-center rounded-full border border-emerald-400/45 bg-emerald-500/15 px-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-200">
-                        Introduction accepted
-                      </span>
+                      <>
+                        <span className="inline-flex min-h-11 items-center rounded-full border border-emerald-400/45 bg-emerald-500/15 px-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-200">
+                          Introduction accepted
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            void loadContactDetails();
+                          }}
+                          disabled={contactBusy}
+                          className="inline-flex min-h-11 items-center rounded-full border border-[#f2cc63]/35 bg-transparent px-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f2cc63] transition hover:bg-[#f7ebcf]/10 disabled:opacity-50"
+                        >
+                          {contactBusy ? "Loading contact" : "View contact details"}
+                        </button>
+                      </>
                     ) : null}
 
                     {requestState === "declined" ? (
@@ -357,6 +420,12 @@ export default function TalentProfileExperience({ slug }: { slug: string }) {
                     ) : null}
                   </div>
                   {requestFeedback ? <p className="mt-3 text-sm text-[#dfe7ef]">{requestFeedback}</p> : null}
+                  {contactEmail ? (
+                    <p className="mt-3 text-sm text-[#dfe7ef]">
+                      Email: <a className="underline decoration-[#f2cc63] underline-offset-2" href={`mailto:${contactEmail}`}>{contactEmail}</a>
+                    </p>
+                  ) : null}
+                  {!contactEmail && contactFeedback ? <p className="mt-3 text-sm text-[#dfe7ef]">{contactFeedback}</p> : null}
                 </div>
               ) : null}
             </aside>
@@ -504,9 +573,21 @@ export default function TalentProfileExperience({ slug }: { slug: string }) {
                     ) : null}
 
                     {requestState === "accepted" ? (
-                      <span className="inline-flex min-h-11 items-center rounded-full border border-emerald-400/45 bg-emerald-500/15 px-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-200">
-                        Introduction accepted
-                      </span>
+                      <>
+                        <span className="inline-flex min-h-11 items-center rounded-full border border-emerald-400/45 bg-emerald-500/15 px-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-200">
+                          Introduction accepted
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            void loadContactDetails();
+                          }}
+                          disabled={contactBusy}
+                          className="inline-flex min-h-11 items-center rounded-full border border-[#f2cc63]/35 bg-transparent px-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f2cc63] transition hover:bg-[#f7ebcf]/10 disabled:opacity-50"
+                        >
+                          {contactBusy ? "Loading contact" : "View contact details"}
+                        </button>
+                      </>
                     ) : null}
 
                     {requestState === "declined" ? (
@@ -541,6 +622,12 @@ export default function TalentProfileExperience({ slug }: { slug: string }) {
                     ) : null}
                   </div>
                   {requestFeedback ? <p className="mt-3 text-sm text-[#dfe7ef]">{requestFeedback}</p> : null}
+                  {contactEmail ? (
+                    <p className="mt-3 text-sm text-[#dfe7ef]">
+                      Email: <a className="underline decoration-[#f2cc63] underline-offset-2" href={`mailto:${contactEmail}`}>{contactEmail}</a>
+                    </p>
+                  ) : null}
+                  {!contactEmail && contactFeedback ? <p className="mt-3 text-sm text-[#dfe7ef]">{contactFeedback}</p> : null}
                 </div>
               ) : null}
             </div>

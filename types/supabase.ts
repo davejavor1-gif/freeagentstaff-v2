@@ -180,6 +180,31 @@ export interface EmployerShortlistMembersUpdate {
   talent_user_id?: string;
 }
 
+export interface EmployerTalentConnectionsRow {
+  id: string;
+  employer_user_id: string;
+  talent_user_id: string;
+  introduction_request_id: string | null;
+  connected_at: string;
+  created_at: string;
+}
+
+export interface EmployerTalentConnectionsInsert {
+  employer_user_id: string;
+  talent_user_id: string;
+  introduction_request_id?: string | null;
+  connected_at?: string;
+  created_at?: string;
+}
+
+export interface EmployerTalentConnectionsUpdate {
+  employer_user_id?: string;
+  talent_user_id?: string;
+  introduction_request_id?: string | null;
+  connected_at?: string;
+  created_at?: string;
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -197,6 +222,11 @@ export interface Database {
         Row: EmployerShortlistsRow;
         Insert: EmployerShortlistsInsert;
         Update: EmployerShortlistsUpdate;
+      };
+      employer_talent_connections: {
+        Row: EmployerTalentConnectionsRow;
+        Insert: EmployerTalentConnectionsInsert;
+        Update: EmployerTalentConnectionsUpdate;
       };
       profiles: {
         Row: ProfilesRow;
@@ -382,6 +412,13 @@ export interface Database {
           photo_storage_path: string | null;
           intro_video_storage_path: string | null;
           shortlist_ids: string[] | null;
+        }>;
+      };
+      talent_contact_for_connected_employer: {
+        Args: { p_talent_slug: string };
+        Returns: Array<{
+          talent_slug: string;
+          email: string;
         }>;
       };
     };
