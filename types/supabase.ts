@@ -214,6 +214,46 @@ export interface EmployerTalentConnectionsUpdate {
   created_at?: string;
 }
 
+export interface NotificationsRow {
+  id: string;
+  recipient_user_id: string;
+  actor_user_id: string | null;
+  notification_type: string;
+  title: string;
+  body: string | null;
+  entity_type: string | null;
+  entity_id: string | null;
+  event_key: string;
+  read_at: string | null;
+  created_at: string;
+}
+
+export interface NotificationsInsert {
+  recipient_user_id: string;
+  actor_user_id?: string | null;
+  notification_type: string;
+  title: string;
+  body?: string | null;
+  entity_type?: string | null;
+  entity_id?: string | null;
+  event_key: string;
+  read_at?: string | null;
+  created_at?: string;
+}
+
+export interface NotificationsUpdate {
+  recipient_user_id?: string;
+  actor_user_id?: string | null;
+  notification_type?: string;
+  title?: string;
+  body?: string | null;
+  entity_type?: string | null;
+  entity_id?: string | null;
+  event_key?: string;
+  read_at?: string | null;
+  created_at?: string;
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -236,6 +276,11 @@ export interface Database {
         Row: EmployerTalentConnectionsRow;
         Insert: EmployerTalentConnectionsInsert;
         Update: EmployerTalentConnectionsUpdate;
+      };
+      notifications: {
+        Row: NotificationsRow;
+        Insert: NotificationsInsert;
+        Update: NotificationsUpdate;
       };
       profiles: {
         Row: ProfilesRow;
@@ -474,6 +519,44 @@ export interface Database {
           status: "active" | "revoked" | null;
           revoked_at: string | null;
           revoked_by: "talent" | null;
+        }>;
+      };
+      list_my_notifications: {
+        Args: {
+          p_limit?: number;
+          p_unread_only?: boolean;
+        };
+        Returns: Array<{
+          notification_id: string;
+          notification_type: string;
+          title: string;
+          body: string | null;
+          entity_type: string | null;
+          entity_id: string | null;
+          read_at: string | null;
+          created_at: string;
+          action_path: string;
+        }>;
+      };
+      mark_notification_read: {
+        Args: { p_notification_id: string };
+        Returns: Array<{
+          success: boolean;
+          notification_id: string;
+          read_at: string | null;
+        }>;
+      };
+      mark_all_notifications_read: {
+        Args: Record<string, never>;
+        Returns: Array<{
+          success: boolean;
+          updated_count: number;
+        }>;
+      };
+      get_unread_notification_count: {
+        Args: Record<string, never>;
+        Returns: Array<{
+          unread_count: number;
         }>;
       };
     };

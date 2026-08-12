@@ -18,6 +18,7 @@ const guestNavItems = [
 const talentNavItems = [
   { label: "Home", href: "/" },
   { label: "Dashboard", href: "/dashboard" },
+  { label: "Notifications", href: "/notifications" },
   { label: "Connections", href: "/connections" },
   { label: "Privacy & Visibility", href: "/settings/privacy" },
   { label: "Profile", href: "/builder" },
@@ -54,8 +55,8 @@ export default function Navbar() {
       const rowAccountType = (profileRow as { account_type?: string } | null | undefined)?.account_type;
       let count = 0;
 
-      if (rowAccountType !== "employer" && currentSession.access_token) {
-        const response = await fetch("/api/introduction-requests/incoming", {
+      if (currentSession.access_token) {
+        const response = await fetch("/api/notifications/unread-count", {
           method: "GET",
           headers: {
             Authorization: `Bearer ${currentSession.access_token}`,
@@ -64,11 +65,11 @@ export default function Navbar() {
         });
 
         const payload = (await response.json().catch(() => null)) as
-          | { ok?: boolean; items?: Array<{ status?: string; canTalentRespond?: boolean }> }
+          | { ok?: boolean; unreadCount?: number }
           | null;
 
-        if (payload?.ok && Array.isArray(payload.items)) {
-          count = payload.items.filter((request) => request.status === "pending" && request.canTalentRespond !== false).length;
+        if (payload?.ok && typeof payload.unreadCount === "number") {
+          count = Math.max(0, payload.unreadCount);
         }
       }
 
@@ -104,6 +105,7 @@ export default function Navbar() {
   const isTalentSession = Boolean(session) && accountType !== "employer";
   const visibleNavItems = isEmployerSession
     ? [
+        { label: "Notifications", href: "/notifications" },
         { label: "Find talent", href: "/find-talent" },
         { label: "Saved talent", href: "/saved-talent" },
         { label: "Connections", href: "/connections" },
@@ -159,11 +161,11 @@ export default function Navbar() {
         </nav>
 
         <div className="flex items-center gap-3">
-          {!isEmployerSession ? (
+          {session ? (
             <Link
-              href="/dashboard"
+              href="/notifications"
               className="hidden rounded-full border border-[#2bd7ef]/45 p-2 text-[#0b2a45] transition hover:border-[#2bd7ef]/75 hover:text-[#2bd7ef] sm:inline-flex"
-              aria-label="Dashboard notifications"
+              aria-label="Notifications"
             >
               <Bell className="h-4 w-4" />
               {notificationCount > 0 ? (
