@@ -254,6 +254,24 @@ export interface NotificationsUpdate {
   created_at?: string;
 }
 
+export interface SystemAdminsRow {
+  user_id: string;
+  created_at: string;
+  created_by: string | null;
+}
+
+export interface SystemAdminsInsert {
+  user_id: string;
+  created_at?: string;
+  created_by?: string | null;
+}
+
+export interface SystemAdminsUpdate {
+  user_id?: string;
+  created_at?: string;
+  created_by?: string | null;
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -287,9 +305,94 @@ export interface Database {
         Insert: ProfilesInsert;
         Update: ProfilesUpdate;
       };
+      system_admins: {
+        Row: SystemAdminsRow;
+        Insert: SystemAdminsInsert;
+        Update: SystemAdminsUpdate;
+      };
     };
     Views: Record<string, never>;
     Functions: {
+      require_system_admin_actor: {
+        Args: Record<string, never>;
+        Returns: string;
+      };
+      admin_dashboard_summary: {
+        Args: Record<string, never>;
+        Returns: Array<{
+          total_talent_accounts: number;
+          published_talent: number;
+          unpublished_talent: number;
+          total_employer_accounts: number;
+          verified_employers: number;
+          pending_employers: number;
+          rejected_employers: number;
+        }>;
+      };
+      admin_list_accounts: {
+        Args: {
+          p_query?: string | null;
+          p_account_type?: "talent" | "employer" | null;
+          p_limit?: number;
+          p_after_created_at?: string | null;
+          p_after_user_id?: string | null;
+        };
+        Returns: Array<{
+          user_id: string;
+          account_type: "talent" | "employer";
+          display_name: string | null;
+          secondary_label: string | null;
+          email: string | null;
+          slug: string | null;
+          is_published: boolean | null;
+          visibility: "public" | "verified_employer_network" | "confidential" | "employer_network" | null;
+          opportunity_status: "actively_open" | "exploring" | "not_open" | null;
+          employer_verification_status: "unverified" | "pending" | "verified" | "rejected" | null;
+          created_at: string;
+          updated_at: string;
+        }>;
+      };
+      admin_get_account: {
+        Args: { p_user_id: string };
+        Returns: Array<{
+          user_id: string;
+          account_type: "talent" | "employer";
+          email: string | null;
+          slug: string | null;
+          display_name: string | null;
+          secondary_label: string | null;
+          is_published: boolean | null;
+          visibility: "public" | "verified_employer_network" | "confidential" | "employer_network" | null;
+          opportunity_status: "actively_open" | "exploring" | "not_open" | null;
+          employer_verification_status: "unverified" | "pending" | "verified" | "rejected" | null;
+          name: string | null;
+          title: string | null;
+          location: string | null;
+          availability: string | null;
+          top_strength: string | null;
+          focus_area: string | null;
+          summary: string | null;
+          current_employer: string | null;
+          experience_years: number | null;
+          employer_contact_name: string | null;
+          employer_contact_role: string | null;
+          employer_company_name: string | null;
+          employer_abn: string | null;
+          employer_website: string | null;
+          employer_industry: string | null;
+          employer_company_size: string | null;
+          verification_requested_at: string | null;
+          verification_reviewed_at: string | null;
+          verification_reviewed_by: string | null;
+          verification_rejection_reason: string | null;
+          blocked_company_count: number;
+          pending_introduction_requests: number;
+          active_connections: number;
+          saved_talent_count: number;
+          created_at: string;
+          updated_at: string;
+        }>;
+      };
       discovery_profiles_for_verified_employer: {
         Args: Record<string, never>;
         Returns: Array<{

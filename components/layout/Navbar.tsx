@@ -31,6 +31,7 @@ export default function Navbar() {
   const [session, setSession] = useState<Session | null>(null);
   const [notificationCount, setNotificationCount] = useState(0);
   const [accountType, setAccountType] = useState<"talent" | "employer" | null>(null);
+  const [isSystemAdmin, setIsSystemAdmin] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
@@ -38,11 +39,12 @@ export default function Navbar() {
   useEffect(() => {
     let mounted = true;
 
-    async function loadNotifications(currentSession: Session | null) {
+    async function loadCurrentSession(currentSession: Session | null) {
       if (!currentSession) {
         if (mounted) {
           setNotificationCount(0);
           setAccountType(null);
+          setIsSystemAdmin(false);
         }
         return;
       }
@@ -77,6 +79,22 @@ export default function Navbar() {
         setNotificationCount(count);
         setAccountType(rowAccountType === "employer" ? "employer" : "talent");
       }
+
+      if (currentSession.access_token) {
+        const response = await fetch("/api/admin/status", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${currentSession.access_token}`,
+          },
+          cache: "no-store",
+        });
+
+        const payload = (await response.json().catch(() => null)) as { ok?: boolean; isSystemAdmin?: boolean } | null;
+
+        if (mounted) {
+          setIsSystemAdmin(Boolean(payload?.ok && payload.isSystemAdmin));
+        }
+      }
     }
 
     supabase.auth.getSession().then(({ data }) => {
@@ -84,7 +102,7 @@ export default function Navbar() {
         return;
       }
       setSession(data.session);
-      loadNotifications(data.session);
+      loadCurrentSession(data.session);
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange((_, currentSession) => {
@@ -92,7 +110,7 @@ export default function Navbar() {
         return;
       }
       setSession(currentSession);
-      loadNotifications(currentSession);
+      loadCurrentSession(currentSession);
     });
 
     return () => {
@@ -102,6 +120,7 @@ export default function Navbar() {
   }, []);
 
   const isEmployerSession = Boolean(session) && accountType === "employer";
+  const isAdminSession = Boolean(session) && isSystemAdmin;
   const isTalentSession = Boolean(session) && accountType !== "employer";
   const visibleNavItems = isEmployerSession
     ? [
@@ -112,6 +131,11 @@ export default function Navbar() {
         { label: "Dashboard", href: "/dashboard" },
         { label: "Employer account", href: "/onboarding/employer" },
       ]
+    : isAdminSession
+      ? [
+          { label: "Admin", href: "/admin" },
+          { label: "Dashboard", href: "/dashboard" },
+        ]
     : isTalentSession
       ? talentNavItems
       : guestNavItems;
@@ -183,7 +207,7 @@ export default function Navbar() {
             </Link>
           ) : null}
 
-          {!isEmployerSession ? (
+          {!isEmployerSession && !isAdminSession ? (
             <Link
               href={session ? "/dashboard" : "/login"}
               className="hidden text-[1.04rem] text-[#071321]/92 transition hover:text-[#2bd7ef] lg:inline-flex"
@@ -192,12 +216,21 @@ export default function Navbar() {
             </Link>
           ) : null}
 
-          {!isEmployerSession ? (
+          {!isEmployerSession && !isAdminSession ? (
             <Link
               href="/builder"
               className="hidden rounded-xl bg-[#aff546] px-5 py-2 text-sm font-semibold text-[#071426] transition hover:-translate-y-0.5 hover:bg-[#9fea37] md:inline-flex"
             >
               Create your card
+            </Link>
+          ) : null}
+
+          {isAdminSession ? (
+            <Link
+              href="/admin"
+              className="hidden rounded-xl bg-[#071321] px-5 py-2 text-sm font-semibold text-white transition hover:-translate-y-0.5 lg:inline-flex"
+            >
+              Admin
             </Link>
           ) : null}
 
@@ -239,13 +272,22 @@ export default function Navbar() {
               <span>{item.label}</span>
             </Link>
           ))}
-          {!isEmployerSession ? (
+          {!isEmployerSession && !isAdminSession ? (
             <Link
               href="/builder"
               className="block rounded-2xl bg-[#acf75a] px-4 py-3 text-sm font-bold text-[#07111f] transition hover:bg-[#98eb46]"
               onClick={() => setMenuOpen(false)}
             >
               Create your card
+            </Link>
+          ) : null}
+          {isAdminSession ? (
+            <Link
+              href="/admin"
+              className="block rounded-2xl bg-[#071321] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#17355f]"
+              onClick={() => setMenuOpen(false)}
+            >
+              Admin
             </Link>
           ) : null}
           {!session ? (
