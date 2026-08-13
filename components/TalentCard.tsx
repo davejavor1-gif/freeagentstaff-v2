@@ -34,25 +34,30 @@ function VerifiedMark({ className }: { className?: string }) {
   return (
     <span className={cn("inline-flex items-center gap-1.5 rounded-full border border-[#f2cc63]/30 bg-[#071426]/70 px-2.25 py-1 text-[10px] font-semibold uppercase tracking-[0.28em] text-[#f7ebcf] shadow-[0_10px_24px_rgba(0,0,0,0.16)] backdrop-blur-sm", className)}>
       <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0 text-[#8be4c5]" aria-hidden="true">
-        <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeDasharray="44 38" />
+        <path d="M16.25 19.36A8.5 8.5 0 1 1 20.5 12" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
       </svg>
       Verified
     </span>
   );
 }
 
-function ConfidentialSymbol() {
+function ConfidentialPortrait() {
   return (
-    <div className="relative flex h-28 w-28 items-center justify-center">
-      <svg viewBox="0 0 120 120" className="h-28 w-28 text-[#f2cc63]" aria-hidden="true">
-        <circle cx="60" cy="60" r="42" fill="none" stroke="currentColor" strokeWidth="2" strokeDasharray="4 3.6" />
-        <circle cx="60" cy="53" r="16" fill="none" stroke="currentColor" strokeWidth="2" />
-        <path d="M38 95c4-14 13-20 22-20s18 6 22 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    <div className="relative h-full w-full overflow-hidden bg-[linear-gradient(140deg,#152d48_0%,#0a1425_100%)]">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_40%_28%,rgba(242,204,99,0.16),transparent_45%),radial-gradient(circle_at_78%_76%,rgba(99,163,242,0.12),transparent_50%)]" />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#071426]/45" />
+
+      <svg viewBox="0 0 180 180" className="absolute inset-0 h-full w-full text-[#f2cc63]/70" aria-hidden="true">
+        <ellipse cx="90" cy="76" rx="30" ry="31" fill="none" stroke="currentColor" strokeWidth="2" />
+        <path d="M43 146c8-23 24-34 47-34s39 11 47 34" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        <path d="M58 37c8-7 20-11 32-11h1c12 0 24 4 32 11" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" opacity="0.65" />
       </svg>
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="rounded-full border border-[#f7ebcf]/30 bg-[#071426]/55 p-2 text-[#f7ebcf]">
-          <Lock className="h-4 w-4" />
-        </div>
+
+      <div className="absolute inset-x-0 bottom-6 flex justify-center px-4">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-[#f2cc63]/30 bg-[#071426]/75 px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] backdrop-blur-sm">
+          <Lock className="h-3.5 w-3.5 text-[#f2cc63]" />
+          Identity protected
+        </span>
       </div>
     </div>
   );
@@ -86,6 +91,10 @@ export default function TalentCard({
 
   const hasVideo = Boolean(resolvedVideoUrl ?? profile.intro_video_url) && !confidential;
   const mediaAlt = profile.imageAlt ?? profile.name;
+  const confidentialName = profile.name || "Confidential profile";
+  const confidentialTitle = profile.title || "Professional profile";
+  const confidentialLocation = profile.location || "General location available";
+  const confidentialAvailability = profile.availability || "Open to new projects";
 
   const initials = useMemo(() => buildInitials(confidential ? "Confidential Profile" : profile.name), [confidential, profile.name]);
   const hasProfilePhoto = Boolean((resolvedPhotoUrl ?? profile.photoUrl) && !/(logo|fullLogo|placeholder-avatar)/i.test((resolvedPhotoUrl ?? profile.photoUrl ?? "")));
@@ -323,25 +332,6 @@ export default function TalentCard({
         className,
       )}
     >
-      {showSaveAction ? (
-        <div className="pointer-events-none absolute right-3 top-3 z-30 flex flex-col items-end gap-2">
-          <button
-            type="button"
-            onClick={() => {
-              void handleSaveToggle();
-            }}
-            aria-pressed={isSaved}
-            aria-label={isSaved ? "Remove from saved talent" : "Save talent"}
-            className="pointer-events-auto inline-flex min-h-11 items-center gap-2 rounded-full border border-[#f2cc63]/45 bg-[#071426]/85 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf] backdrop-blur transition hover:bg-[#17355f] disabled:cursor-not-allowed disabled:opacity-70"
-            disabled={isSaving}
-          >
-            <Heart className={cn("h-3.5 w-3.5", isSaved ? "fill-[#f2cc63] text-[#f2cc63]" : "text-[#f7ebcf]")} />
-            {isSaving ? "Saving" : isSaved ? "Saved" : "Save talent"}
-          </button>
-          {saveError ? <span className="max-w-[220px] rounded-full bg-[#5c1d1d]/90 px-3 py-1 text-[9px] uppercase tracking-[0.18em] text-[#f7d4d4]">{saveError}</span> : null}
-        </div>
-      ) : null}
-
       <div className={cn("relative aspect-[2.5/3.5] w-full [perspective:1800px]", reducedMotion ? "" : "transition-transform duration-500") }>
         <div
           className={cn(
@@ -355,26 +345,38 @@ export default function TalentCard({
               <div className="relative flex-1 overflow-hidden bg-[#0f2744] p-0">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(242,204,99,0.16),transparent_42%),linear-gradient(135deg,#0f2744_0%,#102742_100%)]" />
                 <div className="relative flex h-full flex-col">
-                  <div className="pointer-events-none absolute left-3 top-3 z-20 h-10 w-14 overflow-hidden sm:h-12 sm:w-18">
+                  <div className="absolute left-3 top-0.5 z-20 h-[4.9375rem] w-[11.8125rem] overflow-hidden sm:h-[6.328125rem] sm:w-[15.1875rem]">
                     <Image src="/FullLogo%20(4)-transparent.png" alt="Free Agent Staff" width={144} height={60} className="h-full w-full object-contain object-left" />
                   </div>
-                  {verified ? (
-                    <div className="pointer-events-none absolute right-3 top-3 z-20">
-                      <VerifiedMark />
-                    </div>
-                  ) : null}
+
+                  <div className="absolute right-3 top-3 z-20 flex flex-col items-end gap-1.5">
+                    {verified ? <VerifiedMark /> : null}
+                    {showSaveAction ? (
+                      <div className="flex flex-col items-end gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            void handleSaveToggle();
+                          }}
+                          aria-pressed={isSaved}
+                          aria-label={isSaved ? "Remove from saved talent" : "Save talent"}
+                          className="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-[#f2cc63]/45 bg-[#071426]/85 px-2.5 py-1.5 text-[9px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf] backdrop-blur transition hover:bg-[#17355f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f2cc63]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#071426] disabled:cursor-not-allowed disabled:opacity-70"
+                          disabled={isSaving}
+                        >
+                          <Heart className={cn("h-3.5 w-3.5", isSaved ? "fill-[#f2cc63] text-[#f2cc63]" : "text-[#f7ebcf]")} />
+                          {isSaving ? "Saving" : isSaved ? "Saved" : "Save"}
+                        </button>
+                        {saveError ? <span className="max-w-[220px] rounded-full bg-[#5c1d1d]/90 px-3 py-1 text-[9px] uppercase tracking-[0.18em] text-[#f7d4d4]">{saveError}</span> : null}
+                      </div>
+                    ) : null}
+                  </div>
 
                   <div className="mt-0 flex-1 overflow-hidden">
                     <div className="relative h-full w-full overflow-hidden">
                       <div className={cn("absolute inset-0", reducedMotion ? "" : "transition-opacity duration-300", videoOpen ? "pointer-events-none opacity-0" : "opacity-100")}>
                         {confidential ? (
                           <div className="group relative flex h-full w-full items-end justify-start overflow-hidden bg-[#0f2744] text-left">
-                            <div className="absolute inset-0 flex items-center justify-center bg-[linear-gradient(135deg,#152c46_0%,#0a1425_100%)] p-6">
-                              <div className="flex flex-col items-center justify-center gap-4 rounded-[24px] border border-[#f2cc63]/15 bg-[#071426]/30 p-7 text-center text-[#f7ebcf] backdrop-blur-sm">
-                                <ConfidentialSymbol />
-                                <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-[#f2cc63]">Confidential</p>
-                              </div>
-                            </div>
+                            <ConfidentialPortrait />
 
                             <div className="absolute inset-0 bg-gradient-to-t from-[#071426]/90 via-[#071426]/15 to-transparent" />
                             <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
@@ -382,14 +384,14 @@ export default function TalentCard({
                                 <div className="space-y-2.5">
                                   <div className="space-y-1">
                                     <h3 className="text-[1rem] font-black uppercase leading-[1.08] tracking-[0.16em] text-[#f7ebcf]">
-                                      VENUE OPERATIONS LEADER
+                                      {confidentialName}
                                     </h3>
-                                    <p className="text-sm text-[#dfe7ef]">Sydney</p>
+                                    <p className="text-sm text-[#dfe7ef]">{confidentialTitle}</p>
                                   </div>
                                   <div className="pt-1">
                                     <span className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#dfe7ef]">
                                       <span className="h-2.5 w-2.5 rounded-full bg-[#8be4c5]" />
-                                      Open to new projects
+                                      {confidentialAvailability}
                                     </span>
                                   </div>
                                 </div>
@@ -410,6 +412,7 @@ export default function TalentCard({
                             aria-label={hasVideo ? `Play ${profile.name}'s video introduction` : "Profile portrait"}
                             className={cn(
                               "group relative flex h-full w-full items-end justify-start overflow-hidden bg-[#0f2744] text-left",
+                              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f2cc63]/80 focus-visible:ring-inset",
                               hasVideo ? "cursor-pointer" : "cursor-default",
                             )}
                           >
@@ -429,14 +432,14 @@ export default function TalentCard({
                                 <div className="space-y-2.5">
                                   <div className="space-y-1">
                                     <h3 className="text-[1rem] font-black uppercase leading-[1.08] tracking-[0.16em] text-[#f7ebcf]">
-                                      {confidential ? "VENUE OPERATIONS LEADER" : profile.name}
+                                      {confidential ? confidentialName : profile.name}
                                     </h3>
-                                    <p className="text-sm text-[#dfe7ef]">{confidential ? "Sydney" : profile.title}</p>
+                                    <p className="text-sm text-[#dfe7ef]">{confidential ? confidentialTitle : profile.title}</p>
                                   </div>
                                   <div className="pt-1">
                                     <span className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#dfe7ef]">
                                       <span className="h-2.5 w-2.5 rounded-full bg-[#8be4c5]" />
-                                      {confidential ? "Open to new projects" : profile.availability}
+                                      {confidential ? confidentialAvailability : profile.availability}
                                     </span>
                                   </div>
                                 </div>
@@ -448,7 +451,7 @@ export default function TalentCard({
                                       event.stopPropagation();
                                       handleOpenVideo();
                                     }}
-                                    className="absolute bottom-3 right-3 z-20 flex h-11 w-11 items-center justify-center rounded-full border border-[#f2cc63]/60 bg-[#071426]/90 text-[#f7ebcf] shadow-[0_10px_24px_rgba(0,0,0,0.2)]"
+                                    className="absolute bottom-3 right-3 z-20 flex h-11 w-11 items-center justify-center rounded-full border border-[#f2cc63]/60 bg-[#071426]/90 text-[#f7ebcf] shadow-[0_10px_24px_rgba(0,0,0,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f2cc63]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#071426]"
                                   >
                                     <Play className="ml-0.5 h-4 w-4" />
                                   </button>
@@ -468,6 +471,7 @@ export default function TalentCard({
                             onFocus={() => setShowVideoControls(true)}
                             onBlur={() => setShowVideoControls(false)}
                             onClick={() => setShowVideoControls(true)}
+                            aria-label="Introduction video player"
                             tabIndex={0}
                           >
                             <video
@@ -482,16 +486,16 @@ export default function TalentCard({
                             <div className={cn("absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 bg-gradient-to-t from-[#071426] via-[#071426]/70 to-transparent px-3 py-3 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf]", reducedMotion ? "" : "transition-opacity duration-200", showVideoControls ? "opacity-100" : "opacity-0")}>
                               <span>{confidential ? "Confidential introduction" : "Introduction video"}</span>
                               <div className="flex items-center gap-2">
-                                <button type="button" aria-label={isMuted ? "Unmute introduction video" : "Mute introduction video"} onClick={toggleMute} className="rounded-full border border-white/20 bg-white/10 p-2 backdrop-blur">
+                                <button type="button" aria-label={isMuted ? "Unmute introduction video" : "Mute introduction video"} onClick={toggleMute} className="rounded-full border border-white/20 bg-white/10 p-2 backdrop-blur focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f2cc63]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#071426]">
                                   {isMuted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
                                 </button>
-                                <button type="button" aria-label={isPlaying ? "Pause introduction video" : "Play introduction video"} onClick={handlePlaybackToggle} className="rounded-full border border-[#f2cc63]/45 bg-[#f7ebcf] p-2 text-[#0f2744]">
+                                <button type="button" aria-label={isPlaying ? "Pause introduction video" : "Play introduction video"} onClick={handlePlaybackToggle} className="rounded-full border border-[#f2cc63]/45 bg-[#f7ebcf] p-2 text-[#0f2744] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f2cc63]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#071426]">
                                   {isPlaying ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
                                 </button>
-                                <button type="button" aria-label="Replay introduction video" onClick={handleReplay} className="rounded-full border border-white/20 bg-white/10 p-2 backdrop-blur">
+                                <button type="button" aria-label="Replay introduction video" onClick={handleReplay} className="rounded-full border border-white/20 bg-white/10 p-2 backdrop-blur focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f2cc63]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#071426]">
                                   <RotateCw className="h-3.5 w-3.5" />
                                 </button>
-                                <button type="button" aria-label="Return to photo" onClick={handleCloseVideo} className="rounded-full border border-white/20 bg-white/10 p-2 backdrop-blur">
+                                <button type="button" aria-label="Return to photo" onClick={handleCloseVideo} className="rounded-full border border-white/20 bg-white/10 p-2 backdrop-blur focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f2cc63]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#071426]">
                                   <X className="h-3.5 w-3.5" />
                                 </button>
                               </div>
@@ -511,7 +515,7 @@ export default function TalentCard({
                     type="button"
                     onClick={handleFlipToggle}
                     aria-label="Flip card"
-                    className="-my-2.5 inline-flex h-11 min-h-11 items-center justify-center rounded-full px-1 touch-manipulation"
+                    className="-my-2.5 inline-flex h-11 min-h-11 items-center justify-center rounded-full px-1 touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0f2744]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7ebcf]"
                   >
                     <span className="inline-flex items-center gap-1 rounded-full border border-[#0f2744]/10 bg-white/80 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.24em] text-[#0f2744] transition hover:bg-white">
                       <RotateCw className="h-3 w-3" />
@@ -527,14 +531,14 @@ export default function TalentCard({
             <div className="flex h-full flex-col bg-[#f7ebcf]">
               <div className="border-b border-[#0f2744]/10 bg-[#0f2744] p-2.5 sm:p-3">
                 <div className="flex items-center justify-between gap-3">
-                  <div className="h-10 w-14 overflow-hidden sm:h-12 sm:w-18">
+                  <div className="h-[5.625rem] w-[7.875rem] overflow-hidden sm:h-[6.75rem] sm:w-[10.125rem]">
                     <Image src="/FullLogo%20(4)-transparent.png" alt="Free Agent Staff" width={144} height={60} className="h-full w-full object-contain object-left" />
                   </div>
                   <button
                     type="button"
                     onClick={handleFlipToggle}
                     aria-label="Return to front"
-                    className="-my-2.5 inline-flex h-11 min-h-11 items-center justify-center rounded-full px-1 touch-manipulation"
+                    className="-my-2.5 inline-flex h-11 min-h-11 items-center justify-center rounded-full px-1 touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f2cc63]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0f2744]"
                   >
                     <span className="inline-flex items-center gap-1 rounded-full border border-[#f2cc63]/35 bg-[#f7ebcf]/90 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.24em] text-[#0f2744] transition hover:bg-[#f7ebcf]">
                       <RotateCw className="h-3 w-3" />
@@ -551,13 +555,13 @@ export default function TalentCard({
                     <h3 className="text-[0.9rem] font-black uppercase tracking-[0.16em] text-[#0f2744]">
                       {confidential ? "Confidential profile" : profile.name}
                     </h3>
-                    <p className="text-[0.75rem] text-[#27405f]">{confidential ? profile.title || "Professional profile" : profile.title}</p>
+                    <p className="text-[0.75rem] text-[#27405f]">{confidential ? confidentialTitle : profile.title}</p>
                   </div>
 
                   <div className="flex flex-wrap items-center gap-1.25 text-[0.7rem] text-[#27405f]">
                     <span className="inline-flex items-center gap-1.25 rounded-full border border-[#0f2744]/10 bg-[#f7ebcf]/80 px-2 py-0.5">
                       <MapPin className="h-2.75 w-2.75 text-[#0f2744]" />
-                      {confidential ? "General location available" : profile.location}
+                      {confidential ? confidentialLocation : profile.location}
                     </span>
                     <span className="rounded-full border border-[#0f2744]/10 bg-[#f7ebcf]/80 px-2 py-0.5 text-[7.5px] font-semibold uppercase tracking-[0.24em] text-[#0f2744]">
                       {profile.experienceYears}+ years
@@ -568,7 +572,7 @@ export default function TalentCard({
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="inline-flex items-center gap-2 rounded-full border border-[#0f2744]/10 bg-[#0f2744] px-2 py-0.5 text-[8.5px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf]">
                       <span className="h-1.75 w-1.75 rounded-full bg-[#8be4c5]" />
-                      {confidential ? "Open to new projects" : profile.availability}
+                      {confidential ? confidentialAvailability : profile.availability}
                     </span>
                   </div>
 
@@ -626,7 +630,7 @@ export default function TalentCard({
               </div>
 
               <div className="border-t border-[#f2cc63]/20 bg-[#0f2744] px-3 py-2.5 sm:px-4 sm:py-3">
-                <Link href={href} className="flex w-full items-center justify-between gap-3 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:text-[#8be4c5]">
+                <Link href={href} className="flex w-full items-center justify-between gap-3 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:text-[#8be4c5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f2cc63]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0f2744]">
                   <span className="inline-flex items-center gap-2">
                     <span className="h-1.5 w-1.5 rounded-full bg-[#8be4c5]" />
                     {confidential ? "View confidential passport" : "View full talent passport"}

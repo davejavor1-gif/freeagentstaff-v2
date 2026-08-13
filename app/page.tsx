@@ -2,7 +2,9 @@ import Link from "next/link";
 import Image from "next/image";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import { IdCard, Lock, ShieldCheck, CheckCircle2, MapPin, Search, Eye } from "lucide-react";
+import { IdCard, Lock, ShieldCheck, MapPin, Search, Eye } from "lucide-react";
+import TalentCard from "@/components/TalentCard";
+import type { FreeAgentProfile } from "@/types/freeagent";
 
 const featureCards = [
   {
@@ -152,6 +154,34 @@ const visibilityStates = [
   },
 ];
 
+const homepageDemoProfile: FreeAgentProfile = {
+  id: "homepage-demo-sarah",
+  slug: "homepage-demo-sarah",
+  visibility: "public",
+  name: "Sarah Chen",
+  title: "Senior Software Engineer",
+  location: "Sydney, Australia",
+  availability: "Open to Opportunities",
+  topStrength: "Turns complex product challenges into calm, reliable delivery.",
+  experienceYears: 9,
+  focusArea: "Technology",
+  summary: "A fictional Talent Passport used to demonstrate the approved production card.",
+  skills: ["React", "TypeScript", "Product Delivery", "Systems Thinking"],
+  careerJourney: [
+    {
+      id: "homepage-demo-role",
+      role: "Senior Software Engineer",
+      company: "Northstar Labs",
+      period: "2021–Present",
+      location: "Sydney",
+      description: "",
+      achievements: [],
+      skills: [],
+    },
+  ],
+  qualifications: ["Bachelor of Computer Science"],
+};
+
 function SocialProofRow() {
   return (
     <div className="mt-6 flex flex-wrap items-center gap-4 max-sm:mt-2 max-sm:gap-2.5">
@@ -173,94 +203,7 @@ function SocialProofRow() {
 }
 
 function TalentPassportCard() {
-  return (
-    <div className="mx-auto flex w-full justify-center max-sm:h-[746px] max-[360px]:!h-[800px]">
-      <div className="relative w-full overflow-visible">
-        <article className="fa-float-compose relative origin-center rotate-[2.5deg] rounded-[36px] border border-[#f7e8c6]/90 bg-[#f7e8c6] p-3 shadow-[0_38px_110px_rgba(2,9,24,0.62)] transition duration-500 hover:-translate-y-1 hover:rotate-[4.2deg] max-sm:absolute max-sm:inset-x-0 max-sm:top-0 max-sm:mx-auto max-sm:w-full max-sm:origin-center max-sm:scale-[0.8] max-sm:rotate-[1deg] sm:rotate-[4.5deg]">
-          <div className="overflow-hidden rounded-[28px] border border-[#2bd7ef]/26 bg-[#081a31]">
-        <div className="border-b border-[#2bd7ef]/18 px-6 py-5">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-start gap-3">
-              <div className="relative">
-                <div className="absolute -inset-1 rounded-full border-2 border-[#aff546] [border-right-color:transparent] [border-bottom-color:transparent]" />
-                <div className="h-16 w-16 overflow-hidden rounded-full border border-[#b8cde2]/40">
-                  <Image src="/placeholder-avatar.svg" alt="Sarah Chen" width={64} height={64} className="h-full w-full object-cover" />
-                </div>
-              </div>
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#2bd7ef]">Talent Passport</p>
-                <h3 className="mt-1 font-serif text-[2.9rem] font-semibold leading-none text-[#f7e8c6]">Sarah Chen</h3>
-                <p className="mt-1 text-[1.55rem] font-medium leading-tight text-[#2bd7ef]">Senior Software Engineer</p>
-                <p className="mt-2 inline-flex items-center gap-1.5 text-lg font-semibold text-[#aff546]">
-                  <CheckCircle2 className="h-4 w-4" />
-                  Verified
-                </p>
-              </div>
-            </div>
-            <span className="rounded-full border border-[#aff546]/60 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#aff546]">
-              Visible
-            </span>
-          </div>
-        </div>
-
-        <div className="space-y-5 px-6 py-5 text-[#f7e8c6]">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.32em] text-[#2bd7ef]">Expertise</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {["React", "TypeScript", "Node.js", "AWS", "Python"].map((skill) => (
-                <span key={skill} className="rounded-full border border-[#f7e8c6]/26 px-3 py-1 text-xs text-[#f7e8c6]/92">
-                  {skill}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.32em] text-[#2bd7ef]">Experience</p>
-            <div className="mt-4 space-y-4">
-              {[
-                { title: "Senior Software Engineer", company: "Fintech Co.", years: "2021 - Present" },
-                { title: "Software Engineer", company: "Tech Solutions", years: "2019 - 2021" },
-                { title: "Junior Developer", company: "Webcraft", years: "2017 - 2019" },
-              ].map((role, index) => (
-                <div key={role.title} className="grid grid-cols-[20px_1fr] gap-3">
-                  <div className="relative mt-1">
-                    {index < 2 ? <span className="absolute left-[8px] top-3 h-[34px] w-px bg-[#f7e8c6]/22" /> : null}
-                    <span className="relative block h-4 w-4 rounded-full border border-[#f7e8c6]/34 bg-[#2bd7ef]/25" />
-                  </div>
-                  <div>
-                    <p className="text-base font-semibold text-[#f7e8c6]">{role.title}</p>
-                    <p className="text-sm text-[#f7e8c6]/74">
-                      {role.company} • {role.years}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="grid gap-3 border-t border-[#f7e8c6]/14 pt-4 sm:grid-cols-2">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.32em] text-[#2bd7ef]">Location</p>
-              <p className="mt-2 inline-flex items-center gap-2 text-sm text-[#f7e8c6]">
-                <MapPin className="h-4 w-4" />
-                Sydney, Australia
-              </p>
-            </div>
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.32em] text-[#2bd7ef]">Availability</p>
-              <p className="mt-2 inline-flex items-center gap-2 text-sm text-[#f7e8c6]">
-                <span className="h-2.5 w-2.5 rounded-full bg-[#aff546]" />
-                Open to opportunities
-              </p>
-            </div>
-          </div>
-        </div>
-          </div>
-        </article>
-      </div>
-    </div>
-  );
+  return <TalentCard profile={homepageDemoProfile} href="/builder" verificationStatus="verified" className="max-w-[430px]" />;
 }
 
 function ShowcasePassportPreview({

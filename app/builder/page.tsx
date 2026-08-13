@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Session } from "@supabase/supabase-js";
-import FreeAgentCard from "@/components/cards/FreeAgentCard";
+import TalentCard from "@/components/TalentCard";
 import { freeAgentProfiles } from "@/data/freeagents";
 import { buildCanonicalTalentColumns } from "@/lib/talent-profile-columns";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
@@ -974,7 +974,7 @@ export default function BuilderPage() {
         <section className="flex w-full items-center justify-center rounded-[32px] border border-[#cda64d]/70 bg-[#f7ebcf]/70 p-4 shadow-[0_18px_55px_rgba(6,16,33,0.16)] lg:w-[60%] lg:min-h-[700px] lg:p-8">
           <div className="flex w-full max-w-[980px] flex-col gap-6">
             <div className="flex justify-center">
-              <FreeAgentCard profile={profile} className="w-full max-w-[430px]" />
+              <TalentCard profile={profile} href={profile.slug ? `/profile/${profile.slug}` : "#"} className="w-full max-w-[430px]" />
             </div>
 
             <div className="rounded-[30px] border border-[#cda64d]/70 bg-[#0f2744] p-6 text-[#f7ebcf] shadow-[0_12px_40px_rgba(6,16,33,0.2)] sm:p-8">
