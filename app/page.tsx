@@ -53,57 +53,6 @@ const howItWorksSteps = [
   },
 ];
 
-const showcaseProfiles = [
-  {
-    name: "Maya Rodriguez",
-    initials: "MR",
-    role: "Event Manager",
-    location: "Sydney, Australia",
-    skills: ["Event Production", "Leadership", "Budgets", "Client Relations"],
-    highlight: "Turns high-pressure launches into seamless live experiences.",
-    availability: "Open for major events",
-    tone: "lime" as const,
-    badge: "Live",
-    desktopClass: "left-[10%] top-[22%] z-40 rotate-[-5deg] xl:left-[11%]",
-  },
-  {
-    name: "James Walker",
-    initials: "JW",
-    role: "Electrician",
-    location: "Newcastle, Australia",
-    skills: ["Commercial Electrical", "Fault Finding", "Solar", "Site Safety"],
-    highlight: "Trusted on complex sites where speed, safety and precision matter.",
-    availability: "Available for site work",
-    tone: "cyan" as const,
-    badge: "Verified",
-    desktopClass: "right-[12%] top-[13%] z-20 rotate-[7deg] xl:right-[13%]",
-  },
-  {
-    name: "Amelia Tran",
-    initials: "AT",
-    role: "Graphic Designer",
-    location: "Melbourne, Australia",
-    skills: ["Brand Identity", "Adobe Creative Suite", "Typography", "Digital Design"],
-    highlight: "Builds visual identities that feel considered, premium and instantly memorable.",
-    availability: "Taking new briefs",
-    tone: "lime" as const,
-    badge: "Creative",
-    desktopClass: "left-[4%] bottom-[9%] z-10 rotate-[6deg] xl:left-[7%]",
-  },
-  {
-    name: "Marcus Johnson",
-    initials: "MJ",
-    role: "Bartender",
-    location: "Sydney, Australia",
-    skills: ["Cocktails", "Customer Experience", "Team Leadership", "Events"],
-    highlight: "Brings energy, polish and crowd-reading instincts to every service.",
-    availability: "Booked for events",
-    tone: "cyan" as const,
-    badge: "Popular",
-    desktopClass: "right-[5%] bottom-[15%] z-30 rotate-[-6deg] xl:right-[7%]",
-  },
-];
-
 const employerDiscoveryFilters = ["Sydney", "Hospitality", "Leadership", "Available now"];
 
 const employerDiscoveryResults = [
@@ -182,6 +131,40 @@ const homepageDemoProfile: FreeAgentProfile = {
   qualifications: ["Bachelor of Computer Science"],
 };
 
+const homepageDemoProfiles: Array<{ profile: FreeAgentProfile; saved?: boolean }> = [
+  { profile: homepageDemoProfile },
+  {
+    profile: {
+      ...homepageDemoProfile,
+      id: "homepage-demo-jordan",
+      slug: "homepage-demo-jordan",
+      name: "Jordan Patel",
+      title: "Guest Services Lead",
+      location: "Melbourne, Australia",
+      availability: "Booked",
+      topStrength: "Builds calm, memorable service teams for complex live environments.",
+      focusArea: "Guest Experience",
+      skills: ["Guest Experience", "Team Leadership", "Service Standards", "Operations"],
+    },
+  },
+  {
+    profile: {
+      ...homepageDemoProfile,
+      id: "homepage-demo-amira",
+      slug: "homepage-demo-amira",
+      name: "Amira Okafor",
+      title: "Brand Experience Director",
+      location: "Brisbane, Australia",
+      availability: "Open to Opportunities",
+      topStrength: "Turns ambitious brand moments into clear, human experiences.",
+      focusArea: "Brand Experience",
+      skills: ["Brand Strategy", "Creative Direction", "Partnerships", "Campaign Delivery"],
+      qualifications: ["Brand Strategy Certification"],
+    },
+    saved: true,
+  },
+];
+
 function SocialProofRow() {
   return (
     <div className="mt-6 flex flex-wrap items-center gap-4 max-sm:mt-2 max-sm:gap-2.5">
@@ -204,96 +187,6 @@ function SocialProofRow() {
 
 function TalentPassportCard() {
   return <TalentCard profile={homepageDemoProfile} href="/builder" verificationStatus="verified" className="max-w-[430px]" />;
-}
-
-function ShowcasePassportPreview({
-  profile,
-  className = "",
-}: {
-  profile: (typeof showcaseProfiles)[number];
-  className?: string;
-}) {
-  const toneClasses =
-    profile.tone === "lime"
-      ? {
-          accentText: "text-[#7fcf2e]",
-          accentBorder: "border-[#9be645]/52",
-          accentSurface: "bg-[#aff546]/14",
-          accentDot: "bg-[#aff546]",
-          avatarSurface: "bg-[#d8efb2]",
-        }
-      : {
-          accentText: "text-[#1bc8e4]",
-          accentBorder: "border-[#2bd7ef]/52",
-          accentSurface: "bg-[#2bd7ef]/14",
-          accentDot: "bg-[#2bd7ef]",
-          avatarSurface: "bg-[#caeff5]",
-        };
-
-  return (
-    <div className={className}>
-      <article className="relative">
-        <div className="pointer-events-none absolute -right-6 -top-6 h-16 w-16 rounded-full border border-[#071321]/10 sm:h-20 sm:w-20" />
-        <div className={`pointer-events-none absolute -left-4 top-10 h-10 w-10 rounded-full border ${toneClasses.accentBorder} ${toneClasses.accentSurface}`} />
-
-        <div className="relative overflow-hidden rounded-[30px] border border-[#071321]/12 bg-[#f7e8c6] p-3 shadow-[0_24px_70px_rgba(7,19,33,0.16)] sm:p-4">
-          <div className="rounded-[24px] border border-[#071321]/10 bg-[linear-gradient(180deg,rgba(247,232,198,0.95),rgba(244,225,187,0.96))] p-4 text-[#071321] sm:p-5">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex min-w-0 items-start gap-3">
-              <div className="relative shrink-0">
-                <div
-                  className={`absolute -inset-1 rounded-full border ${toneClasses.accentBorder} [border-right-color:transparent] [border-bottom-color:transparent]`}
-                />
-                <div
-                  className={`flex h-12 w-12 items-center justify-center rounded-full border border-[#071321]/12 font-serif text-lg font-semibold text-[#071321] sm:h-14 sm:w-14 sm:text-xl ${toneClasses.avatarSurface}`}
-                >
-                  {profile.initials}
-                </div>
-              </div>
-
-              <div className="min-w-0">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#071321]/55 sm:text-[10px]">Talent Passport</p>
-                <h3 className="mt-1 font-serif text-[1.52rem] leading-[0.96] text-[#071321] sm:text-[1.68rem]">{profile.name}</h3>
-                <p className={`mt-1 text-[0.97rem] font-medium leading-tight sm:text-[0.98rem] ${toneClasses.accentText}`}>{profile.role}</p>
-              </div>
-            </div>
-
-            <span className={`shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] sm:text-[10px] ${toneClasses.accentBorder} ${toneClasses.accentText}`}>
-              {profile.badge}
-            </span>
-          </div>
-
-          <div className="mt-4 rounded-[22px] bg-[#071321] px-3.5 py-3 text-[#f7e8c6] sm:px-4 sm:py-3.5">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#2bd7ef] sm:text-[10px]">What stands out</p>
-            <p className="mt-2 font-serif text-[1.22rem] leading-tight sm:text-[1.34rem]">{profile.highlight}</p>
-          </div>
-
-          <div className="mt-4">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#071321]/55 sm:text-[10px]">Skills</p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {profile.skills.map((skill) => (
-                <span key={skill} className="rounded-full border border-[#071321]/14 bg-[#f7e8c6]/76 px-2.5 py-1 text-[0.74rem] text-[#071321]/88 sm:text-[0.72rem]">
-                  {skill}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-4 flex items-center justify-between gap-3 border-t border-[#071321]/10 pt-3">
-            <p className="inline-flex min-w-0 items-center gap-1.5 text-[0.77rem] text-[#071321]/72 sm:text-xs">
-              <MapPin className="h-3.5 w-3.5 shrink-0" />
-              <span className="truncate">{profile.location}</span>
-            </p>
-            <p className={`inline-flex shrink-0 items-center gap-1.5 text-[0.72rem] font-medium sm:text-[0.72rem] ${toneClasses.accentText}`}>
-              <span className={`h-2 w-2 rounded-full ${toneClasses.accentDot}`} />
-              {profile.availability}
-            </p>
-          </div>
-        </div>
-        </div>
-      </article>
-    </div>
-  );
 }
 
 function EmployerDiscoveryResult({
@@ -723,30 +616,33 @@ export default function Home() {
               </Link>
             </div>
 
-            <div className="relative hidden h-[620px] lg:block xl:h-[660px]">
-              <div className="absolute inset-0 rounded-[40px] bg-[radial-gradient(circle_at_18%_20%,rgba(43,215,239,0.14),transparent_34%),radial-gradient(circle_at_82%_18%,rgba(175,245,70,0.16),transparent_30%),radial-gradient(circle_at_55%_78%,rgba(7,19,33,0.08),transparent_36%)]" />
-              {showcaseProfiles.map((profile) => (
-                <ShowcasePassportPreview
-                  key={profile.name}
+            <div className="relative grid gap-5 sm:grid-cols-2 lg:grid-cols-2">
+              {homepageDemoProfiles.map(({ profile, saved }) => (
+                <TalentCard
+                  key={profile.id}
                   profile={profile}
-                  className={`absolute w-[248px] xl:w-[272px] ${profile.desktopClass}`}
+                  href="/builder"
+                  verificationStatus="verified"
+                  showSaveAction={saved}
+                  initiallySaved={saved}
+                  className="max-w-[280px]"
                 />
               ))}
             </div>
           </div>
 
-          <div className="mt-7 lg:hidden">
-            <div className="-mx-6 snap-x snap-mandatory overflow-x-auto overflow-y-visible pb-2 pl-6 pr-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-              <div className="flex gap-3 pr-6">
-                {showcaseProfiles.map((profile) => (
-                  <ShowcasePassportPreview
-                    key={profile.name}
-                    profile={profile}
-                    className="w-[78vw] min-w-[244px] max-w-[336px] shrink-0 snap-start"
-                  />
-                ))}
-              </div>
-            </div>
+          <div className="mt-7 grid gap-5 sm:grid-cols-2 lg:hidden">
+            {homepageDemoProfiles.map(({ profile, saved }) => (
+              <TalentCard
+                key={profile.id}
+                profile={profile}
+                href="/builder"
+                verificationStatus="verified"
+                showSaveAction={saved}
+                initiallySaved={saved}
+                className="max-w-[330px]"
+              />
+            ))}
           </div>
         </div>
       </section>

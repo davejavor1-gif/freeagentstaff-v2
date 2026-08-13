@@ -340,7 +340,7 @@ export default function TalentCard({
             isFlipped ? "[transform:rotateY(180deg)]" : "[transform:rotateY(0deg)]",
           )}
         >
-          <div className="absolute inset-0 h-full w-full overflow-hidden rounded-[28px] border border-[#0f2744]/15 bg-[#f7ebcf] [backface-visibility:hidden] [-webkit-backface-visibility:hidden]">
+          <div className={cn("absolute inset-0 h-full w-full overflow-hidden rounded-[28px] border border-[#0f2744]/15 bg-[#f7ebcf] [backface-visibility:hidden] [-webkit-backface-visibility:hidden]", isFlipped ? "pointer-events-none" : "pointer-events-auto")}>
             <div className="flex h-full flex-col bg-[#f7ebcf]">
               <div className="relative flex-1 overflow-hidden bg-[#0f2744] p-0">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(242,204,99,0.16),transparent_42%),linear-gradient(135deg,#0f2744_0%,#102742_100%)]" />
@@ -527,7 +527,7 @@ export default function TalentCard({
             </div>
           </div>
 
-          <div className="absolute inset-0 h-full w-full overflow-hidden rounded-[28px] border border-[#0f2744]/15 bg-[#f7ebcf] [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transform:rotateY(180deg)]">
+          <div className={cn("absolute inset-0 h-full w-full overflow-hidden rounded-[28px] border border-[#0f2744]/15 bg-[#f7ebcf] [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transform:rotateY(180deg)]", isFlipped ? "pointer-events-auto" : "pointer-events-none")}>
             <div className="flex h-full flex-col bg-[#f7ebcf]">
               <div className="border-b border-[#0f2744]/10 bg-[#0f2744] p-2.5 sm:p-3">
                 <div className="flex items-center justify-between gap-3">
