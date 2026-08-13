@@ -435,6 +435,20 @@ export default function TalentCard({
                                       {confidential ? confidentialName : profile.name}
                                     </h3>
                                     <p className="text-sm text-[#dfe7ef]">{confidential ? confidentialTitle : profile.title}</p>
+                                    {hasVideo ? (
+                                      <button
+                                        type="button"
+                                        aria-label={`Play ${profile.name}'s video introduction`}
+                                        onClick={(event) => {
+                                          event.stopPropagation();
+                                          handleOpenVideo();
+                                        }}
+                                        className="mt-2 inline-flex min-h-11 items-center gap-1.5 rounded-full border border-[#8be4c5]/70 bg-[#8be4c5]/12 px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.2em] text-[#dffcf1] shadow-[0_8px_18px_rgba(0,0,0,0.16)] transition hover:bg-[#8be4c5]/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8be4c5]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#071426]"
+                                      >
+                                        <Play className="h-3.5 w-3.5" />
+                                        Play video introduction
+                                      </button>
+                                    ) : null}
                                   </div>
                                   <div className="pt-1">
                                     <span className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#dfe7ef]">
@@ -443,19 +457,6 @@ export default function TalentCard({
                                     </span>
                                   </div>
                                 </div>
-                                {hasVideo ? (
-                                  <button
-                                    type="button"
-                                    aria-label={`Play ${profile.name}'s video introduction`}
-                                    onClick={(event) => {
-                                      event.stopPropagation();
-                                      handleOpenVideo();
-                                    }}
-                                    className="absolute bottom-3 right-3 z-20 flex h-11 w-11 items-center justify-center rounded-full border border-[#f2cc63]/60 bg-[#071426]/90 text-[#f7ebcf] shadow-[0_10px_24px_rgba(0,0,0,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f2cc63]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#071426]"
-                                  >
-                                    <Play className="ml-0.5 h-4 w-4" />
-                                  </button>
-                                ) : null}
                               </div>
                             </div>
                           </div>

@@ -2,13 +2,13 @@ import Link from "next/link";
 import Image from "next/image";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import { IdCard, Lock, ShieldCheck, MapPin, Search, Eye } from "lucide-react";
+import { IdCard, Lock, ShieldCheck, Search, Eye } from "lucide-react";
 import TalentCard from "@/components/TalentCard";
 import type { FreeAgentProfile } from "@/types/freeagent";
 
 const featureCards = [
   {
-    title: "Talent Passport",
+    title: "Talent Card",
     description: "Showcase your skills, experience and achievements in one powerful profile.",
     icon: IdCard,
     tone: "lime" as const,
@@ -33,7 +33,7 @@ const featureCards = [
 const howItWorksSteps = [
   {
     number: "01",
-    title: "Create your Talent Passport",
+    title: "Create your Talent Card",
     description:
       "Build a professional, visual profile that showcases your skills, experience and achievements beyond a traditional CV.",
     tone: "lime" as const,
@@ -53,34 +53,44 @@ const howItWorksSteps = [
   },
 ];
 
-const employerDiscoveryFilters = ["Sydney", "Hospitality", "Leadership", "Available now"];
+const employerDiscoveryFilters = ["Sydney", "Leadership", "Available now"];
 
 const employerDiscoveryResults = [
   {
-    name: "Maya Rodriguez",
+    name: "Maya Ellis",
     initials: "MR",
     role: "Event Manager",
     location: "Sydney, Australia",
     skills: ["Event Production", "Leadership", "Budgets"],
     availability: "Open for major events",
+    photoUrl: "/images/homepage-talent-model.jpg",
     tone: "lime" as const,
   },
   {
-    name: "Marcus Johnson",
-    initials: "MJ",
-    role: "Bartender",
-    location: "Sydney, Australia",
-    skills: ["Cocktails", "Customer Experience", "Team Leadership"],
-    availability: "Booked for events",
+    name: "Daniel Brooks",
+    initials: "DB",
+    role: "Operations Director",
+    location: "Melbourne, Australia",
+    skills: ["Operations Strategy", "Team Leadership", "Service Delivery", "Stakeholder Management"],
+    availability: "Open to Opportunities",
+    topStrength: "Builds calm, repeatable operations that help ambitious teams deliver at their best.",
+    focusArea: "Operations",
+    company: "Harbour Works",
+    period: "2020–Present",
+    qualification: "Certified Operations Professional",
+    photoUrl: "/images/openart-64f1b59a62fd4bc1a7a2678ed4580466_00001__raw.png",
     tone: "cyan" as const,
   },
   {
-    name: "James Walker",
-    initials: "JW",
-    role: "Electrician",
+    name: "James Cole",
+    initials: "JC",
+    role: "Bartender",
     location: "Newcastle, Australia",
-    skills: ["Commercial Electrical", "Fault Finding", "Site Safety"],
-    availability: "Available for site work",
+    skills: ["Cocktail Making", "Customer Service", "Bar Operations", "Stock Control"],
+    availability: "Available Now",
+    topStrength: "Creates polished, high-volume service experiences with calm, precise execution.",
+    focusArea: "Guest Experience",
+    photoUrl: "/images/openart-e14435db735f43f281bdfd72be04e16a_00001__raw.png",
     tone: "lime" as const,
   },
 ];
@@ -89,7 +99,7 @@ const visibilityStates = [
   {
     key: "open" as const,
     title: "Open to opportunities",
-    description: "Employers can discover your Talent Passport.",
+    description: "Employers can discover your Talent Card.",
   },
   {
     key: "selective" as const,
@@ -99,7 +109,7 @@ const visibilityStates = [
   {
     key: "private" as const,
     title: "Private",
-    description: "Your Talent Passport stays hidden until you're ready.",
+    description: "Your Talent Card stays hidden until you're ready.",
   },
 ];
 
@@ -107,15 +117,17 @@ const homepageDemoProfile: FreeAgentProfile = {
   id: "homepage-demo-sarah",
   slug: "homepage-demo-sarah",
   visibility: "public",
-  name: "Sarah Chen",
+  name: "Sarah Jones",
   title: "Senior Software Engineer",
   location: "Sydney, Australia",
   availability: "Open to Opportunities",
   topStrength: "Turns complex product challenges into calm, reliable delivery.",
   experienceYears: 9,
   focusArea: "Technology",
-  summary: "A fictional Talent Passport used to demonstrate the approved production card.",
+  summary: "A fictional Talent Card used to demonstrate the approved production card.",
   skills: ["React", "TypeScript", "Product Delivery", "Systems Thinking"],
+  photoUrl: "/images/homepage-talent-model.jpg",
+  imageAlt: "Fictional professional portrait",
   careerJourney: [
     {
       id: "homepage-demo-role",
@@ -131,61 +143,36 @@ const homepageDemoProfile: FreeAgentProfile = {
   qualifications: ["Bachelor of Computer Science"],
 };
 
-const homepageDemoProfiles: Array<{ profile: FreeAgentProfile; saved?: boolean }> = [
-  { profile: homepageDemoProfile },
-  {
-    profile: {
-      ...homepageDemoProfile,
-      id: "homepage-demo-jordan",
-      slug: "homepage-demo-jordan",
-      name: "Jordan Patel",
-      title: "Guest Services Lead",
-      location: "Melbourne, Australia",
-      availability: "Booked",
-      topStrength: "Builds calm, memorable service teams for complex live environments.",
-      focusArea: "Guest Experience",
-      skills: ["Guest Experience", "Team Leadership", "Service Standards", "Operations"],
+const homepageLowerDemoProfile: FreeAgentProfile = {
+  ...homepageDemoProfile,
+  id: "homepage-demo-daniel",
+  slug: "homepage-demo-daniel",
+  name: "Daniel Brooks",
+  title: "Operations Director",
+  location: "Melbourne, Australia",
+  availability: "Open to Opportunities",
+  topStrength: "Builds calm, repeatable operations that help ambitious teams deliver at their best.",
+  focusArea: "Operations",
+  summary: "A fictional Talent Card used for homepage demonstration.",
+  skills: ["Operations Strategy", "Team Leadership", "Service Delivery", "Stakeholder Management"],
+  photoUrl: "/images/openart-64f1b59a62fd4bc1a7a2678ed4580466_00001__raw.png",
+  imageAlt: "Fictional professional portrait",
+  careerJourney: [
+    {
+      id: "homepage-demo-daniel-role",
+      role: "Operations Director",
+      company: "Harbour Works",
+      period: "2020–Present",
+      location: "Melbourne",
+      description: "",
+      achievements: [],
+      skills: [],
     },
-  },
-  {
-    profile: {
-      ...homepageDemoProfile,
-      id: "homepage-demo-amira",
-      slug: "homepage-demo-amira",
-      name: "Amira Okafor",
-      title: "Brand Experience Director",
-      location: "Brisbane, Australia",
-      availability: "Open to Opportunities",
-      topStrength: "Turns ambitious brand moments into clear, human experiences.",
-      focusArea: "Brand Experience",
-      skills: ["Brand Strategy", "Creative Direction", "Partnerships", "Campaign Delivery"],
-      qualifications: ["Brand Strategy Certification"],
-    },
-    saved: true,
-  },
-];
+  ],
+  qualifications: ["Certified Operations Professional"],
+};
 
-function SocialProofRow() {
-  return (
-    <div className="mt-6 flex flex-wrap items-center gap-4 max-sm:mt-2 max-sm:gap-2.5">
-      <div className="flex -space-x-2">
-        {[1, 2, 3, 4].map((item) => (
-          <div key={item} className="h-11 w-11 overflow-hidden rounded-full border-2 border-[#071321] bg-[#102740] max-sm:h-9 max-sm:w-9">
-            <Image src="/placeholder-avatar.svg" alt="Professional" width={44} height={44} className="h-full w-full object-cover" />
-          </div>
-        ))}
-        <div className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-[#071321] bg-[#1c3349] text-xs font-semibold text-[#f7e8c6] max-sm:h-9 max-sm:w-9 max-sm:text-[10px]">
-          +2K
-        </div>
-      </div>
-      <p className="max-w-xs text-[1.03rem] leading-7 text-[#f7e8c6]/88 max-sm:max-w-[14.8rem] max-sm:text-[0.9rem] max-sm:leading-5">
-        Join 2,000+ professionals taking control of their careers.
-      </p>
-    </div>
-  );
-}
-
-function TalentPassportCard() {
+function TalentCardDemo() {
   return <TalentCard profile={homepageDemoProfile} href="/builder" verificationStatus="verified" className="max-w-[430px]" />;
 }
 
@@ -194,74 +181,48 @@ function EmployerDiscoveryResult({
 }: {
   result: (typeof employerDiscoveryResults)[number];
 }) {
-  const toneClasses =
-    result.tone === "lime"
-      ? {
-          accentText: "text-[#7fcf2e]",
-          accentBorder: "border-[#9be645]/50",
-          accentSurface: "bg-[#aff546]/12",
-          accentDot: "bg-[#aff546]",
-          avatarSurface: "bg-[#d8efb2]",
-        }
-      : {
-          accentText: "text-[#1bc8e4]",
-          accentBorder: "border-[#2bd7ef]/50",
-          accentSurface: "bg-[#2bd7ef]/12",
-          accentDot: "bg-[#2bd7ef]",
-          avatarSurface: "bg-[#caeff5]",
-        };
+  const profile: FreeAgentProfile = {
+    id: `homepage-search-${result.name.toLowerCase().replace(/[^a-z]+/g, "-")}`,
+    slug: `homepage-search-${result.name.toLowerCase().replace(/[^a-z]+/g, "-")}`,
+    visibility: "public",
+    name: result.name,
+    title: result.role,
+    location: result.location,
+    availability: result.availability === "Booked" ? "Booked" : result.availability === "Available Now" ? "Available Now" : "Open to Opportunities",
+    topStrength: result.topStrength ?? `A fictional professional with a strong record in ${result.skills[0].toLowerCase()} and dependable delivery.`,
+    experienceYears: 8,
+    focusArea: result.focusArea ?? result.role,
+    summary: "A fictional profile shown in the homepage employer-search demonstration.",
+    skills: result.skills,
+    photoUrl: result.photoUrl,
+    imageAlt: "Fictional professional portrait",
+    careerJourney: [
+      {
+        id: "homepage-search-role",
+        role: result.role,
+        company: result.company ?? "FreeAgent Demo Collective",
+        period: result.period ?? "2021–Present",
+        location: result.location,
+        description: "",
+        achievements: [],
+        skills: result.skills,
+      },
+    ],
+    qualifications: [result.qualification ?? "Professional industry certification"],
+  };
 
   return (
-    <article className="rounded-[24px] border border-[#071321]/10 bg-[linear-gradient(180deg,rgba(247,232,198,0.72),rgba(244,225,187,0.9))] px-4 py-4 sm:px-5">
-      <div className="flex flex-col gap-3 min-[420px]:flex-row min-[420px]:items-start min-[420px]:justify-between">
-        <div className="flex min-w-0 items-start gap-3">
-          <div className="relative mt-0.5 shrink-0">
-            <div className={`absolute -inset-1 rounded-full border ${toneClasses.accentBorder} [border-right-color:transparent] [border-bottom-color:transparent]`} />
-            <div className={`flex h-11 w-11 items-center justify-center rounded-full border border-[#071321]/12 font-serif text-base font-semibold text-[#071321] ${toneClasses.avatarSurface}`}>
-              {result.initials}
-            </div>
-          </div>
-
-          <div className="min-w-0">
-            <h3 className="font-serif text-[1.22rem] leading-none text-[#071321] sm:text-[1.32rem]">{result.name}</h3>
-            <p className={`mt-1 text-[0.94rem] font-medium leading-tight sm:text-[0.98rem] ${toneClasses.accentText}`}>{result.role}</p>
-            <p className="mt-1 inline-flex min-w-0 flex-wrap items-center gap-1.5 text-[0.78rem] text-[#071321]/72 sm:text-[0.82rem]">
-              <MapPin className="h-3.5 w-3.5 shrink-0" />
-              <span>{result.location}</span>
-            </p>
-          </div>
-        </div>
-
-        <span className={`mt-0.5 inline-flex w-fit shrink-0 rounded-full border px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.18em] ${toneClasses.accentBorder} ${toneClasses.accentText} ${toneClasses.accentSurface}`}>
-          Live
-        </span>
+    <div className="h-[325px] w-[236px] shrink-0">
+      <div className="origin-top-left scale-[0.6]">
+        <TalentCard profile={profile} href="/find-talent" verificationStatus="verified" className="w-[380px] max-w-none" />
       </div>
-
-      <div className="mt-3 flex flex-wrap gap-2">
-        {result.skills.map((skill) => (
-          <span key={skill} className="rounded-full border border-[#071321]/12 bg-[#f7e8c6]/85 px-2.5 py-1 text-[0.72rem] text-[#071321]/86 sm:text-[0.76rem]">
-            {skill}
-          </span>
-        ))}
-      </div>
-
-      <div className="mt-4 flex flex-col items-start gap-2.5 border-t border-[#071321]/10 pt-3 min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between">
-        <p className={`inline-flex items-center gap-1.5 text-[0.78rem] font-medium sm:text-[0.82rem] ${toneClasses.accentText}`}>
-          <span className={`h-2 w-2 rounded-full ${toneClasses.accentDot}`} />
-          {result.availability}
-        </p>
-        <Link href="/find-talent" className="inline-flex items-center text-[0.82rem] font-medium text-[#071321] transition hover:translate-x-0.5 sm:text-[0.88rem]">
-          View Talent Passport
-          <span className="ml-2 text-[#1bc8e4]">→</span>
-        </Link>
-      </div>
-    </article>
+    </div>
   );
 }
 
 function EmployerDiscoveryPanel() {
   return (
-    <div className="relative mx-auto w-full max-w-[38rem] min-w-0 lg:rotate-[-1.5deg]">
+    <div className="relative mx-auto w-full max-w-6xl min-w-0 lg:rotate-[-1.5deg]">
       <div className="pointer-events-none absolute -left-8 top-12 h-20 w-20 rounded-full border border-[#2bd7ef]/18" />
       <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full border border-[#aff546]/18" />
 
@@ -301,7 +262,7 @@ function EmployerDiscoveryPanel() {
             })}
           </div>
 
-          <div className="mt-5 space-y-3">
+          <div className="mt-5 flex min-w-0 w-full max-w-full gap-3 overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {employerDiscoveryResults.map((result) => (
               <EmployerDiscoveryResult key={result.name} result={result} />
             ))}
@@ -395,13 +356,13 @@ function FinalConversionSection() {
               <span className="block">WHAT YOU CAN DO.</span>
             </h3>
             <p className="mt-4 max-w-[28rem] text-[0.96rem] leading-7 text-[#f7e8c6]/82 sm:text-[1rem]">
-              Create a Talent Passport that brings your skills, experience and potential together in one place.
+              Create a Talent Card that brings your skills, experience and potential together in one place.
             </p>
             <Link
               href="/builder"
               className="mt-6 inline-flex items-center rounded-full bg-[#aff546] px-5 py-2.75 text-[0.86rem] font-semibold text-[#071321] transition duration-300 hover:-translate-y-0.5 hover:bg-[#9fea37] max-[359px]:w-full sm:px-6 sm:py-3 sm:text-sm"
             >
-              Create your Talent Passport
+              Create your Talent Card
               <span className="ml-2">→</span>
             </Link>
           </div>
@@ -461,7 +422,7 @@ export default function Home() {
             </h1>
 
             <p className="mt-5 max-w-lg text-[1.1rem] leading-8 text-[#f7e8c6]/88 max-sm:mt-1 max-sm:text-[0.98rem] max-sm:leading-6">
-              Create a Talent Passport that showcases your skills, experience and value, and get discovered by verified employers, on
+              Create a Talent Card that showcases your skills, experience and value, and get discovered by verified employers, on
               your terms.
             </p>
 
@@ -470,7 +431,7 @@ export default function Home() {
                 href="/builder"
                 className="inline-flex items-center justify-center rounded-full bg-[#aff546] px-4 py-2.5 text-[0.78rem] font-semibold text-[#071321] transition duration-300 hover:-translate-y-0.5 hover:bg-[#9fea37] max-[359px]:w-full sm:px-7 sm:py-3 sm:text-sm"
               >
-                Create your Talent Passport
+                Create your Talent Card
               </Link>
               <Link
                 href="/find-talent"
@@ -480,11 +441,10 @@ export default function Home() {
               </Link>
             </div>
 
-            <SocialProofRow />
           </div>
 
           <div className="relative mx-auto flex w-full max-w-[470px] items-center justify-center max-sm:mt-0 max-sm:mb-0 lg:max-w-[560px]">
-            <TalentPassportCard />
+            <TalentCardDemo />
           </div>
         </div>
       </section>
@@ -611,38 +571,14 @@ export default function Home() {
                 href="/builder"
                 className="mt-5 inline-flex items-center text-[1rem] font-medium text-[#071321] transition hover:translate-x-0.5 sm:mt-7 sm:text-lg"
               >
-                Create your Talent Passport
+                Create your Talent Card
                 <span className="ml-2 text-[#1bc8e4]">→</span>
               </Link>
             </div>
 
-            <div className="relative grid gap-5 sm:grid-cols-2 lg:grid-cols-2">
-              {homepageDemoProfiles.map(({ profile, saved }) => (
-                <TalentCard
-                  key={profile.id}
-                  profile={profile}
-                  href="/builder"
-                  verificationStatus="verified"
-                  showSaveAction={saved}
-                  initiallySaved={saved}
-                  className="max-w-[280px]"
-                />
-              ))}
+            <div className="relative flex min-w-0 justify-center lg:justify-start">
+              <TalentCard profile={homepageLowerDemoProfile} href="/builder" verificationStatus="verified" className="max-w-[420px]" />
             </div>
-          </div>
-
-          <div className="mt-7 grid gap-5 sm:grid-cols-2 lg:hidden">
-            {homepageDemoProfiles.map(({ profile, saved }) => (
-              <TalentCard
-                key={profile.id}
-                profile={profile}
-                href="/builder"
-                verificationStatus="verified"
-                showSaveAction={saved}
-                initiallySaved={saved}
-                className="max-w-[330px]"
-              />
-            ))}
           </div>
         </div>
       </section>
@@ -653,7 +589,7 @@ export default function Home() {
         <div className="pointer-events-none absolute left-[46%] top-24 hidden h-28 w-28 rounded-full border border-[#f7e8c6]/8 lg:block" />
 
         <div className="relative mx-auto max-w-7xl px-6 py-14 sm:px-8 sm:py-16 lg:px-12 lg:py-20">
-          <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-12 xl:gap-16">
+          <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,0.55fr)_minmax(0,1.45fr)] lg:gap-10 xl:gap-12">
             <div className="max-w-[35rem]">
               <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#2bd7ef]">Looking for talent?</p>
               <h2 className="mt-3 max-w-[11.8ch] font-serif text-[2.55rem] font-semibold uppercase leading-[0.92] text-[#f7e8c6] max-sm:max-w-[12.8ch] max-sm:text-[1.86rem] max-sm:leading-[0.95] sm:mt-4 sm:text-[3.05rem] lg:text-[3.35rem] xl:text-[3.65rem]">
