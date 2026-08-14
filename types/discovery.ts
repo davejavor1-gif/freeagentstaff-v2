@@ -1,4 +1,5 @@
 import type { EmployerVerificationStatus, FreeAgentProfile } from "@/types/freeagent";
+import type { PrivateAccessState } from "@/types/private-access";
 
 export type DiscoveryDeniedReason =
   | "not_signed_in"
@@ -31,4 +32,5 @@ export interface TalentPassportApiResponse {
   isOwner?: boolean;
   verificationStatus?: EmployerVerificationStatus;
   profile?: FreeAgentProfile;
+  privateAccess?: PrivateAccessState;
 }

@@ -4,19 +4,20 @@ import type { CareerPosition, EmployerVerificationStatus, FreeAgentProfile, Oppo
 import type { DiscoveryApiResponse, DiscoveryProfileCard, TalentPassportApiResponse, TalentPassportAccessScope } from "@/types/discovery";
 import type { Database, Json, ProfilesRow } from "@/types/supabase";
 import { createServiceRoleSupabaseClient, createUserServerSupabaseClient } from "@/lib/server-supabase";
+import { loadPrivateAccess } from "@/lib/private-access";
 
 const SIGNED_URL_TTL_SECONDS = 60 * 60;
 
 type ViewerRow = Pick<ProfilesRow, "account_type" | "employer_verification_status" | "employer_abn">;
-type DiscoveryRpcRow = Database["public"]["Functions"]["discovery_profiles_for_verified_employer"]["Returns"][number];
-type PassportRpcRow = Database["public"]["Functions"]["talent_passport_for_viewer"]["Returns"][number];
+type DiscoveryRpcRow = Database["public"]["Functions"]["discovery_profiles_for_verified_employer_v2"]["Returns"][number];
+type PassportRpcRow = Database["public"]["Functions"]["talent_passport_for_viewer_v3"]["Returns"][number];
 
 type ViewerContext = {
   userClient: ReturnType<typeof createUserServerSupabaseClient>;
   viewerRow: ViewerRow | null;
 };
 
-type TalentPassportRpcArgs = Database["public"]["Functions"]["talent_passport_for_viewer"]["Args"];
+type TalentPassportRpcArgs = Database["public"]["Functions"]["talent_passport_for_viewer_v3"]["Args"];
 
 function normalizeAbn(value: string | null | undefined) {
   const digits = (value ?? "").replace(/\D/g, "");
@@ -194,6 +195,8 @@ function buildDiscoveryProfile(row: DiscoveryRpcRow, photoUrl: string | null, vi
       topStrength: row.top_strength ?? "",
       experienceYears: row.experience_years ?? 0,
       focusArea: row.focus_area ?? "",
+      education: row.education ?? undefined,
+      salaryExpectation: row.salary_expectation ?? null,
       summary: row.summary ?? "",
       skills: row.skills ?? [],
       careerJourney: [],
@@ -239,7 +242,10 @@ function buildPassportProfile(row: PassportRpcRow, photoUrl: string | null, vide
     topStrength: row.top_strength ?? "",
     experienceYears: row.experience_years ?? 0,
     focusArea: row.focus_area ?? "",
+    education: row.education ?? undefined,
+    salaryExpectation: row.salary_expectation ?? null,
     summary: row.summary ?? "",
+    bio: row.bio ?? undefined,
     skills: row.skills ?? [],
     careerJourney: toCareerJourney(row.career_journey),
     photoUrl: photoUrl ?? undefined,
@@ -303,7 +309,7 @@ export async function loadDiscoveryResults(accessToken: string | null | undefine
     };
   }
 
-  const { data, error } = await viewer.userClient.rpc("discovery_profiles_for_verified_employer");
+  const { data, error } = await viewer.userClient.rpc("discovery_profiles_for_verified_employer_v2");
 
   if (error) {
     return {
@@ -375,7 +381,7 @@ export async function loadTalentPassport(accessToken: string | null | undefined,
   }
 
   const passportArgs: TalentPassportRpcArgs = { p_slug: slug };
-  const { data, error } = await viewer.userClient.rpc("talent_passport_for_viewer", passportArgs as never);
+  const { data, error } = await viewer.userClient.rpc("talent_passport_for_viewer_v3", passportArgs as never);
 
   if (error) {
     return {
@@ -406,5 +412,6 @@ export async function loadTalentPassport(accessToken: string | null | undefined,
     isOwner: row.is_owner,
     verificationStatus: normalizeVerificationStatus(row.verification_status),
     profile: buildPassportProfile(row, photoUrl, videoUrl),
+    privateAccess: (await loadPrivateAccess(accessToken, slug)).state,
   };
 }

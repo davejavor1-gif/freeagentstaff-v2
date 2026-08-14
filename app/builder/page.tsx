@@ -9,6 +9,9 @@ import { freeAgentProfiles } from "@/data/freeagents";
 import { buildCanonicalTalentColumns } from "@/lib/talent-profile-columns";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
 import VideoIntroductionSection from "@/components/settings/VideoIntroductionSection";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
+import { salaryExpectationOptions } from "@/lib/talent-profile-options";
 import type { AccountType, CareerPosition, FreeAgentProfile, ProfileVisibility } from "@/types/freeagent";
 import type { Database, Json } from "@/types/supabase";
 
@@ -31,6 +34,7 @@ type ProfileSelectResult = {
   experience_years?: number | null;
   focus_area?: string | null;
   summary?: string | null;
+  bio?: string | null;
   skills?: string[] | null;
   career_journey?: Json;
   email?: string | null;
@@ -40,6 +44,12 @@ type ProfileSelectResult = {
   photo_url?: string | null;
   photo_storage_path?: string | null;
   intro_video_storage_path?: string | null;
+  education?: string | null;
+  salary_expectation?: FreeAgentProfile["salaryExpectation"];
+  contact_email?: string | null;
+  resume_storage_path?: string | null;
+  resume_original_filename?: string | null;
+  resume_uploaded_at?: string | null;
 };
 
 const normalizeVisibility = (value: ProfileVisibility | null | undefined): Exclude<ProfileVisibility, "employer_network"> => {
@@ -85,7 +95,14 @@ function hydrateBuilderProfile(profileResult: ProfileSelectResult, fallbackEmail
   loadedProfile.topStrength = profileResult.top_strength ?? loadedProfile.topStrength ?? "";
   loadedProfile.experienceYears = profileResult.experience_years ?? loadedProfile.experienceYears ?? 0;
   loadedProfile.focusArea = profileResult.focus_area ?? loadedProfile.focusArea ?? "";
+  loadedProfile.education = profileResult.education ?? loadedProfile.education ?? "";
+  loadedProfile.salaryExpectation = profileResult.salary_expectation ?? loadedProfile.salaryExpectation ?? null;
+  loadedProfile.contactEmail = profileResult.contact_email ?? loadedProfile.contactEmail ?? fallbackEmail ?? "";
+  loadedProfile.resumeStoragePath = profileResult.resume_storage_path ?? loadedProfile.resumeStoragePath ?? null;
+  loadedProfile.resumeOriginalFilename = profileResult.resume_original_filename ?? loadedProfile.resumeOriginalFilename ?? null;
+  loadedProfile.resumeUploadedAt = profileResult.resume_uploaded_at ?? loadedProfile.resumeUploadedAt ?? null;
   loadedProfile.summary = profileResult.summary ?? loadedProfile.summary ?? "";
+  loadedProfile.bio = profileResult.bio ?? loadedProfile.bio ?? "";
   loadedProfile.skills = profileResult.skills ?? loadedProfile.skills ?? [];
   loadedProfile.careerJourney = Array.isArray(profileResult.career_journey)
     ? (profileResult.career_journey as unknown as FreeAgentProfile["careerJourney"])
@@ -101,44 +118,8 @@ function hydrateBuilderProfile(profileResult: ProfileSelectResult, fallbackEmail
   return loadedProfile;
 }
 
-const normalizeSlug = (value: string, fallback: string) => {
-  const slug = value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-
-  return slug || fallback;
-};
-
-const createSlugFromName = (name: string, fallback: string) => normalizeSlug(name || fallback, fallback);
-
-const ensureUniqueSlug = async (slug: string, userId: string) => {
-  let candidate = normalizeSlug(slug, `freeagent-${userId.slice(0, 8)}`);
-  let suffix = 1;
-
-  while (true) {
-    const { data, error } = await supabase.from("profiles").select("user_id").eq("slug", candidate).maybeSingle();
-    const row = data as { user_id?: string } | null;
-
-    if (error) {
-      break;
-    }
-
-    if (!row || row.user_id === userId) {
-      return candidate;
-    }
-
-    candidate = `${normalizeSlug(slug, `freeagent-${userId.slice(0, 8)}`)}-${suffix}`;
-    suffix += 1;
-  }
-
-  return candidate;
-};
-
 const createBlankProfile = (userId: string, email?: string | null): FreeAgentProfile => ({
   id: `freeagent-${userId.slice(0, 8)}`,
-  slug: `freeagent-${userId.slice(0, 8)}`,
   visibility: "public",
   name: "",
   title: "",
@@ -147,7 +128,14 @@ const createBlankProfile = (userId: string, email?: string | null): FreeAgentPro
   topStrength: "",
   experienceYears: 0,
   focusArea: "",
+  education: "",
+  salaryExpectation: null,
+  contactEmail: email ?? "",
+  resumeStoragePath: null,
+  resumeOriginalFilename: null,
+  resumeUploadedAt: null,
   summary: "",
+  bio: "",
   skills: [],
   careerJourney: [],
   email: email ?? "",
@@ -172,6 +160,8 @@ export default function BuilderPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isCopySuccess, setIsCopySuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [resumeBusy, setResumeBusy] = useState(false);
+  const [resumeError, setResumeError] = useState<string | null>(null);
   const [skillInput, setSkillInput] = useState("");
   const [journeyDrafts, setJourneyDrafts] = useState<Record<string, { achievement: string; skill: string }>>({});
   const router = useRouter();
@@ -195,7 +185,7 @@ export default function BuilderPage() {
 
       const { data, error } = await supabase
         .from("profiles")
-        .select("slug, profile, account_type, visibility, opportunity_status, name, title, location, availability, top_strength, experience_years, focus_area, summary, skills, career_journey, email, image_alt, current_employer, intro_video_url, photo_url, photo_storage_path, intro_video_storage_path")
+        .select("slug, profile, account_type, visibility, opportunity_status, name, title, location, availability, top_strength, experience_years, focus_area, education, salary_expectation, contact_email, resume_storage_path, resume_original_filename, resume_uploaded_at, summary, bio, skills, career_journey, email, image_alt, current_employer, intro_video_url, photo_url, photo_storage_path, intro_video_storage_path")
         .eq("user_id", supabaseSession.user.id)
         .maybeSingle();
 
@@ -237,7 +227,8 @@ export default function BuilderPage() {
           setSaveError(insertError.message);
         }
 
-        setProfile(blankProfile);
+        const { data: insertedProfile } = await supabase.from("profiles").select("slug").eq("user_id", supabaseSession.user.id).maybeSingle<{ slug: string | null }>();
+        setProfile({ ...blankProfile, slug: insertedProfile?.slug ?? undefined });
       }
 
       setProfileLoaded(true);
@@ -271,6 +262,10 @@ export default function BuilderPage() {
     }
 
     const debounce = window.setTimeout(async () => {
+      if (profile.contactEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profile.contactEmail.trim())) {
+        return;
+      }
+
       const upsertPayload: ProfileInsert = {
         user_id: session.user.id,
         account_type: "talent",
@@ -313,20 +308,22 @@ export default function BuilderPage() {
       return;
     }
 
-    const preferredSlug = profile.slug?.trim() || createSlugFromName(profile.name, `freeagent-${session.user.id.slice(0, 8)}`);
-    const uniqueSlug = await ensureUniqueSlug(preferredSlug, session.user.id);
-    const profileToSave = { ...profile, slug: uniqueSlug };
-
     setIsSaving(true);
     setSaveError(null);
     setSaveStatus(null);
+
+    if (profile.contactEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profile.contactEmail.trim())) {
+      setSaveError("Enter a valid contact email address.");
+      setIsSaving(false);
+      return;
+    }
 
     const { error } = await supabase.from("profiles").upsert(
       [
         {
           user_id: session.user.id,
           account_type: "talent",
-          ...buildCanonicalTalentColumns(profileToSave, session.user.email),
+          ...buildCanonicalTalentColumns(profile, session.user.email),
         },
       ] as never,
       {
@@ -342,36 +339,64 @@ export default function BuilderPage() {
       return;
     }
 
-    setProfile(profileToSave);
+    const { data: savedProfile } = await supabase.from("profiles").select("slug").eq("user_id", session.user.id).maybeSingle<{ slug: string | null }>();
+    setProfile((current: FreeAgentProfile) => ({ ...current, slug: savedProfile?.slug ?? current.slug }));
     setSaveStatus("Profile saved successfully.");
     window.setTimeout(() => setSaveStatus(null), 3000);
   };
 
+  const uploadResume = async (file: File) => {
+    if (!session) return;
+    setResumeBusy(true);
+    setResumeError(null);
+    const formData = new FormData();
+    formData.append("resume", file);
+    const response = await fetch("/api/profile/resume", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${session.access_token}` },
+      body: formData,
+    });
+    const result = (await response.json().catch(() => null)) as { ok?: boolean; message?: string; resume?: { storagePath: string; originalFilename: string; uploadedAt: string } } | null;
+    if (!response.ok || !result?.ok || !result.resume) {
+      setResumeError(result?.message ?? "Unable to upload the resume.");
+    } else {
+      setProfile((current) => ({ ...current, resumeStoragePath: result.resume?.storagePath ?? null, resumeOriginalFilename: result.resume?.originalFilename ?? null, resumeUploadedAt: result.resume?.uploadedAt ?? null }));
+    }
+    setResumeBusy(false);
+  };
+
+  const removeResume = async () => {
+    if (!session) return;
+    setResumeBusy(true);
+    setResumeError(null);
+    const response = await fetch("/api/profile/resume", { method: "DELETE", headers: { Authorization: `Bearer ${session.access_token}` } });
+    const result = (await response.json().catch(() => null)) as { ok?: boolean; message?: string } | null;
+    if (!response.ok || !result?.ok) {
+      setResumeError(result?.message ?? "Unable to remove the resume.");
+    } else {
+      setProfile((current) => ({ ...current, resumeStoragePath: null, resumeOriginalFilename: null, resumeUploadedAt: null }));
+    }
+    setResumeBusy(false);
+  };
+
   if (isLoading) {
     return (
-      <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#f7ebcf_0%,_#f4e4bf_40%,_#e7d7a7_100%)] px-4 py-8 text-[#071426] sm:px-6 lg:px-8">
+      <><Navbar /><main className="min-h-screen bg-[#aff546] px-4 py-8 text-[#0f2744] sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-7xl items-center justify-center py-24">
           <div className="rounded-[32px] border border-[#cda64d]/70 bg-[#0f2744] px-8 py-12 text-center text-[#f7ebcf] shadow-[0_18px_55px_rgba(6,16,33,0.28)]">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">Loading profile</p>
             <p className="mt-4 text-lg font-semibold">Please wait while we load your profile.</p>
           </div>
         </div>
-      </main>
+      </main><Footer /></>
     );
   }
 
   const updateTextField = (
-    field: "slug" | "name" | "title" | "location" | "topStrength" | "availability" | "focusArea",
+    field: "name" | "title" | "location" | "topStrength" | "availability" | "focusArea" | "education" | "salaryExpectation" | "contactEmail" | "bio",
     value: string,
   ) => {
     setProfile((current) => ({ ...current, [field]: value }));
-  };
-
-  const updateExperienceField = (value: string) => {
-    setProfile((current) => ({
-      ...current,
-      experienceYears: Number(value) || 0,
-    }));
   };
 
   const createCareerPosition = (): CareerPosition => ({
@@ -525,20 +550,31 @@ export default function BuilderPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#f7ebcf_0%,_#f4e4bf_40%,_#e7d7a7_100%)] px-4 py-8 text-[#071426] sm:px-6 lg:px-8">
+    <><Navbar /><main className="min-h-screen bg-[#aff546] px-4 py-8 text-[#0f2744] sm:px-6 lg:px-8">
       <div className="mx-auto flex max-w-7xl flex-col gap-6 lg:flex-row lg:items-start">
-        <section className="w-full rounded-[32px] border border-[#cda64d]/70 bg-[#0f2744] p-6 text-[#f7ebcf] shadow-[0_18px_55px_rgba(6,16,33,0.28)] lg:w-[40%] lg:p-8">
+        <section className="w-full rounded-[32px] border border-[#cda64d]/70 bg-[#0f2744] p-6 text-[#f7ebcf] shadow-[0_18px_55px_rgba(6,16,33,0.28)] lg:w-[62%] lg:p-8">
           <div className="inline-flex items-center rounded-full border border-[#f2cc63]/40 bg-[#f7ebcf]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">
             Builder Studio
           </div>
           <h1 className="mt-6 text-3xl font-black uppercase leading-tight tracking-[0.16em] text-[#f7ebcf] sm:text-4xl">
             Create Your FreeAgent Card
           </h1>
-          <p className="mt-4 max-w-xl text-base leading-7 text-[#dfe7ef]">
+          <p className="mt-3 max-w-2xl text-base leading-7 text-[#dfe7ef]">
             Edit your profile and watch your card update live.
           </p>
+          <div className="mt-5 max-w-2xl space-y-3 text-sm leading-6 text-[#dfe7ef]">
+            <p>Build your Talent Card and Passport by adding the information employers need to understand who you are, what you do, and what you&apos;re looking for.</p>
+            <p className="font-semibold text-[#f7ebcf]">Complete each section below to:</p>
+            <ul className="grid gap-1.5 sm:grid-cols-2">
+              <li>• add your photo and video introduction</li>
+              <li>• highlight your skills, education and strengths</li>
+              <li>• set your availability and salary expectations</li>
+              <li>• upload your resume</li>
+              <li>• control how your profile appears to employers</li>
+            </ul>
+          </div>
 
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mt-6 flex flex-col gap-3 rounded-2xl border border-[#8fdc3a]/35 bg-[#17355f] p-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-col gap-1">
               {saveStatus ? (
                 <p className="text-sm font-semibold text-emerald-700">{saveStatus}</p>
@@ -551,7 +587,7 @@ export default function BuilderPage() {
               type="button"
               onClick={saveProfile}
               disabled={isSaving || !profileLoaded}
-              className="inline-flex items-center justify-center rounded-full bg-[#0f2744] px-5 py-3 text-sm font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex items-center justify-center rounded-full bg-[#aff546] px-5 py-3 text-sm font-semibold uppercase tracking-[0.24em] text-[#071426] transition hover:bg-[#9fea37] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSaving ? "Saving..." : "Save profile"}
             </button>
@@ -564,7 +600,7 @@ export default function BuilderPage() {
               saveProfile();
             }}
           >
-            <div className="mt-4 rounded-[24px] border border-[#cda64d]/40 bg-[#f7ebcf]/10 p-4">
+            <div className="mt-4 rounded-[24px] border border-[#0f2744]/15 border-t-4 border-t-[#2bd7ef] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Public profile URL</p>
@@ -579,12 +615,12 @@ export default function BuilderPage() {
                 {isCopySuccess ? "Copied!" : "Copy share link"}
               </button>
             </div>
-            <div className="mt-3 rounded-2xl border border-[#0f2744]/20 bg-white/90 px-4 py-3 text-sm text-[#071426]">
-              {profile.slug ? `${window.location.origin}/profile/${profile.slug}` : "Save your profile to generate a shareable link."}
+            <div className="mt-3 flex min-w-0 items-center gap-1 rounded-2xl border border-[#0f2744]/20 bg-white/90 px-4 py-3 text-sm text-[#071426]">
+              {profile.slug ? <><span className="shrink-0 text-[#6a7a91]">/profile/</span><span className="min-w-0 break-all font-semibold">{profile.slug}</span></> : "Save your profile to generate a shareable link."}
             </div>
           </div>
 
-          <div className="mt-6">
+          <div className="mt-6 rounded-[24px] border border-[#0f2744]/15 border-t-4 border-t-[#4f9f4e] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
             <VideoIntroductionSection
               profile={profile}
               onProfileChange={(nextProfile) => setProfile(nextProfile)}
@@ -607,22 +643,6 @@ export default function BuilderPage() {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="slug" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
-                Public profile slug
-              </label>
-              <input
-                id="slug"
-                value={profile.slug ?? ""}
-                onChange={(event) => updateTextField("slug", event.target.value)}
-                className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] shadow-sm outline-none ring-0 transition focus:border-[#0f2744]"
-                placeholder="Enter a short URL slug"
-              />
-              <p className="text-xs text-[#dfe7ef]">
-                A slug is used for your public profile URL: /profile/<span className="font-mono">{profile.slug ?? "your-slug"}</span>
-              </p>
-            </div>
-
-            <div className="space-y-2">
               <label htmlFor="title" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
                 Professional Title
               </label>
@@ -635,7 +655,23 @@ export default function BuilderPage() {
               />
             </div>
 
-            <div className="space-y-2 rounded-2xl border border-[#cda64d]/35 bg-white/70 px-4 py-4 text-sm text-[#27405f]">
+            <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#4f9f4e] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+              <label htmlFor="bio" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                Bio <span className="font-normal normal-case tracking-normal text-[#6a7a91]">(optional)</span>
+              </label>
+              <p className="text-sm leading-6 text-[#27405f]">Introduce yourself in a few sentences. Share your professional background, what you enjoy doing and what you&apos;re looking for next.</p>
+              <textarea
+                id="bio"
+                maxLength={750}
+                value={profile.bio ?? ""}
+                onChange={(event) => updateTextField("bio", event.target.value)}
+                className="min-h-[120px] w-full resize-y rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] shadow-sm outline-none transition focus:border-[#0f2744]"
+                placeholder="Tell employers a little about your professional background..."
+              />
+              <p className="text-right text-xs text-[#6a7a91]">{(profile.bio ?? "").length}/750</p>
+            </div>
+
+            <div className="space-y-2 rounded-2xl border border-[#0f2744]/15 border-t-4 border-t-[#2bd7ef] bg-[#fffaf0] px-4 py-4 text-sm text-[#27405f] shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
               <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Privacy & visibility</p>
               <p>
                 Marketplace visibility, publish state, and blocked companies are now managed from Privacy & Visibility so the canonical access-control settings stay in one place.
@@ -691,20 +727,6 @@ export default function BuilderPage() {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="experienceYears" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
-                Years of Experience
-              </label>
-              <input
-                id="experienceYears"
-                type="number"
-                min="0"
-                value={profile.experienceYears}
-                onChange={(event) => updateExperienceField(event.target.value)}
-                className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] shadow-sm outline-none transition focus:border-[#0f2744]"
-              />
-            </div>
-
-            <div className="space-y-2">
               <label htmlFor="focusArea" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
                 Focus Area
               </label>
@@ -717,7 +739,79 @@ export default function BuilderPage() {
               />
             </div>
 
-            <div className="space-y-3 rounded-[20px] border border-[#cda64d]/40 bg-white/70 p-4">
+            <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#cda64d] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+              <label htmlFor="education" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                Education <span className="font-normal normal-case tracking-normal text-[#6a7a91]">(optional)</span>
+              </label>
+              <textarea
+                id="education"
+                value={profile.education ?? ""}
+                onChange={(event) => updateTextField("education", event.target.value)}
+                className="min-h-24 w-full resize-y rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] shadow-sm outline-none transition focus:border-[#0f2744]"
+                placeholder="Bachelor of Business - UTS"
+              />
+            </div>
+
+            <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#2bd7ef] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+              <label htmlFor="salaryExpectation" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                Salary expectations <span className="font-normal normal-case tracking-normal text-[#6a7a91]">(optional)</span>
+              </label>
+              <select
+                id="salaryExpectation"
+                value={profile.salaryExpectation ?? ""}
+                onChange={(event) => updateTextField("salaryExpectation", event.target.value)}
+                className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] shadow-sm outline-none transition focus:border-[#0f2744]"
+              >
+                <option value="">Select a broad salary band</option>
+                {salaryExpectationOptions.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#4f9f4e] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Contact details</p>
+                <p className="mt-1 text-sm text-[#27405f]">This stays private until you choose to connect with an employer.</p>
+              </div>
+              <label htmlFor="contactEmail" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Contact email</label>
+              <input
+                id="contactEmail"
+                type="email"
+                value={profile.contactEmail ?? ""}
+                onChange={(event) => updateTextField("contactEmail", event.target.value)}
+                className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] outline-none transition focus:border-[#0f2744]"
+                placeholder="you@example.com"
+                autoComplete="email"
+              />
+            </div>
+
+            <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#cda64d] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Resume</p>
+                <p className="mt-1 text-sm text-[#27405f]">Private PDF, DOC, or DOCX files up to 10 MB.</p>
+              </div>
+              {profile.resumeOriginalFilename ? (
+                <div className="flex flex-col gap-3 rounded-2xl border border-[#cda64d]/35 bg-white/80 p-3 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="min-w-0 break-all text-sm font-semibold text-[#0f2744]">{profile.resumeOriginalFilename}</p>
+                  <div className="flex shrink-0 flex-wrap gap-2">
+                    <label className="inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf]">
+                      Replace resume
+                      <input type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" className="sr-only" disabled={resumeBusy} onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadResume(file); event.target.value = ""; }} />
+                    </label>
+                    <button type="button" onClick={() => void removeResume()} disabled={resumeBusy} className="min-h-[44px] rounded-full border border-rose-900/20 bg-white px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-rose-900 disabled:opacity-50">Remove</button>
+                  </div>
+                </div>
+              ) : (
+                <label className="inline-flex min-h-[46px] w-full cursor-pointer items-center justify-center rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf]">
+                  {resumeBusy ? "Uploading..." : "Upload resume"}
+                  <input type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" className="sr-only" disabled={resumeBusy} onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadResume(file); event.target.value = ""; }} />
+                </label>
+              )}
+              {resumeError ? <p className="text-sm font-semibold text-rose-700">{resumeError}</p> : null}
+            </div>
+
+            <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#2bd7ef] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
                   Skills
@@ -768,7 +862,7 @@ export default function BuilderPage() {
               ) : null}
             </div>
 
-            <div className="space-y-3 rounded-[20px] border border-[#cda64d]/40 bg-white/70 p-4">
+            <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#cda64d] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
@@ -971,89 +1065,14 @@ export default function BuilderPage() {
           </form>
         </section>
 
-        <section className="flex w-full items-center justify-center rounded-[32px] border border-[#cda64d]/70 bg-[#f7ebcf]/70 p-4 shadow-[0_18px_55px_rgba(6,16,33,0.16)] lg:w-[60%] lg:min-h-[700px] lg:p-8">
-          <div className="flex w-full max-w-[980px] flex-col gap-6">
+        <section className="flex w-full items-center justify-center rounded-[32px] border border-[#cda64d]/70 bg-[#f7ebcf] p-4 shadow-[0_12px_32px_rgba(6,16,33,0.12)] lg:w-[38%] lg:min-h-[700px] lg:p-5">
+          <div className="flex w-full max-w-[430px] flex-col">
             <div className="flex justify-center">
               <TalentCard profile={profile} href={profile.slug ? `/profile/${profile.slug}` : "#"} className="w-full max-w-[430px]" />
-            </div>
-
-            <div className="rounded-[30px] border border-[#cda64d]/70 bg-[#0f2744] p-6 text-[#f7ebcf] shadow-[0_12px_40px_rgba(6,16,33,0.2)] sm:p-8">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">
-                    Live career journey
-                  </p>
-                  <h2 className="mt-2 text-2xl font-black uppercase tracking-[0.16em] text-[#f7ebcf]">
-                    Premium timeline preview
-                  </h2>
-                </div>
-                <div className="rounded-full border border-[#f2cc63]/35 bg-[#f7ebcf]/10 px-3 py-2 text-sm font-semibold text-[#f7ebcf]">
-                  {profile.careerJourney.length} positions
-                </div>
-              </div>
-
-              <div className="mt-6 space-y-4">
-                {profile.careerJourney.length > 0 ? (
-                  profile.careerJourney.map((position, index) => (
-                    <div key={position.id} className="rounded-[24px] border border-[#f2cc63]/25 bg-[#f7ebcf]/10 p-5">
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">
-                            {position.period || "Timeline entry"}
-                          </p>
-                          <h3 className="mt-2 text-xl font-semibold text-[#f7ebcf]">
-                            {position.role || "New role"}
-                          </h3>
-                          <p className="mt-1 text-sm font-semibold uppercase tracking-[0.2em] text-[#f2cc63]">
-                            {position.company || "Company"} · {position.location || "Location"}
-                          </p>
-                        </div>
-                        <div className="rounded-full border border-[#f2cc63]/35 bg-[#0f2744] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf]">
-                          {index + 1}
-                        </div>
-                      </div>
-
-                      <p className="mt-4 text-sm leading-7 text-[#dfe7ef]">
-                        {position.description || "Add a rich description to tell the story behind this role."}
-                      </p>
-
-                      {position.achievements.length > 0 ? (
-                        <div className="mt-4">
-                          <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#f2cc63]">
-                            Achievements
-                          </p>
-                          <ul className="mt-2 space-y-2 text-sm leading-7 text-[#dfe7ef]">
-                            {position.achievements.map((achievement) => (
-                              <li key={achievement} className="flex gap-2">
-                                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#f2cc63]" />
-                                <span>{achievement}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      ) : null}
-
-                      {position.skills.length > 0 ? (
-                        <div className="mt-4 flex flex-wrap gap-2">
-                          {position.skills.map((skill) => (
-                            <span key={skill} className="rounded-full border border-[#f2cc63]/70 bg-[#0f2744] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf]">
-                              {skill}
-                            </span>
-                          ))}
-                        </div>
-                      ) : null}
-                    </div>
-                  ))
-                ) : (
-                  <div className="rounded-[24px] border border-dashed border-[#f2cc63]/35 bg-[#f7ebcf]/10 p-6 text-center text-sm text-[#dfe7ef]">
-                    Add your first role to start building a compelling timeline.
-                  </div>
-                )}
-              </div>
             </div>
           </div>
         </section>
       </div>
-    </main>
+    </main><Footer /></>
   );
 }

@@ -9,6 +9,16 @@ export type ProfileVisibility = "public" | "verified_employer_network" | "confid
 
 export type OpportunityStatus = "actively_open" | "exploring" | "not_open";
 
+export type SalaryExpectation =
+  | "under_60k"
+  | "60k_80k"
+  | "80k_100k"
+  | "100k_120k"
+  | "120k_150k"
+  | "150k_200k"
+  | "200k_plus"
+  | "prefer_not_to_say";
+
 export type AccountType = "talent" | "employer";
 
 export type EmployerVerificationStatus = "unverified" | "pending" | "verified" | "rejected";
@@ -47,8 +57,15 @@ export interface FreeAgentProfile {
   experienceYears: number;
   focusArea: string;
   summary: string;
+  bio?: string;
   skills: string[];
   careerJourney: CareerPosition[];
+  education?: string;
+  salaryExpectation?: SalaryExpectation | null;
+  contactEmail?: string;
+  resumeStoragePath?: string | null;
+  resumeOriginalFilename?: string | null;
+  resumeUploadedAt?: string | null;
   qualifications?: string[];
   intro_video_url?: string | null;
   intro_video_thumbnail_url?: string | null;

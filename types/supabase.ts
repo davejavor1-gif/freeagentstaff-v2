@@ -29,7 +29,14 @@ export interface ProfilesRow {
   top_strength: string | null;
   experience_years: number;
   focus_area: string | null;
+  education: string | null;
+  salary_expectation: "under_60k" | "60k_80k" | "80k_100k" | "100k_120k" | "120k_150k" | "150k_200k" | "200k_plus" | "prefer_not_to_say" | null;
+  contact_email: string | null;
+  resume_storage_path: string | null;
+  resume_original_filename: string | null;
+  resume_uploaded_at: string | null;
   summary: string | null;
+  bio: string | null;
   skills: string[];
   career_journey: Json;
   email: string | null;
@@ -72,7 +79,14 @@ export interface ProfilesInsert {
   top_strength?: string | null;
   experience_years?: number;
   focus_area?: string | null;
+  education?: string | null;
+  salary_expectation?: ProfilesRow["salary_expectation"];
+  contact_email?: string | null;
+  resume_storage_path?: string | null;
+  resume_original_filename?: string | null;
+  resume_uploaded_at?: string | null;
   summary?: string | null;
+  bio?: string | null;
   skills?: string[];
   career_journey?: Json;
   email?: string | null;
@@ -112,7 +126,14 @@ export interface ProfilesUpdate {
   top_strength?: string | null;
   experience_years?: number;
   focus_area?: string | null;
+  education?: string | null;
+  salary_expectation?: ProfilesRow["salary_expectation"];
+  contact_email?: string | null;
+  resume_storage_path?: string | null;
+  resume_original_filename?: string | null;
+  resume_uploaded_at?: string | null;
   summary?: string | null;
+  bio?: string | null;
   skills?: string[];
   career_journey?: Json;
   email?: string | null;
@@ -403,6 +424,33 @@ export interface Database {
           opportunity_status: "actively_open" | "exploring" | "not_open" | null;
           experience_years: number | null;
           focus_area: string | null;
+          education: string | null;
+          salary_expectation: ProfilesRow["salary_expectation"];
+          top_strength: string | null;
+          skills: string[] | null;
+          location: string | null;
+          name: string | null;
+          title: string | null;
+          summary: string | null;
+          current_employer: string | null;
+          photo_storage_path: string | null;
+          intro_video_storage_path: string | null;
+          can_view_identifying_info: boolean | null;
+          can_view_media: boolean | null;
+        }>;
+      };
+      discovery_profiles_for_verified_employer_v2: {
+        Args: Record<string, never>;
+        Returns: Array<{
+          slug: string;
+          visibility: "public" | "verified_employer_network" | "confidential" | null;
+          verification_status: "unverified" | "pending" | "verified" | "rejected" | null;
+          availability: string | null;
+          opportunity_status: "actively_open" | "exploring" | "not_open" | null;
+          experience_years: number | null;
+          focus_area: string | null;
+          education: string | null;
+          salary_expectation: ProfilesRow["salary_expectation"];
           top_strength: string | null;
           skills: string[] | null;
           location: string | null;
@@ -428,6 +476,8 @@ export interface Database {
           opportunity_status: "actively_open" | "exploring" | "not_open" | null;
           experience_years: number | null;
           focus_area: string | null;
+          education: string | null;
+          salary_expectation: ProfilesRow["salary_expectation"];
           top_strength: string | null;
           skills: string[] | null;
           location: string | null;
@@ -438,6 +488,109 @@ export interface Database {
           career_journey: Json | null;
           photo_storage_path: string | null;
           intro_video_storage_path: string | null;
+        }>;
+      };
+      talent_passport_for_viewer_v2: {
+        Args: { p_slug: string };
+        Returns: Array<{
+          slug: string;
+          visibility: "public" | "verified_employer_network" | "confidential" | null;
+          is_owner: boolean;
+          access_scope: "owner_full" | "employer_full" | "employer_confidential" | null;
+          verification_status: "unverified" | "pending" | "verified" | "rejected" | null;
+          availability: string | null;
+          opportunity_status: "actively_open" | "exploring" | "not_open" | null;
+          experience_years: number | null;
+          focus_area: string | null;
+          education: string | null;
+          salary_expectation: ProfilesRow["salary_expectation"];
+          top_strength: string | null;
+          skills: string[] | null;
+          location: string | null;
+          name: string | null;
+          title: string | null;
+          summary: string | null;
+          current_employer: string | null;
+          email: string | null;
+          career_journey: Json | null;
+          photo_storage_path: string | null;
+          intro_video_storage_path: string | null;
+        }>;
+      };
+      talent_passport_for_viewer_v3: {
+        Args: { p_slug: string };
+        Returns: Array<{
+          slug: string;
+          visibility: "public" | "verified_employer_network" | "confidential" | null;
+          is_owner: boolean;
+          access_scope: "owner_full" | "employer_full" | "employer_confidential" | null;
+          verification_status: "unverified" | "pending" | "verified" | "rejected" | null;
+          availability: string | null;
+          opportunity_status: "actively_open" | "exploring" | "not_open" | null;
+          experience_years: number | null;
+          focus_area: string | null;
+          top_strength: string | null;
+          skills: string[] | null;
+          location: string | null;
+          name: string | null;
+          title: string | null;
+          summary: string | null;
+          bio: string | null;
+          current_employer: string | null;
+          email: string | null;
+          career_journey: Json | null;
+          photo_storage_path: string | null;
+          intro_video_storage_path: string | null;
+          education: string | null;
+          salary_expectation: ProfilesRow["salary_expectation"];
+        }>;
+      };
+      employer_request_talent_private_access: {
+        Args: { p_talent_slug: string };
+        Returns: Array<{ request_id: string; request_status: string; requested_at: string }>;
+      };
+      list_talent_private_access_requests: {
+        Args: Record<string, never>;
+        Returns: Array<{
+          request_id: string;
+          employer_user_id: string;
+          employer_company_name: string | null;
+          employer_contact_name: string | null;
+          employer_contact_role: string | null;
+          request_status: string;
+          requested_at: string;
+          responded_at: string | null;
+          revoked_at: string | null;
+        }>;
+      };
+      talent_set_private_access_request_status: {
+        Args: { p_request_id: string; p_status: "accepted" | "declined" };
+        Returns: Array<{ request_id: string; request_status: string; responded_at: string }>;
+      };
+      talent_revoke_private_access: {
+        Args: { p_request_id: string };
+        Returns: Array<{ request_id: string; request_status: string; revoked_at: string }>;
+      };
+      talent_private_access_for_viewer: {
+        Args: { p_talent_slug: string };
+        Returns: Array<{
+          request_id: string | null;
+          is_owner: boolean;
+          request_status: string;
+          requested_at: string | null;
+          contact_email: string | null;
+          resume_original_filename: string | null;
+          resume_uploaded_at: string | null;
+          resume_available: boolean;
+        }>;
+      };
+      talent_private_details_for_authorized_employer: {
+        Args: { p_talent_slug: string };
+        Returns: Array<{
+          contact_email: string | null;
+          resume_original_filename: string | null;
+          resume_uploaded_at: string | null;
+          resume_storage_path: string | null;
         }>;
       };
       submit_employer_verification: {

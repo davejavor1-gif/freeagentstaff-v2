@@ -1,0 +1,158 @@
+import type { FreeAgentProfile } from "@/types/freeagent";
+
+export const homepagePassportProfiles: Record<string, FreeAgentProfile> = {
+  "sarah-jones": {
+    id: "homepage-passport-sarah-jones",
+    slug: "sarah-jones",
+    visibility: "public",
+    name: "Sarah Jones",
+    title: "Senior Software Engineer",
+    location: "Sydney, Australia",
+    availability: "Open to Opportunities",
+    topStrength:
+      "Turns complex product challenges into calm, reliable delivery.",
+    bio: "Experienced software engineer who enjoys turning complex product challenges into clear, dependable experiences. Known for thoughtful collaboration, strong delivery habits and building systems that help teams move with confidence.",
+    experienceYears: 9,
+    focusArea: "Technology",
+    summary:
+      "A fictional technology professional who combines practical engineering judgment with thoughtful product delivery.",
+    skills: ["React", "TypeScript", "Product Delivery", "Systems Thinking"],
+    education: "Bachelor of Computer Science",
+    salaryExpectation: "120k_150k",
+    careerJourney: [
+      {
+        id: "sarah-jones-role",
+        role: "Senior Software Engineer",
+        company: "Northstar Labs",
+        period: "2021 - Present",
+        location: "Sydney",
+        description:
+          "Builds reliable product experiences and helps teams translate complex technical work into useful outcomes.",
+        achievements: [],
+        skills: [],
+      },
+    ],
+    photoUrl: "/images/homepage-talent-model.jpg",
+    imageAlt: "Fictional professional portrait",
+    intro_video_url: "/videos/sarahs%20intro.mp4",
+  },
+  "maya-ellis": {
+    id: "homepage-passport-maya-ellis",
+    slug: "maya-ellis",
+    visibility: "public",
+    name: "Maya Ellis",
+    title: "Event Manager",
+    location: "Sydney, Australia",
+    availability: "Open to Opportunities",
+    topStrength:
+      "Creates calm, well-run events where every detail supports the guest experience.",
+    bio: "Events professional who enjoys bringing people, ideas and logistics together to create memorable experiences. Known for staying calm under pressure and building strong relationships with clients and teams.",
+    experienceYears: 8,
+    focusArea: "Event Production",
+    summary:
+      "A fictional event leader who brings thoughtful planning, confident teams, and polished delivery to major events.",
+    skills: [
+      "Event Production",
+      "Leadership",
+      "Budgets",
+      "Stakeholder Management",
+    ],
+    education: "Diploma of Event Management - TAFE NSW",
+    salaryExpectation: "100k_120k",
+    careerJourney: [
+      {
+        id: "maya-ellis-role",
+        role: "Event Manager",
+        company: "Harbour House Events",
+        period: "2021 - Present",
+        location: "Sydney",
+        description:
+          "Leads event planning, supplier coordination, and delivery for high-touch corporate and cultural programs.",
+        achievements: [],
+        skills: [],
+      },
+    ],
+    photoUrl: "/images/homepage-talent-model.jpg",
+    imageAlt: "Fictional professional portrait",
+    intro_video_url: "/videos/sarahs%20intro.mp4",
+  },
+  "daniel-brooks": {
+    id: "homepage-passport-daniel-brooks",
+    slug: "daniel-brooks",
+    visibility: "public",
+    name: "Daniel Brooks",
+    title: "Operations Director",
+    location: "Melbourne, Australia",
+    availability: "Open to Opportunities",
+    topStrength:
+      "Builds calm, repeatable operations that help ambitious teams deliver at their best.",
+    bio: "Operations leader who enjoys creating clear systems, supporting capable teams and making complex service environments easier to run. Known for calm decision-making and practical improvements that last.",
+    experienceYears: 10,
+    focusArea: "Operations",
+    summary:
+      "A fictional operations leader focused on dependable service delivery, strong teams, and practical systems that scale.",
+    skills: [
+      "Operations Strategy",
+      "Team Leadership",
+      "Service Delivery",
+      "Stakeholder Management",
+    ],
+    education: "Certified Operations Professional",
+    salaryExpectation: "150k_200k",
+    careerJourney: [
+      {
+        id: "daniel-brooks-role",
+        role: "Operations Director",
+        company: "Harbour Works",
+        period: "2020 - Present",
+        location: "Melbourne",
+        description:
+          "Shapes repeatable operating rhythms and leads cross-functional teams through complex service environments.",
+        achievements: [],
+        skills: [],
+      },
+    ],
+    photoUrl: "/images/openart-64f1b59a62fd4bc1a7a2678ed4580466_00001__raw.png",
+    imageAlt: "Fictional professional portrait",
+    intro_video_url: "/videos/daniels%20intro.mp4",
+  },
+  "james-cole": {
+    id: "homepage-passport-james-cole",
+    slug: "james-cole",
+    visibility: "public",
+    name: "James Cole",
+    title: "Bartender",
+    location: "Newcastle, Australia",
+    availability: "Available Now",
+    topStrength:
+      "Creates polished, high-volume service experiences with calm, precise execution.",
+    bio: "Hospitality professional who enjoys creating warm, well-paced service experiences for every guest. Known for precise bar operations, thoughtful teamwork and a calm presence during busy shifts.",
+    experienceYears: 6,
+    focusArea: "Guest Experience",
+    summary:
+      "A fictional hospitality professional known for warm service, confident bar operations, and dependable pace under pressure.",
+    skills: [
+      "Cocktail Making",
+      "Customer Service",
+      "Bar Operations",
+      "Stock Control",
+    ],
+    education: "Certificate III in Hospitality",
+    salaryExpectation: "60k_80k",
+    careerJourney: [
+      {
+        id: "james-cole-role",
+        role: "Bartender",
+        company: "The Lantern Room",
+        period: "2022 - Present",
+        location: "Newcastle",
+        description:
+          "Delivers thoughtful guest service while supporting smooth, high-volume bar operations.",
+        achievements: [],
+        skills: [],
+      },
+    ],
+    photoUrl: "/images/openart-e14435db735f43f281bdfd72be04e16a_00001__raw.png",
+    imageAlt: "Fictional professional portrait",
+  },
+};

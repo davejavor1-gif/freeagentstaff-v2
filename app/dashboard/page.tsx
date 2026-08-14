@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Undo2, XCircle } from "lucide-react";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
 import type { Session } from "@supabase/supabase-js";
 import { buildCanonicalTalentColumns } from "@/lib/talent-profile-columns";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
@@ -51,7 +53,7 @@ type ProfileRow = {
   verification_rejection_reason?: string | null;
 };
 
-const summaryCardClassName = "rounded-2xl border border-slate-200 bg-white p-5 shadow-sm";
+const summaryCardClassName = "rounded-2xl border border-[#cda64d]/45 bg-[#f7ebcf] p-5 text-[#0f2744] shadow-[0_10px_28px_rgba(6,16,33,0.12)]";
 
 function formatDateTime(value: string | null | undefined) {
   if (!value) {
@@ -345,13 +347,13 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-slate-50 text-slate-900">
+      <><Navbar /><main className="min-h-screen bg-[#0f2744] text-[#f7ebcf]">
         <div className="mx-auto flex min-h-screen max-w-6xl items-center justify-center px-6 py-16">
-          <div className="rounded-3xl border border-slate-200 bg-white px-8 py-10 shadow-lg shadow-slate-200/40">
-            <p className="text-center text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Loading dashboard</p>
+          <div className="rounded-3xl border border-[#cda64d]/55 bg-[#f7ebcf] px-8 py-10 text-[#0f2744] shadow-[0_16px_40px_rgba(6,16,33,0.2)]">
+            <p className="text-center text-sm font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">Loading dashboard</p>
           </div>
         </div>
-      </main>
+      </main><Footer /></>
     );
   }
 
@@ -361,14 +363,14 @@ export default function DashboardPage() {
   const talentConnectionPreview = talentSummary?.connectionPreview ?? [];
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900">
+    <><Navbar /><main className="min-h-screen bg-[#0f2744] text-[#f7ebcf]">
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-8 sm:py-12 lg:py-14">
-        <div className="mb-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-lg shadow-slate-200/35 sm:p-8">
+        <div className="mb-6 rounded-3xl border border-[#cda64d]/55 bg-[#f7ebcf] p-6 text-[#0f2744] shadow-[0_16px_40px_rgba(6,16,33,0.18)] sm:p-8">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-amber-500">Secure dashboard</p>
-              <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-900">Welcome back, {session?.user.email ?? "Free Agent"}</h1>
-              <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">
+              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">Secure dashboard</p>
+              <h1 className="mt-3 text-3xl font-black tracking-tight text-[#0f2744]">Welcome back, {session?.user.email ?? "Free Agent"}</h1>
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-[#27405f]">
                 {accountType === "employer"
                   ? "Track your verification status and run hiring workflows from one operational home."
                   : "Check discoverability, act on incoming requests, and manage active employer connections."}
@@ -395,7 +397,7 @@ export default function DashboardPage() {
               <button
                 type="button"
                 onClick={signOut}
-                className="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-slate-800"
+                className="rounded-2xl bg-[#aff546] px-4 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-[#071426] transition hover:bg-[#9fea37]"
               >
                 Sign out
               </button>
@@ -404,7 +406,7 @@ export default function DashboardPage() {
         </div>
 
         {feedback ? (
-          <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm font-medium text-amber-800">
+          <div className="mb-6 rounded-2xl border border-[#f2cc63]/60 bg-[#fff7dc] px-5 py-4 text-sm font-medium text-[#6f5310]">
             {feedback}
           </div>
         ) : null}
@@ -435,7 +437,7 @@ export default function DashboardPage() {
             )}
 
             {!isVerifiedEmployer ? (
-              <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg shadow-slate-200/35 sm:p-8">
+              <section className="rounded-3xl border border-[#cda64d]/55 bg-[#f7ebcf] p-6 text-[#0f2744] shadow-[0_16px_40px_rgba(6,16,33,0.18)] sm:p-8">
                 {verificationStatus === "unverified" ? (
                   <>
                     <h2 className="text-2xl font-black tracking-tight text-slate-900">Verification required</h2>
@@ -502,7 +504,7 @@ export default function DashboardPage() {
                   </Link>
                 </section>
 
-                <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg shadow-slate-200/35 sm:p-8">
+                <section className="rounded-3xl border border-[#cda64d]/55 bg-[#f7ebcf] p-6 text-[#0f2744] shadow-[0_16px_40px_rgba(6,16,33,0.18)] sm:p-8">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                     <div>
                       <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Introduction requests</p>
@@ -556,7 +558,7 @@ export default function DashboardPage() {
                   )}
                 </section>
 
-                <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg shadow-slate-200/35 sm:p-8">
+                <section className="rounded-3xl border border-[#cda64d]/55 bg-[#f7ebcf] p-6 text-[#0f2744] shadow-[0_16px_40px_rgba(6,16,33,0.18)] sm:p-8">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                     <div>
                       <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Connections</p>
@@ -601,7 +603,7 @@ export default function DashboardPage() {
           </div>
         ) : (
           <div className="space-y-6">
-            <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg shadow-slate-200/35 sm:p-8">
+            <section className="rounded-3xl border border-[#cda64d]/55 bg-[#f7ebcf] p-6 text-[#0f2744] shadow-[0_16px_40px_rgba(6,16,33,0.18)] sm:p-8">
               <h2 className="text-2xl font-black tracking-tight text-slate-900">Your visibility snapshot</h2>
               <p className="mt-3 text-sm leading-7 text-slate-600">
                 {isPublished
@@ -628,7 +630,7 @@ export default function DashboardPage() {
               </div>
             </section>
 
-            <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg shadow-slate-200/35 sm:p-8">
+            <section className="rounded-3xl border border-[#cda64d]/55 bg-[#f7ebcf] p-6 text-[#0f2744] shadow-[0_16px_40px_rgba(6,16,33,0.18)] sm:p-8">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                   <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Introduction requests</p>
@@ -716,7 +718,7 @@ export default function DashboardPage() {
               </Link>
             </section>
 
-            <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg shadow-slate-200/35 sm:p-8">
+            <section className="rounded-3xl border border-[#cda64d]/55 bg-[#f7ebcf] p-6 text-[#0f2744] shadow-[0_16px_40px_rgba(6,16,33,0.18)] sm:p-8">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                   <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Connections</p>
@@ -756,7 +758,7 @@ export default function DashboardPage() {
               )}
             </section>
 
-            <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg shadow-slate-200/35 sm:p-8">
+            <section className="rounded-3xl border border-[#cda64d]/55 bg-[#f7ebcf] p-6 text-[#0f2744] shadow-[0_16px_40px_rgba(6,16,33,0.18)] sm:p-8">
               <h2 className="text-xl font-black tracking-tight text-slate-900">Privacy snapshot</h2>
               <p className="mt-3 text-sm leading-7 text-slate-600">
                 Visibility: {visibilityLabel(visibility)}. Publication: {isPublished ? "Published" : "Unpublished"}.
@@ -783,6 +785,7 @@ export default function DashboardPage() {
           <p className="mt-6 text-center text-sm text-slate-500">Verified employer: {employerCompanyName}</p>
         ) : null}
       </div>
-    </main>
+    </main><Footer />
+    </>
   );
 }

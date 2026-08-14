@@ -4,7 +4,11 @@ export type NotificationType =
   | "intro_request_declined"
   | "connection_revoked"
   | "verification_approved"
-  | "verification_rejected";
+  | "verification_rejected"
+  | "private_access_request_received"
+  | "private_access_request_accepted"
+  | "private_access_request_declined"
+  | "private_access_request_revoked";
 
 export type NotificationErrorReason =
   | "not_signed_in"

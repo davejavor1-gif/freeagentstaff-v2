@@ -200,52 +200,52 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900">
+    <main className="min-h-screen bg-[#0f2744] text-[#f7ebcf]">
       <Navbar />
       <div className="mx-auto flex min-h-[calc(100vh-80px)] max-w-3xl flex-col justify-center px-6 py-16 sm:px-10">
-        <div className="rounded-3xl border border-slate-200 bg-white p-10 shadow-lg shadow-slate-200/40">
+        <div className="rounded-3xl border border-[#cda64d]/55 bg-[#f7ebcf] p-10 text-[#0f2744] shadow-[0_18px_50px_rgba(6,16,33,0.22)]">
           <div className="mb-8 space-y-3 text-center">
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-amber-500">Password recovery</p>
-            <h1 className="text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">Choose a new password</h1>
-            <p className="text-sm leading-6 text-slate-600">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">Password recovery</p>
+            <h1 className="text-3xl font-black tracking-tight text-[#0f2744] sm:text-4xl">Choose a new password</h1>
+            <p className="text-sm leading-6 text-[#27405f]">
               Reset your password using the secure recovery link from your email.
             </p>
           </div>
 
           {loading ? (
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+            <div className="rounded-2xl border border-[#cda64d]/40 bg-[#fffaf0] px-4 py-3 text-sm text-[#27405f]">
               Loading recovery session...
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label htmlFor="new-password" className="block text-sm font-semibold text-slate-700">New password</label>
+                <label htmlFor="new-password" className="block text-sm font-semibold text-[#27405f]">New password</label>
                 <input
                   id="new-password"
                   type="password"
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
+                  className="mt-2 w-full rounded-2xl border border-[#cda64d]/45 bg-white px-4 py-3 text-sm text-[#071426] outline-none transition focus:border-[#2bd7ef] focus:ring-2 focus:ring-[#2bd7ef]/25"
                   autoComplete="new-password"
                   required
                 />
               </div>
 
               <div>
-                <label htmlFor="confirm-password" className="block text-sm font-semibold text-slate-700">Confirm new password</label>
+                <label htmlFor="confirm-password" className="block text-sm font-semibold text-[#27405f]">Confirm new password</label>
                 <input
                   id="confirm-password"
                   type="password"
                   value={confirmPassword}
                   onChange={(event) => setConfirmPassword(event.target.value)}
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
+                  className="mt-2 w-full rounded-2xl border border-[#cda64d]/45 bg-white px-4 py-3 text-sm text-[#071426] outline-none transition focus:border-[#2bd7ef] focus:ring-2 focus:ring-[#2bd7ef]/25"
                   autoComplete="new-password"
                   required
                 />
               </div>
 
               {status ? (
-                <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                <div className="rounded-2xl border border-[#f2cc63]/60 bg-[#fff7dc] px-4 py-3 text-sm text-[#6f5310]">
                   {status}
                 </div>
               ) : null}
@@ -253,14 +253,14 @@ export default function ResetPasswordPage() {
               <button
                 type="submit"
                 disabled={isSubmitting || !isRecoveryReady}
-                className="w-full rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                className="w-full rounded-2xl bg-[#aff546] px-4 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-[#071426] transition hover:bg-[#9fea37] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isSubmitting ? "Updating..." : "Update password"}
               </button>
             </form>
           )}
 
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-xs text-slate-600">
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-xs text-[#27405f]">
             <Link href="/privacy" className="underline underline-offset-4">Privacy</Link>
             <Link href="/terms" className="underline underline-offset-4">Terms</Link>
             <Link href="/support" className="underline underline-offset-4">Support</Link>

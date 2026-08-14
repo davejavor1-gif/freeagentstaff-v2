@@ -79,6 +79,7 @@ export default function TalentCard({
   const [videoOpen, setVideoOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [shouldAutoplay, setShouldAutoplay] = useState(false);
   const [showVideoControls, setShowVideoControls] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [resolvedPhotoUrl, setResolvedPhotoUrl] = useState<string | null>(null);
@@ -144,15 +145,26 @@ export default function TalentCard({
 
     const video = videoRef.current;
 
-    if (isPlaying) {
-      video.play().catch(() => setIsPlaying(false));
+    if (shouldAutoplay || isPlaying) {
+      if (shouldAutoplay) {
+        video.muted = false;
+        video.currentTime = 0;
+      }
+      video.play().then(() => {
+        setIsPlaying(true);
+        setShouldAutoplay(false);
+      }).catch(() => {
+        setIsPlaying(false);
+        setShouldAutoplay(false);
+      });
     } else {
       video.pause();
     }
-  }, [videoOpen, isPlaying]);
+  }, [videoOpen, isPlaying, shouldAutoplay]);
 
   const resetVideoState = () => {
     setIsPlaying(false);
+    setShouldAutoplay(false);
     setShowVideoControls(false);
     setIsMuted(false);
     if (videoRef.current) {
@@ -170,22 +182,9 @@ export default function TalentCard({
     setVideoOpen(true);
     setIsFlipped(false);
     setShowVideoControls(false);
+    setShouldAutoplay(true);
 
-    if (!videoRef.current) {
-      return;
-    }
-
-    const video = videoRef.current;
-    video.currentTime = 0;
-    video.muted = false;
     setIsMuted(false);
-
-    try {
-      await video.play();
-      setIsPlaying(true);
-    } catch {
-      setIsPlaying(false);
-    }
   };
 
   const handleCloseVideo = () => {
@@ -410,7 +409,7 @@ export default function TalentCard({
                               <div className="relative rounded-[20px] border border-white/12 bg-[#071426]/70 p-3.5 shadow-[0_10px_24px_rgba(0,0,0,0.22)] backdrop-blur-md">
                                 <div className="space-y-2.5">
                                   <div className="space-y-1">
-                                    <h3 className="text-[1rem] font-black uppercase leading-[1.08] tracking-[0.16em] text-[#f7ebcf]">
+                                    <h3 className="text-[1rem] font-black uppercase leading-[1.08] tracking-[0.08em] text-[#f7ebcf]">
                                       {confidential ? confidentialName : profile.name}
                                     </h3>
                                     <p className="text-sm text-[#dfe7ef]">{confidential ? confidentialTitle : profile.title}</p>
@@ -532,7 +531,7 @@ export default function TalentCard({
                 <div className="space-y-1">
                   <div className="space-y-0.25">
                     <p className="text-[9px] font-semibold uppercase tracking-[0.26em] text-[#9a6d15]">Professional dossier</p>
-                    <h3 className="text-[0.9rem] font-black uppercase tracking-[0.16em] text-[#0f2744]">
+                    <h3 className="text-[0.9rem] font-black uppercase tracking-[0.08em] text-[#0f2744]">
                       {confidential ? "Confidential profile" : profile.name}
                     </h3>
                     <p className="text-[0.75rem] text-[#27405f]">{confidential ? confidentialTitle : profile.title}</p>
@@ -542,9 +541,6 @@ export default function TalentCard({
                     <span className="inline-flex items-center gap-1.25 rounded-full border border-[#0f2744]/10 bg-[#f7ebcf]/80 px-2 py-0.5">
                       <MapPin className="h-2.75 w-2.75 text-[#0f2744]" />
                       {confidential ? confidentialLocation : profile.location}
-                    </span>
-                    <span className="rounded-full border border-[#0f2744]/10 bg-[#f7ebcf]/80 px-2 py-0.5 text-[7.5px] font-semibold uppercase tracking-[0.24em] text-[#0f2744]">
-                      {profile.experienceYears}+ years
                     </span>
                     {verified ? <span className="inline-flex items-center gap-1.25 rounded-full border border-[#0f2744]/10 bg-[#0f2744]/10 px-2 py-0.5 text-[7.5px] font-semibold uppercase tracking-[0.24em] text-[#0f2744]"><svg viewBox="0 0 24 24" className="h-2.75 w-2.75" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeDasharray="44 38" /></svg>Verified</span> : null}
                   </div>
@@ -559,7 +555,7 @@ export default function TalentCard({
                   <div className="h-px w-full bg-[#0f2744]/10" />
 
                   <div>
-                    <p className="text-[9px] font-semibold uppercase tracking-[0.26em] text-[#9a6d15]">What stands out</p>
+                    <p className="text-[9px] font-semibold uppercase tracking-[0.26em] text-[#9a6d15]">Top Strength</p>
                     <p className="mt-0.25 text-[0.68rem] leading-4 text-[#27405f]">
                       {profile.topStrength || profile.summary || "A polished professional with clear evidence of capability and steadiness under pressure."}
                     </p>
@@ -594,17 +590,10 @@ export default function TalentCard({
                       </div>
                     </div>
 
-                    <div>
-                      <p className="text-[9px] font-semibold uppercase tracking-[0.26em] text-[#9a6d15]">Qualifications</p>
-                      <ul className="mt-0.5 space-y-0.5 text-[0.64rem] text-[#27405f]">
-                        {(profile.qualifications ?? []).slice(0, 2).map((qualification) => (
-                          <li key={qualification} className="flex items-start gap-2">
-                            <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-[#0f2744]" />
-                            <span>{qualification}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+                    {profile.education?.trim() ? <div>
+                      <p className="text-[9px] font-semibold uppercase tracking-[0.26em] text-[#9a6d15]">Education</p>
+                      <p className="mt-0.5 text-[0.64rem] text-[#27405f]">{profile.education.trim()}</p>
+                    </div> : null}
                   </div>
                 </div>
               </div>

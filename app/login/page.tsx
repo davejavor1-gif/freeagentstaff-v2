@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Footer from "@/components/layout/Footer";
+import Navbar from "@/components/layout/Navbar";
 import { buildCanonicalTalentColumns } from "@/lib/talent-profile-columns";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
 import type { AccountType, EmployerVerificationStatus, FreeAgentProfile } from "@/types/freeagent";
@@ -146,24 +147,25 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900">
+    <main className="min-h-screen bg-[#0f2744] text-[#f7ebcf]">
+      <Navbar />
       <div className="mx-auto flex min-h-screen max-w-3xl flex-col justify-center px-6 py-16 sm:px-10">
-        <div className="rounded-3xl border border-slate-200 bg-white p-10 shadow-lg shadow-slate-200/40">
+        <div className="rounded-3xl border border-[#cda64d]/55 bg-[#f7ebcf] p-10 text-[#0f2744] shadow-[0_18px_50px_rgba(6,16,33,0.22)]">
           <div className="mb-10 space-y-3 text-center">
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-amber-500">Secure access</p>
-            <h1 className="text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">Sign in to your dashboard</h1>
-            <p className="text-sm leading-6 text-slate-600">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">Secure access</p>
+            <h1 className="text-3xl font-black tracking-tight text-[#0f2744] sm:text-4xl">Sign in to your dashboard</h1>
+            <p className="text-sm leading-6 text-[#27405f]">
               Use your email and password to access a protected dashboard experience.
             </p>
           </div>
 
-          <div className="mb-6 flex items-center justify-center gap-3 text-sm text-slate-600">
+          <div className="mb-6 flex items-center justify-center gap-3 text-sm text-[#27405f]">
             <button
               type="button"
               className={`rounded-full px-4 py-2 transition ${
                 authMode === "sign-in"
-                  ? "bg-slate-900 text-white"
-                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  ? "bg-[#0f2744] text-[#f7ebcf]"
+                  : "bg-[#efe0b9] text-[#27405f] hover:bg-[#e7d3a0]"
               }`}
               onClick={() => setAuthMode("sign-in")}
             >
@@ -173,8 +175,8 @@ export default function LoginPage() {
               type="button"
               className={`rounded-full px-4 py-2 transition ${
                 authMode === "sign-up"
-                  ? "bg-slate-900 text-white"
-                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  ? "bg-[#0f2744] text-[#f7ebcf]"
+                  : "bg-[#efe0b9] text-[#27405f] hover:bg-[#e7d3a0]"
               }`}
               onClick={() => setAuthMode("sign-up")}
             >
@@ -182,26 +184,26 @@ export default function LoginPage() {
             </button>
           </div>
 
-          <p className="mb-6 text-center text-xs leading-5 text-slate-500">
-            When you choose Sign up, you agree to the <Link href="/terms" className="font-semibold text-slate-900 underline underline-offset-4">Terms of Use</Link> and acknowledge the <Link href="/privacy" className="font-semibold text-slate-900 underline underline-offset-4">Privacy Policy</Link>.
+          <p className="mb-6 text-center text-xs leading-5 text-[#27405f]">
+            When you choose Sign up, you agree to the <Link href="/terms" className="font-semibold text-[#0f2744] underline underline-offset-4">Terms of Use</Link> and acknowledge the <Link href="/privacy" className="font-semibold text-[#0f2744] underline underline-offset-4">Privacy Policy</Link>.
           </p>
 
           {authMode === "sign-up" ? (
-            <div className="mb-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-600">Create account as</p>
+            <div className="mb-6 rounded-2xl border border-[#cda64d]/40 bg-[#fffaf0] p-4">
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#9a6d15]">Create account as</p>
               <div className="mt-3 grid gap-3">
                 <button
                   type="button"
                   onClick={() => setAccountType("talent")}
                   className={`rounded-2xl border px-4 py-4 text-left transition ${
                     accountType === "talent"
-                      ? "border-slate-900 bg-slate-900 text-white"
-                      : "border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
+                      ? "border-[#0f2744] bg-[#0f2744] text-[#f7ebcf]"
+                      : "border-[#cda64d]/35 bg-white text-[#27405f] hover:bg-[#fffaf0]"
                   }`}
                 >
                   <p className="text-[11px] font-semibold uppercase tracking-[0.2em]">I&apos;m looking for opportunities</p>
                   <p className="mt-1 text-base font-black uppercase tracking-[0.08em]">Talent</p>
-                  <p className={`mt-2 text-sm ${accountType === "talent" ? "text-slate-200" : "text-slate-600"}`}>
+                  <p className={`mt-2 text-sm ${accountType === "talent" ? "text-[#dfe7ef]" : "text-[#27405f]"}`}>
                     Create your FreeAgent profile and be discovered by verified employers.
                   </p>
                 </button>
@@ -210,13 +212,13 @@ export default function LoginPage() {
                   onClick={() => setAccountType("employer")}
                   className={`rounded-2xl border px-4 py-4 text-left transition ${
                     accountType === "employer"
-                      ? "border-slate-900 bg-slate-900 text-white"
-                      : "border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
+                      ? "border-[#0f2744] bg-[#0f2744] text-[#f7ebcf]"
+                      : "border-[#cda64d]/35 bg-white text-[#27405f] hover:bg-[#fffaf0]"
                   }`}
                 >
                   <p className="text-[11px] font-semibold uppercase tracking-[0.2em]">I&apos;m looking for talent</p>
                   <p className="mt-1 text-base font-black uppercase tracking-[0.08em]">Employer</p>
-                  <p className={`mt-2 text-sm ${accountType === "employer" ? "text-slate-200" : "text-slate-600"}`}>
+                  <p className={`mt-2 text-sm ${accountType === "employer" ? "text-[#dfe7ef]" : "text-[#27405f]"}`}>
                     Create an employer account and discover professionals open to their next move.
                   </p>
                 </button>
@@ -226,7 +228,7 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-semibold text-slate-700">
+              <label htmlFor="email" className="block text-sm font-semibold text-[#27405f]">
                 Email
               </label>
               <input
@@ -234,14 +236,14 @@ export default function LoginPage() {
                 type="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
-                className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
+                className="mt-2 w-full rounded-2xl border border-[#cda64d]/45 bg-white px-4 py-3 text-sm text-[#071426] outline-none transition focus:border-[#2bd7ef] focus:ring-2 focus:ring-[#2bd7ef]/25"
                 autoComplete="email"
                 required
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-semibold text-slate-700">
+              <label htmlFor="password" className="block text-sm font-semibold text-[#27405f]">
                 Password
               </label>
               <input
@@ -249,14 +251,14 @@ export default function LoginPage() {
                 type="password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
-                className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-200"
+                className="mt-2 w-full rounded-2xl border border-[#cda64d]/45 bg-white px-4 py-3 text-sm text-[#071426] outline-none transition focus:border-[#2bd7ef] focus:ring-2 focus:ring-[#2bd7ef]/25"
                 autoComplete="current-password"
                 required
               />
             </div>
 
             {status ? (
-              <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+              <div className="rounded-2xl border border-[#f2cc63]/60 bg-[#fff7dc] px-4 py-3 text-sm text-[#6f5310]">
                 {status}
               </div>
             ) : null}
@@ -264,17 +266,17 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+              className="w-full rounded-2xl bg-[#aff546] px-4 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-[#071426] transition hover:bg-[#9fea37] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? "Processing..." : authMode === "sign-in" ? "Sign in" : "Create account"}
             </button>
           </form>
 
-          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-600">
-            <Link href="/forgot-password" className="font-semibold text-slate-900 underline underline-offset-4">
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-sm text-[#27405f]">
+            <Link href="/forgot-password" className="font-semibold text-[#0f2744] underline underline-offset-4">
               Forgot password?
             </Link>
-            <div className="flex flex-wrap items-center gap-4 text-xs">
+            <div className="flex flex-wrap items-center gap-4 text-xs text-[#27405f]">
               <Link href="/privacy" className="underline underline-offset-4">Privacy</Link>
               <Link href="/terms" className="underline underline-offset-4">Terms</Link>
               <Link href="/support" className="underline underline-offset-4">Support</Link>

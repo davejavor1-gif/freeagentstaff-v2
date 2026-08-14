@@ -2,7 +2,6 @@ import type { FreeAgentProfile } from "@/types/freeagent";
 import type { Json, ProfilesInsert } from "@/types/supabase";
 
 type TalentRowCore = Pick<ProfilesInsert,
-  | "slug"
   | "visibility"
   | "opportunity_status"
   | "name"
@@ -10,9 +9,9 @@ type TalentRowCore = Pick<ProfilesInsert,
   | "location"
   | "availability"
   | "top_strength"
-  | "experience_years"
   | "focus_area"
   | "summary"
+  | "bio"
   | "skills"
   | "career_journey"
   | "email"
@@ -23,6 +22,12 @@ type TalentRowCore = Pick<ProfilesInsert,
   | "intro_video_url"
   | "intro_video_storage_path"
   | "profile"
+  | "education"
+  | "salary_expectation"
+  | "contact_email"
+  | "resume_storage_path"
+  | "resume_original_filename"
+  | "resume_uploaded_at"
 >;
 
 function normalizeVisibility(value: FreeAgentProfile["visibility"]): ProfilesInsert["visibility"] {
@@ -76,10 +81,12 @@ export function buildCanonicalTalentColumns(
   profile: FreeAgentProfile,
   authEmail?: string | null,
 ): TalentRowCore {
-  const canonicalEmail = normalizeString(profile.email) ?? normalizeString(authEmail);
+  const contactEmail = normalizeString(profile.contactEmail) ?? normalizeString(authEmail);
+  const privateSafeProfile = { ...profile };
+  delete privateSafeProfile.email;
+  delete privateSafeProfile.contactEmail;
 
   return {
-    slug: normalizeString(profile.slug) ?? null,
     visibility: normalizeVisibility(profile.visibility),
     opportunity_status: normalizeOpportunityStatus(profile.opportunityStatus),
     name: normalizeString(profile.name),
@@ -87,18 +94,24 @@ export function buildCanonicalTalentColumns(
     location: normalizeString(profile.location),
     availability: normalizeAvailability(profile.availability),
     top_strength: normalizeString(profile.topStrength),
-    experience_years: Number.isFinite(profile.experienceYears) ? Math.max(0, Math.floor(profile.experienceYears)) : 0,
     focus_area: normalizeString(profile.focusArea),
+    education: normalizeString(profile.education),
+    salary_expectation: profile.salaryExpectation ?? null,
+    contact_email: contactEmail,
+    resume_storage_path: normalizeString(profile.resumeStoragePath),
+    resume_original_filename: normalizeString(profile.resumeOriginalFilename),
+    resume_uploaded_at: profile.resumeUploadedAt ?? null,
     summary: normalizeString(profile.summary),
+    bio: normalizeString(profile.bio),
     skills: normalizeStringArray(profile.skills),
     career_journey: Array.isArray(profile.careerJourney) ? (profile.careerJourney as unknown as Json) : ([] as unknown as Json),
-    email: canonicalEmail,
+    email: normalizeString(authEmail),
     image_alt: normalizeString(profile.imageAlt),
     photo_url: normalizeString(profile.photoUrl),
     photo_storage_path: normalizeString(profile.photo_storage_path),
     current_employer: normalizeString(profile.currentEmployer),
     intro_video_url: normalizeString(profile.intro_video_url),
     intro_video_storage_path: normalizeString(profile.intro_video_storage_path),
-    profile: profile as unknown as Json,
+    profile: privateSafeProfile as unknown as Json,
   };
 }

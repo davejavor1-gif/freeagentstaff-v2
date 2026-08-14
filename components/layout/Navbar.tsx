@@ -17,11 +17,9 @@ const guestNavItems = [
 
 const talentNavItems = [
   { label: "Home", href: "/" },
-  { label: "Dashboard", href: "/dashboard" },
   { label: "Notifications", href: "/notifications" },
   { label: "Connections", href: "/connections" },
   { label: "Privacy & Visibility", href: "/settings/privacy" },
-  { label: "Profile", href: "/builder" },
   { label: "Pricing", href: "/pricing" },
   { label: "About", href: "/about" },
 ];
@@ -198,15 +196,6 @@ export default function Navbar() {
             </Link>
           ) : null}
 
-          {!session ? (
-            <Link
-              href="/employer/auth"
-              className="hidden text-[1.04rem] text-[#071321]/92 transition hover:text-[#2bd7ef] lg:inline-flex"
-            >
-              Employer sign in
-            </Link>
-          ) : null}
-
           {!isEmployerSession && !isAdminSession ? (
             <Link
               href={session ? "/dashboard" : "/login"}
@@ -222,6 +211,15 @@ export default function Navbar() {
               className="hidden rounded-xl bg-[#aff546] px-5 py-2 text-sm font-semibold text-[#071426] transition hover:-translate-y-0.5 hover:bg-[#9fea37] md:inline-flex"
             >
               Create your card
+            </Link>
+          ) : null}
+
+          {!session ? (
+            <Link
+              href="/employer/auth"
+              className="hidden text-[1.04rem] text-[#071321]/92 transition hover:text-[#2bd7ef] lg:inline-flex"
+            >
+              Employer sign in
             </Link>
           ) : null}
 
@@ -274,6 +272,15 @@ export default function Navbar() {
           ))}
           {!isEmployerSession && !isAdminSession ? (
             <Link
+              href={session ? "/dashboard" : "/login"}
+              className="block rounded-2xl border border-[#d7c79f] px-4 py-3 text-sm font-semibold text-[#071321]/92 transition hover:bg-[#2cd3e8]/8"
+              onClick={() => setMenuOpen(false)}
+            >
+              {session ? "Open dashboard" : "Sign in"}
+            </Link>
+          ) : null}
+          {!isEmployerSession && !isAdminSession ? (
+            <Link
               href="/builder"
               className="block rounded-2xl bg-[#acf75a] px-4 py-3 text-sm font-bold text-[#07111f] transition hover:bg-[#98eb46]"
               onClick={() => setMenuOpen(false)}
@@ -297,15 +304,6 @@ export default function Navbar() {
               onClick={() => setMenuOpen(false)}
             >
               Employer sign in
-            </Link>
-          ) : null}
-          {!isEmployerSession ? (
-            <Link
-              href={session ? "/dashboard" : "/login"}
-              className="block rounded-2xl border border-[#d7c79f] px-4 py-3 text-sm font-semibold text-[#071321]/92 transition hover:bg-[#2cd3e8]/8"
-              onClick={() => setMenuOpen(false)}
-            >
-              {session ? "Open dashboard" : "Sign in"}
             </Link>
           ) : null}
           {isEmployerSession ? (

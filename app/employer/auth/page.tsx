@@ -304,7 +304,7 @@ export default function EmployerAuthPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full rounded-2xl bg-[#0f2744] px-4 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#17355f] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="w-full rounded-2xl bg-[#aff546] px-4 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-[#071426] transition hover:bg-[#9fea37] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isSubmitting ? "Processing..." : authMode === "sign-in" ? "Sign in" : "Create employer account"}
                 </button>

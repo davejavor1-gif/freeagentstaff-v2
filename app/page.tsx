@@ -5,25 +5,29 @@ import Footer from "@/components/layout/Footer";
 import { IdCard, Lock, ShieldCheck, Search, Eye } from "lucide-react";
 import TalentCard from "@/components/TalentCard";
 import type { FreeAgentProfile } from "@/types/freeagent";
+import { homepagePassportProfiles } from "@/data/homepage-passports";
 
 const featureCards = [
   {
     title: "Talent Card",
-    description: "Showcase your skills, experience and achievements in one powerful profile.",
+    description:
+      "Showcase your skills, experience and achievements in one powerful profile.",
     icon: IdCard,
     tone: "lime" as const,
     href: "/builder",
   },
   {
     title: "Confidential Mode",
-    description: "Explore opportunities privately. You control who sees what and when.",
+    description:
+      "Explore opportunities privately. You control who sees what and when.",
     icon: Lock,
     tone: "cyan" as const,
     href: "/settings/privacy",
   },
   {
     title: "Verified Employers",
-    description: "Connect with trusted employers who are verified for your peace of mind.",
+    description:
+      "Connect with trusted employers who are verified for your peace of mind.",
     icon: ShieldCheck,
     tone: "lime" as const,
     href: "/find-talent",
@@ -41,7 +45,8 @@ const howItWorksSteps = [
   {
     number: "02",
     title: "Control your visibility",
-    description: "Choose what employers can see and when. Explore opportunities openly or privately, on your terms.",
+    description:
+      "Choose what employers can see and when. Explore opportunities openly or privately, on your terms.",
     tone: "cyan" as const,
   },
   {
@@ -71,9 +76,15 @@ const employerDiscoveryResults = [
     initials: "DB",
     role: "Operations Director",
     location: "Melbourne, Australia",
-    skills: ["Operations Strategy", "Team Leadership", "Service Delivery", "Stakeholder Management"],
+    skills: [
+      "Operations Strategy",
+      "Team Leadership",
+      "Service Delivery",
+      "Stakeholder Management",
+    ],
     availability: "Open to Opportunities",
-    topStrength: "Builds calm, repeatable operations that help ambitious teams deliver at their best.",
+    topStrength:
+      "Builds calm, repeatable operations that help ambitious teams deliver at their best.",
     focusArea: "Operations",
     introVideoUrl: "/videos/daniels%20intro.mp4",
     company: "Harbour Works",
@@ -87,9 +98,15 @@ const employerDiscoveryResults = [
     initials: "JC",
     role: "Bartender",
     location: "Newcastle, Australia",
-    skills: ["Cocktail Making", "Customer Service", "Bar Operations", "Stock Control"],
+    skills: [
+      "Cocktail Making",
+      "Customer Service",
+      "Bar Operations",
+      "Stock Control",
+    ],
     availability: "Available Now",
-    topStrength: "Creates polished, high-volume service experiences with calm, precise execution.",
+    topStrength:
+      "Creates polished, high-volume service experiences with calm, precise execution.",
     focusArea: "Guest Experience",
     photoUrl: "/images/openart-e14435db735f43f281bdfd72be04e16a_00001__raw.png",
     tone: "lime" as const,
@@ -123,9 +140,11 @@ const homepageDemoProfile: FreeAgentProfile = {
   location: "Sydney, Australia",
   availability: "Open to Opportunities",
   topStrength: "Turns complex product challenges into calm, reliable delivery.",
+  bio: "Experienced software engineer who enjoys turning complex product challenges into clear, dependable experiences. Known for thoughtful collaboration, strong delivery habits and building systems that help teams move with confidence.",
   experienceYears: 9,
   focusArea: "Technology",
-  summary: "A fictional Talent Card used to demonstrate the approved production card.",
+  summary:
+    "A fictional Talent Card used to demonstrate the approved production card.",
   skills: ["React", "TypeScript", "Product Delivery", "Systems Thinking"],
   photoUrl: "/images/homepage-talent-model.jpg",
   imageAlt: "Fictional professional portrait",
@@ -153,10 +172,17 @@ const homepageLowerDemoProfile: FreeAgentProfile = {
   title: "Operations Director",
   location: "Melbourne, Australia",
   availability: "Open to Opportunities",
-  topStrength: "Builds calm, repeatable operations that help ambitious teams deliver at their best.",
+  topStrength:
+    "Builds calm, repeatable operations that help ambitious teams deliver at their best.",
+  bio: "Operations leader who enjoys creating clear systems, supporting capable teams and making complex service environments easier to run. Known for calm decision-making and practical improvements that last.",
   focusArea: "Operations",
   summary: "A fictional Talent Card used for homepage demonstration.",
-  skills: ["Operations Strategy", "Team Leadership", "Service Delivery", "Stakeholder Management"],
+  skills: [
+    "Operations Strategy",
+    "Team Leadership",
+    "Service Delivery",
+    "Stakeholder Management",
+  ],
   photoUrl: "/images/openart-64f1b59a62fd4bc1a7a2678ed4580466_00001__raw.png",
   imageAlt: "Fictional professional portrait",
   intro_video_url: "/videos/daniels%20intro.mp4",
@@ -176,7 +202,14 @@ const homepageLowerDemoProfile: FreeAgentProfile = {
 };
 
 function TalentCardDemo() {
-  return <TalentCard profile={homepageDemoProfile} href="/builder" verificationStatus="verified" className="max-w-[430px]" />;
+  return (
+    <TalentCard
+      profile={homepageDemoProfile}
+      href="/profile/sarah-jones"
+      verificationStatus="verified"
+      className="max-w-[430px]"
+    />
+  );
 }
 
 function EmployerDiscoveryResult({
@@ -184,18 +217,29 @@ function EmployerDiscoveryResult({
 }: {
   result: (typeof employerDiscoveryResults)[number];
 }) {
-  const profile: FreeAgentProfile = {
+  const fixture = Object.values(homepagePassportProfiles).find(
+    (candidate) => candidate.name === result.name,
+  );
+  const profile: FreeAgentProfile = fixture ?? {
     id: `homepage-search-${result.name.toLowerCase().replace(/[^a-z]+/g, "-")}`,
     slug: `homepage-search-${result.name.toLowerCase().replace(/[^a-z]+/g, "-")}`,
     visibility: "public",
     name: result.name,
     title: result.role,
     location: result.location,
-    availability: result.availability === "Booked" ? "Booked" : result.availability === "Available Now" ? "Available Now" : "Open to Opportunities",
-    topStrength: result.topStrength ?? `A fictional professional with a strong record in ${result.skills[0].toLowerCase()} and dependable delivery.`,
+    availability:
+      result.availability === "Booked"
+        ? "Booked"
+        : result.availability === "Available Now"
+          ? "Available Now"
+          : "Open to Opportunities",
+    topStrength:
+      result.topStrength ??
+      `A fictional professional with a strong record in ${result.skills[0].toLowerCase()} and dependable delivery.`,
     experienceYears: 8,
     focusArea: result.focusArea ?? result.role,
-    summary: "A fictional profile shown in the homepage employer-search demonstration.",
+    summary:
+      "A fictional profile shown in the homepage employer-search demonstration.",
     skills: result.skills,
     photoUrl: result.photoUrl,
     imageAlt: "Fictional professional portrait",
@@ -212,13 +256,22 @@ function EmployerDiscoveryResult({
         skills: result.skills,
       },
     ],
-    qualifications: [result.qualification ?? "Professional industry certification"],
+    qualifications: [
+      result.qualification ?? "Professional industry certification",
+    ],
   };
 
   return (
-    <div className="h-[325px] w-[236px] shrink-0">
-      <div className="origin-top-left scale-[0.6]">
-        <TalentCard profile={profile} href="/find-talent" verificationStatus="verified" className="w-[380px] max-w-none" />
+    <div className="h-[330px] w-[236px] shrink-0">
+      <div className="h-[330px] w-[236px] origin-top-left">
+        <div className="origin-top-left scale-[0.62]">
+          <TalentCard
+            profile={profile}
+            href={`/profile/${profile.slug ?? ""}`}
+            verificationStatus="verified"
+            className="w-[380px] max-w-none"
+          />
+        </div>
       </div>
     </div>
   );
@@ -234,7 +287,9 @@ function EmployerDiscoveryPanel() {
         <div className="rounded-[26px] border border-[#071321]/12 bg-[linear-gradient(180deg,rgba(247,232,198,0.96),rgba(243,224,186,0.98))] p-4 text-[#071321] sm:p-5">
           <div className="flex flex-col gap-3 border-b border-[#071321]/10 pb-4 min-[430px]:flex-row min-[430px]:items-center min-[430px]:justify-between">
             <div className="min-w-0">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#1bc8e4]">Discover Talent</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#1bc8e4]">
+                Discover Talent
+              </p>
               <p className="mt-2 max-w-[22rem] font-serif text-[1.22rem] leading-tight text-[#071321] sm:text-[1.55rem]">
                 Search beyond job applications.
               </p>
@@ -248,18 +303,24 @@ function EmployerDiscoveryPanel() {
           <div className="mt-4 rounded-[18px] border border-[#071321]/10 bg-[#f7e8c6]/85 px-3.5 py-3.5 sm:px-4">
             <div className="flex items-center gap-3 text-[#071321]/54">
               <Search className="h-4 w-4 shrink-0 text-[#1bc8e4]" />
-              <span className="text-[0.88rem] leading-5 sm:text-[0.96rem]">Search by role, skill or experience...</span>
+              <span className="text-[0.88rem] leading-5 sm:text-[0.96rem]">
+                Search by role, skill or experience...
+              </span>
             </div>
           </div>
 
           <div className="mt-4 flex flex-wrap gap-2.5">
             {employerDiscoveryFilters.map((filter, index) => {
-              const accentClass = index % 2 === 0
-                ? "border-[#9be645]/44 bg-[#aff546]/12 text-[#071321]"
-                : "border-[#2bd7ef]/44 bg-[#2bd7ef]/12 text-[#071321]";
+              const accentClass =
+                index % 2 === 0
+                  ? "border-[#9be645]/44 bg-[#aff546]/12 text-[#071321]"
+                  : "border-[#2bd7ef]/44 bg-[#2bd7ef]/12 text-[#071321]";
 
               return (
-                <span key={filter} className={`rounded-full border px-3 py-1.5 text-[0.72rem] font-medium leading-none sm:text-[0.78rem] ${accentClass}`}>
+                <span
+                  key={filter}
+                  className={`rounded-full border px-3 py-1.5 text-[0.72rem] font-medium leading-none sm:text-[0.78rem] ${accentClass}`}
+                >
                   {filter}
                 </span>
               );
@@ -289,7 +350,11 @@ function VisibilityControlPanel() {
             const isActive = state.key === "selective";
 
             const Icon =
-              state.key === "open" ? Eye : state.key === "private" ? Lock : ShieldCheck;
+              state.key === "open"
+                ? Eye
+                : state.key === "private"
+                  ? Lock
+                  : ShieldCheck;
 
             return (
               <div
@@ -301,12 +366,18 @@ function VisibilityControlPanel() {
                 }`}
               >
                 <div className="flex items-center gap-2">
-                  <Icon className={`h-4 w-4 ${isActive ? "text-[#1bc8e4]" : "text-[#071321]/56"}`} />
-                  <p className={`text-[0.67rem] font-semibold uppercase tracking-[0.16em] ${isActive ? "text-[#071321]" : "text-[#071321]/75"}`}>
+                  <Icon
+                    className={`h-4 w-4 ${isActive ? "text-[#1bc8e4]" : "text-[#071321]/56"}`}
+                  />
+                  <p
+                    className={`text-[0.67rem] font-semibold uppercase tracking-[0.16em] ${isActive ? "text-[#071321]" : "text-[#071321]/75"}`}
+                  >
                     {state.title}
                   </p>
                 </div>
-                <p className="mt-2 text-[0.76rem] leading-5 text-[#071321]/78">{state.description}</p>
+                <p className="mt-2 text-[0.76rem] leading-5 text-[#071321]/78">
+                  {state.description}
+                </p>
               </div>
             );
           })}
@@ -314,7 +385,9 @@ function VisibilityControlPanel() {
 
         <div className="mt-3 rounded-[22px] border border-[#071321]/10 bg-[#f7e8c6] px-4 py-4 sm:px-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#1bc8e4]">Selected: Selective</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#1bc8e4]">
+              Selected: Selective
+            </p>
             <p className="inline-flex items-center gap-1.5 rounded-full border border-[#9be645]/45 bg-[#aff546]/12 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#071321]">
               <ShieldCheck className="h-3.5 w-3.5 text-[#7fcf2e]" />
               Verified employers only
@@ -322,7 +395,8 @@ function VisibilityControlPanel() {
           </div>
           <div className="mt-3 rounded-[16px] border border-[#071321]/10 bg-[linear-gradient(180deg,rgba(7,19,33,0.97),rgba(8,24,44,0.99))] px-3.5 py-3 text-[#f7e8c6]">
             <p className="text-[0.79rem] leading-6 text-[#f7e8c6]/86">
-              Employers see your profile when you allow discovery, while your details remain under your control.
+              Employers see your profile when you allow discovery, while your
+              details remain under your control.
             </p>
           </div>
         </div>
@@ -340,27 +414,35 @@ function FinalConversionSection() {
 
       <div className="relative mx-auto max-w-7xl px-6 py-8 sm:px-8 sm:py-12 lg:px-12 lg:py-16">
         <div className="max-w-3xl">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#2bd7ef]">Your Next Move</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#2bd7ef]">
+            Your Next Move
+          </p>
           <h2 className="mt-3 max-w-[11.5ch] font-serif text-[clamp(2.2rem,4.5vw,3.4rem)] font-semibold uppercase leading-[0.95] text-[#f7e8c6] sm:max-w-[13ch] sm:text-[3rem] lg:text-[3.5rem]">
             READY TO DO
             <span className="block">CAREERS DIFFERENTLY?</span>
           </h2>
           <p className="mt-4 max-w-2xl text-[1rem] leading-7 text-[#f7e8c6]/84 sm:text-[1.05rem] sm:leading-8">
-            Whether you&apos;re ready for your next opportunity or looking for the person who can make a difference, start here.
+            Whether you&apos;re ready for your next opportunity or looking for
+            the person who can make a difference, start here.
           </p>
         </div>
 
         <div className="mt-6 grid gap-5 sm:mt-8 sm:gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-0 xl:gap-4">
           <div className="relative lg:pr-8 xl:pr-12">
             <div className="pointer-events-none absolute right-[-0.25rem] top-0 hidden h-full w-px bg-gradient-to-b from-[#2bd7ef]/25 via-[#f7e8c6]/15 to-transparent lg:block" />
-            <p className="font-serif text-[3.2rem] leading-none text-[#aff546] sm:text-[4rem]">01</p>
-            <p className="mt-4 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#aff546]">FOR TALENT</p>
+            <p className="font-serif text-[3.2rem] leading-none text-[#aff546] sm:text-[4rem]">
+              01
+            </p>
+            <p className="mt-4 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#aff546]">
+              FOR TALENT
+            </p>
             <h3 className="mt-3 max-w-[12ch] font-serif text-[1.95rem] leading-[0.95] text-[#f7e8c6] sm:text-[2.28rem] lg:text-[2.4rem] xl:text-[2.5rem]">
               BE SEEN FOR
               <span className="block">WHAT YOU CAN DO.</span>
             </h3>
             <p className="mt-4 max-w-[28rem] text-[0.96rem] leading-7 text-[#f7e8c6]/82 sm:text-[1rem]">
-              Create a Talent Card that brings your skills, experience and potential together in one place.
+              Create a Talent Card that brings your skills, experience and
+              potential together in one place.
             </p>
             <Link
               href="/builder"
@@ -372,14 +454,19 @@ function FinalConversionSection() {
           </div>
 
           <div className="relative border-t border-[#f7e8c6]/12 pt-7 sm:pt-8 lg:border-t-0 lg:pl-8 lg:pt-0 xl:pl-12">
-            <p className="font-serif text-[3.2rem] leading-none text-[#2bd7ef] sm:text-[4rem]">02</p>
-            <p className="mt-4 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#2bd7ef]">FOR EMPLOYERS</p>
+            <p className="font-serif text-[3.2rem] leading-none text-[#2bd7ef] sm:text-[4rem]">
+              02
+            </p>
+            <p className="mt-4 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#2bd7ef]">
+              FOR EMPLOYERS
+            </p>
             <h3 className="mt-3 max-w-[12ch] font-serif text-[1.95rem] leading-[0.95] text-[#f7e8c6] sm:text-[2.28rem] lg:text-[2.4rem] xl:text-[2.5rem]">
               FIND PEOPLE
               <span className="block">WORTH FINDING.</span>
             </h3>
             <p className="mt-4 max-w-[28rem] text-[0.96rem] leading-7 text-[#f7e8c6]/82 sm:text-[1rem]">
-              Discover people based on their skills and experience, not simply who happened to apply.
+              Discover people based on their skills and experience, not simply
+              who happened to apply.
             </p>
             <Link
               href="/find-talent"
@@ -426,8 +513,8 @@ export default function Home() {
             </h1>
 
             <p className="mt-5 max-w-lg text-[1.1rem] leading-8 text-[#f7e8c6]/88 max-sm:mt-1 max-sm:text-[0.98rem] max-sm:leading-6">
-              Create a Talent Card that showcases your skills, experience and value, and get discovered by verified employers, on
-              your terms.
+              Create a Talent Card that showcases your skills, experience and
+              value, and get discovered by verified employers, on your terms.
             </p>
 
             <div className="mt-7 flex flex-row gap-2.5 max-[359px]:flex-col sm:flex-row sm:gap-3 max-sm:mt-2">
@@ -444,7 +531,6 @@ export default function Home() {
                 Find talent
               </Link>
             </div>
-
           </div>
 
           <div className="relative mx-auto flex w-full max-w-[470px] items-center justify-center max-sm:mt-0 max-sm:mb-0 lg:max-w-[560px]">
@@ -457,18 +543,26 @@ export default function Home() {
         <div className="mx-auto grid max-w-7xl gap-8 px-6 py-11 max-sm:gap-0 max-sm:py-3 sm:px-8 lg:grid-cols-3 lg:gap-0 lg:px-12">
           {featureCards.map((feature, index) => {
             const Icon = feature.icon;
-            const iconClass = feature.tone === "lime" ? "text-[#8fdc3a] border-[#9be645]/50" : "text-[#2bd7ef] border-[#2bd7ef]/50";
-            const linkClass = feature.tone === "lime" ? "text-[#84d735]" : "text-[#1fcce7]";
+            const iconClass =
+              feature.tone === "lime"
+                ? "text-[#8fdc3a] border-[#9be645]/50"
+                : "text-[#2bd7ef] border-[#2bd7ef]/50";
+            const linkClass =
+              feature.tone === "lime" ? "text-[#84d735]" : "text-[#1fcce7]";
 
             return (
               <article
                 key={feature.title}
                 className={`px-0 max-sm:py-3 lg:px-10 ${
-                  index < featureCards.length - 1 ? "max-sm:border-b max-sm:border-[#0d233c]/18 lg:border-r lg:border-[#0d233c]/18" : ""
+                  index < featureCards.length - 1
+                    ? "max-sm:border-b max-sm:border-[#0d233c]/18 lg:border-r lg:border-[#0d233c]/18"
+                    : ""
                 }`}
               >
                 <div className="flex items-start gap-3.5 sm:block">
-                  <div className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border sm:h-16 sm:w-16 ${iconClass}`}>
+                  <div
+                    className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border sm:h-16 sm:w-16 ${iconClass}`}
+                  >
                     <Icon className="h-4.5 w-4.5 sm:h-7 sm:w-7" />
                   </div>
                   <div className="min-w-0 flex-1 sm:mt-5 sm:block">
@@ -487,7 +581,9 @@ export default function Home() {
                         <span className="ml-2">→</span>
                       </Link>
                     ) : (
-                      <span className={`mt-2 inline-flex items-center text-[0.98rem] font-medium sm:mt-5 sm:text-lg ${linkClass} opacity-70`}>
+                      <span
+                        className={`mt-2 inline-flex items-center text-[0.98rem] font-medium sm:mt-5 sm:text-lg ${linkClass} opacity-70`}
+                      >
                         Learn more
                         <span className="ml-2">→</span>
                       </span>
@@ -505,7 +601,9 @@ export default function Home() {
         <div className="pointer-events-none absolute -right-24 bottom-20 h-56 w-56 rounded-full border border-[#aff546]/14" />
 
         <div className="relative mx-auto max-w-7xl px-6 py-14 sm:px-8 lg:px-12 lg:py-14">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#2bd7ef]">How it works</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#2bd7ef]">
+            How it works
+          </p>
           <h2 className="mt-3 max-w-4xl font-serif text-[2.125rem] font-semibold uppercase leading-[0.95] text-[#f7e8c6] sm:text-[2.9rem] lg:text-[3.02rem]">
             HOW FREE AGENT STAFF WORKS
           </h2>
@@ -516,13 +614,22 @@ export default function Home() {
             <span className="pointer-events-none absolute left-2/3 top-[84px] h-[11px] w-[11px] -translate-x-1/2 rounded-full border border-[#aff546]/46 bg-[#0B111D]" />
             <div className="grid grid-cols-3 gap-12">
               {howItWorksSteps.map((step) => {
-                const stepTone = step.tone === "lime" ? "text-[#aff546]" : "text-[#2bd7ef]";
+                const stepTone =
+                  step.tone === "lime" ? "text-[#aff546]" : "text-[#2bd7ef]";
 
                 return (
                   <article key={step.number} className="relative min-w-0">
-                    <p className={`h-[5.25rem] font-serif text-[5rem] leading-none ${stepTone}`}>{step.number}</p>
-                    <h3 className="mt-3 min-h-[7rem] max-w-[18.5rem] font-serif text-[2.2rem] leading-[1.04] text-[#f7e8c6]">{step.title}</h3>
-                    <p className="mt-8 max-w-[19rem] text-[1.11rem] leading-8 text-[#f7e8c6]/84">{step.description}</p>
+                    <p
+                      className={`h-[5.25rem] font-serif text-[5rem] leading-none ${stepTone}`}
+                    >
+                      {step.number}
+                    </p>
+                    <h3 className="mt-3 min-h-[7rem] max-w-[18.5rem] font-serif text-[2.2rem] leading-[1.04] text-[#f7e8c6]">
+                      {step.title}
+                    </h3>
+                    <p className="mt-8 max-w-[19rem] text-[1.11rem] leading-8 text-[#f7e8c6]/84">
+                      {step.description}
+                    </p>
                   </article>
                 );
               })}
@@ -533,17 +640,33 @@ export default function Home() {
             <span className="pointer-events-none absolute left-[26px] top-6 bottom-10 w-px bg-gradient-to-b from-[#2bd7ef]/38 via-[#aff546]/45 to-[#2bd7ef]/25" />
             <div className="space-y-9">
               {howItWorksSteps.map((step, index) => {
-                const stepTone = step.tone === "lime" ? "text-[#aff546]" : "text-[#2bd7ef]";
+                const stepTone =
+                  step.tone === "lime" ? "text-[#aff546]" : "text-[#2bd7ef]";
 
                 return (
-                  <article key={step.number} className="relative grid grid-cols-[52px_1fr] gap-4">
+                  <article
+                    key={step.number}
+                    className="relative grid grid-cols-[52px_1fr] gap-4"
+                  >
                     <div className="flex flex-col items-center">
-                      <p className={`font-serif text-[2.4rem] leading-none ${stepTone}`}>{step.number}</p>
-                      {index < howItWorksSteps.length - 1 ? <span className="mt-2 text-sm text-[#f7e8c6]/55">↓</span> : null}
+                      <p
+                        className={`font-serif text-[2.4rem] leading-none ${stepTone}`}
+                      >
+                        {step.number}
+                      </p>
+                      {index < howItWorksSteps.length - 1 ? (
+                        <span className="mt-2 text-sm text-[#f7e8c6]/55">
+                          ↓
+                        </span>
+                      ) : null}
                     </div>
                     <div className="pr-1">
-                      <h3 className="font-serif text-[1.6rem] leading-tight text-[#f7e8c6]">{step.title}</h3>
-                      <p className="mt-2 text-[0.98rem] leading-6 text-[#f7e8c6]/84">{step.description}</p>
+                      <h3 className="font-serif text-[1.6rem] leading-tight text-[#f7e8c6]">
+                        {step.title}
+                      </h3>
+                      <p className="mt-2 text-[0.98rem] leading-6 text-[#f7e8c6]/84">
+                        {step.description}
+                      </p>
                     </div>
                   </article>
                 );
@@ -562,14 +685,17 @@ export default function Home() {
         <div className="relative mx-auto max-w-7xl px-6 py-14 sm:px-8 sm:py-16 lg:px-12 lg:py-20">
           <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1.12fr)_minmax(0,0.88fr)] lg:gap-9 xl:gap-12">
             <div className="max-w-[43rem]">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#1bc8e4]">Be more than a CV</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#1bc8e4]">
+                Be more than a CV
+              </p>
               <h2 className="mt-3 max-w-[14.75ch] font-serif text-[2.5rem] font-semibold uppercase leading-[0.92] text-[#071321] max-sm:max-w-[13.8ch] max-sm:text-[1.82rem] max-sm:leading-[0.95] max-[360px]:text-[1.72rem] sm:mt-4 sm:text-[3.25rem] lg:text-[2.78rem] xl:text-[3.16rem]">
                 <span className="inline sm:block">RESUMES LOOK THE SAME.</span>{" "}
                 <span className="inline sm:block">PEOPLE DON&apos;T.</span>
               </h2>
               <p className="mt-4 max-w-lg text-[1rem] leading-7 text-[#071321]/78 sm:mt-5 sm:text-[1.08rem] sm:leading-8">
-                Your experience is more than a list of job titles. Free Agent Staff gives you a place to show employers what you can do,
-                what you&apos;ve achieved and what makes you different.
+                Your experience is more than a list of job titles. Free Agent
+                Staff gives you a place to show employers what you can do, what
+                you&apos;ve achieved and what makes you different.
               </p>
               <Link
                 href="/builder"
@@ -581,7 +707,12 @@ export default function Home() {
             </div>
 
             <div className="relative flex min-w-0 justify-center lg:justify-start">
-              <TalentCard profile={homepageLowerDemoProfile} href="/builder" verificationStatus="verified" className="max-w-[420px]" />
+              <TalentCard
+                profile={homepageLowerDemoProfile}
+                href="/profile/daniel-brooks"
+                verificationStatus="verified"
+                className="max-w-[420px]"
+              />
             </div>
           </div>
         </div>
@@ -595,14 +726,19 @@ export default function Home() {
         <div className="relative mx-auto max-w-7xl px-6 py-14 sm:px-8 sm:py-16 lg:px-12 lg:py-20">
           <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,0.55fr)_minmax(0,1.45fr)] lg:gap-10 xl:gap-12">
             <div className="max-w-[35rem]">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#2bd7ef]">Looking for talent?</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#2bd7ef]">
+                Looking for talent?
+              </p>
               <h2 className="mt-3 max-w-[11.8ch] font-serif text-[2.55rem] font-semibold uppercase leading-[0.92] text-[#f7e8c6] max-sm:max-w-[12.8ch] max-sm:text-[1.86rem] max-sm:leading-[0.95] sm:mt-4 sm:text-[3.05rem] lg:text-[3.35rem] xl:text-[3.65rem]">
                 <span className="block">YOUR NEXT GREAT HIRE</span>
                 <span className="block">ISN&apos;T ALWAYS</span>
                 <span className="block">LOOKING FOR YOU.</span>
               </h2>
               <p className="mt-5 max-w-xl text-[1rem] leading-7 text-[#f7e8c6]/84 sm:text-[1.08rem] sm:leading-8">
-                The right person might not be applying for jobs. Free Agent Staff helps verified employers discover people based on their skills, experience and potential and connect when the opportunity is right.
+                The right person might not be applying for jobs. Free Agent
+                Staff helps verified employers discover people based on their
+                skills, experience and potential and connect when the
+                opportunity is right.
               </p>
               <div className="mt-6 flex flex-wrap gap-3 max-[359px]:flex-col sm:mt-8">
                 <Link
@@ -634,13 +770,17 @@ export default function Home() {
         <div className="relative mx-auto max-w-7xl px-6 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24">
           <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1.02fr)_minmax(0,0.98fr)] lg:gap-12">
             <div className="max-w-[38rem]">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#1bc8e4]">Your career. Your terms.</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#1bc8e4]">
+                Your career. Your terms.
+              </p>
               <h2 className="mt-4 max-w-[12.5ch] font-serif text-[2.52rem] font-semibold uppercase leading-[0.92] text-[#071321] max-sm:max-w-[13ch] max-sm:text-[1.95rem] max-sm:leading-[0.95] sm:text-[3.06rem] lg:text-[3.3rem]">
                 <span className="block">VISIBLE WHEN YOU WANT TO BE.</span>
                 <span className="block">INVISIBLE WHEN YOU DON&apos;T.</span>
               </h2>
               <p className="mt-5 max-w-xl text-[1rem] leading-7 text-[#071321]/78 sm:text-[1.08rem] sm:leading-8">
-                Explore what&apos;s out there without announcing it to the world. You control your visibility, what employers can see and when you&apos;re ready to be discovered.
+                Explore what&apos;s out there without announcing it to the
+                world. You control your visibility, what employers can see and
+                when you&apos;re ready to be discovered.
               </p>
             </div>
 
