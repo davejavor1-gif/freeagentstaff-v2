@@ -78,7 +78,7 @@ export default function TalentCard({
   const [isFlipped, setIsFlipped] = useState(initiallyFlipped);
   const [videoOpen, setVideoOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
   const [showVideoControls, setShowVideoControls] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [resolvedPhotoUrl, setResolvedPhotoUrl] = useState<string | null>(null);
@@ -154,11 +154,11 @@ export default function TalentCard({
   const resetVideoState = () => {
     setIsPlaying(false);
     setShowVideoControls(false);
-    setIsMuted(true);
+    setIsMuted(false);
     if (videoRef.current) {
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
-      videoRef.current.muted = true;
+      videoRef.current.muted = false;
     }
   };
 
@@ -184,14 +184,7 @@ export default function TalentCard({
       await video.play();
       setIsPlaying(true);
     } catch {
-      video.muted = true;
-      setIsMuted(true);
-      try {
-        await video.play();
-        setIsPlaying(true);
-      } catch {
-        setIsPlaying(false);
-      }
+      setIsPlaying(false);
     }
   };
 
@@ -222,14 +215,7 @@ export default function TalentCard({
       await videoRef.current.play();
       setIsPlaying(true);
     } catch {
-      videoRef.current.muted = true;
-      setIsMuted(true);
-      try {
-        await videoRef.current.play();
-        setIsPlaying(true);
-      } catch {
-        setIsPlaying(false);
-      }
+      setIsPlaying(false);
     }
   };
 
@@ -246,14 +232,7 @@ export default function TalentCard({
       await videoRef.current.play();
       setIsPlaying(true);
     } catch {
-      videoRef.current.muted = true;
-      setIsMuted(true);
-      try {
-        await videoRef.current.play();
-        setIsPlaying(true);
-      } catch {
-        setIsPlaying(false);
-      }
+      setIsPlaying(false);
     }
   };
 

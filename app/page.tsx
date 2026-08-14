@@ -75,6 +75,7 @@ const employerDiscoveryResults = [
     availability: "Open to Opportunities",
     topStrength: "Builds calm, repeatable operations that help ambitious teams deliver at their best.",
     focusArea: "Operations",
+    introVideoUrl: "/videos/daniels%20intro.mp4",
     company: "Harbour Works",
     period: "2020–Present",
     qualification: "Certified Operations Professional",
@@ -128,6 +129,7 @@ const homepageDemoProfile: FreeAgentProfile = {
   skills: ["React", "TypeScript", "Product Delivery", "Systems Thinking"],
   photoUrl: "/images/homepage-talent-model.jpg",
   imageAlt: "Fictional professional portrait",
+  intro_video_url: "/videos/sarahs%20intro.mp4",
   careerJourney: [
     {
       id: "homepage-demo-role",
@@ -157,6 +159,7 @@ const homepageLowerDemoProfile: FreeAgentProfile = {
   skills: ["Operations Strategy", "Team Leadership", "Service Delivery", "Stakeholder Management"],
   photoUrl: "/images/openart-64f1b59a62fd4bc1a7a2678ed4580466_00001__raw.png",
   imageAlt: "Fictional professional portrait",
+  intro_video_url: "/videos/daniels%20intro.mp4",
   careerJourney: [
     {
       id: "homepage-demo-daniel-role",
@@ -196,6 +199,7 @@ function EmployerDiscoveryResult({
     skills: result.skills,
     photoUrl: result.photoUrl,
     imageAlt: "Fictional professional portrait",
+    intro_video_url: result.introVideoUrl,
     careerJourney: [
       {
         id: "homepage-search-role",
@@ -400,7 +404,7 @@ export default function Home() {
     <main className="bg-[#0B111D] text-[#f7e8c6]">
       <Navbar />
 
-      <section className="relative isolate overflow-hidden border-b border-[#2bd7ef]/12">
+      <section className="relative isolate mb-8 overflow-hidden border-b border-[#2bd7ef]/12 max-sm:mb-5">
         <div className="absolute inset-0 bg-[#0B111D]" />
 
         <div className="nav-fade relative mx-auto grid max-w-7xl items-center gap-10 px-6 pb-10 pt-8 max-sm:gap-1 max-sm:px-4 max-sm:pb-0 max-sm:pt-1 sm:px-8 lg:min-h-[calc(100vh-80px)] lg:grid-cols-[44fr_56fr] lg:px-12 lg:py-6">
