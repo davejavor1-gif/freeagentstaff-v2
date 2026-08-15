@@ -10,7 +10,6 @@ import {
   Lock,
   Mail,
   RotateCcw,
-  Sparkles,
   X,
 } from "lucide-react";
 import Footer from "@/components/layout/Footer";
@@ -351,17 +350,9 @@ export default function TalentProfileExperience({
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-[#aff546] px-4 py-8 text-[#0f2744] sm:px-6 lg:px-10">
+      <main className="min-h-screen overflow-x-hidden bg-[#aff546] px-4 py-8 text-[#0f2744] sm:px-6 lg:px-10">
         <div className="mx-auto max-w-7xl">
-          <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#6f5310]">
-                {isOwner ? "Owner dossier" : "Verified employer passport"}
-              </p>
-              <h1 className="mt-2 text-3xl font-black uppercase tracking-[0.08em] sm:text-5xl">
-                Talent Passport
-              </h1>
-            </div>
+          <div className="mb-6 flex flex-wrap items-end justify-end gap-4">
             <Link
               href="/find-talent"
               className="rounded-full border border-[#0f2744]/25 bg-[#f7ebcf] px-5 py-3 text-sm font-semibold uppercase tracking-[0.2em]"
@@ -369,62 +360,74 @@ export default function TalentProfileExperience({
               Back to talent search
             </Link>
           </div>
-          <div className="grid gap-5 lg:grid-cols-2 lg:gap-0">
-            <section className="relative rounded-[28px] border border-[#cda64d]/70 bg-[#f7ebcf] p-6 shadow-[0_18px_40px_rgba(6,16,33,0.14)] sm:p-8 lg:rounded-r-none lg:border-r-0 lg:p-10">
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute right-4 top-4 flex aspect-square w-24 rotate-[-9deg] items-center justify-center rounded-full border border-[#4f9f4e]/55 p-1 opacity-65 sm:right-8 sm:top-8 sm:w-28"
-              >
-                <div className="flex aspect-square w-full items-center justify-center rounded-full border border-[#4f9f4e]/45 px-2 text-center text-[8px] font-black uppercase leading-tight tracking-[0.16em] text-[#4f9f4e] sm:text-[9px]">
-                  FreeAgentStaff
-                  <br />
-                  Talent Passport
-                </div>
-              </div>
-              <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
-                <Sparkles className="h-4 w-4" /> Identity & overview
-              </div>
-              <div className="mt-6 flex flex-col gap-6 sm:flex-row sm:items-start">
-                {profile.photoUrl ? (
-                  <img
-                    src={profile.photoUrl}
-                    alt={profile.imageAlt ?? profile.name}
-                    className="h-40 w-32 rounded-[22px] object-cover"
-                  />
-                ) : (
-                  <div className="flex h-40 w-32 items-center justify-center rounded-[22px] bg-[#0f2744] text-4xl font-black text-[#f7ebcf]">
-                    {profile.name.slice(0, 2).toUpperCase()}
-                  </div>
-                )}
-                <div className="min-w-0">
-                  <h2 className="text-3xl font-black uppercase leading-tight tracking-[0.05em] text-[#0f2744] sm:text-4xl">
-                    {profile.name || "Confidential profile"}
-                  </h2>
-                  <p className="mt-2 text-lg font-semibold text-[#27405f]">
-                    {profile.title}
-                  </p>
-                  <p className="mt-2 text-sm font-semibold uppercase tracking-[0.18em] text-[#9a6d15]">
-                    {profile.location}
-                  </p>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <span className="rounded-full bg-[#0f2744] px-3 py-2 text-xs font-semibold text-[#f7ebcf]">
-                      {profile.availability}
-                    </span>
-                    <span className="rounded-full bg-[#8be4c5] px-3 py-2 text-xs font-semibold text-[#071426]">
-                      {profile.focusArea}
-                    </span>
+          <div className="relative mx-auto max-w-5xl rounded-[38px] border border-[#102f51] bg-[#0f2744] p-2.5 shadow-[0_24px_58px_rgba(6,16,33,0.28)] [background-image:radial-gradient(circle_at_18%_12%,rgba(242,204,99,0.1),transparent_24%),repeating-linear-gradient(135deg,rgba(247,235,207,0.045)_0,rgba(247,235,207,0.045)_1px,transparent_1px,transparent_6px),repeating-linear-gradient(45deg,transparent_0,transparent_10px,rgba(0,0,0,0.12)_11px,transparent_11px,transparent_12px)] sm:p-4">
+            <section className="relative overflow-hidden rounded-[27px] border border-[#cda64d]/55 bg-[#f7ebcf] p-6 shadow-[inset_0_1px_0_rgba(255,250,240,0.8),inset_0_-10px_24px_rgba(111,83,16,0.08),0_8px_18px_rgba(6,16,33,0.12)] [background-image:radial-gradient(circle_at_12%_18%,rgba(255,250,240,0.55),transparent_25%),repeating-linear-gradient(0deg,rgba(15,39,68,0.025)_0,rgba(15,39,68,0.025)_1px,transparent_1px,transparent_5px),repeating-linear-gradient(90deg,transparent_0,transparent_14px,rgba(154,109,21,0.025)_15px,transparent_16px)] sm:p-8 lg:p-10">
+              <div className="mt-6 grid gap-8 sm:grid-cols-[minmax(0,1fr)_12rem] sm:items-start">
+                <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
+                  {profile.photoUrl ? (
+                    <img
+                      src={profile.photoUrl}
+                      alt={profile.imageAlt ?? profile.name}
+                      className="h-40 w-32 rounded-[22px] object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-40 w-32 items-center justify-center rounded-[22px] bg-[#0f2744] text-4xl font-black text-[#f7ebcf]">
+                      {profile.name.slice(0, 2).toUpperCase()}
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <h2 className="text-3xl font-black uppercase leading-tight tracking-[0.05em] text-[#0f2744] sm:text-4xl">
+                      {profile.name || "Confidential profile"}
+                    </h2>
+                    <p className="mt-2 text-lg font-semibold text-[#27405f]">
+                      {profile.title}
+                    </p>
+                    <p className="mt-2 text-sm font-semibold uppercase tracking-[0.18em] text-[#9a6d15]">
+                      {profile.location}
+                    </p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <span className="rounded-full bg-[#0f2744] px-3 py-2 text-xs font-semibold text-[#f7ebcf]">
+                        {profile.availability}
+                      </span>
+                      <span className="rounded-full bg-[#8be4c5] px-3 py-2 text-xs font-semibold text-[#071426]">
+                        {profile.focusArea}
+                      </span>
+                    </div>
                   </div>
                 </div>
+                <div className="flex flex-col items-center sm:items-end">
+                  <div
+                    aria-hidden="true"
+                    className="flex aspect-square w-36 rotate-[-9deg] items-center justify-center rounded-full border-[3px] border-[#4f9f4e]/65 p-1.5 opacity-70 shadow-[inset_0_0_0_2px_rgba(79,159,78,0.22),0_1px_0_rgba(79,159,78,0.16)] sm:w-40"
+                  >
+                    <div className="relative flex aspect-square w-full items-center justify-center rounded-full border border-dashed border-[#4f9f4e]/60 px-2 text-center text-[9px] font-black uppercase leading-[1.12] tracking-[0.14em] text-[#4f9f4e] sm:px-3 sm:text-[10px]">
+                      <span className="absolute inset-x-3 top-2 flex justify-between text-[8px] tracking-normal sm:top-3 sm:text-[9px]" aria-hidden="true">
+                        <span>+</span><span>+</span>
+                      </span>
+                      <span>
+                        FreeAgentStaff
+                        <br />
+                        Talent
+                        <br />
+                        Passport
+                      </span>
+                      <span className="absolute inset-x-3 bottom-2 flex justify-between text-[8px] tracking-normal sm:bottom-3 sm:text-[9px]" aria-hidden="true">
+                        <span>x</span><span>x</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="mt-7 border-t border-[#0f2744]/15 pt-6">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
-                  Professional summary
-                </p>
-                <p className="mt-3 min-w-0 break-words text-base leading-8 text-[#27405f] [overflow-wrap:anywhere]">
-                  {profile.summary ||
-                    "A focused professional profile for verified employer review."}
-                </p>
-              </div>
+              {profile.bio?.trim() ? (
+                <div className="mt-7 border-t border-[#0f2744]/15 pt-6">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                    Bio
+                  </p>
+                  <p className="mt-3 min-w-0 break-words text-sm leading-7 text-[#27405f] [overflow-wrap:anywhere]">
+                    {profile.bio.trim()}
+                  </p>
+                </div>
+              ) : null}
               {profile.topStrength ? (
                 <div className="mt-6 rounded-[20px] border-l-4 border-[#4f9f4e] bg-[#fffaf0] p-4">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">
@@ -432,16 +435,6 @@ export default function TalentProfileExperience({
                   </p>
                   <p className="mt-2 min-w-0 break-words font-semibold text-[#0f2744] [overflow-wrap:anywhere]">
                     {profile.topStrength}
-                  </p>
-                </div>
-              ) : null}
-              {profile.bio?.trim() ? (
-                <div className="mt-6 rounded-[20px] border-l-4 border-[#4f9f4e] bg-[#fffaf0] p-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">
-                    Bio
-                  </p>
-                  <p className="mt-2 min-w-0 break-words text-sm leading-7 text-[#27405f] [overflow-wrap:anywhere]">
-                    {profile.bio.trim()}
                   </p>
                 </div>
               ) : null}
@@ -463,7 +456,10 @@ export default function TalentProfileExperience({
                 </div>
               ) : null}
             </section>
-            <section className="rounded-[28px] border border-[#cda64d]/70 bg-[#fffaf0] p-6 shadow-[0_18px_40px_rgba(6,16,33,0.14)] sm:p-8 lg:rounded-l-none lg:p-10">
+            <div className="relative h-9 overflow-hidden bg-[#0f2744] [background:radial-gradient(ellipse_at_center,rgba(242,204,99,0.3)_0%,rgba(247,235,207,0.2)_10%,rgba(7,20,38,0.85)_38%,rgba(7,20,38,0.98)_58%,rgba(242,204,99,0.12)_72%,rgba(15,39,68,0)_100%)] shadow-[inset_0_8px_14px_rgba(6,16,33,0.45),inset_0_-8px_14px_rgba(6,16,33,0.35)] sm:h-11" aria-hidden="true">
+              <div className="absolute inset-x-8 top-1/2 h-px -translate-y-1/2 bg-[#f2cc63]/35 shadow-[0_0_6px_rgba(242,204,99,0.35)]" />
+            </div>
+            <section className="relative overflow-hidden rounded-[27px] border border-[#cda64d]/55 bg-[#fffaf0] p-6 shadow-[inset_0_10px_24px_rgba(111,83,16,0.07),inset_0_-1px_0_rgba(255,250,240,0.85),0_8px_18px_rgba(6,16,33,0.12)] [background-image:radial-gradient(circle_at_88%_12%,rgba(255,250,240,0.7),transparent_28%),repeating-linear-gradient(0deg,rgba(15,39,68,0.022)_0,rgba(15,39,68,0.022)_1px,transparent_1px,transparent_5px),repeating-linear-gradient(90deg,transparent_0,transparent_14px,rgba(154,109,21,0.022)_15px,transparent_16px)] sm:p-8 lg:p-10">
               <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
                 <BriefcaseBusiness className="h-4 w-4" /> Professional record
               </div>
@@ -723,7 +719,7 @@ export default function TalentProfileExperience({
               </div>
             ) : null}
           </section>
-        </div>
+            </div>
       </main>
       <Footer />
     </>
