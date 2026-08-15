@@ -76,6 +76,7 @@ export default function TalentCard({
   const confidential = isConfidential(profile);
   const verified = isVerified(verificationStatus) || profile.visibility === "verified_employer_network" || profile.visibility === "employer_network";
   const [isFlipped, setIsFlipped] = useState(initiallyFlipped);
+  const [settledFace, setSettledFace] = useState<"front" | "back">(initiallyFlipped ? "back" : "front");
   const [videoOpen, setVideoOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -137,6 +138,17 @@ export default function TalentCard({
 
     return () => mediaQuery.removeEventListener("change", updateMotionPreference);
   }, []);
+
+  useEffect(() => {
+    const settleDelay = reducedMotion ? 0 : 520;
+    const timer = window.setTimeout(() => {
+      setSettledFace(isFlipped ? "back" : "front");
+    }, settleDelay);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [isFlipped, reducedMotion]);
 
   useEffect(() => {
     if (!videoOpen || !videoRef.current) {
@@ -310,15 +322,15 @@ export default function TalentCard({
         className,
       )}
     >
-      <div className={cn("relative aspect-[2.5/3.5] w-full [perspective:1800px]", reducedMotion ? "" : "transition-transform duration-500") }>
+      <div className={cn("relative aspect-[2.5/3.5] w-full [perspective:1800px] [-webkit-perspective:1800px]", reducedMotion ? "" : "transition-transform duration-500") }>
         <div
           className={cn(
-            "relative h-full w-full rounded-[28px] transition-transform duration-500 [transform-style:preserve-3d]",
+            "relative h-full w-full rounded-[28px] transition-transform duration-500 [transform-style:preserve-3d] [-webkit-transform-style:preserve-3d] [will-change:transform]",
             reducedMotion ? "" : "duration-500",
             isFlipped ? "[transform:rotateY(180deg)]" : "[transform:rotateY(0deg)]",
           )}
         >
-          <div className={cn("absolute inset-0 h-full w-full overflow-hidden rounded-[28px] border border-[#0f2744]/15 bg-[#f7ebcf] [backface-visibility:hidden] [-webkit-backface-visibility:hidden]", isFlipped ? "pointer-events-none" : "pointer-events-auto")}>
+          <div className={cn("absolute inset-0 z-20 h-full w-full overflow-hidden rounded-[28px] border border-[#0f2744]/15 bg-[#f7ebcf] [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transform:rotateY(0deg)_translateZ(1px)]", isFlipped ? "pointer-events-none z-10" : "pointer-events-auto z-20", settledFace === "back" && isFlipped ? "invisible" : "visible")}>
             <div className="flex h-full flex-col bg-[#f7ebcf]">
               <div className="relative flex-1 overflow-hidden bg-[#0f2744] p-0">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(242,204,99,0.16),transparent_42%),linear-gradient(135deg,#0f2744_0%,#102742_100%)]" />
@@ -506,7 +518,7 @@ export default function TalentCard({
             </div>
           </div>
 
-          <div className={cn("absolute inset-0 h-full w-full overflow-hidden rounded-[28px] border border-[#0f2744]/15 bg-[#f7ebcf] [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transform:rotateY(180deg)]", isFlipped ? "pointer-events-auto" : "pointer-events-none")}>
+          <div className={cn("absolute inset-0 z-10 h-full w-full overflow-hidden rounded-[28px] border border-[#0f2744]/15 bg-[#f7ebcf] [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transform:rotateY(180deg)_translateZ(1px)]", isFlipped ? "pointer-events-auto z-20" : "pointer-events-none z-10", settledFace === "front" && !isFlipped ? "invisible" : "visible")}>
             <div className="flex h-full flex-col bg-[#f7ebcf]">
               <div className="border-b border-[#0f2744]/10 bg-[#0f2744] p-2.5 sm:p-3">
                 <div className="flex items-center justify-between gap-3">

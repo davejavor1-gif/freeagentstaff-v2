@@ -2,16 +2,28 @@ import { NextResponse } from "next/server";
 import { listTalentConnections } from "@/lib/connection-access";
 import { listTalentIntroductionRequests } from "@/lib/introduction-request-access";
 import { createUserServerSupabaseClient } from "@/lib/server-supabase";
-import type { DashboardSummaryReason, TalentSummaryResponse } from "@/types/dashboard";
+import { hasTalentProAccess, normalizeTalentSubscriptionSnapshot } from "@/lib/talent-subscription";
+import type { DashboardSummaryReason, TalentSummaryPayload, TalentSummaryResponse } from "@/types/dashboard";
 import type { ProfileVisibility } from "@/types/freeagent";
 
 const REQUEST_PREVIEW_LIMIT = 6;
 const CONNECTION_PREVIEW_LIMIT = 6;
 
 type TalentProfileRow = {
+  user_id: string;
   account_type: "talent" | "employer";
   visibility: ProfileVisibility | null;
   is_published: boolean | null;
+  talent_plan: "free_agent" | "free_agent_pro" | null;
+  talent_subscription_status: "inactive" | "active" | "trialing" | "past_due" | "canceled" | null;
+  talent_subscription_current_period_ends_at: string | null;
+};
+
+type TalentAnalyticsRow = {
+  event_type: "search_impression" | "passport_view";
+  viewer_user_id: string;
+  employer_company_name: string | null;
+  event_at: string;
 };
 
 function getBearerToken(request: Request) {
@@ -58,6 +70,37 @@ function requestStatusRank(status: string, canTalentRespond: boolean) {
   return 5;
 }
 
+function buildProInsights(input: {
+  searchImpressions30d: number;
+  passportViews30d: number;
+  uniqueEmployerViewers30d: number;
+  pendingIntroductionRequests: number;
+}) {
+  const insights: string[] = [];
+
+  if (input.searchImpressions30d === 0) {
+    insights.push("No search impressions in the last 30 days. Refresh your title, focus area, and skills to improve match coverage.");
+  } else if (input.searchImpressions30d >= 40) {
+    insights.push("Strong search visibility this month. Keep your profile published to maintain momentum.");
+  }
+
+  if (input.passportViews30d > 0 && input.uniqueEmployerViewers30d === 0) {
+    insights.push("Passport views are rising, but we could not attribute unique employer viewers. Keep profile details complete for clearer attribution.");
+  } else if (input.uniqueEmployerViewers30d >= 5) {
+    insights.push("Multiple unique employers viewed your passport this month.");
+  }
+
+  if (input.pendingIntroductionRequests > 0) {
+    insights.push("You have pending introduction requests waiting for action.");
+  }
+
+  if (insights.length === 0) {
+    insights.push("Your Pro analytics are active. Keep your profile current and monitor weekly changes.");
+  }
+
+  return insights;
+}
+
 export async function GET(request: Request) {
   const accessToken = getBearerToken(request);
 
@@ -86,7 +129,7 @@ export async function GET(request: Request) {
   const [{ data: profileRow, error: profileError }, requestList, connectionList] = await Promise.all([
     userClient
       .from("profiles")
-      .select("account_type, visibility, is_published")
+      .select("user_id, account_type, visibility, is_published, talent_plan, talent_subscription_status, talent_subscription_current_period_ends_at")
       .maybeSingle<TalentProfileRow>(),
     listTalentIntroductionRequests(accessToken),
     listTalentConnections(accessToken),
@@ -132,6 +175,54 @@ export async function GET(request: Request) {
 
   const requestItems = requestList.ok ? requestList.items : [];
   const connectionItems = connectionList.ok ? connectionList.items : [];
+  const subscription = normalizeTalentSubscriptionSnapshot({
+    plan: profileRow?.talent_plan,
+    status: profileRow?.talent_subscription_status,
+    currentPeriodEndsAt: profileRow?.talent_subscription_current_period_ends_at,
+  });
+  const hasPro = hasTalentProAccess(subscription);
+
+  let proAnalytics: TalentSummaryPayload["proAnalytics"] = null;
+
+  if (hasPro && profileRow?.user_id) {
+    const startDate = new Date();
+    startDate.setUTCDate(startDate.getUTCDate() - 29);
+
+    const { data: analyticsRows, error: analyticsError } = await userClient
+      .from("talent_pro_analytics_events")
+      .select("event_type, viewer_user_id, employer_company_name, event_at")
+      .eq("talent_user_id", profileRow.user_id)
+      .gte("event_day", startDate.toISOString().slice(0, 10))
+      .order("event_at", { ascending: false })
+      .limit(500);
+
+    if (!analyticsError) {
+      const rows = (analyticsRows ?? []) as TalentAnalyticsRow[];
+      const searchImpressions30d = rows.filter((row) => row.event_type === "search_impression").length;
+      const passportViewRows = rows.filter((row) => row.event_type === "passport_view");
+      const uniqueEmployerViewersSet = new Set(passportViewRows.map((row) => row.viewer_user_id));
+      const recentEmployerViewers = Array.from(
+        new Set(
+          passportViewRows
+            .map((row) => row.employer_company_name?.trim() ?? "")
+            .filter((name) => name.length > 0),
+        ),
+      ).slice(0, 5);
+
+      proAnalytics = {
+        searchImpressions30d,
+        passportViews30d: passportViewRows.length,
+        uniqueEmployerViewers30d: uniqueEmployerViewersSet.size,
+        recentEmployerViewers,
+        insights: buildProInsights({
+          searchImpressions30d,
+          passportViews30d: passportViewRows.length,
+          uniqueEmployerViewers30d: uniqueEmployerViewersSet.size,
+          pendingIntroductionRequests: requestItems.filter((item) => item.status === "pending" && item.canTalentRespond).length,
+        }),
+      };
+    }
+  }
 
   const payload: TalentSummaryResponse = {
     ok: true,
@@ -140,6 +231,13 @@ export async function GET(request: Request) {
       visibility: normalizeVisibility(profileRow?.visibility),
       pendingIntroductionRequests: requestItems.filter((item) => item.status === "pending" && item.canTalentRespond).length,
       activeConnections: connectionItems.filter((item) => item.status === "active").length,
+      subscription: {
+        plan: subscription.plan,
+        status: subscription.status,
+        currentPeriodEndsAt: subscription.currentPeriodEndsAt,
+        hasProAccess: hasPro,
+      },
+      proAnalytics,
       requestPreview: requestItems
         .map((item) => ({
           requestId: item.requestId,

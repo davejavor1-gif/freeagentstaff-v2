@@ -13,6 +13,8 @@ const normalProfile: FreeAgentProfile = {
   focusArea: "Events",
   summary: "Specialist in premium event delivery and stakeholder management.",
   skills: ["Event Design", "Vendor Management", "Stakeholder Leadership", "Luxury Experience"],
+  languages: ["English", "Spanish"],
+  passions: ["Hospitality", "Travel", "Food & Wine"],
   careerJourney: [
     { id: "1", role: "Senior Events Lead", company: "Northstar Collective", period: "2022–Present", location: "Sydney", description: "", achievements: [], skills: [] },
     { id: "2", role: "Event Producer", company: "Lumen House", period: "2018–2022", location: "Melbourne", description: "", achievements: [], skills: [] },
@@ -37,6 +39,8 @@ const confidentialProfile: FreeAgentProfile = {
   focusArea: "Operations",
   summary: "Senior operator bringing structure and confidence to complex venues.",
   skills: ["Venue Operations", "Team Leadership", "Stakeholder Care", "Client Delivery"],
+  languages: ["English"],
+  passions: ["Leadership", "Community Events"],
   careerJourney: [
     { id: "7", role: "Operations Lead", company: "Confidential", period: "2017–Present", location: "Sydney", description: "", achievements: [], skills: [] },
   ],

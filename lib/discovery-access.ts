@@ -5,15 +5,18 @@ import type { DiscoveryApiResponse, DiscoveryProfileCard, TalentPassportApiRespo
 import type { Database, Json, ProfilesRow } from "@/types/supabase";
 import { createServiceRoleSupabaseClient, createUserServerSupabaseClient } from "@/lib/server-supabase";
 import { loadPrivateAccess } from "@/lib/private-access";
+import { loadTalentSubscriptionRowsBySlugs, trackTalentAnalyticsEvents } from "@/lib/talent-pro-analytics";
+import { hasTalentProAccess, normalizeTalentSubscriptionSnapshot } from "@/lib/talent-subscription";
 
 const SIGNED_URL_TTL_SECONDS = 60 * 60;
 
-type ViewerRow = Pick<ProfilesRow, "account_type" | "employer_verification_status" | "employer_abn">;
+type ViewerRow = Pick<ProfilesRow, "account_type" | "employer_verification_status" | "employer_abn" | "employer_company_name">;
 type DiscoveryRpcRow = Database["public"]["Functions"]["discovery_profiles_for_verified_employer_v2"]["Returns"][number];
 type PassportRpcRow = Database["public"]["Functions"]["talent_passport_for_viewer_v3"]["Returns"][number];
 
 type ViewerContext = {
   userClient: ReturnType<typeof createUserServerSupabaseClient>;
+  viewerUserId: string;
   viewerRow: ViewerRow | null;
 };
 
@@ -151,6 +154,7 @@ async function getViewerContext(accessToken: string): Promise<ViewerContext | nu
 
   return {
     userClient,
+    viewerUserId: data.user.id,
     viewerRow: (viewerRow as ViewerRow | null | undefined) ?? null,
   };
 }
@@ -174,6 +178,8 @@ function buildDiscoveryProfile(row: DiscoveryRpcRow, photoUrl: string | null, vi
         experienceYears: row.experience_years ?? 0,
         focusArea: row.focus_area ?? "",
         skills: row.skills ?? [],
+        languages: Array.isArray(row.languages) ? row.languages.filter((item): item is string => typeof item === "string") : [],
+        passions: Array.isArray(row.passions) ? row.passions.filter((item): item is string => typeof item === "string") : [],
         careerJourney: [],
         imageAlt: "Confidential profile",
       } as unknown as FreeAgentProfile,
@@ -199,6 +205,8 @@ function buildDiscoveryProfile(row: DiscoveryRpcRow, photoUrl: string | null, vi
       salaryExpectation: row.salary_expectation ?? null,
       summary: row.summary ?? "",
       skills: row.skills ?? [],
+      languages: Array.isArray(row.languages) ? row.languages.filter((item): item is string => typeof item === "string") : [],
+      passions: Array.isArray(row.passions) ? row.passions.filter((item): item is string => typeof item === "string") : [],
       careerJourney: [],
       photoUrl: photoUrl ?? undefined,
       intro_video_url: videoUrl,
@@ -225,6 +233,8 @@ function buildPassportProfile(row: PassportRpcRow, photoUrl: string | null, vide
       experienceYears: row.experience_years ?? 0,
       focusArea: row.focus_area ?? "",
       skills: row.skills ?? [],
+      languages: Array.isArray(row.languages) ? row.languages.filter((item): item is string => typeof item === "string") : [],
+      passions: Array.isArray(row.passions) ? row.passions.filter((item): item is string => typeof item === "string") : [],
       careerJourney: [],
       imageAlt: "Confidential profile",
     } as unknown as FreeAgentProfile;
@@ -247,6 +257,8 @@ function buildPassportProfile(row: PassportRpcRow, photoUrl: string | null, vide
     summary: row.summary ?? "",
     bio: row.bio ?? undefined,
     skills: row.skills ?? [],
+    languages: Array.isArray(row.languages) ? row.languages.filter((item): item is string => typeof item === "string") : [],
+    passions: Array.isArray(row.passions) ? row.passions.filter((item): item is string => typeof item === "string") : [],
     careerJourney: toCareerJourney(row.career_journey),
     photoUrl: photoUrl ?? undefined,
     intro_video_url: videoUrl,
@@ -321,15 +333,43 @@ export async function loadDiscoveryResults(accessToken: string | null | undefine
   }
 
   const rows = (data ?? []) as DiscoveryRpcRow[];
+  const subscriptionMap = await loadTalentSubscriptionRowsBySlugs(rows.map((row) => row.slug));
+
+  // Ranking fairness invariant:
+  // subscription state is used only for feature entitlements (video visibility, analytics), never for ordering.
   const profiles = await Promise.all(
     rows.map(async (row) => {
+      const subscriptionRow = subscriptionMap.get(row.slug);
+      const hasProVideoAccess = subscriptionRow
+        ? hasTalentProAccess(
+          normalizeTalentSubscriptionSnapshot({
+            plan: subscriptionRow.talent_plan,
+            status: subscriptionRow.talent_subscription_status,
+            currentPeriodEndsAt: subscriptionRow.talent_subscription_current_period_ends_at,
+          }),
+        )
+        : false;
+
       const { photoUrl, videoUrl } = row.can_view_media
         ? await signMediaUrls(row.photo_storage_path, row.intro_video_storage_path)
         : { photoUrl: null, videoUrl: null };
 
-      return buildDiscoveryProfile(row, photoUrl, videoUrl);
+      return buildDiscoveryProfile(row, photoUrl, hasProVideoAccess ? videoUrl : null);
     }),
   );
+
+  if (viewer.viewerUserId) {
+    const talentUserIds = rows
+      .map((row) => subscriptionMap.get(row.slug)?.user_id)
+      .filter((value): value is string => Boolean(value));
+
+    void trackTalentAnalyticsEvents({
+      talentUserIds,
+      viewerUserId: viewer.viewerUserId,
+      employerCompanyName: viewer.viewerRow?.employer_company_name ?? null,
+      eventType: "search_impression",
+    });
+  }
 
   return {
     allowed: true,
@@ -402,16 +442,36 @@ export async function loadTalentPassport(accessToken: string | null | undefined,
   }
 
   const accessScope = row.access_scope as TalentPassportAccessScope;
+  const subscriptionMap = await loadTalentSubscriptionRowsBySlugs([row.slug]);
+  const subscriptionRow = subscriptionMap.get(row.slug);
+  const hasProVideoAccess = subscriptionRow
+    ? hasTalentProAccess(
+      normalizeTalentSubscriptionSnapshot({
+        plan: subscriptionRow.talent_plan,
+        status: subscriptionRow.talent_subscription_status,
+        currentPeriodEndsAt: subscriptionRow.talent_subscription_current_period_ends_at,
+      }),
+    )
+    : false;
   const { photoUrl, videoUrl } = accessScope === "employer_confidential"
     ? { photoUrl: null, videoUrl: null }
     : await signMediaUrls(row.photo_storage_path, row.intro_video_storage_path);
+
+  if (viewer.viewerRow?.account_type === "employer" && viewer.viewerUserId && subscriptionRow?.user_id) {
+    void trackTalentAnalyticsEvents({
+      talentUserIds: [subscriptionRow.user_id],
+      viewerUserId: viewer.viewerUserId,
+      employerCompanyName: viewer.viewerRow.employer_company_name ?? null,
+      eventType: "passport_view",
+    });
+  }
 
   return {
     allowed: true,
     accessScope,
     isOwner: row.is_owner,
     verificationStatus: normalizeVerificationStatus(row.verification_status),
-    profile: buildPassportProfile(row, photoUrl, videoUrl),
+    profile: buildPassportProfile(row, photoUrl, hasProVideoAccess ? videoUrl : null),
     privateAccess: (await loadPrivateAccess(accessToken, slug)).state,
   };
 }

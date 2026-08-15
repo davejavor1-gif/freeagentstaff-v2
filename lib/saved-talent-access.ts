@@ -155,6 +155,8 @@ function mapSavedItem(row: ListSavedRow, photoUrl: string | null, videoUrl: stri
         focusArea: row.focus_area ?? "",
         summary: row.summary ?? "Confidential profile details are available to authorized employers.",
         skills: row.skills ?? [],
+        languages: Array.isArray(row.languages) ? row.languages.filter((item): item is string => typeof item === "string") : [],
+        passions: Array.isArray(row.passions) ? row.passions.filter((item): item is string => typeof item === "string") : [],
         careerJourney: [],
         imageAlt: "Confidential profile",
       }
@@ -172,6 +174,8 @@ function mapSavedItem(row: ListSavedRow, photoUrl: string | null, videoUrl: stri
         focusArea: row.focus_area ?? "",
         summary: row.summary ?? "",
         skills: row.skills ?? [],
+        languages: Array.isArray(row.languages) ? row.languages.filter((item): item is string => typeof item === "string") : [],
+        passions: Array.isArray(row.passions) ? row.passions.filter((item): item is string => typeof item === "string") : [],
         careerJourney: toCareerJourney(row.career_journey),
         photoUrl: photoUrl ?? undefined,
         intro_video_url: videoUrl,

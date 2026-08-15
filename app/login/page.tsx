@@ -22,6 +22,8 @@ const createBlankTalentProfile = (userId: string, email?: string | null): FreeAg
   focusArea: "",
   summary: "",
   skills: [],
+  languages: [],
+  passions: [],
   careerJourney: [],
   email: email ?? "",
 });

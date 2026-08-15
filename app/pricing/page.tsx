@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
+import { CANONICAL_PRICING_PLANS } from "@/lib/talent-subscription";
 
 export default function PricingPage() {
   return (
@@ -11,59 +12,43 @@ export default function PricingPage() {
             Pricing
           </p>
           <h1 className="text-4xl font-black uppercase tracking-[0.12em] text-[#0f2744] sm:text-5xl">
-            Simple, premium plans for modern hiring teams.
+            Clear plans for free agents and employers.
           </h1>
           <p className="max-w-2xl text-base leading-8 text-[#27405f]">
-            Choose the tier that fits your team. Every plan includes curated public talent search, polished candidate profiles, and fast access to the people you want to interview.
+            Pricing is transparent and server-enforced. Free Agent Pro unlocks analytics and video publishing, but never buys preferential discovery.
+          </p>
+          <p className="max-w-2xl rounded-2xl border border-[#cda64d]/45 bg-[#fff6de] px-4 py-3 text-sm font-semibold text-[#6f5310]">
+            Fairness guarantee: Pro does not influence ranking, ordering, or eligibility in talent discovery.
           </p>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
-          {[
-            {
-              title: "Starter",
-              price: "$99",
-              description: "Best for small teams testing premium talent discovery.",
-              features: ["Search public profiles", "Saved searches", "Email support"],
-            },
-            {
-              title: "Growth",
-              price: "$249",
-              description: "Great for hiring managers who want a curated shortlist.",
-              features: ["Priority search", "Advanced filters", "Team seats"],
-              featured: true,
-            },
-            {
-              title: "Enterprise",
-              price: "Custom",
-              description: "Built for larger teams and bespoke talent programs.",
-              features: ["Dedicated onboarding", "Custom reporting", "API access"],
-            },
-          ].map((plan) => (
+          {CANONICAL_PRICING_PLANS.map((plan) => (
             <div
-              key={plan.title}
+              key={plan.code}
               className={`rounded-[36px] border border-[#cda64d]/40 p-8 shadow-[0_18px_55px_rgba(6,16,33,0.12)] ${
-                plan.featured ? "bg-[#0f2744] text-[#f7ebcf]" : "bg-[#f7ebcf] text-[#071426]"
+                plan.code === "free_agent_pro" ? "bg-[#0f2744] text-[#f7ebcf]" : "bg-[#f7ebcf] text-[#071426]"
               }`}
             >
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">
-                    {plan.title}
+                    {plan.name}
                   </p>
-                  <p className="mt-2 text-4xl font-black tracking-[0.1em]">{plan.price}</p>
+                  <p className="mt-2 text-4xl font-black tracking-[0.1em]">{plan.priceLabel}</p>
+                  <p className="mt-1 text-xs font-semibold uppercase tracking-[0.2em] opacity-80">{plan.cadenceLabel}</p>
                 </div>
-                {plan.featured ? (
+                {plan.code === "free_agent_pro" ? (
                   <span className="rounded-full border border-[#f2cc63]/40 bg-[#f2cc63]/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.28em] text-[#f7ebcf]">
-                    Most popular
+                    Talent Pro
                   </span>
                 ) : null}
               </div>
-              <p className={`mt-6 text-sm leading-7 ${plan.featured ? "text-[#dfe7ef]" : "text-[#27405f]"}`}>
+              <p className={`mt-6 text-sm leading-7 ${plan.code === "free_agent_pro" ? "text-[#dfe7ef]" : "text-[#27405f]"}`}>
                 {plan.description}
               </p>
               <ul className="mt-6 space-y-3 text-sm">
-                {plan.features.map((feature) => (
+                {plan.bullets.map((feature) => (
                   <li key={feature} className="flex items-center gap-3">
                     <span className="h-2.5 w-2.5 rounded-full bg-[#cda64d]" />
                     <span>{feature}</span>
@@ -71,14 +56,14 @@ export default function PricingPage() {
                 ))}
               </ul>
               <Link
-                href="/find-talent"
+                href={plan.audience === "employer" ? "/find-talent" : "/builder"}
                 className={`mt-8 inline-flex w-full items-center justify-center rounded-full px-5 py-3 text-sm font-semibold uppercase tracking-[0.24em] transition ${
-                  plan.featured
+                  plan.code === "free_agent_pro"
                     ? "bg-[#f2cc63] text-[#0f2744] hover:bg-[#f7ebcf]"
                     : "bg-[#0f2744] text-[#f7ebcf] hover:bg-[#17355f]"
                 }`}
               >
-                Explore talent
+                {plan.audience === "employer" ? "Open employer discovery" : "Open talent builder"}
               </Link>
             </div>
           ))}

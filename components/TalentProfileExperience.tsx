@@ -445,6 +445,23 @@ export default function TalentProfileExperience({
                   </p>
                 </div>
               ) : null}
+              {profile.passions?.length ? (
+                <div className="mt-6 rounded-[20px] border-l-4 border-[#2bd7ef] bg-[#effcff] p-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">
+                    Passions
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {profile.passions.map((passion) => (
+                      <span
+                        key={passion}
+                        className="rounded-full border border-[#0f2744]/15 bg-[#f7ebcf] px-3 py-2 text-xs font-semibold text-[#0f2744]"
+                      >
+                        {passion}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
             </section>
             <section className="rounded-[28px] border border-[#cda64d]/70 bg-[#fffaf0] p-6 shadow-[0_18px_40px_rgba(6,16,33,0.14)] sm:p-8 lg:rounded-l-none lg:p-10">
               <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
@@ -475,6 +492,23 @@ export default function TalentProfileExperience({
                   </p>
                 </div>
               </div>
+              {profile.languages?.length ? (
+                <div className="mt-6 min-w-0">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">
+                    Languages
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {profile.languages.map((language) => (
+                      <span
+                        key={language}
+                        className="rounded-full border border-[#0f2744]/15 bg-[#effcff] px-3 py-2 text-xs font-semibold text-[#0f2744]"
+                      >
+                        {language}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
               {salaryLabel ? (
                 <div className="mt-6 rounded-[20px] border-l-4 border-[#2bd7ef] bg-[#effcff] p-4">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">

@@ -66,11 +66,28 @@ export interface TalentDashboardConnectionPreview {
   employerCompanyName: string | null;
 }
 
+export interface TalentSubscriptionSummary {
+  plan: "free_agent" | "free_agent_pro";
+  status: "inactive" | "active" | "trialing" | "past_due" | "canceled";
+  currentPeriodEndsAt: string | null;
+  hasProAccess: boolean;
+}
+
+export interface TalentProAnalyticsSummary {
+  searchImpressions30d: number;
+  passportViews30d: number;
+  uniqueEmployerViewers30d: number;
+  recentEmployerViewers: string[];
+  insights: string[];
+}
+
 export interface TalentSummaryPayload {
   isPublished: boolean;
   visibility: Exclude<ProfileVisibility, "employer_network">;
   pendingIntroductionRequests: number;
   activeConnections: number;
+  subscription: TalentSubscriptionSummary;
+  proAnalytics: TalentProAnalyticsSummary | null;
   requestPreview: TalentDashboardRequestPreview[];
   connectionPreview: TalentDashboardConnectionPreview[];
 }

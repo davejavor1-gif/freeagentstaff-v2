@@ -13,6 +13,8 @@ type TalentRowCore = Pick<ProfilesInsert,
   | "summary"
   | "bio"
   | "skills"
+  | "languages"
+  | "passions"
   | "career_journey"
   | "email"
   | "image_alt"
@@ -65,7 +67,7 @@ function normalizeString(value: string | null | undefined): string | null {
   return trimmed.length > 0 ? trimmed : null;
 }
 
-function normalizeStringArray(values: string[] | null | undefined): string[] {
+function normalizeStringArray(values: string[] | null | undefined, maxItems?: number): string[] {
   if (!Array.isArray(values)) {
     return [];
   }
@@ -74,7 +76,13 @@ function normalizeStringArray(values: string[] | null | undefined): string[] {
     .map((value) => value.trim())
     .filter((value) => value.length > 0);
 
-  return Array.from(new Set(normalized));
+  const uniqueValues = Array.from(new Set(normalized));
+
+  if (typeof maxItems === "number" && maxItems > 0) {
+    return uniqueValues.slice(0, maxItems);
+  }
+
+  return uniqueValues;
 }
 
 export function buildCanonicalTalentColumns(
@@ -104,6 +112,8 @@ export function buildCanonicalTalentColumns(
     summary: normalizeString(profile.summary),
     bio: normalizeString(profile.bio),
     skills: normalizeStringArray(profile.skills),
+    languages: normalizeStringArray(profile.languages, 10),
+    passions: normalizeStringArray(profile.passions, 8),
     career_journey: Array.isArray(profile.careerJourney) ? (profile.careerJourney as unknown as Json) : ([] as unknown as Json),
     email: normalizeString(authEmail),
     image_alt: normalizeString(profile.imageAlt),

@@ -18,6 +18,7 @@ interface ProfileMediaSectionProps {
   onProfileChange: (nextProfile: FreeAgentProfile) => void;
   isSaving: boolean;
   visibility?: string;
+  hasProAccess?: boolean;
 }
 
 const getFileExtension = (fileName: string) => fileName.split(".").pop()?.toLowerCase();
@@ -63,6 +64,7 @@ export default function ProfileMediaSection({
   onProfileChange,
   isSaving,
   visibility,
+  hasProAccess = false,
 }: ProfileMediaSectionProps) {
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [isDeletingPhoto, setIsDeletingPhoto] = useState(false);
@@ -78,7 +80,7 @@ export default function ProfileMediaSection({
   const hasPhoto = Boolean(photoUrlCandidate && !/(logo|fullLogo|placeholder-avatar)/i.test(photoUrlCandidate));
   const hasVideo = Boolean(resolvedVideoUrl ?? profile.intro_video_url);
   const isConfidential = visibility === "confidential";
-  const canShowVideo = hasVideo && !isConfidential;
+  const canShowVideo = hasVideo && !isConfidential && hasProAccess;
   const activePreviewUrl = photoPreviewUrl ?? resolvedPhotoUrl ?? (hasPhoto ? profile.photoUrl : null);
 
   useEffect(() => {
@@ -232,6 +234,12 @@ export default function ProfileMediaSection({
   };
 
   const handleVideoUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    if (!hasProAccess) {
+      setError("Video publishing requires an active Free Agent Pro subscription.");
+      event.target.value = "";
+      return;
+    }
+
     const file = event.target.files?.[0];
 
     if (!file) {
@@ -321,6 +329,11 @@ export default function ProfileMediaSection({
   };
 
   const handleDeleteVideo = async () => {
+    if (!hasProAccess) {
+      setError("Video publishing controls are available on Free Agent Pro.");
+      return;
+    }
+
     if (!window.confirm("Remove your video introduction?")) {
       return;
     }
@@ -440,6 +453,12 @@ export default function ProfileMediaSection({
           </div>
         ) : null}
 
+        {!hasProAccess ? (
+          <div className="rounded-2xl border border-[#cda64d]/35 bg-white/70 px-3 py-2 text-sm text-[#27405f]">
+            Free Agent Pro is required to publish video introductions. Existing uploads stay stored but are hidden from employer-facing surfaces until Pro is active.
+          </div>
+        ) : null}
+
         {canShowVideo ? (
           <div className="rounded-[20px] border border-[#cda64d]/40 bg-[#f7ebcf]/70 p-3">
             <div className="mb-3 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">
@@ -461,13 +480,13 @@ export default function ProfileMediaSection({
           <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f] focus-within:outline-none focus-within:ring-2 focus-within:ring-[#f2cc63] disabled:cursor-not-allowed disabled:opacity-60">
             <UploadCloud className="h-4 w-4" />
             {hasVideo ? "Replace video" : "Upload video introduction"}
-            <input type="file" className="hidden" accept="video/mp4,video/quicktime,video/webm" onChange={handleVideoUpload} disabled={isUploadingPhoto || isUploadingVideo} />
+            <input type="file" className="hidden" accept="video/mp4,video/quicktime,video/webm" onChange={handleVideoUpload} disabled={!hasProAccess || isUploadingPhoto || isUploadingVideo} />
           </label>
 
           <button
             type="button"
             onClick={handleDeleteVideo}
-            disabled={!hasVideo || isDeletingVideo || isUploadingPhoto || isUploadingVideo}
+            disabled={!hasProAccess || !hasVideo || isDeletingVideo || isUploadingPhoto || isUploadingVideo}
             className="inline-flex items-center gap-2 rounded-full border border-[#cda64d]/40 bg-transparent px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#0f2744] transition hover:bg-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f2cc63] disabled:cursor-not-allowed disabled:opacity-60"
           >
             <Trash2 className="h-4 w-4" />

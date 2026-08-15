@@ -38,6 +38,8 @@ export interface ProfilesRow {
   summary: string | null;
   bio: string | null;
   skills: string[];
+  languages: string[];
+  passions: string[];
   career_journey: Json;
   email: string | null;
   image_alt: string | null;
@@ -46,6 +48,9 @@ export interface ProfilesRow {
   current_employer: string | null;
   intro_video_url: string | null;
   intro_video_storage_path: string | null;
+  talent_plan: "free_agent" | "free_agent_pro";
+  talent_subscription_status: "inactive" | "active" | "trialing" | "past_due" | "canceled";
+  talent_subscription_current_period_ends_at: string | null;
   profile: Json;
   created_at: string;
   updated_at: string;
@@ -88,6 +93,8 @@ export interface ProfilesInsert {
   summary?: string | null;
   bio?: string | null;
   skills?: string[];
+  languages?: string[];
+  passions?: string[];
   career_journey?: Json;
   email?: string | null;
   image_alt?: string | null;
@@ -96,6 +103,9 @@ export interface ProfilesInsert {
   current_employer?: string | null;
   intro_video_url?: string | null;
   intro_video_storage_path?: string | null;
+  talent_plan?: ProfilesRow["talent_plan"];
+  talent_subscription_status?: ProfilesRow["talent_subscription_status"];
+  talent_subscription_current_period_ends_at?: string | null;
   profile: Json;
 }
 
@@ -135,6 +145,8 @@ export interface ProfilesUpdate {
   summary?: string | null;
   bio?: string | null;
   skills?: string[];
+  languages?: string[];
+  passions?: string[];
   career_journey?: Json;
   email?: string | null;
   image_alt?: string | null;
@@ -143,7 +155,45 @@ export interface ProfilesUpdate {
   current_employer?: string | null;
   intro_video_url?: string | null;
   intro_video_storage_path?: string | null;
+  talent_plan?: ProfilesRow["talent_plan"];
+  talent_subscription_status?: ProfilesRow["talent_subscription_status"];
+  talent_subscription_current_period_ends_at?: string | null;
   profile?: Json;
+}
+
+export interface TalentProAnalyticsEventsRow {
+  id: string;
+  talent_user_id: string;
+  viewer_user_id: string;
+  employer_company_name: string | null;
+  event_type: "search_impression" | "passport_view";
+  event_day: string;
+  event_at: string;
+  metadata: Json;
+  created_at: string;
+}
+
+export interface TalentProAnalyticsEventsInsert {
+  id?: string;
+  talent_user_id: string;
+  viewer_user_id: string;
+  employer_company_name?: string | null;
+  event_type: TalentProAnalyticsEventsRow["event_type"];
+  event_day?: string;
+  event_at?: string;
+  metadata?: Json;
+  created_at?: string;
+}
+
+export interface TalentProAnalyticsEventsUpdate {
+  talent_user_id?: string;
+  viewer_user_id?: string;
+  employer_company_name?: string | null;
+  event_type?: TalentProAnalyticsEventsRow["event_type"];
+  event_day?: string;
+  event_at?: string;
+  metadata?: Json;
+  created_at?: string;
 }
 
 export interface EmployerSavedTalentRow {
@@ -326,6 +376,11 @@ export interface Database {
         Insert: ProfilesInsert;
         Update: ProfilesUpdate;
       };
+      talent_pro_analytics_events: {
+        Row: TalentProAnalyticsEventsRow;
+        Insert: TalentProAnalyticsEventsInsert;
+        Update: TalentProAnalyticsEventsUpdate;
+      };
       system_admins: {
         Row: SystemAdminsRow;
         Insert: SystemAdminsInsert;
@@ -428,6 +483,8 @@ export interface Database {
           salary_expectation: ProfilesRow["salary_expectation"];
           top_strength: string | null;
           skills: string[] | null;
+          languages: string[] | null;
+          passions: string[] | null;
           location: string | null;
           name: string | null;
           title: string | null;
@@ -453,6 +510,8 @@ export interface Database {
           salary_expectation: ProfilesRow["salary_expectation"];
           top_strength: string | null;
           skills: string[] | null;
+          languages: string[] | null;
+          passions: string[] | null;
           location: string | null;
           name: string | null;
           title: string | null;
@@ -480,6 +539,8 @@ export interface Database {
           salary_expectation: ProfilesRow["salary_expectation"];
           top_strength: string | null;
           skills: string[] | null;
+          languages: string[] | null;
+          passions: string[] | null;
           location: string | null;
           name: string | null;
           title: string | null;
@@ -506,6 +567,8 @@ export interface Database {
           salary_expectation: ProfilesRow["salary_expectation"];
           top_strength: string | null;
           skills: string[] | null;
+          languages: string[] | null;
+          passions: string[] | null;
           location: string | null;
           name: string | null;
           title: string | null;
@@ -531,6 +594,8 @@ export interface Database {
           focus_area: string | null;
           top_strength: string | null;
           skills: string[] | null;
+          languages: string[] | null;
+          passions: string[] | null;
           location: string | null;
           name: string | null;
           title: string | null;
@@ -711,6 +776,8 @@ export interface Database {
           focus_area: string | null;
           top_strength: string | null;
           skills: string[] | null;
+          languages: string[] | null;
+          passions: string[] | null;
           location: string | null;
           name: string | null;
           title: string | null;

@@ -34,6 +34,8 @@ const createBlankTalentProfile = (userId: string, email?: string | null): FreeAg
   focusArea: "",
   summary: "",
   skills: [],
+  languages: [],
+  passions: [],
   careerJourney: [],
   email: email ?? "",
 });
@@ -268,6 +270,13 @@ export default function DashboardPage() {
   const pendingCount = talentSummary?.pendingIntroductionRequests ?? 0;
   const isPublished = talentSummary?.isPublished ?? false;
   const visibility = talentSummary?.visibility ?? "public";
+  const talentSubscription = talentSummary?.subscription ?? {
+    plan: "free_agent",
+    status: "inactive",
+    currentPeriodEndsAt: null,
+    hasProAccess: false,
+  };
+  const isProTalent = talentSubscription.hasProAccess;
 
   const isVerifiedEmployer = accountType === "employer" && verificationStatus === "verified";
 
@@ -603,6 +612,83 @@ export default function DashboardPage() {
           </div>
         ) : (
           <div className="space-y-6">
+            <section className="rounded-3xl border border-[#cda64d]/55 bg-[#f7ebcf] p-6 text-[#0f2744] shadow-[0_16px_40px_rgba(6,16,33,0.18)] sm:p-8">
+              <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Subscription</p>
+                  <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900">
+                    {isProTalent ? "Free Agent Pro" : "Free Agent"}
+                  </h2>
+                </div>
+                <div className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-700">
+                  {talentSubscription.status.replace("_", " ")}
+                </div>
+              </div>
+
+              <p className="text-sm leading-7 text-slate-600">
+                {isProTalent
+                  ? "Pro analytics and video publishing are active for your profile."
+                  : "Upgrade to Free Agent Pro to publish a video introduction and unlock analytics insights."}
+              </p>
+
+              <p className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                Free Agent Pro does not buy preferential discovery. Ranking and eligibility are identical across plans.
+              </p>
+
+              <div className="mt-5">
+                <Link
+                  href="/pricing"
+                  className="inline-flex min-h-[44px] items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-slate-800"
+                >
+                  View pricing
+                </Link>
+              </div>
+            </section>
+
+            {isProTalent && talentSummary?.proAnalytics ? (
+              <section className="rounded-3xl border border-[#cda64d]/55 bg-[#f7ebcf] p-6 text-[#0f2744] shadow-[0_16px_40px_rgba(6,16,33,0.18)] sm:p-8">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Pro analytics</p>
+                    <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900">Last 30 days</h2>
+                  </div>
+                </div>
+
+                <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                  <div className={summaryCardClassName}>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Search impressions</p>
+                    <p className="mt-2 text-2xl font-black text-slate-900">{talentSummary.proAnalytics.searchImpressions30d}</p>
+                  </div>
+                  <div className={summaryCardClassName}>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Passport views</p>
+                    <p className="mt-2 text-2xl font-black text-slate-900">{talentSummary.proAnalytics.passportViews30d}</p>
+                  </div>
+                  <div className={summaryCardClassName}>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Unique employer viewers</p>
+                    <p className="mt-2 text-2xl font-black text-slate-900">{talentSummary.proAnalytics.uniqueEmployerViewers30d}</p>
+                  </div>
+                </div>
+
+                <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Recent employer viewers</p>
+                  <p className="mt-2 text-sm text-slate-700">
+                    {talentSummary.proAnalytics.recentEmployerViewers.length > 0
+                      ? talentSummary.proAnalytics.recentEmployerViewers.join(" · ")
+                      : "No attributed employer viewers yet."}
+                  </p>
+                </div>
+
+                <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Insights</p>
+                  <div className="mt-2 space-y-2 text-sm text-slate-700">
+                    {talentSummary.proAnalytics.insights.map((insight) => (
+                      <p key={insight}>{insight}</p>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            ) : null}
+
             <section className="rounded-3xl border border-[#cda64d]/55 bg-[#f7ebcf] p-6 text-[#0f2744] shadow-[0_16px_40px_rgba(6,16,33,0.18)] sm:p-8">
               <h2 className="text-2xl font-black tracking-tight text-slate-900">Your visibility snapshot</h2>
               <p className="mt-3 text-sm leading-7 text-slate-600">

@@ -13,6 +13,8 @@ export const freeAgentProfiles: FreeAgentProfile[] = [
     summary:
       "Trusted by growth-stage teams for thoughtful product strategy and polished design execution.",
     skills: ["UI Design", "Design Systems", "Figma", "Strategy"],
+    languages: ["English", "Mandarin"],
+    passions: ["Design", "Travel", "Mentoring"],
     careerJourney: [
       {
         id: "journey-maya-1",

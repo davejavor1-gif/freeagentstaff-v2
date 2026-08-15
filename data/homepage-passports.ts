@@ -17,6 +17,8 @@ export const homepagePassportProfiles: Record<string, FreeAgentProfile> = {
     summary:
       "A fictional technology professional who combines practical engineering judgment with thoughtful product delivery.",
     skills: ["React", "TypeScript", "Product Delivery", "Systems Thinking"],
+    languages: ["English", "French"],
+    passions: ["Technology", "Mentoring", "Travel"],
     education: "Bachelor of Computer Science",
     salaryExpectation: "120k_150k",
     careerJourney: [
@@ -57,6 +59,8 @@ export const homepagePassportProfiles: Record<string, FreeAgentProfile> = {
       "Budgets",
       "Stakeholder Management",
     ],
+    languages: ["English"],
+    passions: ["Events", "Mentoring", "Community"],
     education: "Diploma of Event Management - TAFE NSW",
     salaryExpectation: "100k_120k",
     careerJourney: [
@@ -97,6 +101,8 @@ export const homepagePassportProfiles: Record<string, FreeAgentProfile> = {
       "Service Delivery",
       "Stakeholder Management",
     ],
+    languages: ["English", "Spanish"],
+    passions: ["Leadership", "Live Events", "Food & Wine"],
     education: "Certified Operations Professional",
     salaryExpectation: "150k_200k",
     careerJourney: [
@@ -137,6 +143,8 @@ export const homepagePassportProfiles: Record<string, FreeAgentProfile> = {
       "Bar Operations",
       "Stock Control",
     ],
+    languages: ["English"],
+    passions: ["Hospitality", "Travel", "Community"],
     education: "Certificate III in Hospitality",
     salaryExpectation: "60k_80k",
     careerJourney: [

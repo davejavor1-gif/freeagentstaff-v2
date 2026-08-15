@@ -59,6 +59,8 @@ export interface FreeAgentProfile {
   summary: string;
   bio?: string;
   skills: string[];
+  languages: string[];
+  passions: string[];
   careerJourney: CareerPosition[];
   education?: string;
   salaryExpectation?: SalaryExpectation | null;

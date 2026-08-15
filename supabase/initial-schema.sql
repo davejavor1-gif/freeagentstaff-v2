@@ -38,6 +38,8 @@ create table if not exists profiles (
   summary text,
   bio text check (bio is null or char_length(bio) <= 750),
   skills text[] not null default '{}',
+  languages text[] not null default '{}',
+  passions text[] not null default '{}',
   career_journey jsonb not null default '[]'::jsonb,
   email text,
   image_alt text,
@@ -46,6 +48,9 @@ create table if not exists profiles (
   current_employer text,
   intro_video_url text,
   intro_video_storage_path text,
+  talent_plan text not null default 'free_agent' check (talent_plan in ('free_agent', 'free_agent_pro')),
+  talent_subscription_status text not null default 'inactive' check (talent_subscription_status in ('inactive', 'active', 'trialing', 'past_due', 'canceled')),
+  talent_subscription_current_period_ends_at timestamptz,
   profile jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -70,6 +75,44 @@ create policy "Users can delete their own profile" on profiles
   for delete
   using (auth.uid() = user_id);
 
+create policy "Pro talent can upload intro videos" on storage.objects
+  for insert
+  to authenticated
+  with check (
+    bucket_id = 'intro-videos'
+    and (storage.foldername(name))[1] = auth.uid()::text
+    and exists (
+      select 1
+      from public.profiles
+      where user_id = auth.uid()
+        and account_type = 'talent'
+        and talent_plan = 'free_agent_pro'
+        and talent_subscription_status in ('active', 'trialing')
+        and (talent_subscription_current_period_ends_at is null or talent_subscription_current_period_ends_at >= now())
+    )
+  );
+
+create policy "Pro talent can update intro videos" on storage.objects
+  for update
+  to authenticated
+  using (
+    bucket_id = 'intro-videos'
+    and (storage.foldername(name))[1] = auth.uid()::text
+    and exists (
+      select 1
+      from public.profiles
+      where user_id = auth.uid()
+        and account_type = 'talent'
+        and talent_plan = 'free_agent_pro'
+        and talent_subscription_status in ('active', 'trialing')
+        and (talent_subscription_current_period_ends_at is null or talent_subscription_current_period_ends_at >= now())
+    )
+  )
+  with check (
+    bucket_id = 'intro-videos'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+
 create or replace function public.set_updated_at()
 returns trigger language plpgsql as $$
 begin
@@ -80,6 +123,69 @@ $$;
 
 create trigger set_updated_at before update on profiles
   for each row execute function public.set_updated_at();
+
+create or replace function public.protect_talent_subscription_state()
+returns trigger
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+begin
+  if current_user not in ('service_role', 'postgres') then
+    if tg_op = 'INSERT' then
+      new.talent_plan := 'free_agent';
+      new.talent_subscription_status := 'inactive';
+      new.talent_subscription_current_period_ends_at := null;
+    else
+      new.talent_plan := old.talent_plan;
+      new.talent_subscription_status := old.talent_subscription_status;
+      new.talent_subscription_current_period_ends_at := old.talent_subscription_current_period_ends_at;
+    end if;
+  end if;
+
+  return new;
+end;
+$$;
+
+create trigger protect_talent_subscription_state
+  before insert or update on profiles
+  for each row execute function public.protect_talent_subscription_state();
+
+create table if not exists talent_pro_analytics_events (
+  id uuid primary key default gen_random_uuid(),
+  talent_user_id uuid not null references auth.users (id) on delete cascade,
+  viewer_user_id uuid not null references auth.users (id) on delete cascade,
+  employer_company_name text,
+  event_type text not null check (event_type in ('search_impression', 'passport_view')),
+  event_day date not null default ((now() at time zone 'utc')::date),
+  event_at timestamptz not null default now(),
+  metadata jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now(),
+  unique (talent_user_id, viewer_user_id, event_type, event_day)
+);
+
+alter table talent_pro_analytics_events enable row level security;
+
+create policy "Talent can view own pro analytics events" on talent_pro_analytics_events
+  for select
+  using (
+    auth.uid() = talent_user_id
+    and exists (
+      select 1
+      from public.profiles
+      where user_id = auth.uid()
+        and account_type = 'talent'
+        and talent_plan = 'free_agent_pro'
+        and talent_subscription_status in ('active', 'trialing')
+        and (talent_subscription_current_period_ends_at is null or talent_subscription_current_period_ends_at >= now())
+    )
+  );
+
+create index if not exists talent_pro_analytics_events_talent_day_idx
+  on talent_pro_analytics_events (talent_user_id, event_day desc);
+
+create index if not exists talent_pro_analytics_events_viewer_idx
+  on talent_pro_analytics_events (viewer_user_id, event_day desc);
 
 -- Security invariant:
 -- The freeagent.transition GUC context is an internal DB transition mechanism only.

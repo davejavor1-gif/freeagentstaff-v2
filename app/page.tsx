@@ -146,6 +146,8 @@ const homepageDemoProfile: FreeAgentProfile = {
   summary:
     "A fictional Talent Card used to demonstrate the approved production card.",
   skills: ["React", "TypeScript", "Product Delivery", "Systems Thinking"],
+  languages: ["English", "French"],
+  passions: ["Technology", "Mentoring", "Travel"],
   photoUrl: "/images/homepage-talent-model.jpg",
   imageAlt: "Fictional professional portrait",
   intro_video_url: "/videos/sarahs%20intro.mp4",
@@ -183,6 +185,8 @@ const homepageLowerDemoProfile: FreeAgentProfile = {
     "Service Delivery",
     "Stakeholder Management",
   ],
+  languages: ["English", "Spanish"],
+  passions: ["Leadership", "Live Events", "Food & Wine"],
   photoUrl: "/images/openart-64f1b59a62fd4bc1a7a2678ed4580466_00001__raw.png",
   imageAlt: "Fictional professional portrait",
   intro_video_url: "/videos/daniels%20intro.mp4",
@@ -241,6 +245,8 @@ function EmployerDiscoveryResult({
     summary:
       "A fictional profile shown in the homepage employer-search demonstration.",
     skills: result.skills,
+    languages: [],
+    passions: [],
     photoUrl: result.photoUrl,
     imageAlt: "Fictional professional portrait",
     intro_video_url: result.introVideoUrl,

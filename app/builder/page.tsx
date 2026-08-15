@@ -12,6 +12,7 @@ import VideoIntroductionSection from "@/components/settings/VideoIntroductionSec
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { salaryExpectationOptions } from "@/lib/talent-profile-options";
+import { hasTalentProAccess, normalizeTalentSubscriptionSnapshot } from "@/lib/talent-subscription";
 import type { AccountType, CareerPosition, FreeAgentProfile, ProfileVisibility } from "@/types/freeagent";
 import type { Database, Json } from "@/types/supabase";
 
@@ -36,6 +37,8 @@ type ProfileSelectResult = {
   summary?: string | null;
   bio?: string | null;
   skills?: string[] | null;
+  languages?: string[] | null;
+  passions?: string[] | null;
   career_journey?: Json;
   email?: string | null;
   image_alt?: string | null;
@@ -50,6 +53,9 @@ type ProfileSelectResult = {
   resume_storage_path?: string | null;
   resume_original_filename?: string | null;
   resume_uploaded_at?: string | null;
+  talent_plan?: "free_agent" | "free_agent_pro" | null;
+  talent_subscription_status?: "inactive" | "active" | "trialing" | "past_due" | "canceled" | null;
+  talent_subscription_current_period_ends_at?: string | null;
 };
 
 const normalizeVisibility = (value: ProfileVisibility | null | undefined): Exclude<ProfileVisibility, "employer_network"> => {
@@ -104,6 +110,8 @@ function hydrateBuilderProfile(profileResult: ProfileSelectResult, fallbackEmail
   loadedProfile.summary = profileResult.summary ?? loadedProfile.summary ?? "";
   loadedProfile.bio = profileResult.bio ?? loadedProfile.bio ?? "";
   loadedProfile.skills = profileResult.skills ?? loadedProfile.skills ?? [];
+  loadedProfile.languages = profileResult.languages ?? loadedProfile.languages ?? [];
+  loadedProfile.passions = profileResult.passions ?? loadedProfile.passions ?? [];
   loadedProfile.careerJourney = Array.isArray(profileResult.career_journey)
     ? (profileResult.career_journey as unknown as FreeAgentProfile["careerJourney"])
     : (loadedProfile.careerJourney ?? []);
@@ -137,6 +145,8 @@ const createBlankProfile = (userId: string, email?: string | null): FreeAgentPro
   summary: "",
   bio: "",
   skills: [],
+  languages: [],
+  passions: [],
   careerJourney: [],
   email: email ?? "",
   imageAlt: "",
@@ -155,6 +165,7 @@ export default function BuilderPage() {
     location: initialProfile.location,
   });
   const [profileLoaded, setProfileLoaded] = useState(false);
+  const [hasProAccess, setHasProAccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -163,6 +174,8 @@ export default function BuilderPage() {
   const [resumeBusy, setResumeBusy] = useState(false);
   const [resumeError, setResumeError] = useState<string | null>(null);
   const [skillInput, setSkillInput] = useState("");
+  const [languageInput, setLanguageInput] = useState("");
+  const [passionInput, setPassionInput] = useState("");
   const [journeyDrafts, setJourneyDrafts] = useState<Record<string, { achievement: string; skill: string }>>({});
   const router = useRouter();
 
@@ -185,7 +198,7 @@ export default function BuilderPage() {
 
       const { data, error } = await supabase
         .from("profiles")
-        .select("slug, profile, account_type, visibility, opportunity_status, name, title, location, availability, top_strength, experience_years, focus_area, education, salary_expectation, contact_email, resume_storage_path, resume_original_filename, resume_uploaded_at, summary, bio, skills, career_journey, email, image_alt, current_employer, intro_video_url, photo_url, photo_storage_path, intro_video_storage_path")
+        .select("slug, profile, account_type, visibility, opportunity_status, name, title, location, availability, top_strength, experience_years, focus_area, education, salary_expectation, contact_email, resume_storage_path, resume_original_filename, resume_uploaded_at, summary, bio, skills, languages, passions, career_journey, email, image_alt, current_employer, intro_video_url, photo_url, photo_storage_path, intro_video_storage_path, talent_plan, talent_subscription_status, talent_subscription_current_period_ends_at")
         .eq("user_id", supabaseSession.user.id)
         .maybeSingle();
 
@@ -210,6 +223,12 @@ export default function BuilderPage() {
         }
 
         setProfile(hydrateBuilderProfile(profileResult, supabaseSession.user.email));
+        const subscription = normalizeTalentSubscriptionSnapshot({
+          plan: profileResult.talent_plan,
+          status: profileResult.talent_subscription_status,
+          currentPeriodEndsAt: profileResult.talent_subscription_current_period_ends_at,
+        });
+        setHasProAccess(hasTalentProAccess(subscription));
       } else {
         const blankProfile = createBlankProfile(supabaseSession.user.id, supabaseSession.user.email);
         const insertPayload: ProfileInsert = {
@@ -229,6 +248,7 @@ export default function BuilderPage() {
 
         const { data: insertedProfile } = await supabase.from("profiles").select("slug").eq("user_id", supabaseSession.user.id).maybeSingle<{ slug: string | null }>();
         setProfile({ ...blankProfile, slug: insertedProfile?.slug ?? undefined });
+        setHasProAccess(false);
       }
 
       setProfileLoaded(true);
@@ -443,6 +463,45 @@ export default function BuilderPage() {
     }));
   };
 
+  const addListItem = (field: "languages" | "passions", value: string) => {
+    const trimmedValue = value.trim();
+
+    if (!trimmedValue) {
+      return;
+    }
+
+    setProfile((current) => {
+      const normalizedValue = trimmedValue.replace(/\s+/g, " ");
+      const existingValues = current[field] ?? [];
+      const alreadyExists = existingValues.some(
+        (item) => item.toLowerCase() === normalizedValue.toLowerCase(),
+      );
+
+      if (alreadyExists) {
+        if (field === "languages") setLanguageInput("");
+        if (field === "passions") setPassionInput("");
+        return current;
+      }
+
+      const maxItems = field === "languages" ? 10 : 8;
+
+      return {
+        ...current,
+        [field]: [...existingValues, normalizedValue].slice(0, maxItems),
+      };
+    });
+
+    if (field === "languages") setLanguageInput("");
+    if (field === "passions") setPassionInput("");
+  };
+
+  const removeListItem = (field: "languages" | "passions", valueToRemove: string) => {
+    setProfile((current) => ({
+      ...current,
+      [field]: (current[field] ?? []).filter((item) => item !== valueToRemove),
+    }));
+  };
+
   const addCareerPosition = () => {
     setProfile((current) => ({
       ...current,
@@ -626,6 +685,7 @@ export default function BuilderPage() {
               onProfileChange={(nextProfile) => setProfile(nextProfile)}
               isSaving={isSaving}
               visibility={profile.visibility}
+              hasProAccess={hasProAccess}
             />
           </div>
 
@@ -853,6 +913,116 @@ export default function BuilderPage() {
                       className="inline-flex items-center gap-2 rounded-full border border-[#f2cc63]/70 bg-[#0f2744] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf] shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#f2cc63] hover:bg-[#17355f] hover:shadow-[0_8px_16px_rgba(7,20,38,0.16)]"
                     >
                       <span>{skill}</span>
+                      <span className="flex h-4 w-4 items-center justify-center rounded-full border border-[#f2cc63]/40 bg-[#f7ebcf]/10 text-[10px] leading-none text-[#f7ebcf]">
+                        ×
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+
+            <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#4f9f4e] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                    Languages
+                  </p>
+                  <p className="mt-1 text-sm text-[#27405f]">
+                    Add up to 10 languages for your talent passport.
+                  </p>
+                </div>
+                <p className="text-xs font-semibold text-[#6a7a91]">{(profile.languages ?? []).length}/10</p>
+              </div>
+
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <input
+                  value={languageInput}
+                  onChange={(event) => setLanguageInput(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      addListItem("languages", languageInput);
+                    }
+                  }}
+                  className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] shadow-sm outline-none transition focus:border-[#0f2744]"
+                  placeholder="Type a language..."
+                />
+                <button
+                  type="button"
+                  onClick={() => addListItem("languages", languageInput)}
+                  disabled={(profile.languages ?? []).length >= 10}
+                  className="rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Add
+                </button>
+              </div>
+
+              {(profile.languages ?? []).length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {(profile.languages ?? []).map((language) => (
+                    <button
+                      key={language}
+                      type="button"
+                      onClick={() => removeListItem("languages", language)}
+                      className="inline-flex items-center gap-2 rounded-full border border-[#f2cc63]/70 bg-[#0f2744] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf] shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#f2cc63] hover:bg-[#17355f] hover:shadow-[0_8px_16px_rgba(7,20,38,0.16)]"
+                    >
+                      <span>{language}</span>
+                      <span className="flex h-4 w-4 items-center justify-center rounded-full border border-[#f2cc63]/40 bg-[#f7ebcf]/10 text-[10px] leading-none text-[#f7ebcf]">
+                        ×
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+
+            <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#cda64d] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                    Passions
+                  </p>
+                  <p className="mt-1 text-sm text-[#27405f]">
+                    Add up to 8 passions to show what motivates you.
+                  </p>
+                </div>
+                <p className="text-xs font-semibold text-[#6a7a91]">{(profile.passions ?? []).length}/8</p>
+              </div>
+
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <input
+                  value={passionInput}
+                  onChange={(event) => setPassionInput(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      addListItem("passions", passionInput);
+                    }
+                  }}
+                  className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] shadow-sm outline-none transition focus:border-[#0f2744]"
+                  placeholder="Type a passion..."
+                />
+                <button
+                  type="button"
+                  onClick={() => addListItem("passions", passionInput)}
+                  disabled={(profile.passions ?? []).length >= 8}
+                  className="rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Add
+                </button>
+              </div>
+
+              {(profile.passions ?? []).length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {(profile.passions ?? []).map((passion) => (
+                    <button
+                      key={passion}
+                      type="button"
+                      onClick={() => removeListItem("passions", passion)}
+                      className="inline-flex items-center gap-2 rounded-full border border-[#f2cc63]/70 bg-[#0f2744] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf] shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#f2cc63] hover:bg-[#17355f] hover:shadow-[0_8px_16px_rgba(7,20,38,0.16)]"
+                    >
+                      <span>{passion}</span>
                       <span className="flex h-4 w-4 items-center justify-center rounded-full border border-[#f2cc63]/40 bg-[#f7ebcf]/10 text-[10px] leading-none text-[#f7ebcf]">
                         ×
                       </span>
