@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { listEmployerConnections } from "@/lib/connection-access";
 import { listEmployerIntroductionRequests } from "@/lib/introduction-request-access";
 import { getEmployerSavedTalentAndShortlistCounts } from "@/lib/saved-talent-access";
+import { createUserServerSupabaseClient } from "@/lib/server-supabase";
+import { hasEmployerSubscriptionAccess, normalizeEmployerSubscriptionSnapshot } from "@/lib/talent-subscription";
 import type {
   DashboardSummaryReason,
   EmployerDashboardConnectionPreview,
@@ -73,6 +75,25 @@ function sortConnectionPreview(
 export async function GET(request: Request) {
   const accessToken = getBearerToken(request);
 
+  if (!accessToken) {
+    return NextResponse.json({ ok: false, reason: "not_signed_in", message: "Sign in required." }, { status: 401 });
+  }
+
+  const userClient = createUserServerSupabaseClient(accessToken);
+  const { data: profileRow, error: profileError } = await userClient
+    .from("profiles")
+    .select("account_type, employer_subscription_status, employer_subscription_current_period_ends_at, employer_subscription_cancel_at_period_end")
+    .maybeSingle<{
+      account_type: "talent" | "employer";
+      employer_subscription_status: "inactive" | "active" | "trialing" | "past_due" | "canceled";
+      employer_subscription_current_period_ends_at: string | null;
+      employer_subscription_cancel_at_period_end: boolean;
+    }>();
+
+  if (profileError || profileRow?.account_type !== "employer") {
+    return NextResponse.json({ ok: false, reason: "wrong_account_type", message: "Employer account required." }, { status: 403 });
+  }
+
   const [savedCounts, requestList, connectionList] = await Promise.all([
     getEmployerSavedTalentAndShortlistCounts(accessToken),
     listEmployerIntroductionRequests(accessToken),
@@ -103,6 +124,14 @@ export async function GET(request: Request) {
   const payload: EmployerSummaryResponse = {
     ok: true,
     summary: {
+      subscription: (() => {
+        const subscription = normalizeEmployerSubscriptionSnapshot({
+          status: profileRow.employer_subscription_status,
+          currentPeriodEndsAt: profileRow.employer_subscription_current_period_ends_at,
+          cancelAtPeriodEnd: profileRow.employer_subscription_cancel_at_period_end,
+        });
+        return { ...subscription, hasAccess: hasEmployerSubscriptionAccess(subscription) };
+      })(),
       savedTalentCount: savedCounts.ok ? savedCounts.savedTalentCount : 0,
       pendingIntroductionRequests: requestItems.filter((item) => item.status === "pending").length,
       activeConnections: connectionItems.filter((item) => item.status === "active").length,

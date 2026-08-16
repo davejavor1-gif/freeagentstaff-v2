@@ -6,9 +6,11 @@ import { useRouter } from "next/navigation";
 import { CheckCircle2, Undo2, XCircle } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import BillingButton from "@/components/BillingButton";
 import type { Session } from "@supabase/supabase-js";
 import { buildCanonicalTalentColumns } from "@/lib/talent-profile-columns";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
+import { CANONICAL_PRICING_PLANS } from "@/lib/talent-subscription";
 import type {
   AccountType,
   EmployerVerificationStatus,
@@ -56,6 +58,8 @@ type ProfileRow = {
 };
 
 const summaryCardClassName = "rounded-2xl border border-[#cda64d]/45 bg-[#f7ebcf] p-5 text-[#0f2744] shadow-[0_10px_28px_rgba(6,16,33,0.12)]";
+const freeAgentProPlan = CANONICAL_PRICING_PLANS.find((plan) => plan.code === "free_agent_pro");
+const employerPlan = CANONICAL_PRICING_PLANS.find((plan) => plan.code === "employer");
 
 function formatDateTime(value: string | null | undefined) {
   if (!value) {
@@ -274,6 +278,7 @@ export default function DashboardPage() {
     plan: "free_agent",
     status: "inactive",
     currentPeriodEndsAt: null,
+    cancelAtPeriodEnd: false,
     hasProAccess: false,
   };
   const isProTalent = talentSubscription.hasProAccess;
@@ -422,6 +427,32 @@ export default function DashboardPage() {
 
         {accountType === "employer" ? (
           <div className="space-y-6">
+            <section className="rounded-3xl border border-[#cda64d]/55 bg-[#f7ebcf] p-6 text-[#0f2744] shadow-[0_16px_40px_rgba(6,16,33,0.18)] sm:p-8">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Subscription</p>
+                  <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900">Employer</h2>
+                  <p className="mt-2 text-sm text-slate-600">{employerPlan?.priceLabel} / {employerPlan?.cadenceLabel}</p>
+                  {employerSummary?.subscription.cancelAtPeriodEnd && employerSummary.subscription.currentPeriodEndsAt ? (
+                    <p className="mt-3 text-sm font-semibold text-amber-800">Access remains active until {formatDateTime(employerSummary.subscription.currentPeriodEndsAt)}.</p>
+                  ) : null}
+                </div>
+                <div className="flex flex-col items-start gap-2 sm:items-end">
+                  <span className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-700">
+                    {(employerSummary?.subscription.status ?? "inactive").replace("_", " ")}
+                  </span>
+                  {employerSummary?.subscription.hasAccess ? (
+                    <BillingButton action="portal" className="inline-flex min-h-[44px] items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-slate-800">
+                      Manage subscription
+                    </BillingButton>
+                  ) : (
+                    <BillingButton action="checkout" plan="employer" className="inline-flex min-h-[44px] items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-slate-800">
+                      Get started
+                    </BillingButton>
+                  )}
+                </div>
+              </div>
+            </section>
             {isVerifiedEmployer ? (
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <Link href="/find-talent" className={`${summaryCardClassName} text-sm font-semibold text-slate-700 transition hover:bg-slate-50`}>
@@ -627,19 +658,29 @@ export default function DashboardPage() {
 
               <p className="text-sm leading-7 text-slate-600">
                 {isProTalent
-                  ? "Pro analytics and video publishing are active for your profile."
-                  : "Upgrade to Free Agent Pro to publish a video introduction and unlock analytics insights."}
+                  ? `${freeAgentProPlan?.name} analytics and video publishing are active for your profile at ${freeAgentProPlan?.priceLabel} / ${freeAgentProPlan?.cadenceLabel}.`
+                  : `Upgrade to ${freeAgentProPlan?.name} at ${freeAgentProPlan?.priceLabel} / ${freeAgentProPlan?.cadenceLabel} to publish a video introduction and unlock analytics insights.`}
               </p>
+
+              {talentSubscription.cancelAtPeriodEnd && talentSubscription.currentPeriodEndsAt ? (
+                <p className="mt-3 text-sm font-semibold text-amber-800">Pro access remains active until {formatDateTime(talentSubscription.currentPeriodEndsAt)}.</p>
+              ) : null}
 
               <p className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
                 Free Agent Pro does not buy preferential discovery. Ranking and eligibility are identical across plans.
               </p>
 
-              <div className="mt-5">
-                <Link
-                  href="/pricing"
-                  className="inline-flex min-h-[44px] items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-slate-800"
-                >
+              <div className="mt-5 flex flex-wrap gap-3">
+                {isProTalent ? (
+                  <BillingButton action="portal" className="inline-flex min-h-[44px] items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-slate-800">
+                    Manage subscription
+                  </BillingButton>
+                ) : (
+                  <BillingButton action="checkout" plan="free_agent_pro" className="inline-flex min-h-[44px] items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-slate-800">
+                    Upgrade to Pro
+                  </BillingButton>
+                )}
+                <Link href="/pricing" className="inline-flex min-h-[44px] items-center justify-center rounded-2xl border border-slate-300 px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-slate-800 transition hover:bg-slate-50">
                   View pricing
                 </Link>
               </div>

@@ -51,6 +51,15 @@ export interface ProfilesRow {
   talent_plan: "free_agent" | "free_agent_pro";
   talent_subscription_status: "inactive" | "active" | "trialing" | "past_due" | "canceled";
   talent_subscription_current_period_ends_at: string | null;
+  talent_subscription_cancel_at_period_end: boolean;
+  stripe_customer_id: string | null;
+  stripe_talent_subscription_id: string | null;
+  stripe_talent_price_id: string | null;
+  employer_subscription_status: "inactive" | "active" | "trialing" | "past_due" | "canceled";
+  employer_subscription_current_period_ends_at: string | null;
+  employer_subscription_cancel_at_period_end: boolean;
+  stripe_employer_subscription_id: string | null;
+  stripe_employer_price_id: string | null;
   profile: Json;
   created_at: string;
   updated_at: string;
@@ -106,6 +115,15 @@ export interface ProfilesInsert {
   talent_plan?: ProfilesRow["talent_plan"];
   talent_subscription_status?: ProfilesRow["talent_subscription_status"];
   talent_subscription_current_period_ends_at?: string | null;
+  talent_subscription_cancel_at_period_end?: boolean;
+  stripe_customer_id?: string | null;
+  stripe_talent_subscription_id?: string | null;
+  stripe_talent_price_id?: string | null;
+  employer_subscription_status?: ProfilesRow["employer_subscription_status"];
+  employer_subscription_current_period_ends_at?: string | null;
+  employer_subscription_cancel_at_period_end?: boolean;
+  stripe_employer_subscription_id?: string | null;
+  stripe_employer_price_id?: string | null;
   profile: Json;
 }
 
@@ -158,6 +176,15 @@ export interface ProfilesUpdate {
   talent_plan?: ProfilesRow["talent_plan"];
   talent_subscription_status?: ProfilesRow["talent_subscription_status"];
   talent_subscription_current_period_ends_at?: string | null;
+  talent_subscription_cancel_at_period_end?: boolean;
+  stripe_customer_id?: string | null;
+  stripe_talent_subscription_id?: string | null;
+  stripe_talent_price_id?: string | null;
+  employer_subscription_status?: ProfilesRow["employer_subscription_status"];
+  employer_subscription_current_period_ends_at?: string | null;
+  employer_subscription_cancel_at_period_end?: boolean;
+  stripe_employer_subscription_id?: string | null;
+  stripe_employer_price_id?: string | null;
   profile?: Json;
 }
 

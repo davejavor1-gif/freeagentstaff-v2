@@ -1,10 +1,18 @@
 export type TalentPlanCode = "free_agent" | "free_agent_pro";
 export type TalentSubscriptionStatus = "inactive" | "active" | "trialing" | "past_due" | "canceled";
+export type EmployerSubscriptionStatus = "inactive" | "active" | "trialing" | "past_due" | "canceled";
 
 export interface TalentSubscriptionSnapshot {
   plan: TalentPlanCode;
   status: TalentSubscriptionStatus;
   currentPeriodEndsAt: string | null;
+  cancelAtPeriodEnd: boolean;
+}
+
+export interface EmployerSubscriptionSnapshot {
+  status: EmployerSubscriptionStatus;
+  currentPeriodEndsAt: string | null;
+  cancelAtPeriodEnd: boolean;
 }
 
 export interface CanonicalPricingPlan {
@@ -81,11 +89,13 @@ export function normalizeTalentSubscriptionSnapshot(input: {
   plan?: string | null;
   status?: string | null;
   currentPeriodEndsAt?: string | null;
+  cancelAtPeriodEnd?: boolean | null;
 }): TalentSubscriptionSnapshot {
   return {
     plan: normalizePlanCode(input.plan),
     status: normalizeStatus(input.status),
     currentPeriodEndsAt: input.currentPeriodEndsAt ?? null,
+    cancelAtPeriodEnd: input.cancelAtPeriodEnd === true,
   };
 }
 
@@ -108,4 +118,37 @@ export function hasTalentProAccess(snapshot: TalentSubscriptionSnapshot, now = n
   }
 
   return periodEndsAt.getTime() >= now.getTime();
+}
+
+function normalizeEmployerStatus(value: string | null | undefined): EmployerSubscriptionStatus {
+  if (value === "active" || value === "trialing" || value === "past_due" || value === "canceled" || value === "inactive") {
+    return value;
+  }
+
+  return "inactive";
+}
+
+export function normalizeEmployerSubscriptionSnapshot(input: {
+  status?: string | null;
+  currentPeriodEndsAt?: string | null;
+  cancelAtPeriodEnd?: boolean | null;
+}): EmployerSubscriptionSnapshot {
+  return {
+    status: normalizeEmployerStatus(input.status),
+    currentPeriodEndsAt: input.currentPeriodEndsAt ?? null,
+    cancelAtPeriodEnd: input.cancelAtPeriodEnd === true,
+  };
+}
+
+export function hasEmployerSubscriptionAccess(snapshot: EmployerSubscriptionSnapshot, now = new Date()): boolean {
+  if (snapshot.status !== "active" && snapshot.status !== "trialing") {
+    return false;
+  }
+
+  if (!snapshot.currentPeriodEndsAt) {
+    return true;
+  }
+
+  const periodEndsAt = new Date(snapshot.currentPeriodEndsAt);
+  return !Number.isNaN(periodEndsAt.getTime()) && periodEndsAt.getTime() >= now.getTime();
 }

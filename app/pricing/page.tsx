@@ -1,12 +1,14 @@
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
+import BillingButton from "@/components/BillingButton";
 import { CANONICAL_PRICING_PLANS } from "@/lib/talent-subscription";
 
 export default function PricingPage() {
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#f7ebcf_0%,_#f4e4bf_40%,_#e7d7a7_100%)] text-[#071426]">
+    <main className="flex min-h-screen flex-col bg-[radial-gradient(circle_at_top,_#f7ebcf_0%,_#f4e4bf_40%,_#e7d7a7_100%)] text-[#071426]">
       <Navbar />
-      <div className="mx-auto max-w-7xl px-6 py-12 sm:px-8 lg:px-12">
+      <div className="flex-1 mx-auto w-full max-w-7xl px-6 py-12 sm:px-8 lg:px-12">
         <div className="mb-12 space-y-6">
           <p className="text-sm font-semibold uppercase tracking-[0.32em] text-[#9a6d15]">
             Pricing
@@ -55,20 +57,31 @@ export default function PricingPage() {
                   </li>
                 ))}
               </ul>
-              <Link
-                href={plan.audience === "employer" ? "/find-talent" : "/builder"}
-                className={`mt-8 inline-flex w-full items-center justify-center rounded-full px-5 py-3 text-sm font-semibold uppercase tracking-[0.24em] transition ${
-                  plan.code === "free_agent_pro"
-                    ? "bg-[#f2cc63] text-[#0f2744] hover:bg-[#f7ebcf]"
-                    : "bg-[#0f2744] text-[#f7ebcf] hover:bg-[#17355f]"
-                }`}
-              >
-                {plan.audience === "employer" ? "Open employer discovery" : "Open talent builder"}
-              </Link>
+              {plan.code === "free_agent" ? (
+                <Link
+                  href="/builder"
+                  className="mt-8 inline-flex w-full items-center justify-center rounded-full bg-[#0f2744] px-5 py-3 text-sm font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f]"
+                >
+                  Create your card
+                </Link>
+              ) : (
+                <BillingButton
+                  action="checkout"
+                  plan={plan.code}
+                  className={`mt-8 inline-flex w-full items-center justify-center rounded-full px-5 py-3 text-sm font-semibold uppercase tracking-[0.24em] transition ${
+                    plan.code === "free_agent_pro"
+                      ? "bg-[#f2cc63] text-[#0f2744] hover:bg-[#f7ebcf]"
+                      : "bg-[#0f2744] text-[#f7ebcf] hover:bg-[#17355f]"
+                  }`}
+                >
+                  {plan.code === "free_agent_pro" ? "Go Pro" : "Get started"}
+                </BillingButton>
+              )}
             </div>
           ))}
         </div>
       </div>
+      <Footer />
     </main>
   );
 }

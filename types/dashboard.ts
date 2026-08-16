@@ -32,6 +32,12 @@ export interface EmployerDashboardConnectionPreview {
 }
 
 export interface EmployerSummaryPayload {
+  subscription: {
+    status: "inactive" | "active" | "trialing" | "past_due" | "canceled";
+    currentPeriodEndsAt: string | null;
+    cancelAtPeriodEnd: boolean;
+    hasAccess: boolean;
+  };
   savedTalentCount: number;
   pendingIntroductionRequests: number;
   activeConnections: number;
@@ -70,6 +76,7 @@ export interface TalentSubscriptionSummary {
   plan: "free_agent" | "free_agent_pro";
   status: "inactive" | "active" | "trialing" | "past_due" | "canceled";
   currentPeriodEndsAt: string | null;
+  cancelAtPeriodEnd: boolean;
   hasProAccess: boolean;
 }
 

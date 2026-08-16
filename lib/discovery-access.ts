@@ -6,11 +6,11 @@ import type { Database, Json, ProfilesRow } from "@/types/supabase";
 import { createServiceRoleSupabaseClient, createUserServerSupabaseClient } from "@/lib/server-supabase";
 import { loadPrivateAccess } from "@/lib/private-access";
 import { loadTalentSubscriptionRowsBySlugs, trackTalentAnalyticsEvents } from "@/lib/talent-pro-analytics";
-import { hasTalentProAccess, normalizeTalentSubscriptionSnapshot } from "@/lib/talent-subscription";
+import { hasEmployerSubscriptionAccess, hasTalentProAccess, normalizeEmployerSubscriptionSnapshot, normalizeTalentSubscriptionSnapshot } from "@/lib/talent-subscription";
 
 const SIGNED_URL_TTL_SECONDS = 60 * 60;
 
-type ViewerRow = Pick<ProfilesRow, "account_type" | "employer_verification_status" | "employer_abn" | "employer_company_name">;
+type ViewerRow = Pick<ProfilesRow, "account_type" | "employer_verification_status" | "employer_abn" | "employer_company_name" | "employer_subscription_status" | "employer_subscription_current_period_ends_at" | "employer_subscription_cancel_at_period_end">;
 type DiscoveryRpcRow = Database["public"]["Functions"]["discovery_profiles_for_verified_employer_v2"]["Returns"][number];
 type PassportRpcRow = Database["public"]["Functions"]["talent_passport_for_viewer_v3"]["Returns"][number];
 
@@ -148,7 +148,7 @@ async function getViewerContext(accessToken: string): Promise<ViewerContext | nu
 
   const { data: viewerRow } = await userClient
     .from("profiles")
-    .select("account_type, employer_verification_status, employer_abn")
+    .select("account_type, employer_verification_status, employer_abn, employer_subscription_status, employer_subscription_current_period_ends_at, employer_subscription_cancel_at_period_end")
     .eq("user_id", data.user.id)
     .maybeSingle();
 
@@ -321,6 +321,21 @@ export async function loadDiscoveryResults(accessToken: string | null | undefine
     };
   }
 
+  const employerSubscription = normalizeEmployerSubscriptionSnapshot({
+    status: viewer.viewerRow.employer_subscription_status,
+    currentPeriodEndsAt: viewer.viewerRow.employer_subscription_current_period_ends_at,
+    cancelAtPeriodEnd: viewer.viewerRow.employer_subscription_cancel_at_period_end,
+  });
+
+  if (!hasEmployerSubscriptionAccess(employerSubscription)) {
+    return {
+      allowed: false,
+      reason: "unverified_employer",
+      message: "An active employer subscription is required before employer discovery is available.",
+      profiles: [],
+    };
+  }
+
   const { data, error } = await viewer.userClient.rpc("discovery_profiles_for_verified_employer_v2");
 
   if (error) {
@@ -410,6 +425,20 @@ export async function loadTalentPassport(accessToken: string | null | undefined,
         allowed: false,
         reason: "invalid_abn",
         message: "A valid structured ABN is required before employer passport access is available.",
+      };
+    }
+
+    const employerSubscription = normalizeEmployerSubscriptionSnapshot({
+      status: viewer.viewerRow.employer_subscription_status,
+      currentPeriodEndsAt: viewer.viewerRow.employer_subscription_current_period_ends_at,
+      cancelAtPeriodEnd: viewer.viewerRow.employer_subscription_cancel_at_period_end,
+    });
+
+    if (!hasEmployerSubscriptionAccess(employerSubscription)) {
+      return {
+        allowed: false,
+        reason: "unverified_employer",
+        message: "An active employer subscription is required before talent passports are available.",
       };
     }
   } else if (viewer.viewerRow?.account_type !== "talent") {

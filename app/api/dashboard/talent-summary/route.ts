@@ -17,6 +17,7 @@ type TalentProfileRow = {
   talent_plan: "free_agent" | "free_agent_pro" | null;
   talent_subscription_status: "inactive" | "active" | "trialing" | "past_due" | "canceled" | null;
   talent_subscription_current_period_ends_at: string | null;
+  talent_subscription_cancel_at_period_end: boolean | null;
 };
 
 type TalentAnalyticsRow = {
@@ -129,7 +130,7 @@ export async function GET(request: Request) {
   const [{ data: profileRow, error: profileError }, requestList, connectionList] = await Promise.all([
     userClient
       .from("profiles")
-      .select("user_id, account_type, visibility, is_published, talent_plan, talent_subscription_status, talent_subscription_current_period_ends_at")
+      .select("user_id, account_type, visibility, is_published, talent_plan, talent_subscription_status, talent_subscription_current_period_ends_at, talent_subscription_cancel_at_period_end")
       .maybeSingle<TalentProfileRow>(),
     listTalentIntroductionRequests(accessToken),
     listTalentConnections(accessToken),
@@ -179,6 +180,7 @@ export async function GET(request: Request) {
     plan: profileRow?.talent_plan,
     status: profileRow?.talent_subscription_status,
     currentPeriodEndsAt: profileRow?.talent_subscription_current_period_ends_at,
+    cancelAtPeriodEnd: profileRow?.talent_subscription_cancel_at_period_end,
   });
   const hasPro = hasTalentProAccess(subscription);
 
@@ -235,6 +237,7 @@ export async function GET(request: Request) {
         plan: subscription.plan,
         status: subscription.status,
         currentPeriodEndsAt: subscription.currentPeriodEndsAt,
+        cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
         hasProAccess: hasPro,
       },
       proAnalytics,
