@@ -338,7 +338,7 @@ export default function TalentProfileExperience({
       </>
     );
 
-  const profile = { ...payload.profile, intro_video_url: null };
+  const profile = payload.profile;
   const access = payload.privateAccess;
   const isOwner = payload.isOwner === true;
   const salaryLabel = profile.salaryExpectation
@@ -443,6 +443,20 @@ export default function TalentProfileExperience({
                       </span>
                     ))}
                   </div>
+                </div>
+              ) : null}
+              {profile.intro_video_url ? (
+                <div className="mt-6 rounded-[20px] border-l-4 border-[#4f9f4e] bg-[#fffaf0] p-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">
+                    Video introduction
+                  </p>
+                  <video
+                    className="mt-3 w-full rounded-[16px] border border-[#0f2744]/15 bg-[#071426]"
+                    src={profile.intro_video_url}
+                    controls
+                    playsInline
+                    preload="metadata"
+                  />
                 </div>
               ) : null}
             </section>
