@@ -1,8 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
 
-const SUPPORT_EMAIL = "support@freeagentstaff.com";
-
 export default function Footer() {
   return (
     <footer className="bg-[#f7ebcf] text-[#0f2744]">
@@ -30,13 +28,6 @@ export default function Footer() {
                 Support
               </Link>
             </nav>
-
-            <a
-              href={`mailto:${SUPPORT_EMAIL}`}
-              className="w-fit border-b border-[#4f9f4e]/60 pb-0.5 text-[1rem] font-semibold text-[#0f2744] transition hover:border-[#4f9f4e] hover:text-[#4f9f4e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4f9f4e] focus-visible:ring-offset-4 focus-visible:ring-offset-[#f7ebcf]"
-            >
-              {SUPPORT_EMAIL}
-            </a>
           </div>
         </div>
 

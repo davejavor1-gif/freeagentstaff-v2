@@ -1,11 +1,12 @@
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
 
 export default function AboutPage() {
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#f7ebcf_0%,_#f4e4bf_40%,_#e7d7a7_100%)] text-[#071426]">
+    <main className="flex min-h-screen flex-col bg-[radial-gradient(circle_at_top,_#f7ebcf_0%,_#f4e4bf_40%,_#e7d7a7_100%)] text-[#071426]">
       <Navbar />
-      <div className="mx-auto max-w-7xl px-6 py-12 sm:px-8 lg:px-12">
+      <div className="flex-1 mx-auto w-full max-w-7xl px-6 py-12 sm:px-8 lg:px-12">
         <div className="space-y-6 rounded-[36px] border border-[#cda64d]/50 bg-[#0f2744] p-8 text-[#f7ebcf] shadow-[0_18px_55px_rgba(6,16,33,0.18)] sm:p-10">
           <p className="text-sm font-semibold uppercase tracking-[0.32em] text-[#f2cc63]">
             About FreeAgentStaff
@@ -52,6 +53,7 @@ export default function AboutPage() {
           </div>
         </div>
       </div>
+      <Footer />
     </main>
   );
 }

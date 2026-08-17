@@ -1,20 +1,17 @@
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
+import InformationPage from "@/components/layout/InformationPage";
 
 // LEGAL: Final solicitor review required before public production launch.
 export default function PrivacyPage() {
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900">
-      <Navbar />
-      <section className="mx-auto max-w-5xl px-6 py-12 sm:px-8 lg:px-12">
-        <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-lg shadow-slate-200/35 sm:p-10">
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-amber-500">Privacy Policy</p>
-          <h1 className="mt-3 text-4xl font-black tracking-tight text-slate-900">Privacy Policy</h1>
-          <p className="mt-3 text-sm leading-6 text-slate-500">Last updated: August 2026</p>
-
-          <div className="mt-8 space-y-6 text-sm leading-7 text-slate-600">
+    <InformationPage
+      eyebrow="Privacy Policy"
+      title="Your Privacy"
+      description="How Freeagentstaff collects, uses, and protects information across the platform."
+    >
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#9a6d15]">Last updated: August 2026</p>
+          <div className="mt-8 space-y-7 text-sm leading-7 text-[#f7ebcf] sm:text-base">
             <section>
-              <h2 className="text-lg font-bold text-slate-900">1. About this policy</h2>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">1. About this policy</h2>
               <p className="mt-2">
                 Freeagentstaff respects your privacy and is committed to handling personal information responsibly and transparently.
               </p>
@@ -22,12 +19,12 @@ export default function PrivacyPage() {
                 This Privacy Policy explains how Freeagentstaff collects, holds, uses and discloses personal information when you use our website, create an account or interact with our services.
               </p>
               <p className="mt-2">
-                Questions or concerns about this policy can be sent to <a className="font-semibold text-slate-900 underline underline-offset-4" href="mailto:support@freeagentstaff.com">support@freeagentstaff.com</a>.
+                Questions or concerns about this policy can be sent to <a className="font-semibold text-[#f2cc63] underline underline-offset-4" href="mailto:support@freeagentstaff.com">support@freeagentstaff.com</a>.
               </p>
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-slate-900">2. Information we collect</h2>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">2. Information we collect</h2>
               <p className="mt-2">
                 The information we collect depends on how you use Freeagentstaff.
               </p>
@@ -46,7 +43,7 @@ export default function PrivacyPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-slate-900">3. How we collect information</h2>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">3. How we collect information</h2>
               <p className="mt-2">
                 We primarily collect personal information directly from you when you:
               </p>
@@ -66,7 +63,7 @@ export default function PrivacyPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-slate-900">4. How we use information</h2>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">4. How we use information</h2>
               <p className="mt-2">
                 We may use personal information to:
               </p>
@@ -91,7 +88,7 @@ export default function PrivacyPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-slate-900">5. Talent profiles and visibility</h2>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">5. Talent profiles and visibility</h2>
               <p className="mt-2">
                 Talent users control important aspects of how their Talent Passport is made available through Freeagentstaff.
               </p>
@@ -107,7 +104,7 @@ export default function PrivacyPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-slate-900">6. Employer verification</h2>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">6. Employer verification</h2>
               <p className="mt-2">
                 Employer access to protected talent discovery and related functionality may require employer verification.
               </p>
@@ -120,7 +117,7 @@ export default function PrivacyPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-slate-900">7. Introductions, connections and contact information</h2>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">7. Introductions, connections and contact information</h2>
               <p className="mt-2">
                 Freeagentstaff allows eligible employers to request introductions to talent.
               </p>
@@ -139,7 +136,7 @@ export default function PrivacyPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-slate-900">8. Notifications</h2>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">8. Notifications</h2>
               <p className="mt-2">
                 Freeagentstaff may provide in-app notifications relating to activity on your account, such as introduction requests, introduction outcomes, connection changes and relevant employer-verification events.
               </p>
@@ -147,7 +144,7 @@ export default function PrivacyPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-slate-900">9. Disclosure and service providers</h2>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">9. Disclosure and service providers</h2>
               <p className="mt-2">
                 We may disclose or make personal information available where reasonably necessary to operate Freeagentstaff, including to technology providers that support services such as hosting, databases, authentication, security and application infrastructure.
               </p>
@@ -160,7 +157,7 @@ export default function PrivacyPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-slate-900">10. Overseas processing</h2>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">10. Overseas processing</h2>
               <p className="mt-2">
                 Some technology providers used to operate Freeagentstaff may store or process information using infrastructure located in Australia or overseas. The location of processing may vary depending on the services and infrastructure used to operate the platform.
               </p>
@@ -225,9 +222,6 @@ export default function PrivacyPage() {
               </p>
             </section>
           </div>
-        </div>
-      </section>
-      <Footer />
-    </main>
+    </InformationPage>
   );
 }

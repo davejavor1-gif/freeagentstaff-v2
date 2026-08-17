@@ -90,6 +90,7 @@ export function buildCanonicalTalentColumns(
   authEmail?: string | null,
 ): TalentRowCore {
   const contactEmail = normalizeString(profile.contactEmail) ?? normalizeString(authEmail);
+  const canonicalPhotoUrl = profile.photo_storage_path ? null : normalizeString(profile.photoUrl);
   const privateSafeProfile = { ...profile };
   delete privateSafeProfile.email;
   delete privateSafeProfile.contactEmail;
@@ -117,7 +118,7 @@ export function buildCanonicalTalentColumns(
     career_journey: Array.isArray(profile.careerJourney) ? (profile.careerJourney as unknown as Json) : ([] as unknown as Json),
     email: normalizeString(authEmail),
     image_alt: normalizeString(profile.imageAlt),
-    photo_url: normalizeString(profile.photoUrl),
+    photo_url: canonicalPhotoUrl,
     photo_storage_path: normalizeString(profile.photo_storage_path),
     current_employer: normalizeString(profile.currentEmployer),
     intro_video_url: normalizeString(profile.intro_video_url),

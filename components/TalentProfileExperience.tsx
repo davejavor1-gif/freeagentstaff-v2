@@ -398,23 +398,13 @@ export default function TalentProfileExperience({
                 <div className="flex flex-col items-center sm:items-end">
                   <div
                     aria-hidden="true"
-                    className="flex aspect-square w-36 rotate-[-9deg] items-center justify-center rounded-full border-[3px] border-[#4f9f4e]/65 p-1.5 opacity-70 shadow-[inset_0_0_0_2px_rgba(79,159,78,0.22),0_1px_0_rgba(79,159,78,0.16)] sm:w-40"
+                    className="flex aspect-square w-36 items-center justify-center sm:w-40"
                   >
-                    <div className="relative flex aspect-square w-full items-center justify-center rounded-full border border-dashed border-[#4f9f4e]/60 px-2 text-center text-[9px] font-black uppercase leading-[1.12] tracking-[0.14em] text-[#4f9f4e] sm:px-3 sm:text-[10px]">
-                      <span className="absolute inset-x-3 top-2 flex justify-between text-[8px] tracking-normal sm:top-3 sm:text-[9px]" aria-hidden="true">
-                        <span>+</span><span>+</span>
-                      </span>
-                      <span>
-                        FreeAgentStaff
-                        <br />
-                        Talent
-                        <br />
-                        Passport
-                      </span>
-                      <span className="absolute inset-x-3 bottom-2 flex justify-between text-[8px] tracking-normal sm:bottom-3 sm:text-[9px]" aria-hidden="true">
-                        <span>x</span><span>x</span>
-                      </span>
-                    </div>
+                    <img
+                      src="/passportlogo.png"
+                      alt=""
+                      className="h-36 w-36 origin-center rotate-[30deg] object-contain sm:h-40 sm:w-40"
+                    />
                   </div>
                 </div>
               </div>

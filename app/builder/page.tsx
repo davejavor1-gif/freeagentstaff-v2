@@ -118,7 +118,7 @@ function hydrateBuilderProfile(profileResult: ProfileSelectResult, fallbackEmail
   loadedProfile.email = profileResult.email ?? loadedProfile.email ?? fallbackEmail ?? "";
   loadedProfile.imageAlt = profileResult.image_alt ?? loadedProfile.imageAlt ?? "";
   loadedProfile.currentEmployer = profileResult.current_employer ?? loadedProfile.currentEmployer;
-  loadedProfile.photoUrl = loadedProfile.photoUrl ?? profileResult.photo_url ?? undefined;
+  loadedProfile.photoUrl = profileResult.photo_storage_path ? undefined : (profileResult.photo_url ?? loadedProfile.photoUrl ?? undefined);
   loadedProfile.photo_storage_path = loadedProfile.photo_storage_path ?? profileResult.photo_storage_path ?? null;
   loadedProfile.intro_video_url = loadedProfile.intro_video_url ?? profileResult.intro_video_url ?? null;
   loadedProfile.intro_video_storage_path = loadedProfile.intro_video_storage_path ?? profileResult.intro_video_storage_path ?? null;
