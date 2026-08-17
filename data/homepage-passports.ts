@@ -36,7 +36,6 @@ export const homepagePassportProfiles: Record<string, FreeAgentProfile> = {
     ],
     photoUrl: "/images/homepage-talent-model.jpg",
     imageAlt: "Fictional professional portrait",
-    intro_video_url: "/videos/sarahs%20intro.mp4",
   },
   "maya-ellis": {
     id: "homepage-passport-maya-ellis",
@@ -120,7 +119,6 @@ export const homepagePassportProfiles: Record<string, FreeAgentProfile> = {
     ],
     photoUrl: "/images/openart-64f1b59a62fd4bc1a7a2678ed4580466_00001__raw.png",
     imageAlt: "Fictional professional portrait",
-    intro_video_url: "/videos/daniels%20intro.mp4",
   },
   "james-cole": {
     id: "homepage-passport-james-cole",

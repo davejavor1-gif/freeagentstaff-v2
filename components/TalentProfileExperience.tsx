@@ -445,20 +445,6 @@ export default function TalentProfileExperience({
                   </div>
                 </div>
               ) : null}
-              {profile.intro_video_url ? (
-                <div className="mt-6 rounded-[20px] border-l-4 border-[#4f9f4e] bg-[#fffaf0] p-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">
-                    Video introduction
-                  </p>
-                  <video
-                    className="mt-3 w-full rounded-[16px] border border-[#0f2744]/15 bg-[#071426]"
-                    src={profile.intro_video_url}
-                    controls
-                    playsInline
-                    preload="metadata"
-                  />
-                </div>
-              ) : null}
             </section>
             <div className="relative h-9 overflow-hidden bg-[#0f2744] [background:radial-gradient(ellipse_at_center,rgba(242,204,99,0.3)_0%,rgba(247,235,207,0.2)_10%,rgba(7,20,38,0.85)_38%,rgba(7,20,38,0.98)_58%,rgba(242,204,99,0.12)_72%,rgba(15,39,68,0)_100%)] shadow-[inset_0_8px_14px_rgba(6,16,33,0.45),inset_0_-8px_14px_rgba(6,16,33,0.35)] sm:h-11" aria-hidden="true">
               <div className="absolute inset-x-8 top-1/2 h-px -translate-y-1/2 bg-[#f2cc63]/35 shadow-[0_0_6px_rgba(242,204,99,0.35)]" />

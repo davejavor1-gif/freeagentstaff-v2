@@ -62,12 +62,19 @@ const employerDiscoveryFilters = ["Sydney", "Leadership", "Available now"];
 
 const employerDiscoveryResults = [
   {
-    name: "Maya Ellis",
-    initials: "MR",
-    role: "Event Manager",
+    name: "Sarah Jones",
+    initials: "SJ",
+    role: "Senior Software Engineer",
     location: "Sydney, Australia",
-    skills: ["Event Production", "Leadership", "Budgets"],
-    availability: "Open for major events",
+    skills: ["React", "TypeScript", "Product Delivery", "Systems Thinking"],
+    availability: "Open to Opportunities",
+    topStrength:
+      "Turns complex product challenges into calm, reliable delivery.",
+    focusArea: "Technology",
+    introVideoUrl: "/videos/sarahs%20intro.mp4",
+    company: "Northstar Labs",
+    period: "2021-Present",
+    qualification: "Bachelor of Computer Science",
     photoUrl: "/images/homepage-talent-model.jpg",
     tone: "lime" as const,
   },
@@ -132,77 +139,13 @@ const visibilityStates = [
 ];
 
 const homepageDemoProfile: FreeAgentProfile = {
-  id: "homepage-demo-sarah",
-  slug: "homepage-demo-sarah",
-  visibility: "public",
-  name: "Sarah Jones",
-  title: "Senior Software Engineer",
-  location: "Sydney, Australia",
-  availability: "Open to Opportunities",
-  topStrength: "Turns complex product challenges into calm, reliable delivery.",
-  bio: "Experienced software engineer who enjoys turning complex product challenges into clear, dependable experiences. Known for thoughtful collaboration, strong delivery habits and building systems that help teams move with confidence.",
-  experienceYears: 9,
-  focusArea: "Technology",
-  summary:
-    "A fictional Talent Card used to demonstrate the approved production card.",
-  skills: ["React", "TypeScript", "Product Delivery", "Systems Thinking"],
-  languages: ["English", "French"],
-  passions: ["Technology", "Mentoring", "Travel"],
-  photoUrl: "/images/homepage-talent-model.jpg",
-  imageAlt: "Fictional professional portrait",
+  ...homepagePassportProfiles["sarah-jones"],
   intro_video_url: "/videos/sarahs%20intro.mp4",
-  careerJourney: [
-    {
-      id: "homepage-demo-role",
-      role: "Senior Software Engineer",
-      company: "Northstar Labs",
-      period: "2021–Present",
-      location: "Sydney",
-      description: "",
-      achievements: [],
-      skills: [],
-    },
-  ],
-  qualifications: ["Bachelor of Computer Science"],
 };
 
 const homepageLowerDemoProfile: FreeAgentProfile = {
-  ...homepageDemoProfile,
-  id: "homepage-demo-daniel",
-  slug: "homepage-demo-daniel",
-  name: "Daniel Brooks",
-  title: "Operations Director",
-  location: "Melbourne, Australia",
-  availability: "Open to Opportunities",
-  topStrength:
-    "Builds calm, repeatable operations that help ambitious teams deliver at their best.",
-  bio: "Operations leader who enjoys creating clear systems, supporting capable teams and making complex service environments easier to run. Known for calm decision-making and practical improvements that last.",
-  focusArea: "Operations",
-  summary: "A fictional Talent Card used for homepage demonstration.",
-  skills: [
-    "Operations Strategy",
-    "Team Leadership",
-    "Service Delivery",
-    "Stakeholder Management",
-  ],
-  languages: ["English", "Spanish"],
-  passions: ["Leadership", "Live Events", "Food & Wine"],
-  photoUrl: "/images/openart-64f1b59a62fd4bc1a7a2678ed4580466_00001__raw.png",
-  imageAlt: "Fictional professional portrait",
+  ...homepagePassportProfiles["daniel-brooks"],
   intro_video_url: "/videos/daniels%20intro.mp4",
-  careerJourney: [
-    {
-      id: "homepage-demo-daniel-role",
-      role: "Operations Director",
-      company: "Harbour Works",
-      period: "2020–Present",
-      location: "Melbourne",
-      description: "",
-      achievements: [],
-      skills: [],
-    },
-  ],
-  qualifications: ["Certified Operations Professional"],
 };
 
 function TalentCardDemo() {
@@ -224,7 +167,9 @@ function EmployerDiscoveryResult({
   const fixture = Object.values(homepagePassportProfiles).find(
     (candidate) => candidate.name === result.name,
   );
-  const profile: FreeAgentProfile = fixture ?? {
+  const profile: FreeAgentProfile = fixture
+    ? { ...fixture, intro_video_url: result.introVideoUrl }
+    : {
     id: `homepage-search-${result.name.toLowerCase().replace(/[^a-z]+/g, "-")}`,
     slug: `homepage-search-${result.name.toLowerCase().replace(/[^a-z]+/g, "-")}`,
     visibility: "public",
@@ -265,7 +210,7 @@ function EmployerDiscoveryResult({
     qualifications: [
       result.qualification ?? "Professional industry certification",
     ],
-  };
+    };
 
   return (
     <div className="h-[330px] w-[236px] shrink-0">
@@ -273,7 +218,7 @@ function EmployerDiscoveryResult({
         <div className="origin-top-left scale-[0.62]">
           <TalentCard
             profile={profile}
-            href={`/profile/${profile.slug ?? ""}`}
+            href={profile.slug === "sarah-jones" ? "/talent/sarah-jones" : `/profile/${profile.slug ?? ""}`}
             verificationStatus="verified"
             className="w-[380px] max-w-none"
           />

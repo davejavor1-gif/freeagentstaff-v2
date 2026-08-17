@@ -120,7 +120,7 @@ export default function ProfileMediaSection({
       return "Your media stays private in your editor and on confidential cards. Employers only see identifying media when visibility permissions allow it.";
     }
 
-    return "Upload a portrait photo and a short introduction video so employers can get to know you beyond your Talent Passport.";
+    return "Upload a portrait photo and a short introduction video so employers can get to know you beyond your Talent Card.";
   }, [isConfidential]);
 
   const clearPreview = () => {
