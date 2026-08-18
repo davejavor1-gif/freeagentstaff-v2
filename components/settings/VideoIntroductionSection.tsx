@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
-import { AlertCircle, ImageIcon, Play, RefreshCw, Trash2, UploadCloud, Video } from "lucide-react";
+import { AlertCircle, ImageIcon, Play, Trash2, UploadCloud, Video } from "lucide-react";
 import { supabase } from "@/lib/supabase-client";
 import { resolveProfilePhotoUrl, resolveProfileVideoUrl } from "@/lib/profile-media";
 import type { FreeAgentProfile } from "@/types/freeagent";
@@ -435,13 +435,21 @@ export default function ProfileMediaSection({
       </div>
 
       <div className="space-y-4 rounded-[20px] border border-[#cda64d]/40 bg-[#f7ebcf]/70 p-4">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">YOUR VIDEO INTRODUCTION</p>
+          <p className="mt-2 text-sm leading-7 text-[#27405f]">
+            Keep it short and let employers get to know the person behind the Passport. Answer each question in no more than 15 seconds.
+          </p>
+          <ul className="mt-3 space-y-1.5 text-sm leading-6 text-[#27405f]">
+            <li><strong>Tell us about yourself.</strong></li>
+            <li><strong>What excites you professionally?</strong></li>
+            <li><strong>What are your best skills?</strong></li>
+            <li><strong>What kind of jobs do you think you&apos;d be suited to?</strong></li>
+          </ul>
+          <p className="mt-3 text-sm font-semibold text-[#0f2744]">Keep each answer to 15 seconds or less.</p>
+        </div>
+
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">VIDEO INTRODUCTION</p>
-            <p className="mt-2 text-sm leading-7 text-[#27405f]">
-              Introduce yourself in up to 60 seconds and give employers a sense of who you are beyond your Talent Passport.
-            </p>
-          </div>
           <div className="rounded-full border border-[#f2cc63]/35 bg-[#f7ebcf]/80 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#0f2744]">
             {hasVideo ? "Video introduction added" : "No video yet"}
           </div>
@@ -450,12 +458,6 @@ export default function ProfileMediaSection({
         {isConfidential ? (
           <div className="rounded-2xl border border-[#cda64d]/35 bg-white/70 px-3 py-2 text-sm text-[#27405f]">
             Videos remain hidden on confidential cards. Your introduction stays protected unless your visibility settings allow it.
-          </div>
-        ) : null}
-
-        {!hasProAccess ? (
-          <div className="rounded-2xl border border-[#cda64d]/35 bg-white/70 px-3 py-2 text-sm text-[#27405f]">
-            Free Agent Pro is required to publish video introductions. Existing uploads stay stored but are hidden from employer-facing surfaces until Pro is active.
           </div>
         ) : null}
 
@@ -498,10 +500,6 @@ export default function ProfileMediaSection({
           <div className="flex flex-wrap items-center gap-2">
             <Video className="h-4 w-4 text-[#0f2744]" />
             <span>Accepted formats: MP4, MOV, WebM. Maximum 60 seconds and 100MB.</span>
-          </div>
-          <div className="mt-2 flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.24em] text-[#9a6d15]">
-            <RefreshCw className="h-3.5 w-3.5" />
-            Upload-from-device only in this version. Record video is planned for a future release.
           </div>
         </div>
 

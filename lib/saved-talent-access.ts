@@ -16,6 +16,8 @@ import type {
 } from "@/types/saved-talent";
 import type { Database, Json } from "@/types/supabase";
 import { createServiceRoleSupabaseClient, createUserServerSupabaseClient } from "@/lib/server-supabase";
+import { loadTalentSubscriptionRowsBySlugs } from "@/lib/talent-pro-analytics";
+import { hasTalentProAccess, normalizeTalentSubscriptionSnapshot } from "@/lib/talent-subscription";
 
 const SIGNED_URL_TTL_SECONDS = 60 * 60;
 
@@ -108,7 +110,11 @@ function toCareerJourney(value: Json | null | undefined): CareerPosition[] {
   });
 }
 
-async function signMediaUrls(photoStoragePath: string | null, introVideoStoragePath: string | null) {
+async function signMediaUrls(
+  photoStoragePath: string | null,
+  introVideoStoragePath: string | null,
+  allowVideoAccess: boolean,
+) {
   const serviceClient = createServiceRoleSupabaseClient();
 
   if (!serviceClient) {
@@ -125,7 +131,7 @@ async function signMediaUrls(photoStoragePath: string | null, introVideoStorageP
           .createSignedUrl(photoStoragePath, SIGNED_URL_TTL_SECONDS)
           .then(({ data, error }) => (error ? null : data?.signedUrl ?? null))
       : Promise.resolve(null),
-    introVideoStoragePath
+    allowVideoAccess && introVideoStoragePath
       ? serviceClient.storage
           .from("intro-videos")
           .createSignedUrl(introVideoStoragePath, SIGNED_URL_TTL_SECONDS)
@@ -245,11 +251,22 @@ export async function listSavedTalent(accessToken: string | null | undefined, sh
   }
 
   const rows = (data ?? []) as ListSavedRow[];
+  const subscriptionMap = await loadTalentSubscriptionRowsBySlugs(rows.map((row) => row.slug));
   const items = await Promise.all(
     rows.map(async (row) => {
+      const subscriptionRow = subscriptionMap.get(row.slug);
+      const hasProVideoAccess = subscriptionRow
+        ? hasTalentProAccess(
+          normalizeTalentSubscriptionSnapshot({
+            plan: subscriptionRow.talent_plan,
+            status: subscriptionRow.talent_subscription_status,
+            currentPeriodEndsAt: subscriptionRow.talent_subscription_current_period_ends_at,
+          }),
+        )
+        : false;
       const { photoUrl, videoUrl } = row.access_scope === "employer_confidential"
         ? { photoUrl: null, videoUrl: null }
-        : await signMediaUrls(row.photo_storage_path, row.intro_video_storage_path);
+        : await signMediaUrls(row.photo_storage_path, row.intro_video_storage_path, hasProVideoAccess);
 
       return mapSavedItem(row, photoUrl, videoUrl);
     }),

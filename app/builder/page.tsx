@@ -759,15 +759,17 @@ export default function BuilderPage() {
             </div>
           </div>
 
-          <div className="mt-6 rounded-[24px] border border-[#0f2744]/15 border-t-4 border-t-[#4f9f4e] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
-            <VideoIntroductionSection
-              profile={profile}
-              onProfileChange={(nextProfile) => setProfile(nextProfile)}
-              isSaving={isSaving}
-              visibility={profile.visibility}
-              hasProAccess={hasProAccess}
-            />
-          </div>
+          {hasProAccess ? (
+            <div className="mt-6 rounded-[24px] border border-[#0f2744]/15 border-t-4 border-t-[#4f9f4e] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+              <VideoIntroductionSection
+                profile={profile}
+                onProfileChange={(nextProfile) => setProfile(nextProfile)}
+                isSaving={isSaving}
+                visibility={profile.visibility}
+                hasProAccess={hasProAccess}
+              />
+            </div>
+          ) : null}
 
           <div className="space-y-2">
               <label htmlFor="name" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
@@ -1193,7 +1195,11 @@ export default function BuilderPage() {
           <section className="flex w-full items-center justify-center rounded-[32px] border border-[#f7ebcf]/80 bg-[#f7ebcf] p-4 shadow-[0_12px_32px_rgba(6,16,33,0.12)] lg:min-h-[700px] lg:p-5">
             <div className="flex w-full max-w-[430px] flex-col">
               <div className="flex justify-center">
-                <TalentCard profile={profile} href={profile.slug ? `/profile/${profile.slug}` : "#"} className="w-full max-w-[430px]" />
+                <TalentCard
+                  profile={hasProAccess ? profile : { ...profile, intro_video_url: null, intro_video_storage_path: null }}
+                  href={profile.slug ? `/profile/${profile.slug}` : "#"}
+                  className="w-full max-w-[430px]"
+                />
               </div>
             </div>
           </section>

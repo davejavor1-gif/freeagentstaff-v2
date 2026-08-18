@@ -544,6 +544,7 @@ export interface Database {
           title: string | null;
           summary: string | null;
           current_employer: string | null;
+          career_journey: Json | null;
           photo_storage_path: string | null;
           intro_video_storage_path: string | null;
           can_view_identifying_info: boolean | null;

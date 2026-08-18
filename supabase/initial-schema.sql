@@ -122,6 +122,50 @@ create policy "Pro talent can update intro videos" on storage.objects
     and (storage.foldername(name))[1] = auth.uid()::text
   );
 
+create policy "Pro talent can delete intro videos" on storage.objects
+  for delete
+  to authenticated
+  using (
+    bucket_id = 'intro-videos'
+    and (storage.foldername(name))[1] = auth.uid()::text
+    and exists (
+      select 1
+      from public.profiles
+      where user_id = auth.uid()
+        and account_type = 'talent'
+        and talent_plan = 'free_agent_pro'
+        and talent_subscription_status in ('active', 'trialing')
+        and (talent_subscription_current_period_ends_at is null or talent_subscription_current_period_ends_at >= now())
+    )
+  );
+
+create or replace function public.protect_talent_video_introduction()
+returns trigger
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+begin
+  if coalesce(auth.role(), '') <> 'service_role'
+    and (new.intro_video_url is distinct from old.intro_video_url
+      or new.intro_video_storage_path is distinct from old.intro_video_storage_path)
+    and not (
+      new.account_type = 'talent'
+      and new.talent_plan = 'free_agent_pro'
+      and new.talent_subscription_status in ('active', 'trialing')
+      and (new.talent_subscription_current_period_ends_at is null or new.talent_subscription_current_period_ends_at >= now())
+    ) then
+    raise exception 'free_agent_pro_required_for_video_introduction' using errcode = '42501';
+  end if;
+
+  return new;
+end;
+$$;
+
+create trigger protect_talent_video_introduction
+  before update on profiles
+  for each row execute function public.protect_talent_video_introduction();
+
 create or replace function public.set_updated_at()
 returns trigger language plpgsql as $$
 begin
@@ -3685,7 +3729,7 @@ returns table (
   slug text, visibility text, verification_status text, availability text, opportunity_status text,
   experience_years integer, focus_area text, top_strength text, skills text[], location text,
   name text, title text, summary text, current_employer text, photo_storage_path text,
-  intro_video_storage_path text, can_view_identifying_info boolean, can_view_media boolean,
+  intro_video_storage_path text, career_journey jsonb, can_view_identifying_info boolean, can_view_media boolean,
   education text, salary_expectation text
 )
 language sql security definer stable set search_path = public, pg_temp
@@ -3693,6 +3737,7 @@ as $$
   select base.slug, base.visibility, base.verification_status, base.availability, base.opportunity_status,
     base.experience_years, base.focus_area, base.top_strength, base.skills, base.location, base.name,
     base.title, base.summary, base.current_employer, base.photo_storage_path, base.intro_video_storage_path,
+    case when base.can_view_identifying_info then profile.career_journey else '[]'::jsonb end,
     base.can_view_identifying_info, base.can_view_media,
     case when base.can_view_identifying_info then profile.education else null end,
     case when base.can_view_identifying_info then profile.salary_expectation else null end

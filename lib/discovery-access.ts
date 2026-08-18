@@ -110,7 +110,11 @@ function toCareerJourney(value: Json | null | undefined): CareerPosition[] {
   });
 }
 
-async function signMediaUrls(photoStoragePath: string | null, introVideoStoragePath: string | null) {
+async function signMediaUrls(
+  photoStoragePath: string | null,
+  introVideoStoragePath: string | null,
+  allowVideoAccess: boolean,
+) {
   const serviceClient = createServiceRoleSupabaseClient();
 
   if (!serviceClient) {
@@ -127,7 +131,7 @@ async function signMediaUrls(photoStoragePath: string | null, introVideoStorageP
           .createSignedUrl(photoStoragePath, SIGNED_URL_TTL_SECONDS)
           .then(({ data, error }) => (error ? null : data?.signedUrl ?? null))
       : Promise.resolve(null),
-    introVideoStoragePath
+    allowVideoAccess && introVideoStoragePath
       ? serviceClient.storage
           .from("intro-videos")
           .createSignedUrl(introVideoStoragePath, SIGNED_URL_TTL_SECONDS)
@@ -207,7 +211,7 @@ function buildDiscoveryProfile(row: DiscoveryRpcRow, photoUrl: string | null, vi
       skills: row.skills ?? [],
       languages: Array.isArray(row.languages) ? row.languages.filter((item): item is string => typeof item === "string") : [],
       passions: Array.isArray(row.passions) ? row.passions.filter((item): item is string => typeof item === "string") : [],
-      careerJourney: [],
+      careerJourney: toCareerJourney(row.career_journey),
       photoUrl: photoUrl ?? undefined,
       intro_video_url: videoUrl,
       intro_video_thumbnail_url: photoUrl,
@@ -366,7 +370,7 @@ export async function loadDiscoveryResults(accessToken: string | null | undefine
         : false;
 
       const { photoUrl, videoUrl } = row.can_view_media
-        ? await signMediaUrls(row.photo_storage_path, row.intro_video_storage_path)
+        ? await signMediaUrls(row.photo_storage_path, row.intro_video_storage_path, hasProVideoAccess)
         : { photoUrl: null, videoUrl: null };
 
       return buildDiscoveryProfile(row, photoUrl, hasProVideoAccess ? videoUrl : null);
@@ -484,7 +488,7 @@ export async function loadTalentPassport(accessToken: string | null | undefined,
     : false;
   const { photoUrl, videoUrl } = accessScope === "employer_confidential"
     ? { photoUrl: null, videoUrl: null }
-    : await signMediaUrls(row.photo_storage_path, row.intro_video_storage_path);
+    : await signMediaUrls(row.photo_storage_path, row.intro_video_storage_path, hasProVideoAccess);
 
   if (viewer.viewerRow?.account_type === "employer" && viewer.viewerUserId && subscriptionRow?.user_id) {
     void trackTalentAnalyticsEvents({
