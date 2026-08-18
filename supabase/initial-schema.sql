@@ -3391,7 +3391,14 @@ as $$
             &&
             coalesce(v.viewer_company_keys, '{}'::text[])
           )
-      ) as viewer_is_verified_employer
+      ) as viewer_is_verified_employer,
+      exists (
+        select 1
+        from public.employer_talent_connections c
+        where c.employer_user_id = auth.uid()
+          and c.talent_user_id = target.user_id
+          and c.status = 'active'
+      ) as viewer_has_active_connection
     from target
   )
   select
@@ -3400,6 +3407,7 @@ as $$
     d.is_owner,
     case
       when d.is_owner then 'owner_full'
+      when d.normalized_visibility = 'confidential' and d.viewer_has_active_connection then 'employer_full'
       when d.normalized_visibility = 'confidential' then 'employer_confidential'
       else 'employer_full'
     end as access_scope,
@@ -3413,42 +3421,42 @@ as $$
     d.top_strength,
     d.skills,
     case
-      when d.is_owner then d.location
+      when d.is_owner or d.normalized_visibility <> 'confidential' or d.viewer_has_active_connection then d.location
       when d.normalized_visibility = 'confidential' then 'General location available'
       else d.location
     end as location,
     case
-      when d.is_owner then d.name
+      when d.is_owner or d.normalized_visibility <> 'confidential' or d.viewer_has_active_connection then d.name
       when d.normalized_visibility = 'confidential' then null
       else d.name
     end as name,
     case
-      when d.is_owner then d.title
+      when d.is_owner or d.normalized_visibility <> 'confidential' or d.viewer_has_active_connection then d.title
       when d.normalized_visibility = 'confidential' then null
       else d.title
     end as title,
     case
-      when d.is_owner then d.summary
+      when d.is_owner or d.normalized_visibility <> 'confidential' or d.viewer_has_active_connection then d.summary
       when d.normalized_visibility = 'confidential' then null
       else d.summary
     end as summary,
     case
-      when d.is_owner then d.current_employer
+      when d.is_owner or d.normalized_visibility <> 'confidential' or d.viewer_has_active_connection then d.current_employer
       when d.normalized_visibility = 'confidential' then null
       else d.current_employer
     end as current_employer,
     case
-      when d.is_owner then d.career_journey
+      when d.is_owner or d.normalized_visibility <> 'confidential' or d.viewer_has_active_connection then d.career_journey
       when d.normalized_visibility = 'confidential' then '[]'::jsonb
       else d.career_journey
     end as career_journey,
     case
-      when d.is_owner then d.photo_storage_path
+      when d.is_owner or d.normalized_visibility <> 'confidential' or d.viewer_has_active_connection then d.photo_storage_path
       when d.normalized_visibility = 'confidential' then null
       else d.photo_storage_path
     end as photo_storage_path,
     case
-      when d.is_owner then d.intro_video_storage_path
+      when d.is_owner or d.normalized_visibility <> 'confidential' or d.viewer_has_active_connection then d.intro_video_storage_path
       when d.normalized_visibility = 'confidential' then null
       else d.intro_video_storage_path
     end as intro_video_storage_path

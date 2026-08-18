@@ -1210,9 +1210,9 @@ export default function BuilderPage() {
                   <p className="mt-1 text-sm text-[#27405f]">Private PDF, DOC, or DOCX files up to 10 MB.</p>
                 </div>
                 {profile.resumeOriginalFilename ? (
-                  <div className="flex flex-col gap-3 rounded-2xl border border-[#cda64d]/35 bg-white/80 p-3 sm:flex-row sm:items-center sm:justify-between">
-                    <p className="min-w-0 break-all text-sm font-semibold text-[#0f2744]">{profile.resumeOriginalFilename}</p>
-                    <div className="flex shrink-0 flex-wrap gap-2">
+                  <div className="space-y-3 rounded-2xl border border-[#cda64d]/35 bg-white/80 p-3">
+                    <p className="whitespace-nowrap text-sm font-semibold uppercase tracking-[0.18em] text-[#4f9f4e]">Resume uploaded ✓</p>
+                    <div className="flex flex-wrap gap-2">
                       <label className="inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf]">
                         Replace resume
                         <input type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" className="sr-only" disabled={resumeBusy} onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadResume(file); event.target.value = ""; }} />
@@ -1221,10 +1221,13 @@ export default function BuilderPage() {
                     </div>
                   </div>
                 ) : (
-                  <label className="inline-flex min-h-[46px] w-full cursor-pointer items-center justify-center rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf]">
-                    {resumeBusy ? "Uploading..." : "Upload resume"}
-                    <input type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" className="sr-only" disabled={resumeBusy} onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadResume(file); event.target.value = ""; }} />
-                  </label>
+                  <div className="space-y-3">
+                    <p className="whitespace-nowrap text-sm font-semibold uppercase tracking-[0.18em] text-[#9a6d15]">Upload resume</p>
+                    <label className="inline-flex min-h-[46px] w-full cursor-pointer items-center justify-center rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf]">
+                      {resumeBusy ? "Uploading..." : "Upload resume"}
+                      <input type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" className="sr-only" disabled={resumeBusy} onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadResume(file); event.target.value = ""; }} />
+                    </label>
+                  </div>
                 )}
                 {resumeError ? <p className="text-sm font-semibold text-rose-700">{resumeError}</p> : null}
               </div>
