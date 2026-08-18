@@ -450,7 +450,7 @@ export default function BuilderPage() {
 
   if (isLoading) {
     return (
-      <><Navbar /><main className="min-h-screen bg-[#aff546] px-4 py-8 text-[#0f2744] sm:px-6 lg:px-8">
+      <><Navbar /><main className="min-h-screen bg-[#0f2744] px-4 py-8 text-[#0f2744] sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-7xl items-center justify-center py-24">
           <div className="rounded-[32px] border border-[#cda64d]/70 bg-[#0f2744] px-8 py-12 text-center text-[#f7ebcf] shadow-[0_18px_55px_rgba(6,16,33,0.28)]">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">Loading profile</p>
@@ -658,9 +658,9 @@ export default function BuilderPage() {
   };
 
   return (
-    <><Navbar /><main className="min-h-screen bg-[#aff546] px-4 py-8 text-[#0f2744] sm:px-6 lg:px-8">
+    <><Navbar /><main className="min-h-screen bg-[#0f2744] px-4 py-8 text-[#0f2744] sm:px-6 lg:px-8">
       <div className="mx-auto flex max-w-7xl flex-col gap-6 lg:flex-row lg:items-start">
-        <section className="w-full rounded-[32px] border border-[#cda64d]/70 bg-[#0f2744] p-6 text-[#f7ebcf] shadow-[0_18px_55px_rgba(6,16,33,0.28)] lg:w-[62%] lg:p-8">
+        <section className="box-border w-full rounded-[32px] border-[32px] border-[#f7ebcf] bg-[#0f2744] p-6 text-[#f7ebcf] shadow-[0_18px_55px_rgba(6,16,33,0.28)] lg:w-[62%] lg:p-8">
           <div className="inline-flex items-center rounded-full border border-[#f2cc63]/40 bg-[#f7ebcf]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">
             Builder Studio
           </div>
@@ -811,19 +811,6 @@ export default function BuilderPage() {
               <p className="text-right text-xs text-[#6a7a91]">{(profile.bio ?? "").length}/750</p>
             </div>
 
-            <div className="space-y-2 rounded-2xl border border-[#0f2744]/15 border-t-4 border-t-[#2bd7ef] bg-[#fffaf0] px-4 py-4 text-sm text-[#27405f] shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Privacy & visibility</p>
-              <p>
-                Marketplace visibility and blocked companies are managed from Privacy & Visibility. Publish state is managed here in Builder Studio.
-              </p>
-              <Link
-                href="/settings/privacy"
-                className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f]"
-              >
-                Open privacy settings
-              </Link>
-            </div>
-
             <div className="space-y-2">
               <label htmlFor="location" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
                 Location
@@ -835,22 +822,6 @@ export default function BuilderPage() {
                 className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] shadow-sm outline-none transition focus:border-[#0f2744]"
                 placeholder="Enter your location"
               />
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="availability" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
-                Availability
-              </label>
-              <select
-                id="availability"
-                value={profile.availability}
-                onChange={(event) => updateTextField("availability", event.target.value)}
-                className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] shadow-sm outline-none transition focus:border-[#0f2744]"
-              >
-                <option value="Available Now">Available Now</option>
-                <option value="Open to new projects">Open to Opportunities</option>
-                <option value="Booked">Booked</option>
-              </select>
             </div>
 
             <div className="space-y-2">
@@ -892,23 +863,6 @@ export default function BuilderPage() {
               />
             </div>
 
-            <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#2bd7ef] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
-              <label htmlFor="salaryExpectation" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
-                Salary expectations <span className="font-normal normal-case tracking-normal text-[#6a7a91]">(optional)</span>
-              </label>
-              <select
-                id="salaryExpectation"
-                value={profile.salaryExpectation ?? ""}
-                onChange={(event) => updateTextField("salaryExpectation", event.target.value)}
-                className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] shadow-sm outline-none transition focus:border-[#0f2744]"
-              >
-                <option value="">Select a broad salary band</option>
-                {salaryExpectationOptions.map((option) => (
-                  <option key={option.value} value={option.value}>{option.label}</option>
-                ))}
-              </select>
-            </div>
-
             <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#4f9f4e] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Contact details</p>
@@ -924,31 +878,6 @@ export default function BuilderPage() {
                 placeholder="you@example.com"
                 autoComplete="email"
               />
-            </div>
-
-            <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#cda64d] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Resume</p>
-                <p className="mt-1 text-sm text-[#27405f]">Private PDF, DOC, or DOCX files up to 10 MB.</p>
-              </div>
-              {profile.resumeOriginalFilename ? (
-                <div className="flex flex-col gap-3 rounded-2xl border border-[#cda64d]/35 bg-white/80 p-3 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="min-w-0 break-all text-sm font-semibold text-[#0f2744]">{profile.resumeOriginalFilename}</p>
-                  <div className="flex shrink-0 flex-wrap gap-2">
-                    <label className="inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf]">
-                      Replace resume
-                      <input type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" className="sr-only" disabled={resumeBusy} onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadResume(file); event.target.value = ""; }} />
-                    </label>
-                    <button type="button" onClick={() => void removeResume()} disabled={resumeBusy} className="min-h-[44px] rounded-full border border-rose-900/20 bg-white px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-rose-900 disabled:opacity-50">Remove</button>
-                  </div>
-                </div>
-              ) : (
-                <label className="inline-flex min-h-[46px] w-full cursor-pointer items-center justify-center rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf]">
-                  {resumeBusy ? "Uploading..." : "Upload resume"}
-                  <input type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" className="sr-only" disabled={resumeBusy} onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadResume(file); event.target.value = ""; }} />
-                </label>
-              )}
-              {resumeError ? <p className="text-sm font-semibold text-rose-700">{resumeError}</p> : null}
             </div>
 
             <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#2bd7ef] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
@@ -993,61 +922,6 @@ export default function BuilderPage() {
                       className="inline-flex items-center gap-2 rounded-full border border-[#f2cc63]/70 bg-[#0f2744] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf] shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#f2cc63] hover:bg-[#17355f] hover:shadow-[0_8px_16px_rgba(7,20,38,0.16)]"
                     >
                       <span>{skill}</span>
-                      <span className="flex h-4 w-4 items-center justify-center rounded-full border border-[#f2cc63]/40 bg-[#f7ebcf]/10 text-[10px] leading-none text-[#f7ebcf]">
-                        ×
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-
-            <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#4f9f4e] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
-                    Languages
-                  </p>
-                  <p className="mt-1 text-sm text-[#27405f]">
-                    Add up to 10 languages for your talent passport.
-                  </p>
-                </div>
-                <p className="text-xs font-semibold text-[#6a7a91]">{(profile.languages ?? []).length}/10</p>
-              </div>
-
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <input
-                  value={languageInput}
-                  onChange={(event) => setLanguageInput(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter") {
-                      event.preventDefault();
-                      addListItem("languages", languageInput);
-                    }
-                  }}
-                  className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] shadow-sm outline-none transition focus:border-[#0f2744]"
-                  placeholder="Type a language..."
-                />
-                <button
-                  type="button"
-                  onClick={() => addListItem("languages", languageInput)}
-                  disabled={(profile.languages ?? []).length >= 10}
-                  className="rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f] disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  Add
-                </button>
-              </div>
-
-              {(profile.languages ?? []).length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {(profile.languages ?? []).map((language) => (
-                    <button
-                      key={language}
-                      type="button"
-                      onClick={() => removeListItem("languages", language)}
-                      className="inline-flex items-center gap-2 rounded-full border border-[#f2cc63]/70 bg-[#0f2744] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf] shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#f2cc63] hover:bg-[#17355f] hover:shadow-[0_8px_16px_rgba(7,20,38,0.16)]"
-                    >
-                      <span>{language}</span>
                       <span className="flex h-4 w-4 items-center justify-center rounded-full border border-[#f2cc63]/40 bg-[#f7ebcf]/10 text-[10px] leading-none text-[#f7ebcf]">
                         ×
                       </span>
@@ -1315,13 +1189,113 @@ export default function BuilderPage() {
           </form>
         </section>
 
-        <section className="flex w-full items-center justify-center rounded-[32px] border border-[#cda64d]/70 bg-[#f7ebcf] p-4 shadow-[0_12px_32px_rgba(6,16,33,0.12)] lg:w-[38%] lg:min-h-[700px] lg:p-5">
-          <div className="flex w-full max-w-[430px] flex-col">
-            <div className="flex justify-center">
-              <TalentCard profile={profile} href={profile.slug ? `/profile/${profile.slug}` : "#"} className="w-full max-w-[430px]" />
+        <div className="flex w-full flex-col gap-6 lg:w-[38%]">
+          <section className="flex w-full items-center justify-center rounded-[32px] border border-[#f7ebcf]/80 bg-[#f7ebcf] p-4 shadow-[0_12px_32px_rgba(6,16,33,0.12)] lg:min-h-[700px] lg:p-5">
+            <div className="flex w-full max-w-[430px] flex-col">
+              <div className="flex justify-center">
+                <TalentCard profile={profile} href={profile.slug ? `/profile/${profile.slug}` : "#"} className="w-full max-w-[430px]" />
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+
+          <section className="box-border rounded-[32px] border-[32px] border-[#f7ebcf] bg-[#0f2744] p-5 text-[#f7ebcf] shadow-[0_18px_55px_rgba(6,16,33,0.28)] sm:p-6">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">Builder Studio</p>
+            <h2 className="mt-3 text-2xl font-black uppercase tracking-[0.08em] text-[#f7ebcf]">Continue building your card</h2>
+            <p className="mt-3 text-sm leading-6 text-[#dfe7ef]">Keep your secondary profile settings aligned with the opportunities you want.</p>
+
+            <div className="mt-5 space-y-4">
+              <div className="space-y-3 rounded-[20px] border border-[#cda64d]/35 border-t-4 border-t-[#cda64d] bg-[#fffaf0] p-4 text-[#071426] shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Resume</p>
+                  <p className="mt-1 text-sm text-[#27405f]">Private PDF, DOC, or DOCX files up to 10 MB.</p>
+                </div>
+                {profile.resumeOriginalFilename ? (
+                  <div className="flex flex-col gap-3 rounded-2xl border border-[#cda64d]/35 bg-white/80 p-3 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="min-w-0 break-all text-sm font-semibold text-[#0f2744]">{profile.resumeOriginalFilename}</p>
+                    <div className="flex shrink-0 flex-wrap gap-2">
+                      <label className="inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf]">
+                        Replace resume
+                        <input type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" className="sr-only" disabled={resumeBusy} onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadResume(file); event.target.value = ""; }} />
+                      </label>
+                      <button type="button" onClick={() => void removeResume()} disabled={resumeBusy} className="min-h-[44px] rounded-full border border-rose-900/20 bg-white px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-rose-900 disabled:opacity-50">Remove</button>
+                    </div>
+                  </div>
+                ) : (
+                  <label className="inline-flex min-h-[46px] w-full cursor-pointer items-center justify-center rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf]">
+                    {resumeBusy ? "Uploading..." : "Upload resume"}
+                    <input type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" className="sr-only" disabled={resumeBusy} onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadResume(file); event.target.value = ""; }} />
+                  </label>
+                )}
+                {resumeError ? <p className="text-sm font-semibold text-rose-700">{resumeError}</p> : null}
+              </div>
+
+              <div className="space-y-3 rounded-[20px] border border-[#cda64d]/35 border-t-4 border-t-[#4f9f4e] bg-[#fffaf0] p-4 text-[#071426] shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Languages</p>
+                    <p className="mt-1 text-sm text-[#27405f]">Add up to 10 languages for your talent passport.</p>
+                  </div>
+                  <p className="text-xs font-semibold text-[#6a7a91]">{(profile.languages ?? []).length}/10</p>
+                </div>
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <input
+                    value={languageInput}
+                    onChange={(event) => setLanguageInput(event.target.value)}
+                    onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); addListItem("languages", languageInput); } }}
+                    className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] shadow-sm outline-none transition focus:border-[#0f2744]"
+                    placeholder="Type a language..."
+                  />
+                  <button type="button" onClick={() => addListItem("languages", languageInput)} disabled={(profile.languages ?? []).length >= 10} className="rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f] disabled:cursor-not-allowed disabled:opacity-60">Add</button>
+                </div>
+                {(profile.languages ?? []).length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {(profile.languages ?? []).map((language) => (
+                      <button key={language} type="button" onClick={() => removeListItem("languages", language)} className="inline-flex items-center gap-2 rounded-full border border-[#f2cc63]/70 bg-[#0f2744] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf] shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#f2cc63] hover:bg-[#17355f] hover:shadow-[0_8px_16px_rgba(7,20,38,0.16)]">
+                        <span>{language}</span>
+                        <span className="flex h-4 w-4 items-center justify-center rounded-full border border-[#f2cc63]/40 bg-[#f7ebcf]/10 text-[10px] leading-none text-[#f7ebcf]">×</span>
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="rounded-[20px] border border-[#cda64d]/35 border-t-4 border-t-[#2bd7ef] bg-[#fffaf0] p-4 text-[#071426]">
+                <label htmlFor="availability" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Availability</label>
+                <select
+                  id="availability"
+                  value={profile.availability}
+                  onChange={(event) => updateTextField("availability", event.target.value)}
+                  className="mt-3 w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] shadow-sm outline-none transition focus:border-[#0f2744]"
+                >
+                  <option value="Available Now">Available Now</option>
+                  <option value="Open to new projects">Open to Opportunities</option>
+                  <option value="Booked">Booked</option>
+                </select>
+              </div>
+
+              <div className="rounded-[20px] border border-[#cda64d]/35 border-t-4 border-t-[#2bd7ef] bg-[#fffaf0] p-4 text-[#071426]">
+                <label htmlFor="salaryExpectation" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Salary expectations <span className="font-normal normal-case tracking-normal text-[#6a7a91]">(optional)</span></label>
+                <select
+                  id="salaryExpectation"
+                  value={profile.salaryExpectation ?? ""}
+                  onChange={(event) => updateTextField("salaryExpectation", event.target.value)}
+                  className="mt-3 w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] shadow-sm outline-none transition focus:border-[#0f2744]"
+                >
+                  <option value="">Select a broad salary band</option>
+                  {salaryExpectationOptions.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="rounded-[20px] border border-[#cda64d]/35 border-t-4 border-t-[#2bd7ef] bg-[#fffaf0] p-4 text-sm leading-6 text-[#27405f]">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Privacy & visibility</p>
+                <p className="mt-2">Marketplace visibility and blocked companies are managed from Privacy & Visibility. Publish state is managed here in Builder Studio.</p>
+                <Link href="/settings/privacy" className="mt-3 inline-flex min-h-[44px] items-center justify-center rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f]">Open privacy settings</Link>
+              </div>
+            </div>
+          </section>
+        </div>
       </div>
     </main><Footer /></>
   );

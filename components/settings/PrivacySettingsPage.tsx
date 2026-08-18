@@ -274,6 +274,16 @@ export default function PrivacySettingsPage() {
           <h1 className="mt-4 text-4xl font-black uppercase tracking-[0.12em] text-[#f7ebcf] sm:text-5xl">
             Privacy & Visibility
           </h1>
+          {accountType === "talent" ? (
+            <div className="mt-6">
+              <Link
+                href="/builder"
+                className="inline-flex rounded-full bg-[#aff546] px-5 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#071426] transition hover:bg-[#9fea37] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#aff546] focus-visible:ring-offset-2"
+              >
+                Back to create your card
+              </Link>
+            </div>
+          ) : null}
 
           {accountType === "employer" ? (
             <p className="mt-6 max-w-3xl text-base leading-8 text-[#dfe7ef]">
