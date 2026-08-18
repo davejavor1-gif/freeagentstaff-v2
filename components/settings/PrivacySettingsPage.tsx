@@ -281,7 +281,7 @@ export default function PrivacySettingsPage() {
             </p>
           ) : (
             <p className="mt-6 max-w-3xl text-base leading-8 text-[#dfe7ef]">
-              Choose whether your profile is published, how it appears in the employer marketplace, and which employer identities are blocked.
+              Choose who can see your profile when it is published, how it appears in the employer marketplace, and which employer identities are blocked. Publishing is managed in Builder Studio.
             </p>
           )}
 
@@ -375,36 +375,6 @@ export default function PrivacySettingsPage() {
                   </button>
                 );
               })}
-            </div>
-          ) : null}
-
-          {accountType === "talent" && !isLoading ? (
-            <div className="mt-10 rounded-[24px] border border-[#f2cc63]/20 bg-[#f7ebcf]/10 p-6 text-sm leading-7 text-[#dfe7ef]">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">Publish state</p>
-                  <p className="mt-2">
-                    Published profiles may participate in employer discovery according to their current visibility, opportunity status, and blocking rules. Unpublished profiles remain editable.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    void savePrivacySettings(
-                      { isPublished: !(settings?.isPublished ?? false) },
-                      !(settings?.isPublished ?? false) ? "Profile published." : "Profile unpublished.",
-                    );
-                  }}
-                  disabled={isSaving || !settings}
-                  className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-[#f2cc63]/35 bg-[#f2cc63] px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.24em] text-[#0f2744] transition hover:bg-[#f7d87d] disabled:opacity-60"
-                >
-                  {settings?.isPublished ? "Unpublish profile" : "Publish profile"}
-                </button>
-              </div>
-              <p className="mt-3 text-[#f2cc63]">Current state: {settings?.isPublished ? "Published" : "Unpublished"}</p>
-              <p className="mt-3 text-xs text-[#dfe7ef]">
-                Confidential profiles may still be published. Existing employer connections continue to exist historically, but contact access still follows the current secure eligibility rules.
-              </p>
             </div>
           ) : null}
 

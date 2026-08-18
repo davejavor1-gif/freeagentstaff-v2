@@ -93,7 +93,10 @@ export default function LoginPage() {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { account_type: accountType } },
+      options: {
+        data: { account_type: accountType },
+        emailRedirectTo: `${window.location.origin}${accountType === "employer" ? "/onboarding/employer" : "/dashboard"}`,
+      },
     });
     setIsSubmitting(false);
 

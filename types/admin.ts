@@ -40,6 +40,7 @@ export interface AdminAccountListItem {
   visibility: ProfileVisibility | null;
   opportunityStatus: "actively_open" | "exploring" | "not_open" | null;
   employerVerificationStatus: "unverified" | "pending" | "verified" | "rejected" | null;
+  verificationRequestedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -101,6 +102,7 @@ export interface AdminAccountDetailResponse {
 export interface AdminAccountListQuery {
   query?: string;
   accountType?: "talent" | "employer" | null;
+  verificationStatus?: "unverified" | "pending" | "verified" | "rejected" | null;
   limit?: number;
   cursor?: AdminAccountCursor | null;
 }

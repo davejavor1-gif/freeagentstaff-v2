@@ -81,13 +81,6 @@ export async function loadPrivateAccess(accessToken: string | null | undefined, 
   return { ok: true, state };
 }
 
-export async function requestPrivateAccess(accessToken: string | null | undefined, slug: string): Promise<PrivateAccessResponse> {
-  const { data, error } = await rpc<Array<{ request_id: string; request_status: PrivateAccessState["status"]; requested_at: string }>>(accessToken, "employer_request_talent_private_access", { p_talent_slug: slug });
-  if (error) return { ok: false, message: mapError(error) };
-  const row = data?.[0];
-  return row ? { ok: true, state: { requestId: row.request_id, isOwner: false, status: row.request_status, requestedAt: row.requested_at, contactEmail: null, resumeOriginalFilename: null, resumeUploadedAt: null, resumeAvailable: false } } : { ok: false, message: "Unable to create access request." };
-}
-
 export async function respondPrivateAccess(accessToken: string | null | undefined, requestId: string, status: "accepted" | "declined"): Promise<PrivateAccessResponse> {
   const { data, error } = await rpc<Array<{ request_id: string; request_status: PrivateAccessState["status"]; responded_at: string }>>(accessToken, "talent_set_private_access_request_status", { p_request_id: requestId, p_status: status });
   if (error) return { ok: false, message: mapError(error) };

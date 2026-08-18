@@ -157,41 +157,6 @@ export default function TalentProfileExperience({
     };
   }, [demoProfile, slug]);
 
-  const requestPrivateAccess = async () => {
-    const session = await getSessionWithRetry();
-    if (!session?.access_token || requestBusy || isDemo) return;
-    setRequestBusy(true);
-    setRequestFeedback(null);
-    try {
-      const response = await fetch(
-        `/api/talent/${encodeURIComponent(slug)}/private-access`,
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${session.access_token}` },
-        },
-      );
-      const result = (await response.json().catch(() => null)) as {
-        ok?: boolean;
-        state?: PrivateAccessState;
-        message?: string;
-      } | null;
-      if (!response.ok || !result?.ok || !result.state)
-        setRequestFeedback(
-          result?.message ?? "Unable to request private access.",
-        );
-      else {
-        setPayload((current) =>
-          current ? { ...current, privateAccess: result.state } : current,
-        );
-        setRequestFeedback("Private access request sent.");
-      }
-    } catch {
-      setRequestFeedback("Unable to request private access.");
-    } finally {
-      setRequestBusy(false);
-    }
-  };
-
   const requestIntroduction = async () => {
     const session = await getSessionWithRetry();
     if (!session?.access_token || introductionBusy || isDemo) return;
@@ -548,14 +513,20 @@ export default function TalentProfileExperience({
                 <h2 className="mt-2 text-2xl font-black uppercase tracking-[0.06em] text-[#0f2744]">
                   {access?.isOwner
                     ? "Your private details"
-                    : accessLabel(access?.status ?? "none")}
+                    : access?.status === "revoked"
+                      ? "Connection ended"
+                      : accessLabel(access?.status ?? "none")}
                 </h2>
                 <p className="mt-2 max-w-3xl text-sm leading-7 text-[#27405f]">
                   {access?.isOwner
                     ? "Manage which employers can access your resume and contact email."
-                    : access?.status === "accepted"
-                      ? "This employer has approved access to the private details below."
-                      : "Resume and contact email are shared only after the talent approves your request."}
+                    : introductionStatus === "pending"
+                      ? "Private contact details and files will unlock if the Talent accepts your introduction request."
+                      : access?.status === "accepted"
+                        ? "Your active connection unlocks the private details below."
+                        : access?.status === "revoked"
+                          ? "This connection has ended. Private contact details and files are locked again."
+                          : "Contact details and private files are shared after the Talent accepts your introduction request."}
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -564,7 +535,7 @@ export default function TalentProfileExperience({
                     type="button"
                     onClick={() => void requestIntroduction()}
                     disabled={introductionBusy}
-                    className="inline-flex min-h-11 items-center rounded-full border border-[#cda64d] px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#0f2744]"
+                    className="inline-flex min-h-11 items-center rounded-full bg-[#aff546] px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#0f2744] transition hover:bg-[#9fea37] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#aff546] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     Request introduction
                   </button>
@@ -574,19 +545,20 @@ export default function TalentProfileExperience({
                     type="button"
                     onClick={() => void withdrawIntroduction()}
                     disabled={introductionBusy}
-                    className="inline-flex min-h-11 items-center rounded-full border border-[#cda64d] px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#0f2744]"
+                    className="inline-flex min-h-11 items-center rounded-full bg-[#aff546] px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#0f2744] transition hover:bg-[#9fea37] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#aff546] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     Introduction pending · Withdraw
                   </button>
                 ) : null}
-                {!isOwner && introductionStatus === "accepted" ? (
+                {!isOwner && introductionStatus === "accepted" && access?.status !== "revoked" ? (
                   <span className="inline-flex min-h-11 items-center rounded-full bg-[#8be4c5] px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#071426]">
-                    Introduction accepted
+                    Connected
                   </span>
                 ) : null}
                 {!isOwner &&
                 (introductionStatus === "declined" ||
-                  introductionStatus === "withdrawn") ? (
+                  introductionStatus === "withdrawn" ||
+                  (introductionStatus === "accepted" && access?.status === "revoked")) ? (
                   <button
                     type="button"
                     onClick={() => void requestIntroduction()}
@@ -594,20 +566,6 @@ export default function TalentProfileExperience({
                     className="inline-flex min-h-11 items-center rounded-full border border-[#cda64d] px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#0f2744]"
                   >
                     Request introduction again
-                  </button>
-                ) : null}
-                {!isOwner &&
-                (!access ||
-                  access.status === "none" ||
-                  access.status === "declined" ||
-                  access.status === "revoked") ? (
-                  <button
-                    type="button"
-                    onClick={() => void requestPrivateAccess()}
-                    disabled={requestBusy}
-                    className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#aff546] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-[#071426] disabled:opacity-50"
-                  >
-                    <Lock className="h-4 w-4" /> Request access
                   </button>
                 ) : null}
               </div>

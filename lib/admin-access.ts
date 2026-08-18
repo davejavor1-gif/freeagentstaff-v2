@@ -79,6 +79,7 @@ function mapAccountListItem(row: AdminListRow): AdminAccountListItem {
     visibility: row.visibility,
     opportunityStatus: row.opportunity_status,
     employerVerificationStatus: row.employer_verification_status,
+    verificationRequestedAt: null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

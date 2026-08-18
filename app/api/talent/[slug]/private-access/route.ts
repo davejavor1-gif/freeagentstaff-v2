@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { loadPrivateAccess, requestPrivateAccess } from "@/lib/private-access";
+import { loadPrivateAccess } from "@/lib/private-access";
 
 function token(request: Request) {
   const value = request.headers.get("authorization");
@@ -9,11 +9,5 @@ function token(request: Request) {
 export async function GET(request: Request, context: { params: Promise<{ slug: string }> }) {
   const { slug } = await context.params;
   const result = await loadPrivateAccess(token(request), slug);
-  return NextResponse.json(result, { status: result.ok ? 200 : result.message === "Sign in required." ? 401 : 403 });
-}
-
-export async function POST(request: Request, context: { params: Promise<{ slug: string }> }) {
-  const { slug } = await context.params;
-  const result = await requestPrivateAccess(token(request), slug);
   return NextResponse.json(result, { status: result.ok ? 200 : result.message === "Sign in required." ? 401 : 403 });
 }

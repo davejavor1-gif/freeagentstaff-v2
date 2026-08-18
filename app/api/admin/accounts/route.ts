@@ -21,12 +21,24 @@ export async function GET(request: Request) {
       url.searchParams.get("accountType") === "talent" || url.searchParams.get("accountType") === "employer"
         ? (url.searchParams.get("accountType") as "talent" | "employer")
         : null,
+    verificationStatus:
+      url.searchParams.get("verificationStatus") === "unverified" ||
+      url.searchParams.get("verificationStatus") === "pending" ||
+      url.searchParams.get("verificationStatus") === "verified" ||
+      url.searchParams.get("verificationStatus") === "rejected"
+        ? (url.searchParams.get("verificationStatus") as "unverified" | "pending" | "verified" | "rejected")
+        : null,
     limit: url.searchParams.get("limit") ? Number(url.searchParams.get("limit")) : undefined,
     cursor:
       cursorCreatedAt && cursorUserId
         ? { createdAt: cursorCreatedAt, userId: cursorUserId }
         : null,
   });
+
+  const verificationStatus = url.searchParams.get("verificationStatus");
+  if (payload.ok && verificationStatus) {
+    payload.items = payload.items?.filter((item) => item.employerVerificationStatus === verificationStatus);
+  }
 
   const status = payload.ok
     ? 200

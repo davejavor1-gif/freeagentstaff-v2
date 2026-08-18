@@ -56,6 +56,7 @@ type ProfileSelectResult = {
   talent_plan?: "free_agent" | "free_agent_pro" | null;
   talent_subscription_status?: "inactive" | "active" | "trialing" | "past_due" | "canceled" | null;
   talent_subscription_current_period_ends_at?: string | null;
+  is_published?: boolean | null;
 };
 
 const normalizeVisibility = (value: ProfileVisibility | null | undefined): Exclude<ProfileVisibility, "employer_network"> => {
@@ -166,6 +167,7 @@ export default function BuilderPage() {
   });
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [hasProAccess, setHasProAccess] = useState(false);
+  const [isPublished, setIsPublished] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -198,7 +200,7 @@ export default function BuilderPage() {
 
       const { data, error } = await supabase
         .from("profiles")
-        .select("slug, profile, account_type, visibility, opportunity_status, name, title, location, availability, top_strength, experience_years, focus_area, education, salary_expectation, contact_email, resume_storage_path, resume_original_filename, resume_uploaded_at, summary, bio, skills, languages, passions, career_journey, email, image_alt, current_employer, intro_video_url, photo_url, photo_storage_path, intro_video_storage_path, talent_plan, talent_subscription_status, talent_subscription_current_period_ends_at")
+        .select("slug, profile, account_type, visibility, opportunity_status, is_published, name, title, location, availability, top_strength, experience_years, focus_area, education, salary_expectation, contact_email, resume_storage_path, resume_original_filename, resume_uploaded_at, summary, bio, skills, languages, passions, career_journey, email, image_alt, current_employer, intro_video_url, photo_url, photo_storage_path, intro_video_storage_path, talent_plan, talent_subscription_status, talent_subscription_current_period_ends_at")
         .eq("user_id", supabaseSession.user.id)
         .maybeSingle();
 
@@ -223,6 +225,7 @@ export default function BuilderPage() {
         }
 
         setProfile(hydrateBuilderProfile(profileResult, supabaseSession.user.email));
+        setIsPublished(profileResult.is_published === true);
         const subscription = normalizeTalentSubscriptionSnapshot({
           plan: profileResult.talent_plan,
           status: profileResult.talent_subscription_status,
@@ -323,9 +326,9 @@ export default function BuilderPage() {
     }
   };
 
-  const saveProfile = async () => {
+  const saveProfile = async (): Promise<boolean> => {
     if (!session || !profileLoaded) {
-      return;
+      return false;
     }
 
     setIsSaving(true);
@@ -335,7 +338,7 @@ export default function BuilderPage() {
     if (profile.contactEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profile.contactEmail.trim())) {
       setSaveError("Enter a valid contact email address.");
       setIsSaving(false);
-      return;
+      return false;
     }
 
     const { error } = await supabase.from("profiles").upsert(
@@ -356,13 +359,59 @@ export default function BuilderPage() {
 
     if (error) {
       setSaveError(error.message);
-      return;
+      return false;
     }
 
     const { data: savedProfile } = await supabase.from("profiles").select("slug").eq("user_id", session.user.id).maybeSingle<{ slug: string | null }>();
     setProfile((current: FreeAgentProfile) => ({ ...current, slug: savedProfile?.slug ?? current.slug }));
     setSaveStatus("Profile saved successfully.");
     window.setTimeout(() => setSaveStatus(null), 3000);
+    return true;
+  };
+
+  const publishProfile = async (nextPublishedState: boolean) => {
+    if (!session || !profileLoaded || isSaving || nextPublishedState === isPublished) {
+      return;
+    }
+
+    const saved = await saveProfile();
+    if (!saved) {
+      return;
+    }
+
+    setIsSaving(true);
+    setSaveError(null);
+    const response = await fetch("/api/talent/privacy", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        visibility: profile.visibility,
+        opportunityStatus: profile.opportunityStatus,
+        isPublished: nextPublishedState,
+      }),
+    });
+    const payload = (await response.json().catch(() => null)) as {
+      ok?: boolean;
+      message?: string;
+      settings?: { isPublished?: boolean; visibility?: ProfileVisibility; opportunityStatus?: FreeAgentProfile["opportunityStatus"] };
+    } | null;
+    setIsSaving(false);
+
+    if (!response.ok || !payload?.ok || !payload.settings) {
+      setSaveError(payload?.message ?? "Unable to publish your profile.");
+      return;
+    }
+
+    setIsPublished(payload.settings.isPublished === true);
+    setProfile((current) => ({
+      ...current,
+      visibility: payload.settings?.visibility ?? current.visibility,
+      opportunityStatus: payload.settings?.opportunityStatus ?? current.opportunityStatus,
+    }));
+    setSaveStatus(nextPublishedState ? "Profile published." : "Profile unpublished.");
   };
 
   const uploadResume = async (file: File) => {
@@ -642,14 +691,45 @@ export default function BuilderPage() {
                 <p className="text-sm font-semibold text-rose-700">{saveError}</p>
               ) : null}
             </div>
-            <button
-              type="button"
-              onClick={saveProfile}
-              disabled={isSaving || !profileLoaded}
-              className="inline-flex items-center justify-center rounded-full bg-[#aff546] px-5 py-3 text-sm font-semibold uppercase tracking-[0.24em] text-[#071426] transition hover:bg-[#9fea37] disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isSaving ? "Saving..." : "Save profile"}
-            </button>
+            <div className="flex w-full flex-col items-stretch gap-3 sm:w-auto sm:items-end">
+              <div>
+                <button
+                  type="button"
+                  onClick={() => void saveProfile()}
+                  disabled={isSaving || !profileLoaded}
+                  className="inline-flex w-full items-center justify-center rounded-full bg-[#aff546] px-5 py-3 text-sm font-semibold uppercase tracking-[0.24em] text-[#071426] transition hover:bg-[#9fea37] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                >
+                  {isSaving ? "Saving..." : "Save profile"}
+                </button>
+                <p className="mt-2 text-xs text-[#dfe7ef]">Save your changes without changing your profile visibility.</p>
+              </div>
+              {isPublished ? (
+                <div className="text-left sm:text-right">
+                  <button
+                    type="button"
+                    onClick={() => void publishProfile(false)}
+                    disabled={isSaving || !profileLoaded}
+                    className="inline-flex w-full items-center justify-center rounded-full border border-[#aff546]/70 bg-[#17355f] px-5 py-3 text-sm font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#214873] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                  >
+                    Published ✓
+                  </button>
+                  <p className="mt-2 text-xs text-[#dfe7ef]">Future saved changes update your published profile.</p>
+                  <p className="mt-1 text-xs text-[#dfe7ef]">Select Published ✓ to unpublish your profile.</p>
+                </div>
+              ) : (
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => void publishProfile(true)}
+                    disabled={isSaving || !profileLoaded}
+                    className="inline-flex w-full items-center justify-center rounded-full border border-[#aff546]/70 bg-[#17355f] px-5 py-3 text-sm font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#214873] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                  >
+                    Publish profile
+                  </button>
+                  <p className="mt-2 text-xs text-[#dfe7ef]">Make your FreeAgent profile discoverable according to your Privacy &amp; Visibility settings.</p>
+                </div>
+              )}
+            </div>
           </div>
 
           <form
@@ -734,7 +814,7 @@ export default function BuilderPage() {
             <div className="space-y-2 rounded-2xl border border-[#0f2744]/15 border-t-4 border-t-[#2bd7ef] bg-[#fffaf0] px-4 py-4 text-sm text-[#27405f] shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
               <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Privacy & visibility</p>
               <p>
-                Marketplace visibility, publish state, and blocked companies are now managed from Privacy & Visibility so the canonical access-control settings stay in one place.
+                Marketplace visibility and blocked companies are managed from Privacy & Visibility. Publish state is managed here in Builder Studio.
               </p>
               <Link
                 href="/settings/privacy"

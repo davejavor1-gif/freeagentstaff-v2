@@ -17,6 +17,7 @@ async function getSessionWithTimeout() {
 export default function AdminAccountsPage() {
   const [query, setQuery] = useState("");
   const [accountType, setAccountType] = useState<"all" | "talent" | "employer">("all");
+  const [verificationStatus, setVerificationStatus] = useState<"all" | "pending" | "verified" | "rejected" | "unverified">("all");
   const [payload, setPayload] = useState<AdminAccountListResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [nextCursor, setNextCursor] = useState<{ createdAt: string; userId: string } | null>(null);
@@ -25,13 +26,14 @@ export default function AdminAccountsPage() {
     const params = new URLSearchParams();
     if (query.trim()) params.set("q", query.trim());
     if (accountType !== "all") params.set("accountType", accountType);
+    if (verificationStatus !== "all") params.set("verificationStatus", verificationStatus);
     params.set("limit", "25");
     if (nextCursor) {
       params.set("cursorCreatedAt", nextCursor.createdAt);
       params.set("cursorUserId", nextCursor.userId);
     }
     return params.toString();
-  }, [accountType, nextCursor, query]);
+  }, [accountType, nextCursor, query, verificationStatus]);
 
   useEffect(() => {
     let mounted = true;
@@ -48,7 +50,7 @@ export default function AdminAccountsPage() {
           return;
         }
 
-        const response = await fetch(`/api/admin/accounts?${cursorReset ? new URLSearchParams({ q: query.trim(), accountType: accountType === "all" ? "" : accountType, limit: "25" }).toString() : searchParams}`, {
+        const response = await fetch(`/api/admin/accounts?${cursorReset ? new URLSearchParams({ q: query.trim(), accountType: accountType === "all" ? "" : accountType, verificationStatus: verificationStatus === "all" ? "" : verificationStatus, limit: "25" }).toString() : searchParams}`, {
           method: "GET",
           headers: { Authorization: `Bearer ${currentSession.access_token}` },
           cache: "no-store",
@@ -75,7 +77,7 @@ export default function AdminAccountsPage() {
     return () => {
       mounted = false;
     };
-  }, [accountType, searchParams, query]);
+  }, [accountType, searchParams, query, verificationStatus]);
 
   return (
     <main className="min-h-[60vh] bg-[#f5ecd7] px-6 py-10 text-[#071321]">
@@ -89,7 +91,7 @@ export default function AdminAccountsPage() {
             <Link href="/admin" className="text-sm font-semibold text-[#071321] underline decoration-[#2bd7ef] underline-offset-4">Back to summary</Link>
           </div>
 
-          <div className="mt-6 grid gap-3 md:grid-cols-[minmax(0,1fr)_160px_120px]">
+          <div className="mt-6 grid gap-3 md:grid-cols-[minmax(0,1fr)_160px_180px_120px]">
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
@@ -105,7 +107,18 @@ export default function AdminAccountsPage() {
               <option value="talent">Talent</option>
               <option value="employer">Employer</option>
             </select>
-            <button type="button" onClick={() => { setQuery(""); setAccountType("all"); }} className="rounded-2xl bg-[#071321] px-4 py-3 text-sm font-semibold text-white">Clear</button>
+            <select
+              value={verificationStatus}
+              onChange={(event) => setVerificationStatus(event.target.value as typeof verificationStatus)}
+              className="rounded-2xl border border-[#d9caa5] px-4 py-3 text-sm outline-none focus:border-[#2bd7ef]"
+            >
+              <option value="all">All verification</option>
+              <option value="pending">Pending review</option>
+              <option value="verified">Verified</option>
+              <option value="rejected">Rejected</option>
+              <option value="unverified">Unverified</option>
+            </select>
+            <button type="button" onClick={() => { setQuery(""); setAccountType("all"); setVerificationStatus("all"); }} className="rounded-2xl bg-[#071321] px-4 py-3 text-sm font-semibold text-white">Clear</button>
           </div>
         </section>
 
@@ -122,7 +135,8 @@ export default function AdminAccountsPage() {
                     <p className="text-sm text-[#4a5568]">{item.secondaryLabel ?? item.slug ?? "No secondary label"}</p>
                   </div>
                   <div className="text-right text-sm text-[#4a5568]">
-                    <p>{item.email ?? "No email"}</p>
+                    <p className="font-semibold">{item.employerVerificationStatus ?? "No verification status"}</p>
+                    <p>{item.verificationRequestedAt ? `Requested ${item.verificationRequestedAt}` : "No request date"}</p>
                     <p>{item.createdAt}</p>
                   </div>
                 </div>

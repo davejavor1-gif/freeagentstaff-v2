@@ -158,7 +158,10 @@ export default function EmployerAuthPage() {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { account_type: "employer" } },
+      options: {
+        data: { account_type: "employer" },
+        emailRedirectTo: `${window.location.origin}/onboarding/employer`,
+      },
     });
     setIsSubmitting(false);
 

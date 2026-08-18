@@ -285,7 +285,7 @@ export default function ConnectionsPage() {
               <p className="mt-3 text-base font-semibold text-[#17355f] sm:text-lg">
                 {accountType === "employer"
                   ? "Manage active connection access and open Talent Passports."
-                  : "Manage employers who currently have access to your contact details."}
+                  : "Manage employers who currently have access to your contact details and private files."}
               </p>
             </div>
             <div className="rounded-[20px] border border-[#cda64d]/35 bg-[#0f2744] px-4 py-3 text-sm text-[#f7ebcf]">
