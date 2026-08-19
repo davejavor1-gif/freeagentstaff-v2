@@ -29,6 +29,7 @@ function mapReasonFromError(message: string): SavedTalentErrorReason {
   if (message.includes("wrong_account_type")) return "wrong_account_type";
   if (message.includes("unverified_employer")) return "unverified_employer";
   if (message.includes("invalid_abn")) return "invalid_abn";
+  if (message.includes("inactive_employer_subscription")) return "inactive_employer_subscription";
   if (message.includes("shortlist_not_found")) return "shortlist_not_found";
   if (message.includes("invalid_shortlist_ids")) return "invalid_shortlist_ids";
   if (message.includes("candidate_not_found")) return "candidate_not_found";
@@ -36,6 +37,12 @@ function mapReasonFromError(message: string): SavedTalentErrorReason {
   if (message.includes("invalid_name")) return "invalid_name";
   if (message.includes("duplicate") || message.includes("unique")) return "duplicate_name";
   return "error";
+}
+
+function messageFromError(message: string) {
+  return message.includes("inactive_employer_subscription")
+    ? "An active employer subscription is required to access saved talent."
+    : message;
 }
 
 function normalizeVisibility(value: string | null | undefined): Exclude<ProfileVisibility, "employer_network"> | null {
@@ -250,7 +257,7 @@ export async function listSavedTalent(accessToken: string | null | undefined, sh
     return {
       ok: false,
       reason: mapReasonFromError(error.message),
-      message: error.message,
+      message: messageFromError(error.message),
       items: [],
       shortlistId: shortlistId ?? null,
     };
@@ -305,7 +312,7 @@ export async function saveTalent(accessToken: string | null | undefined, slug: s
     return {
       ok: false,
       reason: mapReasonFromError(error.message),
-      message: error.message,
+      message: messageFromError(error.message),
     };
   }
 
@@ -337,7 +344,7 @@ export async function unsaveTalent(accessToken: string | null | undefined, slug:
     return {
       ok: false,
       reason: mapReasonFromError(error.message),
-      message: error.message,
+      message: messageFromError(error.message),
     };
   }
 
@@ -360,7 +367,7 @@ export async function listShortlists(accessToken: string | null | undefined): Pr
     return {
       ok: false,
       reason: mapReasonFromError(error.message),
-      message: error.message,
+      message: messageFromError(error.message),
       shortlists: [],
     };
   }
@@ -390,7 +397,7 @@ export async function createShortlist(accessToken: string | null | undefined, na
     return {
       ok: false,
       reason: mapReasonFromError(error.message),
-      message: error.message,
+      message: messageFromError(error.message),
     };
   }
 
@@ -435,7 +442,7 @@ export async function renameShortlist(accessToken: string | null | undefined, sh
     return {
       ok: false,
       reason: mapReasonFromError(error.message),
-      message: error.message,
+      message: messageFromError(error.message),
     };
   }
 
@@ -479,7 +486,7 @@ export async function deleteShortlist(accessToken: string | null | undefined, sh
     return {
       ok: false,
       reason: mapReasonFromError(error.message),
-      message: error.message,
+      message: messageFromError(error.message),
     };
   }
 
@@ -509,7 +516,7 @@ export async function addSavedTalentToShortlist(accessToken: string | null | und
     return {
       ok: false,
       reason: mapReasonFromError(error.message),
-      message: error.message,
+      message: messageFromError(error.message),
     };
   }
 
@@ -536,7 +543,7 @@ export async function removeSavedTalentFromShortlist(accessToken: string | null 
     return {
       ok: false,
       reason: mapReasonFromError(error.message),
-      message: error.message,
+      message: messageFromError(error.message),
     };
   }
 

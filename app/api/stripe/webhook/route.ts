@@ -12,18 +12,43 @@ function subscriptionUserId(subscription: Stripe.Subscription) {
   return subscription.metadata.freeagentstaff_user_id ?? null;
 }
 
+type SubscriptionProfile = {
+  user_id: string;
+  account_type: "talent" | "employer";
+  stripe_talent_subscription_id: string | null;
+  talent_subscription_current_period_ends_at: string | null;
+  stripe_employer_subscription_id: string | null;
+  employer_subscription_current_period_ends_at: string | null;
+};
+
 async function findProfile(subscription: Stripe.Subscription) {
   const serviceClient = createServiceRoleSupabaseClient();
   if (!serviceClient) throw new Error("Service role Supabase client is not configured.");
 
   const userId = subscriptionUserId(subscription);
   if (userId) {
-    const { data } = await serviceClient.from("profiles").select("user_id, account_type").eq("user_id", userId).maybeSingle<{ user_id: string; account_type: "talent" | "employer" }>();
+    const { data } = await serviceClient.from("profiles").select("user_id, account_type, stripe_talent_subscription_id, talent_subscription_current_period_ends_at, stripe_employer_subscription_id, employer_subscription_current_period_ends_at").eq("user_id", userId).maybeSingle<SubscriptionProfile>();
     if (data) return data;
   }
 
-  const { data } = await serviceClient.from("profiles").select("user_id, account_type").eq("stripe_customer_id", String(subscription.customer)).maybeSingle<{ user_id: string; account_type: "talent" | "employer" }>();
+  const { data } = await serviceClient.from("profiles").select("user_id, account_type, stripe_talent_subscription_id, talent_subscription_current_period_ends_at, stripe_employer_subscription_id, employer_subscription_current_period_ends_at").eq("stripe_customer_id", String(subscription.customer)).maybeSingle<SubscriptionProfile>();
   return data ?? null;
+}
+
+function shouldApplySubscription(input: {
+  persistedSubscriptionId: string | null;
+  persistedPeriodEnd: string | null;
+  incomingSubscriptionId: string;
+  incomingPeriodEnd: string | null;
+}) {
+  if (!input.persistedSubscriptionId || input.persistedSubscriptionId === input.incomingSubscriptionId) {
+    return true;
+  }
+
+  const persistedPeriodEnd = input.persistedPeriodEnd ? new Date(input.persistedPeriodEnd).getTime() : Number.NaN;
+  const incomingPeriodEnd = input.incomingPeriodEnd ? new Date(input.incomingPeriodEnd).getTime() : Number.NaN;
+
+  return Number.isNaN(persistedPeriodEnd) || (!Number.isNaN(incomingPeriodEnd) && incomingPeriodEnd > persistedPeriodEnd);
 }
 
 async function applySubscription(subscription: Stripe.Subscription) {
@@ -42,6 +67,13 @@ async function applySubscription(subscription: Stripe.Subscription) {
   const customerId = String(subscription.customer);
 
   if (resolvedPlan === "employer" && profile.account_type === "employer") {
+    if (!shouldApplySubscription({
+      persistedSubscriptionId: profile.stripe_employer_subscription_id,
+      persistedPeriodEnd: profile.employer_subscription_current_period_ends_at,
+      incomingSubscriptionId: subscription.id,
+      incomingPeriodEnd: periodEnd,
+    })) return;
+
     await serviceClient.from("profiles").update({
       stripe_customer_id: customerId,
       stripe_employer_subscription_id: subscription.id,
@@ -54,6 +86,13 @@ async function applySubscription(subscription: Stripe.Subscription) {
   }
 
   if (resolvedPlan === "free_agent_pro" && profile.account_type === "talent") {
+    if (!shouldApplySubscription({
+      persistedSubscriptionId: profile.stripe_talent_subscription_id,
+      persistedPeriodEnd: profile.talent_subscription_current_period_ends_at,
+      incomingSubscriptionId: subscription.id,
+      incomingPeriodEnd: periodEnd,
+    })) return;
+
     await serviceClient.from("profiles").update({
       stripe_customer_id: customerId,
       stripe_talent_subscription_id: subscription.id,
@@ -120,9 +159,7 @@ export async function POST(request: Request) {
           ? invoiceSubscription
           : invoiceSubscription?.id;
       if (subscriptionId) {
-        const subscription = event.type.startsWith("customer.subscription")
-          ? object as Stripe.Subscription
-          : await getStripeClient().subscriptions.retrieve(subscriptionId);
+        const subscription = await getStripeClient().subscriptions.retrieve(subscriptionId);
         await applySubscription(subscription);
       }
     }

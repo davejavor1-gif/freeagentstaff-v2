@@ -284,6 +284,44 @@ export default function DashboardPage() {
   };
   const isProTalent = talentSubscription.hasProAccess;
 
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("checkout") !== "success" || !session) {
+      return;
+    }
+
+    const hasEntitlement = accountType === "employer"
+      ? employerSummary?.subscription.hasAccess === true
+      : talentSummary?.subscription.hasProAccess === true;
+
+    if (hasEntitlement) {
+      const completionTimer = window.setTimeout(() => {
+        setFeedback("Subscription activated.");
+        router.replace("/dashboard");
+      }, 0);
+      return () => window.clearTimeout(completionTimer);
+    }
+
+    let attempts = 0;
+    let pollingTimer: number | undefined;
+    const activationTimer = window.setTimeout(() => setFeedback("Activating your subscription…"), 0);
+
+    const refresh = () => {
+      attempts += 1;
+      void loadDashboardSummary(session, accountType);
+      if (attempts < 8) {
+        pollingTimer = window.setTimeout(refresh, 3000);
+      } else {
+        setFeedback("Subscription activation is still pending. Refresh this page in a moment to check again.");
+      }
+    };
+
+    pollingTimer = window.setTimeout(refresh, 1500);
+    return () => {
+      window.clearTimeout(activationTimer);
+      if (pollingTimer) window.clearTimeout(pollingTimer);
+    };
+  }, [accountType, employerSummary?.subscription.hasAccess, loadDashboardSummary, router, session, talentSummary?.subscription.hasProAccess]);
+
   const isVerifiedEmployer = accountType === "employer" && verificationStatus === "verified";
 
   const formattedRequestedAt = useMemo(

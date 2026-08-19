@@ -5,6 +5,7 @@ export type SavedTalentErrorReason =
   | "wrong_account_type"
   | "unverified_employer"
   | "invalid_abn"
+  | "inactive_employer_subscription"
   | "shortlist_not_found"
   | "invalid_shortlist_ids"
   | "candidate_not_found"

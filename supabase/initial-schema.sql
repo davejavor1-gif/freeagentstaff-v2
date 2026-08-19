@@ -139,6 +139,25 @@ create policy "Pro talent can delete intro videos" on storage.objects
     )
   );
 
+drop policy if exists "Users can select their own intro videos" on storage.objects;
+drop policy if exists "Pro talent can select intro videos" on storage.objects;
+create policy "Pro talent can select intro videos" on storage.objects
+  for select
+  to authenticated
+  using (
+    bucket_id = 'intro-videos'
+    and (storage.foldername(name))[1] = auth.uid()::text
+    and exists (
+      select 1
+      from public.profiles
+      where user_id = auth.uid()
+        and account_type = 'talent'
+        and talent_plan = 'free_agent_pro'
+        and talent_subscription_status in ('active', 'trialing')
+        and (talent_subscription_current_period_ends_at is null or talent_subscription_current_period_ends_at >= now())
+    )
+  );
+
 create or replace function public.protect_talent_video_introduction()
 returns trigger
 language plpgsql
@@ -1025,6 +1044,49 @@ begin
 end
 $$;
 
+create or replace function public.current_viewer_profile_context()
+returns table (
+  viewer_user_id uuid,
+  viewer_account_type text,
+  viewer_employer_verification_status text,
+  viewer_abn text,
+  viewer_company_keys text[]
+)
+language plpgsql
+security definer
+stable
+set search_path = public, pg_temp
+as $$
+declare
+  v_uid uuid := auth.uid();
+  v_account_type text;
+  v_verification_status text;
+  v_abn text;
+  v_company_keys text[];
+begin
+  if v_uid is null then
+    raise exception 'not_signed_in' using errcode = '42501';
+  end if;
+
+  select
+    p.account_type,
+    p.employer_verification_status,
+    public.normalized_abn(p.employer_abn),
+    public.company_identity_keys(p.employer_abn, p.employer_website, p.employer_company_name)
+  into v_account_type, v_verification_status, v_abn, v_company_keys
+  from public.profiles p
+  where p.user_id = v_uid;
+
+  if v_account_type = 'employer' then
+    perform public.require_verified_employer_actor();
+  elsif v_account_type <> 'talent' then
+    raise exception 'wrong_account_type' using errcode = '42501';
+  end if;
+
+  return query select v_uid, v_account_type, v_verification_status, v_abn, coalesce(v_company_keys, '{}'::text[]);
+end
+$$;
+
 create or replace function public.validate_saved_talent_roles()
 returns trigger
 language plpgsql
@@ -1885,7 +1947,7 @@ stable
 set search_path = public, pg_temp
 as $$
   with actor as (
-    select public.require_employer_actor() as employer_user_id
+    select public.require_verified_employer_actor() as employer_user_id
   ),
   base as (
     select
@@ -3874,6 +3936,7 @@ begin
   select user_id into v_talent from public.profiles where account_type = 'talent' and slug = p_talent_slug;
   if v_talent is null then raise exception 'private_access_unavailable' using errcode = '42501'; end if;
   if v_uid = v_talent then return query select null::uuid, true, 'owner_full'::text, now(), p.contact_email, p.resume_original_filename, p.resume_uploaded_at, p.resume_storage_path is not null from public.profiles p where p.user_id = v_talent; return; end if;
+  perform public.require_verified_employer_actor();
   if not public.employer_can_access_talent(v_uid, p_talent_slug) then raise exception 'private_access_unavailable' using errcode = '42501'; end if;
   select * into v_request from public.talent_private_access_requests where talent_user_id = v_talent and employer_user_id = v_uid;
   return query select v_request.id, false, coalesce(v_request.status, 'none'), v_request.requested_at, case when v_request.status = 'accepted' then p.contact_email else null end, case when v_request.status = 'accepted' then p.resume_original_filename else null end, case when v_request.status = 'accepted' then p.resume_uploaded_at else null end, case when v_request.status = 'accepted' then p.resume_storage_path is not null else false end from public.profiles p where p.user_id = v_talent;
