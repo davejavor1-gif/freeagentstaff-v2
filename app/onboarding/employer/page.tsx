@@ -113,7 +113,7 @@ export default function EmployerOnboardingPage() {
   const [requestedAt, setRequestedAt] = useState<string | null>(null);
   const [rejectionReason, setRejectionReason] = useState<string | null>(null);
   const [form, setForm] = useState<EmployerFormState>(blankForm);
-  const [baselineIdentity, setBaselineIdentity] = useState<{ companyName: string; abn: string }>({ companyName: "", abn: "" });
+  const [baselineIdentity, setBaselineIdentity] = useState<{ companyName: string; abn: string; website: string }>({ companyName: "", abn: "", website: "" });
   const [formError, setFormError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [touchedSubmit, setTouchedSubmit] = useState(false);
@@ -138,9 +138,10 @@ export default function EmployerOnboardingPage() {
   const identityChanged = useMemo(() => {
     return (
       form.companyName.trim() !== baselineIdentity.companyName.trim() ||
-      normalizeAbn(form.abn) !== normalizeAbn(baselineIdentity.abn)
+      normalizeAbn(form.abn) !== normalizeAbn(baselineIdentity.abn) ||
+      form.website.trim().toLowerCase() !== baselineIdentity.website.trim().toLowerCase()
     );
-  }, [baselineIdentity.abn, baselineIdentity.companyName, form.abn, form.companyName]);
+  }, [baselineIdentity.abn, baselineIdentity.companyName, baselineIdentity.website, form.abn, form.companyName, form.website]);
 
   const refreshEmployerRow = async (userId: string): Promise<EmployerProfileRow | null> => {
     const { data, error } = await supabase
@@ -179,7 +180,7 @@ export default function EmployerOnboardingPage() {
     };
 
     setForm(nextForm);
-    setBaselineIdentity({ companyName: nextForm.companyName, abn: nextForm.abn });
+    setBaselineIdentity({ companyName: nextForm.companyName, abn: nextForm.abn, website: nextForm.website });
   };
 
   useEffect(() => {
@@ -246,6 +247,38 @@ export default function EmployerOnboardingPage() {
       mounted = false;
     };
   }, [router]);
+
+  useEffect(() => {
+    if (!currentUserId) {
+      return;
+    }
+
+    const refreshVerification = async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("employer_verification_status, verification_requested_at, verification_rejection_reason")
+        .eq("user_id", currentUserId)
+        .maybeSingle<EmployerProfileRow>();
+
+      if (!data) {
+        return;
+      }
+
+      const nextStatus = data.employer_verification_status ?? "unverified";
+      setVerificationStatus(nextStatus);
+      setRequestedAt(data.verification_requested_at ?? null);
+      setRejectionReason(data.verification_rejection_reason ?? null);
+      if (nextStatus !== "pending") {
+        setIsPendingEditing(false);
+      }
+    };
+
+    const interval = window.setInterval(() => {
+      void refreshVerification();
+    }, 15000);
+
+    return () => window.clearInterval(interval);
+  }, [currentUserId]);
 
   const saveDetails = async () => {
     const session = await getSessionWithRetry();
@@ -431,7 +464,7 @@ export default function EmployerOnboardingPage() {
 
           {(verificationStatus === "pending" || verificationStatus === "verified") && identityChanged ? (
             <div className="mt-6 rounded-[22px] border border-[#f2cc63]/40 bg-[#f7ebcf]/12 p-4 text-sm leading-7 text-[#f7ebcf]">
-              Changing your company name or ABN will require your employer account to be verified again.
+              Changing your company name, ABN or company website will require your employer account to be verified again.
             </div>
           ) : null}
 

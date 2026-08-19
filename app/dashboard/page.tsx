@@ -272,6 +272,36 @@ export default function DashboardPage() {
     };
   }, [accountType, loadDashboardSummary, router]);
 
+  useEffect(() => {
+    if (accountType !== "employer" || !session) {
+      return;
+    }
+
+    const refreshVerification = async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("employer_verification_status, verification_requested_at, verification_rejection_reason, employer_company_name")
+        .eq("user_id", session.user.id)
+        .maybeSingle<ProfileRow>();
+
+      if (!data) {
+        return;
+      }
+
+      setVerificationStatus(data.employer_verification_status ?? "unverified");
+      setVerificationRequestedAt(data.verification_requested_at ?? null);
+      setVerificationRejectionReason(data.verification_rejection_reason ?? null);
+      setEmployerCompanyName(data.employer_company_name ?? "");
+      void loadDashboardSummary(session, "employer");
+    };
+
+    const interval = window.setInterval(() => {
+      void refreshVerification();
+    }, 15000);
+
+    return () => window.clearInterval(interval);
+  }, [accountType, loadDashboardSummary, session]);
+
   const pendingCount = talentSummary?.pendingIntroductionRequests ?? 0;
   const isPublished = talentSummary?.isPublished ?? false;
   const visibility = talentSummary?.visibility ?? "public";

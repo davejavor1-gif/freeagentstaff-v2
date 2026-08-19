@@ -192,6 +192,14 @@ export default function EmployerTalentSearch() {
     };
   }, [loadProfiles]);
 
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      void loadProfiles();
+    }, 15000);
+
+    return () => window.clearInterval(interval);
+  }, [loadProfiles]);
+
   const focusAreas = useMemo(
     () => [defaultFocusArea, ...new Set(profiles.map((item) => item.profile.focusArea).filter((value) => Boolean(value)))],
     [profiles],
