@@ -154,6 +154,7 @@ function TalentCardDemo() {
       profile={homepageDemoProfile}
       href="/profile/sarah-jones"
       verificationStatus="verified"
+      hasProAccess
       className="max-w-[430px]"
     />
   );
@@ -220,6 +221,7 @@ function EmployerDiscoveryResult({
             profile={profile}
             href={profile.slug === "sarah-jones" ? "/talent/sarah-jones" : `/profile/${profile.slug ?? ""}`}
             verificationStatus="verified"
+            hasProAccess={result.name === "Sarah Jones" || result.name === "Daniel Brooks"}
             className="w-[380px] max-w-none"
           />
         </div>
@@ -662,6 +664,7 @@ export default function Home() {
                 profile={homepageLowerDemoProfile}
                 href="/profile/daniel-brooks"
                 verificationStatus="verified"
+                hasProAccess
                 className="max-w-[420px]"
               />
             </div>

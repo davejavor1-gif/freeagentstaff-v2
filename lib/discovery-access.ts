@@ -163,7 +163,12 @@ async function getViewerContext(accessToken: string): Promise<ViewerContext | nu
   };
 }
 
-function buildDiscoveryProfile(row: DiscoveryRpcRow, photoUrl: string | null, videoUrl: string | null): DiscoveryProfileCard {
+function buildDiscoveryProfile(
+  row: DiscoveryRpcRow,
+  photoUrl: string | null,
+  videoUrl: string | null,
+  hasProAccess: boolean,
+): DiscoveryProfileCard {
   const visibility = normalizeVisibility(row.visibility);
   const isConfidential = visibility === "confidential";
 
@@ -171,6 +176,7 @@ function buildDiscoveryProfile(row: DiscoveryRpcRow, photoUrl: string | null, vi
     return {
       slug: row.slug,
       verificationStatus: normalizeVerificationStatus(row.verification_status),
+      hasProAccess: false,
       profile: {
         id: row.slug,
         slug: row.slug,
@@ -193,6 +199,7 @@ function buildDiscoveryProfile(row: DiscoveryRpcRow, photoUrl: string | null, vi
   return {
     slug: row.slug,
     verificationStatus: normalizeVerificationStatus(row.verification_status),
+    hasProAccess,
     profile: {
       id: row.slug,
       slug: row.slug,
@@ -373,7 +380,7 @@ export async function loadDiscoveryResults(accessToken: string | null | undefine
         ? await signMediaUrls(row.photo_storage_path, row.intro_video_storage_path, hasProVideoAccess)
         : { photoUrl: null, videoUrl: null };
 
-      return buildDiscoveryProfile(row, photoUrl, hasProVideoAccess ? videoUrl : null);
+      return buildDiscoveryProfile(row, photoUrl, hasProVideoAccess ? videoUrl : null, hasProVideoAccess);
     }),
   );
 
@@ -504,6 +511,7 @@ export async function loadTalentPassport(accessToken: string | null | undefined,
     accessScope,
     isOwner: row.is_owner,
     verificationStatus: normalizeVerificationStatus(row.verification_status),
+    hasProAccess: accessScope === "employer_confidential" ? false : hasProVideoAccess,
     profile: buildPassportProfile(row, photoUrl, hasProVideoAccess ? videoUrl : null),
     privateAccess: (await loadPrivateAccess(accessToken, slug)).state,
   };

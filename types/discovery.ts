@@ -14,6 +14,7 @@ export type TalentPassportAccessScope = "owner_full" | "employer_full" | "employ
 export interface DiscoveryProfileCard {
   slug: string;
   verificationStatus: EmployerVerificationStatus;
+  hasProAccess: boolean;
   profile: FreeAgentProfile;
 }
 
@@ -31,6 +32,7 @@ export interface TalentPassportApiResponse {
   accessScope?: TalentPassportAccessScope;
   isOwner?: boolean;
   verificationStatus?: EmployerVerificationStatus;
+  hasProAccess?: boolean;
   profile?: FreeAgentProfile;
   privateAccess?: PrivateAccessState;
 }

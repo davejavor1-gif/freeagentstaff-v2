@@ -19,6 +19,7 @@ export interface SavedTalentItem {
   slug: string;
   accessScope: "employer_full" | "employer_confidential";
   verificationStatus: EmployerVerificationStatus;
+  hasProAccess: boolean;
   shortlistIds: string[];
   profile: FreeAgentProfile;
 }

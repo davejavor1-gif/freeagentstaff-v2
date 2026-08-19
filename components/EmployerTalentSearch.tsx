@@ -12,6 +12,7 @@ type ProfileRow = {
   slug: string;
   profile: FreeAgentProfile;
   verificationStatus: DiscoveryProfileCard["verificationStatus"];
+  hasProAccess: boolean;
 };
 
 type ExperienceFilter = "all" | "0-3" | "4-7" | "8-12" | "13+";
@@ -141,6 +142,7 @@ export default function EmployerTalentSearch() {
           slug: item.slug,
           profile: item.profile,
           verificationStatus: item.verificationStatus,
+          hasProAccess: item.hasProAccess,
         })),
       );
 
@@ -335,8 +337,8 @@ export default function EmployerTalentSearch() {
           </div>
         </header>
 
-        <div className="mt-5 rounded-[24px] border border-[#cda64d]/30 bg-white/90 p-3 shadow-sm sm:p-4">
-          <label htmlFor="talent-search" className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">
+        <div className="mt-5 rounded-[24px] border border-[#f2cc63]/35 bg-[#0f2744] p-3 shadow-[0_12px_32px_rgba(6,16,33,0.16)] sm:p-4">
+          <label htmlFor="talent-search" className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f2cc63]">
             Search
           </label>
           <div className="relative">
@@ -348,20 +350,20 @@ export default function EmployerTalentSearch() {
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               placeholder="Search by role, skill or keyword"
-              className="h-12 w-full rounded-[16px] border border-[#cda64d]/30 bg-[#fffdf7] px-10 text-sm font-semibold text-[#071426] outline-none transition placeholder:text-[#6f7f92] focus:border-[#0f2744]"
+              className="h-12 w-full rounded-[16px] border border-[#f2cc63]/35 bg-[#f7ebcf] px-10 text-sm font-semibold text-[#071426] outline-none transition placeholder:text-[#6f7f92] focus:border-[#8be4c5]"
             />
           </div>
-          <p className="mt-2 text-xs text-[#4e5f74]">e.g. Venue Manager, events, operations, leadership</p>
+          <p className="mt-2 text-xs text-[#dfe7ef]">e.g. Venue Manager, events, operations, leadership</p>
         </div>
 
-        <div className="mt-5 rounded-[24px] border border-[#cda64d]/30 bg-white/90 p-3 shadow-sm sm:p-4">
+        <div className="mt-5 rounded-[24px] border border-[#2bd7ef]/25 bg-[#17355f] p-3 shadow-[0_12px_32px_rgba(6,16,33,0.16)] sm:p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Filters</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">Filters</p>
             <button
               type="button"
               onClick={clearFilters}
               disabled={!hasActiveFilters}
-              className="inline-flex min-h-11 items-center rounded-full border border-[#0f2744]/20 px-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#0f2744] transition disabled:cursor-not-allowed disabled:opacity-45 hover:bg-[#f3e8c8]"
+              className="inline-flex min-h-11 items-center rounded-full border border-[#f2cc63]/45 px-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition disabled:cursor-not-allowed disabled:opacity-45 hover:bg-[#f2cc63]/15"
             >
               Clear filters
             </button>
@@ -369,14 +371,14 @@ export default function EmployerTalentSearch() {
 
           <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-[1.15fr_1fr_1fr_1fr_1fr_0.9fr]">
             <div>
-              <label htmlFor="filter-location" className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6a7a91]">
+              <label htmlFor="filter-location" className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#dfe7ef]">
                 Location
               </label>
               <select
                 id="filter-location"
                 value={location}
                 onChange={(event) => setLocation(event.target.value)}
-                className="h-11 w-full rounded-[14px] border border-[#cda64d]/35 bg-[#fffdf7] px-3 text-sm text-[#0f2744] outline-none focus:border-[#0f2744]"
+                className="h-11 w-full rounded-[14px] border border-[#f2cc63]/35 bg-[#f7ebcf] px-3 text-sm text-[#0f2744] outline-none focus:border-[#8be4c5]"
               >
                 {locations.map((option) => (
                   <option key={option} value={option}>
@@ -387,14 +389,14 @@ export default function EmployerTalentSearch() {
             </div>
 
               <div>
-                <label htmlFor="filter-experience" className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6a7a91]">
+                <label htmlFor="filter-experience" className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#dfe7ef]">
                   Experience
                 </label>
                 <select
                   id="filter-experience"
                   value={experience}
                   onChange={(event) => setExperience(event.target.value as ExperienceFilter)}
-                  className="h-11 w-full rounded-[14px] border border-[#cda64d]/35 bg-[#fffdf7] px-3 text-sm text-[#0f2744] outline-none focus:border-[#0f2744]"
+                  className="h-11 w-full rounded-[14px] border border-[#f2cc63]/35 bg-[#f7ebcf] px-3 text-sm text-[#0f2744] outline-none focus:border-[#8be4c5]"
                 >
                   {experienceOptions.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -405,14 +407,14 @@ export default function EmployerTalentSearch() {
               </div>
 
               <div>
-                <label htmlFor="filter-availability" className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6a7a91]">
+                <label htmlFor="filter-availability" className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#dfe7ef]">
                   Availability
                 </label>
                 <select
                   id="filter-availability"
                   value={availability}
                   onChange={(event) => setAvailability(event.target.value)}
-                  className="h-11 w-full rounded-[14px] border border-[#cda64d]/35 bg-[#fffdf7] px-3 text-sm text-[#0f2744] outline-none focus:border-[#0f2744]"
+                  className="h-11 w-full rounded-[14px] border border-[#f2cc63]/35 bg-[#f7ebcf] px-3 text-sm text-[#0f2744] outline-none focus:border-[#8be4c5]"
                 >
                   {availabilityOptions.map((option) => (
                     <option key={option} value={option}>
@@ -423,14 +425,14 @@ export default function EmployerTalentSearch() {
               </div>
 
               <div>
-                <label htmlFor="filter-skills" className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6a7a91]">
+                <label htmlFor="filter-skills" className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#dfe7ef]">
                   Skills
                 </label>
                 <select
                   id="filter-skills"
                   value={skill}
                   onChange={(event) => setSkill(event.target.value)}
-                  className="h-11 w-full rounded-[14px] border border-[#cda64d]/35 bg-[#fffdf7] px-3 text-sm text-[#0f2744] outline-none focus:border-[#0f2744]"
+                  className="h-11 w-full rounded-[14px] border border-[#f2cc63]/35 bg-[#f7ebcf] px-3 text-sm text-[#0f2744] outline-none focus:border-[#8be4c5]"
                 >
                   {skills.map((option) => (
                     <option key={option} value={option}>
@@ -441,14 +443,14 @@ export default function EmployerTalentSearch() {
               </div>
 
               <div>
-                <label htmlFor="filter-focus" className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6a7a91]">
+                <label htmlFor="filter-focus" className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#dfe7ef]">
                   Focus area
                 </label>
                 <select
                   id="filter-focus"
                   value={focusArea}
                   onChange={(event) => setFocusArea(event.target.value)}
-                  className="h-11 w-full rounded-[14px] border border-[#cda64d]/35 bg-[#fffdf7] px-3 text-sm text-[#0f2744] outline-none focus:border-[#0f2744]"
+                  className="h-11 w-full rounded-[14px] border border-[#f2cc63]/35 bg-[#f7ebcf] px-3 text-sm text-[#0f2744] outline-none focus:border-[#8be4c5]"
                 >
                   {focusAreas.map((option) => (
                     <option key={option} value={option}>
@@ -459,14 +461,14 @@ export default function EmployerTalentSearch() {
               </div>
 
             <div>
-              <label htmlFor="sort-results" className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6a7a91]">
+              <label htmlFor="sort-results" className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#dfe7ef]">
                 Sort
               </label>
               <select
                 id="sort-results"
                 value={sort}
                 onChange={(event) => setSort(event.target.value as SortOption)}
-                className="h-11 w-full rounded-[14px] border border-[#cda64d]/35 bg-[#fffdf7] px-3 text-sm text-[#0f2744] outline-none focus:border-[#0f2744]"
+                className="h-11 w-full rounded-[14px] border border-[#f2cc63]/35 bg-[#f7ebcf] px-3 text-sm text-[#0f2744] outline-none focus:border-[#8be4c5]"
               >
                 {sortOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -542,6 +544,7 @@ export default function EmployerTalentSearch() {
                 profile={item.profile}
                 href={`/talent/${item.slug}`}
                 verificationStatus={item.verificationStatus}
+                hasProAccess={item.hasProAccess}
                 showSaveAction
                 initiallySaved={savedSlugs.has(item.slug)}
                 onSavedChange={(nextSaved) => {

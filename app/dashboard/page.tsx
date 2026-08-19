@@ -7,6 +7,7 @@ import { CheckCircle2, Undo2, XCircle } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import BillingButton from "@/components/BillingButton";
+import FreeAgentProBadge from "@/components/FreeAgentProBadge";
 import type { Session } from "@supabase/supabase-js";
 import { buildCanonicalTalentColumns } from "@/lib/talent-profile-columns";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
@@ -647,9 +648,12 @@ export default function DashboardPage() {
               <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Subscription</p>
-                  <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900">
-                    {isProTalent ? "Free Agent Pro" : "Free Agent"}
-                  </h2>
+                  <div className="mt-2 flex flex-wrap items-center gap-3">
+                    <h2 className="text-2xl font-black tracking-tight text-slate-900">
+                      {isProTalent ? "Free Agent Pro" : "Free Agent"}
+                    </h2>
+                    {isProTalent ? <FreeAgentProBadge size="standard" className="h-12" /> : null}
+                  </div>
                 </div>
                 <div className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-700">
                   {talentSubscription.status.replace("_", " ")}
@@ -688,45 +692,31 @@ export default function DashboardPage() {
 
             {isProTalent && talentSummary?.proAnalytics ? (
               <section className="rounded-3xl border border-[#cda64d]/55 bg-[#f7ebcf] p-6 text-[#0f2744] shadow-[0_16px_40px_rgba(6,16,33,0.18)] sm:p-8">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-                  <div>
-                    <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Pro analytics</p>
-                    <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900">Last 30 days</h2>
-                  </div>
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">FreeAgent Pro</p>
+                  <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900">Your profile activity</h2>
+                  <p className="mt-2 text-sm leading-7 text-slate-600">See how employers are engaging with your FreeAgent profile.</p>
                 </div>
 
-                <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                <div className="mt-5 grid gap-3 sm:grid-cols-2">
                   <div className={summaryCardClassName}>
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Search impressions</p>
-                    <p className="mt-2 text-2xl font-black text-slate-900">{talentSummary.proAnalytics.searchImpressions30d}</p>
-                  </div>
-                  <div className={summaryCardClassName}>
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Passport views</p>
-                    <p className="mt-2 text-2xl font-black text-slate-900">{talentSummary.proAnalytics.passportViews30d}</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Profile views</p>
+                    <p className="mt-2 text-3xl font-black text-slate-900">{talentSummary.proAnalytics.profileViews}</p>
                   </div>
                   <div className={summaryCardClassName}>
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Unique employer viewers</p>
-                    <p className="mt-2 text-2xl font-black text-slate-900">{talentSummary.proAnalytics.uniqueEmployerViewers30d}</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Employer saves</p>
+                    <p className="mt-2 text-3xl font-black text-slate-900">{talentSummary.proAnalytics.employerSaves}</p>
                   </div>
                 </div>
-
-                <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Recent employer viewers</p>
-                  <p className="mt-2 text-sm text-slate-700">
-                    {talentSummary.proAnalytics.recentEmployerViewers.length > 0
-                      ? talentSummary.proAnalytics.recentEmployerViewers.join(" · ")
-                      : "No attributed employer viewers yet."}
-                  </p>
-                </div>
-
-                <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Insights</p>
-                  <div className="mt-2 space-y-2 text-sm text-slate-700">
-                    {talentSummary.proAnalytics.insights.map((insight) => (
-                      <p key={insight}>{insight}</p>
-                    ))}
-                  </div>
-                </div>
+              </section>
+            ) : !isProTalent ? (
+              <section className="rounded-3xl border border-[#cda64d]/55 bg-[#f7ebcf] p-6 text-[#0f2744] shadow-[0_16px_40px_rgba(6,16,33,0.18)] sm:p-8">
+                <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">FreeAgent Pro</p>
+                <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900">See how employers are engaging with your profile</h2>
+                <p className="mt-3 text-sm leading-7 text-slate-600">Upgrade to FreeAgent Pro to see your profile views and employer saves.</p>
+                <BillingButton action="checkout" plan="free_agent_pro" className="mt-5 inline-flex min-h-[44px] items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-slate-800">
+                  Upgrade to Pro
+                </BillingButton>
               </section>
             ) : null}
 

@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Heart, Lock, MapPin, Pause, Play, RotateCw, Volume2, VolumeX, X } from "lucide-react";
+import FreeAgentProBadge from "@/components/FreeAgentProBadge";
 import type { FreeAgentProfile } from "@/types/freeagent";
 import { getSessionWithRetry } from "@/lib/supabase-client";
 import { resolveProfilePhotoUrl, resolveProfileVideoUrl } from "@/lib/profile-media";
@@ -13,6 +14,7 @@ interface TalentCardProps {
   profile: FreeAgentProfile;
   href: string;
   verificationStatus?: "unverified" | "pending" | "verified" | "rejected" | null;
+  hasProAccess?: boolean;
   className?: string;
   initiallyFlipped?: boolean;
   showSaveAction?: boolean;
@@ -21,25 +23,12 @@ interface TalentCardProps {
 }
 
 const isConfidential = (profile: FreeAgentProfile) => (profile.visibility ?? "public") === "confidential";
-const isVerified = (verificationStatus?: TalentCardProps["verificationStatus"]) => verificationStatus === "verified";
-
 const buildInitials = (name: string) => {
   const words = name.trim().split(/\s+/).filter(Boolean);
   if (words.length === 0) return "FA";
   if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
   return `${words[0][0]}${words[1][0]}`.toUpperCase();
 };
-
-function VerifiedMark({ className }: { className?: string }) {
-  return (
-    <span className={cn("inline-flex items-center gap-1.5 rounded-full border border-[#f2cc63]/30 bg-[#071426]/70 px-2.25 py-1 text-[10px] font-semibold uppercase tracking-[0.28em] text-[#f7ebcf] shadow-[0_10px_24px_rgba(0,0,0,0.16)] backdrop-blur-sm", className)}>
-      <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0 text-[#8be4c5]" aria-hidden="true">
-        <path d="M16.25 19.36A8.5 8.5 0 1 1 20.5 12" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-      </svg>
-      Verified
-    </span>
-  );
-}
 
 function ConfidentialPortrait() {
   return (
@@ -66,7 +55,7 @@ function ConfidentialPortrait() {
 export default function TalentCard({
   profile,
   href,
-  verificationStatus,
+  hasProAccess = false,
   className,
   initiallyFlipped = false,
   showSaveAction = false,
@@ -74,7 +63,6 @@ export default function TalentCard({
   onSavedChange,
 }: TalentCardProps) {
   const confidential = isConfidential(profile);
-  const verified = isVerified(verificationStatus) || profile.visibility === "verified_employer_network" || profile.visibility === "employer_network";
   const [isFlipped, setIsFlipped] = useState(initiallyFlipped);
   const [settledFace, setSettledFace] = useState<"front" | "back">(initiallyFlipped ? "back" : "front");
   const [videoOpen, setVideoOpen] = useState(false);
@@ -340,7 +328,7 @@ export default function TalentCard({
                   </div>
 
                   <div className="absolute right-3 top-3 z-20 flex flex-col items-end gap-1.5">
-                    {verified ? <VerifiedMark /> : null}
+                    {hasProAccess ? <FreeAgentProBadge size="compact" /> : null}
                     {showSaveAction ? (
                       <div className="flex flex-col items-end gap-1.5">
                         <button
@@ -554,7 +542,7 @@ export default function TalentCard({
                       <MapPin className="h-2.75 w-2.75 text-[#0f2744]" />
                       {confidential ? confidentialLocation : profile.location}
                     </span>
-                    {verified ? <span className="inline-flex items-center gap-1.25 rounded-full border border-[#0f2744]/10 bg-[#0f2744]/10 px-2 py-0.5 text-[7.5px] font-semibold uppercase tracking-[0.24em] text-[#0f2744]"><svg viewBox="0 0 24 24" className="h-2.75 w-2.75" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeDasharray="44 38" /></svg>Verified</span> : null}
+                    {hasProAccess ? <FreeAgentProBadge size="compact" className="h-16" /> : null}
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2">

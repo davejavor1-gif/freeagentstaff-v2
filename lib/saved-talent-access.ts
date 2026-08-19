@@ -142,7 +142,12 @@ async function signMediaUrls(
   return { photoUrl, videoUrl };
 }
 
-function mapSavedItem(row: ListSavedRow, photoUrl: string | null, videoUrl: string | null): SavedTalentItem {
+function mapSavedItem(
+  row: ListSavedRow,
+  photoUrl: string | null,
+  videoUrl: string | null,
+  hasProAccess: boolean,
+): SavedTalentItem {
   const visibility = normalizeVisibility(row.visibility);
   const isConfidential = row.access_scope === "employer_confidential";
 
@@ -196,6 +201,7 @@ function mapSavedItem(row: ListSavedRow, photoUrl: string | null, videoUrl: stri
     slug: row.slug,
     accessScope: row.access_scope as "employer_full" | "employer_confidential",
     verificationStatus: normalizeVerificationStatus(row.verification_status),
+    hasProAccess: isConfidential ? false : hasProAccess,
     shortlistIds: row.shortlist_ids ?? [],
     profile,
   };
@@ -268,7 +274,7 @@ export async function listSavedTalent(accessToken: string | null | undefined, sh
         ? { photoUrl: null, videoUrl: null }
         : await signMediaUrls(row.photo_storage_path, row.intro_video_storage_path, hasProVideoAccess);
 
-      return mapSavedItem(row, photoUrl, videoUrl);
+      return mapSavedItem(row, photoUrl, videoUrl, hasProVideoAccess);
     }),
   );
 

@@ -557,6 +557,7 @@ export default function SavedTalentPage() {
                       profile={item.profile}
                       href={`/talent/${item.slug}`}
                       verificationStatus={item.verificationStatus}
+                      hasProAccess={item.hasProAccess}
                       showSaveAction
                       initiallySaved
                       onSavedChange={(nextSaved) => {

@@ -13,6 +13,7 @@ import {
   X,
 } from "lucide-react";
 import Footer from "@/components/layout/Footer";
+import FreeAgentProBadge from "@/components/FreeAgentProBadge";
 import Navbar from "@/components/layout/Navbar";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
 import { salaryExpectationOptions } from "@/lib/talent-profile-options";
@@ -380,6 +381,7 @@ export default function TalentProfileExperience({
                       <span className="rounded-full bg-[#8be4c5] px-3 py-2 text-xs font-semibold text-[#071426]">
                         {profile.focusArea}
                       </span>
+                      {payload.hasProAccess ? <FreeAgentProBadge size="standard" /> : null}
                     </div>
                   </div>
                 </div>

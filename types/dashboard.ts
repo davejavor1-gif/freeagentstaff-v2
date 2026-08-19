@@ -81,11 +81,8 @@ export interface TalentSubscriptionSummary {
 }
 
 export interface TalentProAnalyticsSummary {
-  searchImpressions30d: number;
-  passportViews30d: number;
-  uniqueEmployerViewers30d: number;
-  recentEmployerViewers: string[];
-  insights: string[];
+  profileViews: number;
+  employerSaves: number;
 }
 
 export interface TalentSummaryPayload {

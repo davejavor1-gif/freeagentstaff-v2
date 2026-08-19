@@ -1198,6 +1198,7 @@ export default function BuilderPage() {
                 <TalentCard
                   profile={hasProAccess ? profile : { ...profile, intro_video_url: null, intro_video_storage_path: null }}
                   href={profile.slug ? `/profile/${profile.slug}` : "#"}
+                  hasProAccess={hasProAccess}
                   className="w-full max-w-[430px]"
                 />
               </div>
