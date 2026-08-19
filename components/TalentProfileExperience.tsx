@@ -443,7 +443,7 @@ export default function TalentProfileExperience({
               <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
                 <BriefcaseBusiness className="h-4 w-4" /> Professional record
               </div>
-              <div className="mt-6 grid gap-6 sm:grid-cols-2">
+              <div className="mt-6">
                 <div className="min-w-0">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">
                     Skills
@@ -458,14 +458,6 @@ export default function TalentProfileExperience({
                       </span>
                     ))}
                   </div>
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">
-                    Education
-                  </p>
-                  <p className="mt-3 min-w-0 break-words text-sm leading-7 text-[#27405f] [overflow-wrap:anywhere]">
-                    {profile.education || "Not listed"}
-                  </p>
                 </div>
               </div>
               {profile.languages?.length ? (
@@ -495,16 +487,24 @@ export default function TalentProfileExperience({
                   </p>
                 </div>
               ) : null}
+              <div className="mt-6 min-w-0 rounded-[20px] border-l-4 border-[#cda64d] bg-[#f7ebcf]/65 p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">
+                  Education
+                </p>
+                <p className="mt-3 min-w-0 whitespace-pre-line break-words text-sm leading-7 text-[#27405f] [overflow-wrap:anywhere]">
+                  {profile.education || "Not listed"}
+                </p>
+              </div>
               {profile.careerJourney.length > 0 ? (
                 <div className="mt-8">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
                     Career journey
                   </p>
-                  <div className="mt-4 space-y-4">
+                  <div className="mt-4 grid gap-4 sm:grid-cols-2">
                     {profile.careerJourney.map((position) => (
                       <div
                         key={position.id}
-                        className="min-w-0 border-l-2 border-[#cda64d] pl-4"
+                        className="min-w-0 rounded-[20px] border-l-2 border-[#cda64d] bg-[#f7ebcf]/45 p-4"
                       >
                         <p className="min-w-0 break-words text-xs font-semibold uppercase tracking-[0.18em] text-[#9a6d15] [overflow-wrap:anywhere]">
                           {position.period}
@@ -521,6 +521,26 @@ export default function TalentProfileExperience({
                           <p className="mt-2 min-w-0 break-words text-sm leading-6 text-[#27405f] [overflow-wrap:anywhere]">
                             {position.description}
                           </p>
+                        ) : null}
+                        {position.achievements.length > 0 ? (
+                          <div className="mt-3 min-w-0">
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#9a6d15]">Achievements</p>
+                            <ul className="mt-2 space-y-1.5 text-sm leading-6 text-[#27405f]">
+                              {position.achievements.map((achievement) => (
+                                <li key={achievement} className="flex gap-2"><span className="text-[#cda64d]">•</span><span>{achievement}</span></li>
+                              ))}
+                            </ul>
+                          </div>
+                        ) : null}
+                        {position.skills.length > 0 ? (
+                          <div className="mt-3 min-w-0">
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#9a6d15]">Skills used</p>
+                            <div className="mt-2 flex flex-wrap gap-2">
+                              {position.skills.map((skill) => (
+                                <span key={skill} className="rounded-full border border-[#0f2744]/15 bg-[#effcff] px-2.5 py-1 text-xs font-semibold text-[#0f2744]">{skill}</span>
+                              ))}
+                            </div>
+                          </div>
                         ) : null}
                       </div>
                     ))}

@@ -542,7 +542,6 @@ export default function TalentCard({
                       <MapPin className="h-2.75 w-2.75 text-[#0f2744]" />
                       {confidential ? confidentialLocation : profile.location}
                     </span>
-                    {hasProAccess ? <FreeAgentProBadge size="compact" className="h-16" /> : null}
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2">
@@ -576,24 +575,35 @@ export default function TalentCard({
 
                   <div className="h-px w-full bg-[#0f2744]/10" />
 
-                  <div className="grid gap-1.5 sm:grid-cols-2">
+                  {profile.education?.trim() ? (
                     <div>
-                      <p className="text-[9px] font-semibold uppercase tracking-[0.26em] text-[#9a6d15]">Experience</p>
-                      <div className="mt-0.5 space-y-1">
-                        {recentRoles.map((role) => (
-                          <div key={`${role.role}-${role.company}`} className="py-0.25">
+                      <p className="text-[9px] font-semibold uppercase tracking-[0.26em] text-[#9a6d15]">Education</p>
+                      <p className="mt-0.5 whitespace-pre-line text-[0.64rem] leading-4 text-[#27405f]">{profile.education.trim()}</p>
+                    </div>
+                  ) : null}
+
+                  {profile.education?.trim() ? <div className="h-px w-full bg-[#0f2744]/10" /> : null}
+
+                  <div>
+                    <p className="text-[9px] font-semibold uppercase tracking-[0.26em] text-[#9a6d15]">Experience</p>
+                    <div className="mt-0.5 grid grid-cols-2 gap-1.5">
+                      {recentRoles.map((role, index) => (
+                          <div key={`${role.role}-${role.company}`} className={`min-w-0 py-0.25 ${index > 0 ? "border-l border-[#0f2744]/10 pl-1.5" : "pr-1.5"}`}>
                             <p className="text-[0.64rem] font-semibold uppercase tracking-[0.16em] text-[#0f2744]">{role.role}</p>
                             <p className="text-[0.64rem] text-[#27405f]">{role.company}</p>
                             <p className="text-[0.58rem] uppercase tracking-[0.2em] text-[#8a6b24]">{role.period}</p>
+                            {role.description ? <p className="mt-0.5 line-clamp-2 text-[0.58rem] leading-3 text-[#27405f]">{role.description}</p> : null}
+                            {role.achievements.length > 0 ? <p className="mt-0.5 line-clamp-1 text-[0.56rem] leading-3 text-[#27405f]"><span className="font-semibold text-[#0f2744]">Achievement: </span>{role.achievements[0]}</p> : null}
+                            {role.skills.length > 0 ? (
+                              <div className="mt-0.75 flex flex-wrap gap-1">
+                                {role.skills.slice(0, 3).map((skill) => (
+                                  <span key={skill} className="rounded-full border border-[#0f2744]/10 bg-[#f7ebcf] px-1 py-0.25 text-[0.5rem] font-semibold uppercase tracking-[0.12em] text-[#27405f]">{skill}</span>
+                                ))}
+                              </div>
+                            ) : null}
                           </div>
-                        ))}
-                      </div>
+                      ))}
                     </div>
-
-                    {profile.education?.trim() ? <div>
-                      <p className="text-[9px] font-semibold uppercase tracking-[0.26em] text-[#9a6d15]">Education</p>
-                      <p className="mt-0.5 text-[0.64rem] text-[#27405f]">{profile.education.trim()}</p>
-                    </div> : null}
                   </div>
                 </div>
               </div>
