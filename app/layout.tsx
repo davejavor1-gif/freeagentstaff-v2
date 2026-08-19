@@ -12,9 +12,40 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl = "https://freeagentstaff.com";
+const siteTitle = "Free Agent Staff | Talent Discovery & Professional Profiles";
+const siteDescription =
+  "Free Agent Staff connects employers with talent through professional FreeAgent Cards and Talent Passports. Build your profile, showcase your experience and get discovered.";
+
 export const metadata: Metadata = {
-  title: "FreeAgentStaff",
-  description: "Premium talent search and curated public profiles for hiring teams.",
+  metadataBase: new URL(siteUrl),
+  applicationName: "Free Agent Staff",
+  title: siteTitle,
+  description: siteDescription,
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    siteName: "Free Agent Staff",
+    url: siteUrl,
+    title: siteTitle,
+    description: siteDescription,
+    images: [
+      {
+        url: "/FullLogo-clean-v2.png",
+        width: 1280,
+        height: 1024,
+        alt: "Free Agent Staff",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteTitle,
+    description: siteDescription,
+    images: ["/FullLogo-clean-v2.png"],
+  },
 };
 
 export default function RootLayout({
