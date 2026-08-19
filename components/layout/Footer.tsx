@@ -18,13 +18,13 @@ export default function Footer() {
 
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-5">
             <nav aria-label="Footer navigation" className="flex flex-wrap gap-x-5 gap-y-1 text-[1rem] font-semibold">
-              <Link href="/privacy" className="rounded-sm transition hover:text-[#4f9f4e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4f9f4e] focus-visible:ring-offset-4 focus-visible:ring-offset-[#f7ebcf]">
+              <Link href="/privacy" className="inline-flex min-h-10 items-center rounded-sm transition hover:text-[#4f9f4e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4f9f4e] focus-visible:ring-offset-4 focus-visible:ring-offset-[#f7ebcf] sm:min-h-0">
                 Privacy Policy
               </Link>
-              <Link href="/terms" className="rounded-sm transition hover:text-[#4f9f4e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4f9f4e] focus-visible:ring-offset-4 focus-visible:ring-offset-[#f7ebcf]">
+              <Link href="/terms" className="inline-flex min-h-10 items-center rounded-sm transition hover:text-[#4f9f4e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4f9f4e] focus-visible:ring-offset-4 focus-visible:ring-offset-[#f7ebcf] sm:min-h-0">
                 Terms of Use
               </Link>
-              <Link href="/support" className="rounded-sm transition hover:text-[#4f9f4e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4f9f4e] focus-visible:ring-offset-4 focus-visible:ring-offset-[#f7ebcf]">
+              <Link href="/support" className="inline-flex min-h-10 items-center rounded-sm transition hover:text-[#4f9f4e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4f9f4e] focus-visible:ring-offset-4 focus-visible:ring-offset-[#f7ebcf] sm:min-h-0">
                 Support
               </Link>
             </nav>

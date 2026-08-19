@@ -74,12 +74,14 @@ export default function TalentCard({
   const [shouldAutoplay, setShouldAutoplay] = useState(false);
   const [showVideoControls, setShowVideoControls] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [showBackScrollFade, setShowBackScrollFade] = useState(false);
   const [resolvedPhotoUrl, setResolvedPhotoUrl] = useState<string | null>(null);
   const [resolvedVideoUrl, setResolvedVideoUrl] = useState<string | null>(null);
   const [optimisticSaved, setOptimisticSaved] = useState<boolean | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const backContentRef = useRef<HTMLDivElement | null>(null);
   const isSaved = optimisticSaved ?? initiallySaved;
 
   const hasVideo = Boolean(resolvedVideoUrl ?? profile.intro_video_url) && !confidential;
@@ -129,6 +131,26 @@ export default function TalentCard({
 
     return () => mediaQuery.removeEventListener("change", updateMotionPreference);
   }, []);
+
+  useEffect(() => {
+    const content = backContentRef.current;
+
+    if (!content || typeof ResizeObserver === "undefined") {
+      return;
+    }
+
+    const updateScrollFade = () => {
+      const hasOverflow = content.scrollHeight > content.clientHeight + 1;
+      const isAtBottom = content.scrollTop + content.clientHeight >= content.scrollHeight - 1;
+      setShowBackScrollFade(hasOverflow && !isAtBottom);
+    };
+
+    const observer = new ResizeObserver(updateScrollFade);
+    observer.observe(content);
+    updateScrollFade();
+
+    return () => observer.disconnect();
+  }, [profile]);
 
   useEffect(() => {
     const settleDelay = reducedMotion ? 0 : 520;
@@ -530,8 +552,18 @@ export default function TalentCard({
                 </div>
               </div>
 
-              <div className="flex-1 min-h-0 overflow-y-auto bg-[#f7ebcf] p-2 sm:p-2.25">
-                <div className="space-y-1">
+              <div className="relative flex-1 min-h-0">
+                <div
+                  ref={backContentRef}
+                  onScroll={(event) => {
+                    const content = event.currentTarget;
+                    const hasOverflow = content.scrollHeight > content.clientHeight + 1;
+                    const isAtBottom = content.scrollTop + content.clientHeight >= content.scrollHeight - 1;
+                    setShowBackScrollFade(hasOverflow && !isAtBottom);
+                  }}
+                  className="h-full overflow-y-auto bg-[#f7ebcf] p-2 sm:p-2.25"
+                >
+                  <div className="space-y-1">
                   <div className="flex flex-wrap items-start gap-x-2 gap-y-1">
                     <div className="min-w-0 flex-1">
                       <h3 className="text-[0.9rem] font-black uppercase tracking-[0.08em] text-[#0f2744]">
@@ -605,7 +637,9 @@ export default function TalentCard({
                       ))}
                     </div>
                   </div>
+                  </div>
                 </div>
+                {showBackScrollFade ? <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-[#f7ebcf] via-[#f7ebcf]/85 to-transparent" /> : null}
               </div>
 
               <div className="border-t border-[#f2cc63]/20 bg-[#0f2744] px-3 py-2.5 sm:px-4 sm:py-3">
