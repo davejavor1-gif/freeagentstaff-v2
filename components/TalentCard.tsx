@@ -15,6 +15,7 @@ interface TalentCardProps {
   href: string;
   verificationStatus?: "unverified" | "pending" | "verified" | "rejected" | null;
   hasProAccess?: boolean;
+  presentation?: "default" | "employer";
   className?: string;
   initiallyFlipped?: boolean;
   showSaveAction?: boolean;
@@ -56,6 +57,7 @@ export default function TalentCard({
   profile,
   href,
   hasProAccess = false,
+  presentation = "default",
   className,
   initiallyFlipped = false,
   showSaveAction = false,
@@ -63,6 +65,7 @@ export default function TalentCard({
   onSavedChange,
 }: TalentCardProps) {
   const confidential = isConfidential(profile);
+  const isEmployerPresentation = presentation === "employer";
   const [isFlipped, setIsFlipped] = useState(initiallyFlipped);
   const [settledFace, setSettledFace] = useState<"front" | "back">(initiallyFlipped ? "back" : "front");
   const [videoOpen, setVideoOpen] = useState(false);
@@ -310,7 +313,7 @@ export default function TalentCard({
         className,
       )}
     >
-      <div className={cn("relative aspect-[2.5/3.5] w-full [perspective:1800px] [-webkit-perspective:1800px]", reducedMotion ? "" : "transition-transform duration-500") }>
+      <div className={cn("relative aspect-[2.5/3.465] w-full [perspective:1800px] [-webkit-perspective:1800px]", reducedMotion ? "" : "transition-transform duration-500") }>
         <div
           className={cn(
             "relative h-full w-full rounded-[28px] transition-transform duration-500 [transform-style:preserve-3d] [-webkit-transform-style:preserve-3d] [will-change:transform]",
@@ -323,11 +326,11 @@ export default function TalentCard({
               <div className="relative flex-1 overflow-hidden bg-[#0f2744] p-0">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(242,204,99,0.16),transparent_42%),linear-gradient(135deg,#0f2744_0%,#102742_100%)]" />
                 <div className="relative flex h-full flex-col">
-                  <div className="absolute left-3 top-0.5 z-20 h-[4.9375rem] w-[11.8125rem] overflow-hidden sm:h-[6.328125rem] sm:w-[15.1875rem]">
+                  <div className="absolute left-3 top-0.5 z-20 h-[3.7rem] w-[8.86rem] overflow-hidden sm:h-[4.75rem] sm:w-[11.4rem]">
                     <Image src="/FullLogo%20(4)-transparent.png" alt="Free Agent Staff" width={144} height={60} className="h-full w-full object-contain object-left" />
                   </div>
 
-                  <div className="absolute right-3 top-3 z-20 flex flex-col items-end gap-1.5">
+                  <div className="absolute right-3 top-2 z-20 flex flex-col items-end gap-1.5">
                     {hasProAccess ? <FreeAgentProBadge size="compact" /> : null}
                     {showSaveAction ? (
                       <div className="flex flex-col items-end gap-1.5">
@@ -508,9 +511,9 @@ export default function TalentCard({
 
           <div className={cn("absolute inset-0 z-10 h-full w-full overflow-hidden rounded-[28px] border border-[#0f2744]/15 bg-[#f7ebcf] [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transform:rotateY(180deg)_translateZ(1px)]", isFlipped ? "pointer-events-auto z-20" : "pointer-events-none z-10", settledFace === "front" && !isFlipped ? "invisible" : "visible")}>
             <div className="flex h-full flex-col bg-[#f7ebcf]">
-              <div className="border-b border-[#0f2744]/10 bg-[#0f2744] p-2.5 sm:p-3">
+              <div className={cn("border-b border-[#0f2744]/10 bg-[#0f2744]", isEmployerPresentation ? "p-1 sm:p-1.5" : "p-2 sm:p-2.5")}>
                 <div className="flex items-center justify-between gap-3">
-                  <div className="h-[5.625rem] w-[7.875rem] overflow-hidden sm:h-[6.75rem] sm:w-[10.125rem]">
+                  <div className={cn("overflow-hidden", isEmployerPresentation ? "h-[3.6rem] w-[5.5rem] sm:h-[4.1rem] sm:w-[6.5rem]" : "h-[4.75rem] w-[7.25rem] sm:h-[5.5rem] sm:w-[8.75rem]")}>
                     <Image src="/FullLogo%20(4)-transparent.png" alt="Free Agent Staff" width={144} height={60} className="h-full w-full object-contain object-left" />
                   </div>
                   <button
@@ -527,28 +530,25 @@ export default function TalentCard({
                 </div>
               </div>
 
-              <div className="flex-1 min-h-0 overflow-hidden bg-[#f7ebcf] p-2 sm:p-2.25">
+              <div className="flex-1 min-h-0 overflow-y-auto bg-[#f7ebcf] p-2 sm:p-2.25">
                 <div className="space-y-1">
-                  <div className="space-y-0.25">
-                    <p className="text-[9px] font-semibold uppercase tracking-[0.26em] text-[#9a6d15]">Professional dossier</p>
-                    <h3 className="text-[0.9rem] font-black uppercase tracking-[0.08em] text-[#0f2744]">
-                      {confidential ? "Confidential profile" : profile.name}
-                    </h3>
-                    <p className="text-[0.75rem] text-[#27405f]">{confidential ? confidentialTitle : profile.title}</p>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-1.25 text-[0.7rem] text-[#27405f]">
-                    <span className="inline-flex items-center gap-1.25 rounded-full border border-[#0f2744]/10 bg-[#f7ebcf]/80 px-2 py-0.5">
-                      <MapPin className="h-2.75 w-2.75 text-[#0f2744]" />
-                      {confidential ? confidentialLocation : profile.location}
-                    </span>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="inline-flex items-center gap-2 rounded-full border border-[#0f2744]/10 bg-[#0f2744] px-2 py-0.5 text-[8.5px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf]">
-                      <span className="h-1.75 w-1.75 rounded-full bg-[#8be4c5]" />
-                      {confidential ? confidentialAvailability : profile.availability}
-                    </span>
+                  <div className="flex flex-wrap items-start gap-x-2 gap-y-1">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-[0.9rem] font-black uppercase tracking-[0.08em] text-[#0f2744]">
+                        {confidential ? "Confidential profile" : profile.name}
+                      </h3>
+                      <p className="mt-0.5 text-[0.75rem] text-[#27405f]">{confidential ? confidentialTitle : profile.title}</p>
+                    </div>
+                    <div className="ml-auto flex shrink-0 flex-wrap items-center justify-end gap-1.25 text-[0.7rem] text-[#27405f]">
+                      <span className="inline-flex items-center gap-1.25 rounded-full border border-[#0f2744]/10 bg-[#f7ebcf]/80 px-2 py-0.5">
+                        <MapPin className="h-2.75 w-2.75 text-[#0f2744]" />
+                        {confidential ? confidentialLocation : profile.location}
+                      </span>
+                      <span className="inline-flex items-center gap-2 rounded-full border border-[#0f2744]/10 bg-[#0f2744] px-2 py-0.5 text-[8.5px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf]">
+                        <span className="h-1.75 w-1.75 rounded-full bg-[#8be4c5]" />
+                        {confidential ? confidentialAvailability : profile.availability}
+                      </span>
+                    </div>
                   </div>
 
                   <div className="h-px w-full bg-[#0f2744]/10" />

@@ -531,7 +531,7 @@ export default function SavedTalentPage() {
             {isLoading ? (
               <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                 {Array.from({ length: 6 }).map((_, index) => (
-                  <div key={index} className="aspect-[2.5/3.5] w-full rounded-[28px] border border-[#cda64d]/35 bg-[#fff5db]/70 p-4 shadow-[0_10px_28px_rgba(7,19,38,0.1)]">
+                  <div key={index} className="aspect-[2.5/3.465] w-full rounded-[28px] border border-[#cda64d]/35 bg-[#fff5db]/70 p-4 shadow-[0_10px_28px_rgba(7,19,38,0.1)]">
                     <div className="h-full w-full animate-pulse rounded-[20px] bg-[linear-gradient(135deg,rgba(15,39,68,0.08)_0%,rgba(15,39,68,0.2)_100%)]" />
                   </div>
                 ))}
@@ -558,6 +558,7 @@ export default function SavedTalentPage() {
                       href={`/talent/${item.slug}`}
                       verificationStatus={item.verificationStatus}
                       hasProAccess={item.hasProAccess}
+                      presentation="employer"
                       showSaveAction
                       initiallySaved
                       onSavedChange={(nextSaved) => {
