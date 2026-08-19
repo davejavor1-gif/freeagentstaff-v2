@@ -618,9 +618,9 @@ export default function TalentCard({
 
                   <div>
                     <p className="text-[9px] font-semibold uppercase tracking-[0.26em] text-[#9a6d15]">Experience</p>
-                    <div className="mt-0.5 grid grid-cols-2 gap-1.5">
+                    <div className="mt-0.5 grid grid-cols-1 gap-1.5 sm:grid-cols-2">
                       {recentRoles.map((role, index) => (
-                          <div key={`${role.role}-${role.company}`} className={`min-w-0 py-0.25 ${index > 0 ? "border-l border-[#0f2744]/10 pl-1.5" : "pr-1.5"}`}>
+                          <div key={`${role.role}-${role.company}`} className={`min-w-0 py-0.25 ${index > 0 ? "border-t border-[#0f2744]/10 pt-1.5 sm:border-l sm:border-t-0 sm:pl-1.5 sm:pt-0" : "sm:pr-1.5"}`}>
                             <p className="text-[0.64rem] font-semibold uppercase tracking-[0.16em] text-[#0f2744]">{role.role}</p>
                             <p className="text-[0.64rem] text-[#27405f]">{role.company}</p>
                             <p className="text-[0.58rem] uppercase tracking-[0.2em] text-[#8a6b24]">{role.period}</p>
@@ -642,8 +642,8 @@ export default function TalentCard({
                 {showBackScrollFade ? <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-[#f7ebcf] via-[#f7ebcf]/85 to-transparent" /> : null}
               </div>
 
-              <div className="border-t border-[#f2cc63]/20 bg-[#0f2744] px-3 py-2.5 sm:px-4 sm:py-3">
-                <Link href={href} className="flex w-full items-center justify-between gap-3 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:text-[#8be4c5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f2cc63]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0f2744]">
+              <div className="border-t border-[#f2cc63]/20 bg-[#0f2744] px-3 py-1 sm:px-4 sm:py-3">
+                <Link href={href} className="flex min-h-10 w-full touch-manipulation items-center justify-between gap-3 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:text-[#8be4c5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f2cc63]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0f2744] sm:min-h-0">
                   <span className="inline-flex items-center gap-2">
                     <span className="h-1.5 w-1.5 rounded-full bg-[#8be4c5]" />
                     {confidential ? "View confidential passport" : "View full talent passport"}

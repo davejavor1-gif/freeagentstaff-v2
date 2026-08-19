@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { getSessionWithRetry } from "@/lib/supabase-client";
 import TalentCard from "@/components/TalentCard";
@@ -106,10 +106,15 @@ export default function EmployerTalentSearch() {
   const [skill, setSkill] = useState<string>(defaultSkill);
   const [sort, setSort] = useState<SortOption>("recommended");
   const [error, setError] = useState(false);
+  const backgroundFailuresRef = useRef(0);
 
-  const loadProfiles = useCallback(async () => {
-    setIsLoading(true);
-    setError(false);
+  const loadProfiles = useCallback(async (options?: { background?: boolean }) => {
+    const isBackgroundRefresh = options?.background === true;
+
+    if (!isBackgroundRefresh) {
+      setIsLoading(true);
+      setError(false);
+    }
 
     try {
       const currentSession = await getSessionWithRetry();
@@ -128,6 +133,7 @@ export default function EmployerTalentSearch() {
       const payload = (await response.json()) as DiscoveryApiResponse;
 
       if (!payload.allowed) {
+        backgroundFailuresRef.current = 0;
         setCanAccessSearch(false);
         setAccessReason(payload.reason);
         setProfiles([]);
@@ -135,8 +141,10 @@ export default function EmployerTalentSearch() {
         return;
       }
 
+      backgroundFailuresRef.current = 0;
       setCanAccessSearch(true);
       setAccessReason(undefined);
+      setError(false);
       setProfiles(
         payload.profiles.map((item) => ({
           slug: item.slug,
@@ -174,11 +182,20 @@ export default function EmployerTalentSearch() {
         setSavedSlugs(new Set());
       }
     } catch {
+      // Tolerate one transient background failure, then stop showing protected talent.
+      if (isBackgroundRefresh && backgroundFailuresRef.current < 1) {
+        backgroundFailuresRef.current += 1;
+        return;
+      }
+
+      backgroundFailuresRef.current = 0;
       setError(true);
       setProfiles([]);
       setSavedSlugs(new Set());
     } finally {
-      setIsLoading(false);
+      if (!isBackgroundRefresh) {
+        setIsLoading(false);
+      }
     }
   }, []);
 
@@ -194,7 +211,7 @@ export default function EmployerTalentSearch() {
 
   useEffect(() => {
     const interval = window.setInterval(() => {
-      void loadProfiles();
+      void loadProfiles({ background: true });
     }, 15000);
 
     return () => window.clearInterval(interval);
