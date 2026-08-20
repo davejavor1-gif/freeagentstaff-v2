@@ -564,19 +564,19 @@ export default function TalentCard({
                   className="h-full overflow-y-auto bg-[#f7ebcf] p-2 sm:p-2.25"
                 >
                   <div className="space-y-1">
-                  <div className="flex flex-wrap items-start gap-x-2 gap-y-1">
-                    <div className="min-w-0 flex-1">
+                  <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,42%)] items-start gap-x-2 gap-y-1">
+                    <div className="min-w-0">
                       <h3 className="text-[0.9rem] font-black uppercase tracking-[0.08em] text-[#0f2744]">
                         {confidential ? "Confidential profile" : profile.name}
                       </h3>
-                      <p className="mt-0.5 text-[0.75rem] text-[#27405f]">{confidential ? confidentialTitle : profile.title}</p>
+                      <p className="mt-0.5 text-[0.75rem] leading-snug text-[#27405f]">{confidential ? confidentialTitle : profile.title}</p>
                     </div>
-                    <div className="ml-auto flex shrink-0 flex-wrap items-center justify-end gap-1.25 text-[0.7rem] text-[#27405f]">
-                      <span className="inline-flex items-center gap-1.25 rounded-full border border-[#0f2744]/10 bg-[#f7ebcf]/80 px-2 py-0.5">
+                    <div className="ml-auto flex min-w-0 flex-col items-end gap-1.25 text-[0.7rem] text-[#27405f]">
+                      <span className="inline-flex max-w-full self-end items-center justify-end gap-1.25 rounded-full border border-[#0f2744]/10 bg-[#f7ebcf]/80 px-2 py-0.5 text-right leading-tight">
                         <MapPin className="h-2.75 w-2.75 text-[#0f2744]" />
                         {confidential ? confidentialLocation : profile.location}
                       </span>
-                      <span className="inline-flex items-center gap-2 rounded-full border border-[#0f2744]/10 bg-[#0f2744] px-2 py-0.5 text-[8.5px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf]">
+                      <span className="inline-flex max-w-full self-end items-center justify-end gap-2 rounded-full border border-[#0f2744]/10 bg-[#0f2744] px-2 py-0.5 text-right text-[8.5px] font-semibold uppercase leading-tight tracking-[0.24em] text-[#f7ebcf]">
                         <span className="h-1.75 w-1.75 rounded-full bg-[#8be4c5]" />
                         {confidential ? confidentialAvailability : profile.availability}
                       </span>

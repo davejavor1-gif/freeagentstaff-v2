@@ -388,12 +388,12 @@ export default function TalentProfileExperience({
                 <div className="flex flex-col items-center sm:items-end">
                   <div
                     aria-hidden="true"
-                    className="flex aspect-square w-36 items-center justify-center sm:w-40"
+                    className="flex aspect-square w-[10.35rem] items-center justify-center sm:w-[11.5rem]"
                   >
                     <img
-                      src="/passportlogo.png"
+                      src="/Free%20agent%20staff%20talent%20passport.png"
                       alt=""
-                      className="h-36 w-36 origin-center rotate-[30deg] object-contain sm:h-40 sm:w-40"
+                      className="h-[10.35rem] w-[10.35rem] object-contain sm:h-[11.5rem] sm:w-[11.5rem]"
                     />
                   </div>
                 </div>
