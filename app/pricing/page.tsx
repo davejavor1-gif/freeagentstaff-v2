@@ -2,6 +2,7 @@ import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import BillingButton from "@/components/BillingButton";
+import EmployerPricingButton from "@/components/EmployerPricingButton";
 import FreeAgentProBadge from "@/components/FreeAgentProBadge";
 import { CANONICAL_PRICING_PLANS } from "@/lib/talent-subscription";
 
@@ -100,7 +101,7 @@ export default function PricingPage() {
             <p className="mt-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#27405f]">{employerPlan.cadenceLabel}</p>
             <p className="mt-6 text-sm leading-7 text-[#27405f]">{employerPlan.description}</p>
             <ul className="mt-6 space-y-3 text-sm text-[#27405f]">{employerPlan.bullets.map((feature) => <li key={feature} className="flex items-center gap-3"><span className="h-2.5 w-2.5 rounded-full bg-[#cda64d]" />{feature === "Verified employer discovery" ? "Employer Talent discovery" : feature}</li>)}</ul>
-            <BillingButton action="checkout" plan="employer" className="mt-8 inline-flex w-full items-center justify-center rounded-full bg-[#0f2744] px-5 py-3 text-sm font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f]">Get started</BillingButton>
+            <EmployerPricingButton className="mt-8 inline-flex w-full items-center justify-center rounded-full bg-[#0f2744] px-5 py-3 text-sm font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f]" />
           </div>
         </section>
       </div>

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Heart, Lock, MapPin, Pause, Play, RotateCw, Volume2, VolumeX, X } from "lucide-react";
 import FreeAgentProBadge from "@/components/FreeAgentProBadge";
-import type { FreeAgentProfile } from "@/types/freeagent";
+import type { EmployerVerificationStatus, FreeAgentProfile } from "@/types/freeagent";
 import { getSessionWithRetry } from "@/lib/supabase-client";
 import { resolveProfilePhotoUrl, resolveProfileVideoUrl } from "@/lib/profile-media";
 import { cn } from "@/lib/utils";
@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 interface TalentCardProps {
   profile: FreeAgentProfile;
   href: string;
-  verificationStatus?: "unverified" | "pending" | "verified" | "rejected" | null;
+  verificationStatus?: EmployerVerificationStatus | null;
   hasProAccess?: boolean;
   presentation?: "default" | "employer";
   className?: string;

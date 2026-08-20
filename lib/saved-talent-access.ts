@@ -80,7 +80,7 @@ function normalizeOpportunityStatus(value: string | null | undefined): Opportuni
 }
 
 function normalizeVerificationStatus(value: string | null | undefined): EmployerVerificationStatus {
-  if (value === "unverified" || value === "pending" || value === "verified" || value === "rejected") {
+  if (value === "unverified" || value === "pending" || value === "more_info_required" || value === "verified" || value === "rejected") {
     return value;
   }
 

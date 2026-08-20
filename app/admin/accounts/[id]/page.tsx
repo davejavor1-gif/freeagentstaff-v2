@@ -7,7 +7,13 @@ import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase-client";
 import type { AdminAccountDetailResponse } from "@/types/admin";
 
-type ReviewDecision = "verified" | "rejected";
+type ReviewDecision = "verified" | "more_info_required" | "rejected";
+
+const reviewDecisionLabels: Record<ReviewDecision, string> = {
+  verified: "approval",
+  more_info_required: "more information request",
+  rejected: "unable to verify decision",
+};
 
 async function getSessionWithTimeout() {
   return Promise.race([
@@ -93,8 +99,8 @@ export default function AdminAccountDetailPage() {
   const submitReview = async () => {
     if (!reviewDecision || reviewBusy) return;
     const reason = rejectionReason.trim();
-    if (reviewDecision === "rejected" && !reason) {
-      setReviewMessage("A rejection reason is required.");
+    if ((reviewDecision === "more_info_required" || reviewDecision === "rejected") && !reason) {
+      setReviewMessage("A reviewer message is required.");
       return;
     }
 
@@ -116,7 +122,7 @@ export default function AdminAccountDetailPage() {
       }
 
       setReviewDecision(null);
-      setReviewMessage(reviewDecision === "verified" ? "Employer approved." : "Employer rejected.");
+      setReviewMessage(reviewDecision === "verified" ? "Employer approved." : reviewDecision === "more_info_required" ? "More information requested." : "Employer marked unable to verify.");
       const refreshed = await fetch(`/api/admin/accounts/${params.id}`, {
         headers: { Authorization: `Bearer ${session?.access_token ?? ""}` },
         cache: "no-store",
@@ -181,8 +187,8 @@ export default function AdminAccountDetailPage() {
               <div><dt className="text-[#6f5c34]">ABN</dt><dd>{account.employerAbn ?? "Not available"}</dd></div>
               <div><dt className="text-[#6f5c34]">Website</dt><dd>{account.employerWebsite ?? "Not available"}</dd></div>
               <div><dt className="text-[#6f5c34]">Industry</dt><dd>{account.employerIndustry ?? "Not available"}</dd></div>
-              <div><dt className="text-[#6f5c34]">Company size</dt><dd>{account.employerCompanySize ?? "Not available"}</dd></div>
               <div><dt className="text-[#6f5c34]">Verification requested</dt><dd>{account.verificationRequestedAt ?? "Not available"}</dd></div>
+              <div><dt className="text-[#6f5c34]">Current verification status</dt><dd>{account.employerVerificationStatus ?? "Not available"}</dd></div>
               <div><dt className="text-[#6f5c34]">Rejection reason</dt><dd>{account.verificationRejectionReason ?? "Not available"}</dd></div>
               <div><dt className="text-[#6f5c34]">Saved talent count</dt><dd>{account.savedTalentCount}</dd></div>
             </dl>
@@ -190,14 +196,15 @@ export default function AdminAccountDetailPage() {
               <div className="mt-6 border-t border-[#e4d7b5] pt-5">
                 <h3 className="font-bold">Verification review</h3>
                 <div className="mt-4 flex flex-wrap gap-3">
-                  <button type="button" disabled={reviewBusy} onClick={() => { setReviewDecision("verified"); setReviewMessage(null); }} className="rounded-2xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white disabled:opacity-50">Approve employer</button>
-                  <button type="button" disabled={reviewBusy} onClick={() => { setReviewDecision("rejected"); setReviewMessage(null); }} className="rounded-2xl bg-rose-700 px-4 py-3 text-sm font-semibold text-white disabled:opacity-50">Reject employer</button>
+                  <button type="button" disabled={reviewBusy} onClick={() => { setReviewDecision("verified"); setReviewMessage(null); }} className="rounded-2xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white disabled:opacity-50">Approve</button>
+                  <button type="button" disabled={reviewBusy} onClick={() => { setReviewDecision("more_info_required"); setReviewMessage(null); }} className="rounded-2xl bg-amber-700 px-4 py-3 text-sm font-semibold text-white disabled:opacity-50">Request More Information</button>
+                  <button type="button" disabled={reviewBusy} onClick={() => { setReviewDecision("rejected"); setReviewMessage(null); }} className="rounded-2xl bg-rose-700 px-4 py-3 text-sm font-semibold text-white disabled:opacity-50">Unable to Verify</button>
                 </div>
                 {reviewDecision ? (
                   <div className="mt-4 space-y-3 rounded-2xl border border-[#d9caa5] bg-[#fffaf0] p-4">
-                    <p className="text-sm font-semibold">Confirm {reviewDecision === "verified" ? "approval" : "rejection"}</p>
-                    {reviewDecision === "rejected" ? (
-                      <textarea value={rejectionReason} onChange={(event) => setRejectionReason(event.target.value)} placeholder="Reason for rejection" className="min-h-24 w-full rounded-2xl border border-[#d9caa5] px-4 py-3 text-sm outline-none focus:border-[#2bd7ef]" />
+                    <p className="text-sm font-semibold">Confirm {reviewDecisionLabels[reviewDecision]}</p>
+                    {reviewDecision !== "verified" ? (
+                      <textarea value={rejectionReason} onChange={(event) => setRejectionReason(event.target.value)} placeholder={reviewDecision === "more_info_required" ? "Information needed from the employer" : "Reason this employer could not be verified"} className="min-h-24 w-full rounded-2xl border border-[#d9caa5] px-4 py-3 text-sm outline-none focus:border-[#2bd7ef]" />
                     ) : null}
                     <div className="flex flex-wrap gap-3">
                       <button type="button" disabled={reviewBusy} onClick={() => void submitReview()} className="rounded-2xl bg-[#071321] px-4 py-3 text-sm font-semibold text-white disabled:opacity-50">{reviewBusy ? "Saving..." : "Confirm review"}</button>

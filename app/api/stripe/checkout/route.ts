@@ -8,6 +8,22 @@ import {
   planForAccount,
 } from "@/lib/stripe-billing";
 
+function normalizeAbn(value: string | null | undefined) {
+  const digits = (value ?? "").replace(/\D/g, "");
+
+  if (digits.length !== 11) {
+    return null;
+  }
+
+  const weights = [10, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19];
+  const total = digits
+    .split("")
+    .map((digit) => Number(digit))
+    .reduce((sum, digit, index) => sum + ((index === 0 ? digit - 1 : digit) * weights[index]), 0);
+
+  return total % 89 === 0 ? digits : null;
+}
+
 function getBearerToken(request: Request) {
   const authorization = request.headers.get("authorization");
   return authorization?.startsWith("Bearer ") ? authorization.slice(7).trim() || null : null;
@@ -33,13 +49,15 @@ export async function POST(request: Request) {
 
   const { data: profile, error: profileError } = await userClient
     .from("profiles")
-    .select("account_type, email, name, employer_company_name, stripe_talent_subscription_id, talent_subscription_status, stripe_employer_subscription_id, employer_subscription_status")
+    .select("account_type, email, name, employer_company_name, employer_abn, employer_verification_status, stripe_talent_subscription_id, talent_subscription_status, stripe_employer_subscription_id, employer_subscription_status")
     .eq("user_id", userData.user.id)
     .maybeSingle<{
       account_type: "talent" | "employer";
       email: string | null;
       name: string | null;
       employer_company_name: string | null;
+      employer_abn: string | null;
+      employer_verification_status: string | null;
       stripe_talent_subscription_id: string | null;
       talent_subscription_status: string | null;
       stripe_employer_subscription_id: string | null;
@@ -53,6 +71,10 @@ export async function POST(request: Request) {
   const plan = planForAccount(profile.account_type, requestedPlan);
   if (!plan) {
     return NextResponse.json({ ok: false, message: "That subscription is not available for this account type." }, { status: 403 });
+  }
+
+  if (plan === "employer" && (profile.employer_verification_status !== "verified" || !normalizeAbn(profile.employer_abn))) {
+    return NextResponse.json({ ok: false, message: "Employer verification must be completed before checkout." }, { status: 403 });
   }
 
   const existingStatus = plan === "free_agent_pro" ? profile.talent_subscription_status : profile.employer_subscription_status;

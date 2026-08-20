@@ -23,13 +23,13 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
 
   const body = (await request.json().catch(() => null)) as { decision?: string; reason?: string | null } | null;
   const decision = body?.decision;
-  if (decision !== "verified" && decision !== "rejected") {
+  if (decision !== "verified" && decision !== "more_info_required" && decision !== "rejected") {
     return NextResponse.json({ ok: false, message: "Invalid verification decision." }, { status: 422 });
   }
 
   const reason = body?.reason?.trim() ?? "";
-  if (decision === "rejected" && !reason) {
-    return NextResponse.json({ ok: false, message: "A rejection reason is required." }, { status: 422 });
+  if ((decision === "more_info_required" || decision === "rejected") && !reason) {
+    return NextResponse.json({ ok: false, message: "A reviewer message is required." }, { status: 422 });
   }
 
   const serviceClient = createServiceRoleSupabaseClient();
@@ -44,7 +44,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const { data, error } = await reviewClient.rpc("admin_review_employer_verification", {
     p_user_id: id,
     p_decision: decision,
-    p_reason: decision === "rejected" ? reason : null,
+    p_reason: decision === "more_info_required" || decision === "rejected" ? reason : null,
     p_reviewer: typeof adminActor === "string" ? adminActor : null,
   });
 

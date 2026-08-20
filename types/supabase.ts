@@ -17,7 +17,7 @@ export interface ProfilesRow {
   employer_website: string | null;
   employer_industry: string | null;
   employer_company_size: string | null;
-  employer_verification_status: "unverified" | "pending" | "verified" | "rejected";
+  employer_verification_status: "unverified" | "pending" | "more_info_required" | "verified" | "rejected";
   verification_requested_at: string | null;
   verification_reviewed_at: string | null;
   verification_reviewed_by: string | null;
@@ -81,7 +81,7 @@ export interface ProfilesInsert {
   employer_website?: string | null;
   employer_industry?: string | null;
   employer_company_size?: string | null;
-  employer_verification_status?: "unverified" | "pending" | "verified" | "rejected";
+  employer_verification_status?: "unverified" | "pending" | "more_info_required" | "verified" | "rejected";
   verification_requested_at?: string | null;
   verification_reviewed_at?: string | null;
   verification_reviewed_by?: string | null;
@@ -142,7 +142,7 @@ export interface ProfilesUpdate {
   employer_website?: string | null;
   employer_industry?: string | null;
   employer_company_size?: string | null;
-  employer_verification_status?: "unverified" | "pending" | "verified" | "rejected";
+  employer_verification_status?: "unverified" | "pending" | "more_info_required" | "verified" | "rejected";
   verification_requested_at?: string | null;
   verification_reviewed_at?: string | null;
   verification_reviewed_by?: string | null;
@@ -450,7 +450,7 @@ export interface Database {
           is_published: boolean | null;
           visibility: "public" | "verified_employer_network" | "confidential" | "employer_network" | null;
           opportunity_status: "actively_open" | "exploring" | "not_open" | null;
-          employer_verification_status: "unverified" | "pending" | "verified" | "rejected" | null;
+          employer_verification_status: "unverified" | "pending" | "more_info_required" | "verified" | "rejected" | null;
           created_at: string;
           updated_at: string;
         }>;
@@ -467,7 +467,7 @@ export interface Database {
           is_published: boolean | null;
           visibility: "public" | "verified_employer_network" | "confidential" | "employer_network" | null;
           opportunity_status: "actively_open" | "exploring" | "not_open" | null;
-          employer_verification_status: "unverified" | "pending" | "verified" | "rejected" | null;
+          employer_verification_status: "unverified" | "pending" | "more_info_required" | "verified" | "rejected" | null;
           name: string | null;
           title: string | null;
           location: string | null;
@@ -690,7 +690,7 @@ export interface Database {
         Args: Record<string, never>;
         Returns: Array<{
           success: boolean;
-          employer_verification_status: "unverified" | "pending" | "verified" | "rejected" | null;
+          employer_verification_status: "unverified" | "pending" | "more_info_required" | "verified" | "rejected" | null;
           verification_requested_at: string | null;
           normalized_abn: string | null;
           message: string | null;
@@ -699,13 +699,13 @@ export interface Database {
       admin_review_employer_verification: {
         Args: {
           p_user_id: string;
-          p_decision: "verified" | "rejected";
+          p_decision: "verified" | "more_info_required" | "rejected";
           p_reason?: string | null;
           p_reviewer?: string | null;
         };
         Returns: Array<{
           success: boolean;
-          employer_verification_status: "unverified" | "pending" | "verified" | "rejected" | null;
+          employer_verification_status: "unverified" | "pending" | "more_info_required" | "verified" | "rejected" | null;
           verification_reviewed_at: string | null;
           verification_reviewed_by: string | null;
           verification_rejection_reason: string | null;

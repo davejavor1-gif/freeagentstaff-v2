@@ -1,3 +1,5 @@
+import type { EmployerVerificationStatus } from "@/types/freeagent";
+
 export type TalentContactErrorReason =
   | "not_signed_in"
   | "wrong_account_type"
@@ -24,7 +26,7 @@ export interface EmployerConnectionTalentSummary {
   slug: string;
   accessScope: "employer_full" | "employer_confidential";
   visibility: "public" | "verified_employer_network" | "confidential";
-  verificationStatus: "unverified" | "pending" | "verified" | "rejected";
+  verificationStatus: EmployerVerificationStatus;
   availability: string;
   opportunityStatus: "actively_open" | "exploring" | "not_open";
   experienceYears: number;

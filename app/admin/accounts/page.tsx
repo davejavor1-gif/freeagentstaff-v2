@@ -17,7 +17,7 @@ async function getSessionWithTimeout() {
 export default function AdminAccountsPage() {
   const [query, setQuery] = useState("");
   const [accountType, setAccountType] = useState<"all" | "talent" | "employer">("all");
-  const [verificationStatus, setVerificationStatus] = useState<"all" | "pending" | "verified" | "rejected" | "unverified">("all");
+  const [verificationStatus, setVerificationStatus] = useState<"all" | "pending" | "more_info_required" | "verified" | "rejected" | "unverified">("all");
   const [payload, setPayload] = useState<AdminAccountListResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [nextCursor, setNextCursor] = useState<{ createdAt: string; userId: string } | null>(null);
@@ -114,8 +114,9 @@ export default function AdminAccountsPage() {
             >
               <option value="all">All verification</option>
               <option value="pending">Pending review</option>
+              <option value="more_info_required">More information required</option>
               <option value="verified">Verified</option>
-              <option value="rejected">Rejected</option>
+              <option value="rejected">Unable to Verify</option>
               <option value="unverified">Unverified</option>
             </select>
             <button type="button" onClick={() => { setQuery(""); setAccountType("all"); setVerificationStatus("all"); }} className="rounded-2xl bg-[#071321] px-4 py-3 text-sm font-semibold text-white">Clear</button>

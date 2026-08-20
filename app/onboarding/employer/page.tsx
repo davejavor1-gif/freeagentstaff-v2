@@ -14,7 +14,6 @@ type EmployerFormState = {
   abn: string;
   website: string;
   industry: string;
-  companySize: string;
 };
 
 type EmployerProfileRow = {
@@ -27,7 +26,6 @@ type EmployerProfileRow = {
   employer_abn?: string | null;
   employer_website?: string | null;
   employer_industry?: string | null;
-  employer_company_size?: string | null;
   verification_requested_at?: string | null;
   verification_reviewed_at?: string | null;
   verification_reviewed_by?: string | null;
@@ -41,7 +39,6 @@ const blankForm: EmployerFormState = {
   abn: "",
   website: "",
   industry: "",
-  companySize: "",
 };
 
 const requiredFieldLabels: Record<keyof EmployerFormState, string> = {
@@ -51,7 +48,6 @@ const requiredFieldLabels: Record<keyof EmployerFormState, string> = {
   abn: "ABN",
   website: "Website",
   industry: "Industry",
-  companySize: "Company size",
 };
 
 function normalizeAbn(value: string): string {
@@ -147,7 +143,7 @@ export default function EmployerOnboardingPage() {
     const { data, error } = await supabase
       .from("profiles")
       .select(
-        "user_id, account_type, employer_verification_status, employer_contact_name, employer_contact_role, employer_company_name, employer_abn, employer_website, employer_industry, employer_company_size, verification_requested_at, verification_rejection_reason",
+        "user_id, account_type, employer_verification_status, employer_contact_name, employer_contact_role, employer_company_name, employer_abn, employer_website, employer_industry, verification_requested_at, verification_rejection_reason",
       )
       .eq("user_id", userId)
       .maybeSingle();
@@ -176,7 +172,6 @@ export default function EmployerOnboardingPage() {
       abn: formatAbnInput(row.employer_abn ?? ""),
       website: row.employer_website ?? "",
       industry: row.employer_industry ?? "",
-      companySize: row.employer_company_size ?? "",
     };
 
     setForm(nextForm);
@@ -300,7 +295,6 @@ export default function EmployerOnboardingPage() {
         employer_abn: form.abn.trim() || null,
         employer_website: form.website.trim() || null,
         employer_industry: form.industry.trim() || null,
-        employer_company_size: form.companySize.trim() || null,
       } as never)
       .eq("user_id", session.user.id);
 
@@ -411,18 +405,36 @@ export default function EmployerOnboardingPage() {
       <div className="mx-auto max-w-5xl px-5 py-10 sm:px-8 lg:px-10">
         <section className="rounded-[36px] border border-[#cda64d]/60 bg-[#0f2744] p-6 text-[#f7ebcf] shadow-[0_20px_60px_rgba(6,16,33,0.16)] sm:p-8 lg:p-10">
           <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">Employer setup</p>
-          <h1 className="mt-4 text-3xl font-black uppercase tracking-[0.12em] text-[#f7ebcf] sm:text-4xl">Tell us about your company</h1>
+          <h1 className="mt-4 text-3xl font-black uppercase tracking-[0.12em] text-[#f7ebcf] sm:text-4xl">
+            {verificationStatus === "pending"
+              ? "We're verifying your business"
+              : verificationStatus === "more_info_required"
+                ? "We need a little more information"
+                : verificationStatus === "rejected"
+                  ? "We couldn't verify this Employer account"
+                  : verificationStatus === "verified"
+                    ? "Your business is verified"
+                    : "Verify your business"}
+          </h1>
           <p className="mt-4 max-w-3xl text-sm leading-7 text-[#dfe7ef] sm:text-base sm:leading-8">
-            A few details help us verify your organisation and keep the FreeAgent talent network trusted.
+            {verificationStatus === "pending"
+              ? "Your details have been submitted to Free Agent Staff for review. We'll let you know once your business has been verified."
+              : verificationStatus === "more_info_required"
+                ? "We need some additional information before we can complete your business verification."
+                : verificationStatus === "rejected"
+                  ? "We weren't able to verify your organisation or your connection to it."
+                  : verificationStatus === "verified"
+                    ? "Your organisation has been approved to join the Free Agent Staff Employer network. Activate Employer Access from your dashboard to start discovering Talent."
+                    : "Free Agent Staff verifies employers before providing access to the Talent network."}
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <span className="rounded-full border border-[#f2cc63]/45 bg-[#f7ebcf]/10 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f2cc63]">
-              Status: {verificationStatus}
+              Status: {verificationStatus === "pending" ? "Under Review" : verificationStatus === "more_info_required" ? "More Information Required" : verificationStatus === "rejected" ? "Unable to Verify" : verificationStatus === "verified" ? "Verified" : "Unverified"}
             </span>
             {verificationStatus === "verified" ? (
               <span className="rounded-full border border-[#9fdd66]/55 bg-[#9fdd66]/20 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#e7ffd1]">
-                Verified access enabled
+                Verification complete
               </span>
             ) : (
               <span className="rounded-full border border-[#f2cc63]/30 bg-[#f7ebcf]/10 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf]">
@@ -433,8 +445,8 @@ export default function EmployerOnboardingPage() {
 
           {verificationStatus === "pending" ? (
             <div className="mt-6 rounded-[24px] border border-[#f2cc63]/35 bg-[#f7ebcf]/10 p-5 text-sm leading-7 text-[#f7ebcf]">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">Verification in review</p>
-              <p className="mt-2">Thanks — your employer account has been submitted. FreeAgent is reviewing your details now.</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">Under Review</p>
+              <p className="mt-2">Your details have been submitted to Free Agent Staff for review. We&apos;ll let you know once your business has been verified.</p>
               <p className="mt-2 text-[#dfe7ef]">Submitted: {requestedAt ? new Date(requestedAt).toLocaleString() : "Pending confirmation"}</p>
               <p className="mt-2 text-[#dfe7ef]">
                 If you edit company verification details like company name or ABN, your account may need to be reviewed again.
@@ -442,23 +454,35 @@ export default function EmployerOnboardingPage() {
             </div>
           ) : null}
 
+          {verificationStatus === "more_info_required" ? (
+            <div className="mt-6 rounded-[24px] border border-[#f2cc63]/35 bg-[#f7ebcf]/10 p-5 text-sm leading-7 text-[#f7ebcf]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">More Information Required</p>
+              <p className="mt-2">We need some additional information before we can complete your business verification.</p>
+              {rejectionReason ? <p className="mt-2 text-[#dfe7ef]">Reviewer message: {rejectionReason}</p> : null}
+            </div>
+          ) : null}
+
           {verificationStatus === "verified" ? (
             <div className="mt-6 rounded-[24px] border border-[#9fdd66]/35 bg-[#9fdd66]/12 p-5 text-sm leading-7 text-[#e8ffd2]">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#d8ffab]">You&apos;re verified</p>
-              <p className="mt-2">Your employer account is verified and you can now access the FreeAgent talent network.</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#d8ffab]">Your business is verified</p>
+              <p className="mt-2">Your organisation has been approved to join the Free Agent Staff Employer network. Activate Employer Access to start discovering Talent.</p>
               <Link
-                href="/find-talent"
+                href="/dashboard"
                 className="mt-4 inline-flex min-h-[44px] items-center justify-center rounded-full border border-[#d8ffab]/45 bg-[#d8ffab] px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.24em] text-[#0f2744] transition hover:bg-[#e8ffc4]"
               >
-                Find talent
+                Choose Employer Plan
               </Link>
             </div>
           ) : null}
 
           {verificationStatus === "rejected" ? (
             <div className="mt-6 rounded-[24px] border border-[#e19379]/45 bg-[#f4d5c8]/14 p-5 text-sm leading-7 text-[#ffe9df]">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#ffc7b3]">We couldn&apos;t verify your account</p>
-              {rejectionReason ? <p className="mt-2">Reason: {rejectionReason}</p> : <p className="mt-2">Please review your details and resubmit for verification.</p>}
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#ffc7b3]">Unable to Verify</p>
+              <p className="mt-2">We weren&apos;t able to verify your organisation or your connection to it.</p>
+              {rejectionReason ? <p className="mt-2">Reviewer message: {rejectionReason}</p> : null}
+              <Link href="/support" className="mt-4 inline-flex min-h-[44px] items-center justify-center rounded-full border border-[#ffc7b3]/45 bg-[#ffc7b3] px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.24em] text-[#0f2744] transition hover:bg-[#ffe0d5]">
+                Contact Support
+              </Link>
             </div>
           ) : null}
 
@@ -484,7 +508,7 @@ export default function EmployerOnboardingPage() {
         <section className="mt-8 rounded-[30px] border border-[#cda64d]/55 bg-[#f7ebcf]/88 p-6 shadow-[0_12px_40px_rgba(6,16,33,0.12)] sm:p-8">
           <form className="space-y-7" onSubmit={(event) => event.preventDefault()}>
             <fieldset className="space-y-4">
-              <legend className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Contact</legend>
+              <legend className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Your details</legend>
 
               <div>
                 <label htmlFor="contactName" className="text-sm font-semibold text-[#0f2744]">Contact name</label>
@@ -516,7 +540,7 @@ export default function EmployerOnboardingPage() {
             </fieldset>
 
             <fieldset className="space-y-4">
-              <legend className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Company</legend>
+              <legend className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Business details</legend>
 
               <div>
                 <label htmlFor="companyName" className="text-sm font-semibold text-[#0f2744]">Company name</label>
@@ -554,7 +578,7 @@ export default function EmployerOnboardingPage() {
 
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <label htmlFor="website" className="text-sm font-semibold text-[#0f2744]">Website</label>
+                  <label htmlFor="website" className="text-sm font-semibold text-[#0f2744]">Company website</label>
                   <input
                     id="website"
                     name="website"
@@ -580,20 +604,6 @@ export default function EmployerOnboardingPage() {
                   />
                   {touchedSubmit && !form.industry.trim() ? <p className="mt-2 text-sm text-[#a2472f]">Industry is required.</p> : null}
                 </div>
-              </div>
-
-              <div>
-                <label htmlFor="companySize" className="text-sm font-semibold text-[#0f2744]">Company size</label>
-                <input
-                  id="companySize"
-                  name="companySize"
-                  value={form.companySize}
-                  onChange={(event) => setForm((current) => ({ ...current, companySize: event.target.value }))}
-                  readOnly={isPendingReadOnly}
-                  className="mt-2 min-h-[44px] w-full rounded-2xl border border-[#cda64d]/35 bg-white px-4 py-3 text-sm text-[#071426] outline-none transition focus:border-[#9a6d15] focus:ring-2 focus:ring-[#f2cc63]/45"
-                  aria-required="true"
-                />
-                {touchedSubmit && !form.companySize.trim() ? <p className="mt-2 text-sm text-[#a2472f]">Company size is required.</p> : null}
               </div>
             </fieldset>
 
@@ -621,7 +631,7 @@ export default function EmployerOnboardingPage() {
                     {saving ? "Saving..." : "Save details"}
                   </button>
 
-                  {verificationStatus !== "pending" ? (
+                  {verificationStatus !== "pending" && verificationStatus !== "verified" ? (
                     <button
                       type="button"
                       onClick={() => void submitVerification()}
@@ -630,9 +640,11 @@ export default function EmployerOnboardingPage() {
                     >
                       {submitting
                         ? "Submitting..."
-                        : verificationStatus === "rejected"
+                        : verificationStatus === "more_info_required"
+                          ? "Update Business Details"
+                          : verificationStatus === "rejected"
                           ? "Resubmit for verification"
-                          : "Submit for verification"}
+                          : "Submit for Verification"}
                     </button>
                   ) : null}
 

@@ -21,7 +21,7 @@ export type SalaryExpectation =
 
 export type AccountType = "talent" | "employer";
 
-export type EmployerVerificationStatus = "unverified" | "pending" | "verified" | "rejected";
+export type EmployerVerificationStatus = "unverified" | "pending" | "more_info_required" | "verified" | "rejected";
 
 export interface EmployerProfileDetails {
   contactName: string;
@@ -30,7 +30,6 @@ export interface EmployerProfileDetails {
   abn: string;
   website: string;
   industry: string;
-  companySize: string;
 }
 
 export interface CareerPosition {

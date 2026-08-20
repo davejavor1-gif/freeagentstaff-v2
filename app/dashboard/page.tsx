@@ -45,9 +45,10 @@ const createBlankTalentProfile = (userId: string, email?: string | null): FreeAg
 
 const verificationLabel: Record<EmployerVerificationStatus, string> = {
   unverified: "Unverified",
-  pending: "Pending verification",
+  pending: "Under Review",
+  more_info_required: "More Information Required",
   verified: "Verified",
-  rejected: "Rejected",
+  rejected: "Unable to Verify",
 };
 
 type ProfileRow = {
@@ -60,7 +61,6 @@ type ProfileRow = {
 
 const summaryCardClassName = "rounded-2xl border border-[#cda64d]/45 bg-[#f7ebcf] p-5 text-[#0f2744] shadow-[0_10px_28px_rgba(6,16,33,0.12)]";
 const freeAgentProPlan = CANONICAL_PRICING_PLANS.find((plan) => plan.code === "free_agent_pro");
-const employerPlan = CANONICAL_PRICING_PLANS.find((plan) => plan.code === "employer");
 
 function formatDateTime(value: string | null | undefined) {
   if (!value) {
@@ -353,6 +353,7 @@ export default function DashboardPage() {
   }, [accountType, employerSummary?.subscription.hasAccess, loadDashboardSummary, router, session, talentSummary?.subscription.hasProAccess]);
 
   const isVerifiedEmployer = accountType === "employer" && verificationStatus === "verified";
+  const hasEmployerAccess = isVerifiedEmployer && employerSummary?.subscription.hasAccess === true;
 
   const formattedRequestedAt = useMemo(
     () => formatVerificationSubmittedAt(verificationRequestedAt),
@@ -499,9 +500,17 @@ export default function DashboardPage() {
             <section className="rounded-3xl border border-[#cda64d]/55 bg-[#f7ebcf] p-6 text-[#0f2744] shadow-[0_16px_40px_rgba(6,16,33,0.18)] sm:p-8">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Subscription</p>
-                  <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900">Employer</h2>
-                  <p className="mt-2 text-sm text-slate-600">{employerPlan?.priceLabel} / {employerPlan?.cadenceLabel}</p>
+                  <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Employer access</p>
+                  <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900">
+                    {hasEmployerAccess ? "Employer Access Active" : isVerifiedEmployer ? "Your business is verified" : verificationLabel[verificationStatus]}
+                  </h2>
+                  <p className="mt-2 text-sm text-slate-600">
+                    {hasEmployerAccess
+                      ? "Verified Employer access is active."
+                      : isVerifiedEmployer
+                        ? "Your organisation has been approved to join the Free Agent Staff Employer network. Activate Employer Access to start discovering Talent."
+                        : "Free Agent Staff verifies employers before providing access to the Talent network."}
+                  </p>
                   {employerSummary?.subscription.cancelAtPeriodEnd && employerSummary.subscription.currentPeriodEndsAt ? (
                     <p className="mt-3 text-sm font-semibold text-amber-800">Access remains active until {formatDateTime(employerSummary.subscription.currentPeriodEndsAt)}.</p>
                   ) : null}
@@ -510,19 +519,19 @@ export default function DashboardPage() {
                   <span className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-700">
                     {(employerSummary?.subscription.status ?? "inactive").replace("_", " ")}
                   </span>
-                  {employerSummary?.subscription.hasAccess ? (
+                  {hasEmployerAccess ? (
                     <BillingButton action="portal" className="inline-flex min-h-[44px] items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-slate-800">
                       Manage subscription
                     </BillingButton>
-                  ) : (
+                  ) : isVerifiedEmployer ? (
                     <BillingButton action="checkout" plan="employer" className="inline-flex min-h-[44px] items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-slate-800">
-                      Get started
+                      Choose Employer Plan
                     </BillingButton>
-                  )}
+                  ) : null}
                 </div>
               </div>
             </section>
-            {isVerifiedEmployer ? (
+            {hasEmployerAccess ? (
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <Link href="/find-talent" className={`${summaryCardClassName} text-sm font-semibold text-slate-700 transition hover:bg-slate-50`}>
                   Find Talent
@@ -549,28 +558,42 @@ export default function DashboardPage() {
               <section className="rounded-3xl border border-[#cda64d]/55 bg-[#f7ebcf] p-6 text-[#0f2744] shadow-[0_16px_40px_rgba(6,16,33,0.18)] sm:p-8">
                 {verificationStatus === "unverified" ? (
                   <>
-                    <h2 className="text-2xl font-black tracking-tight text-slate-900">Verification required</h2>
+                    <h2 className="text-2xl font-black tracking-tight text-slate-900">Verify your business</h2>
                     <p className="mt-3 text-sm leading-7 text-slate-600">
-                      Complete your employer profile and submit it for review before talent search unlocks.
+                      Free Agent Staff verifies employers before providing access to the Talent network.
                     </p>
                   </>
                 ) : null}
 
                 {verificationStatus === "pending" ? (
                   <>
-                    <h2 className="text-2xl font-black tracking-tight text-slate-900">Verification in review</h2>
+                    <h2 className="text-2xl font-black tracking-tight text-slate-900">We&apos;re verifying your business</h2>
                     <p className="mt-3 text-sm leading-7 text-slate-600">
-                      Your submission is under review. Verified employer workflows remain locked until approval.
+                      Your details have been submitted to Free Agent Staff for review. We&apos;ll let you know once your business has been verified.
                     </p>
                     <p className="mt-3 text-sm font-semibold text-slate-700">Submitted: {formattedRequestedAt}</p>
                   </>
                 ) : null}
 
+                {verificationStatus === "more_info_required" ? (
+                  <>
+                    <h2 className="text-2xl font-black tracking-tight text-slate-900">We need a little more information</h2>
+                    <p className="mt-3 text-sm leading-7 text-slate-600">
+                      We need some additional information before we can complete your business verification.
+                    </p>
+                    {verificationRejectionReason ? (
+                      <p className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-7 text-amber-900">
+                        Reviewer message: {verificationRejectionReason}
+                      </p>
+                    ) : null}
+                  </>
+                ) : null}
+
                 {verificationStatus === "rejected" ? (
                   <>
-                    <h2 className="text-2xl font-black tracking-tight text-slate-900">Verification rejected</h2>
+                    <h2 className="text-2xl font-black tracking-tight text-slate-900">We couldn&apos;t verify this Employer account</h2>
                     <p className="mt-3 text-sm leading-7 text-slate-600">
-                      We couldn&apos;t verify your employer account. Update your details and resubmit.
+                      We weren&apos;t able to verify your organisation or your connection to it.
                     </p>
 
                     {verificationRejectionReason ? (
@@ -586,13 +609,13 @@ export default function DashboardPage() {
                     href="/onboarding/employer"
                     className="inline-flex min-h-[44px] items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-slate-800"
                   >
-                    {verificationStatus === "rejected" ? "Review and resubmit" : "Open employer account"}
+                    {verificationStatus === "more_info_required" ? "Update Business Details" : verificationStatus === "rejected" ? "Review details" : verificationStatus === "unverified" ? "Submit for Verification" : "Open employer account"}
                   </Link>
                 </div>
               </section>
             ) : null}
 
-            {isVerifiedEmployer ? (
+            {hasEmployerAccess ? (
               <>
                 <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                   <Link href="/saved-talent" className={`${summaryCardClassName} transition hover:bg-slate-50`}>

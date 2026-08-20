@@ -17,7 +17,7 @@ create table if not exists profiles (
   employer_website text,
   employer_industry text,
   employer_company_size text,
-  employer_verification_status text not null default 'unverified' check (employer_verification_status in ('unverified', 'pending', 'verified', 'rejected')),
+  employer_verification_status text not null default 'unverified' check (employer_verification_status in ('unverified', 'pending', 'more_info_required', 'verified', 'rejected')),
   verification_requested_at timestamptz,
   verification_reviewed_at timestamptz,
   verification_reviewed_by text,
@@ -340,7 +340,6 @@ declare
   v_abn text;
   v_website text;
   v_industry text;
-  v_company_size text;
   v_normalized_abn text;
 begin
   v_uid := auth.uid();
@@ -357,8 +356,7 @@ begin
     p.employer_company_name,
     p.employer_abn,
     p.employer_website,
-    p.employer_industry,
-    p.employer_company_size
+    p.employer_industry
   into
     v_account_type,
     v_status,
@@ -367,8 +365,7 @@ begin
     v_company_name,
     v_abn,
     v_website,
-    v_industry,
-    v_company_size
+    v_industry
   from public.profiles p
   where p.user_id = v_uid
   for update;
@@ -381,7 +378,7 @@ begin
     raise exception 'wrong_account_type' using errcode = '42501';
   end if;
 
-  if v_status not in ('unverified', 'rejected') then
+  if v_status not in ('unverified', 'more_info_required', 'rejected') then
     raise exception 'invalid_state' using errcode = 'P0001';
   end if;
 
@@ -391,8 +388,7 @@ begin
     btrim(coalesce(v_company_name, '')) = '' or
     btrim(coalesce(v_abn, '')) = '' or
     btrim(coalesce(v_website, '')) = '' or
-    btrim(coalesce(v_industry, '')) = '' or
-    btrim(coalesce(v_company_size, '')) = ''
+    btrim(coalesce(v_industry, '')) = ''
   then
     raise exception 'missing_required_fields' using errcode = '23514';
   end if;
@@ -454,11 +450,11 @@ begin
     raise exception 'missing_user_id' using errcode = '23502';
   end if;
 
-  if p_decision not in ('verified', 'rejected') then
+  if p_decision not in ('verified', 'more_info_required', 'rejected') then
     raise exception 'invalid_decision' using errcode = '23514';
   end if;
 
-  if p_decision = 'rejected' and btrim(coalesce(p_reason, '')) = '' then
+  if p_decision in ('more_info_required', 'rejected') and btrim(coalesce(p_reason, '')) = '' then
     raise exception 'missing_rejection_reason' using errcode = '23514';
   end if;
 
@@ -494,7 +490,7 @@ begin
     employer_verification_status = p_decision,
     verification_reviewed_at = now(),
     verification_reviewed_by = v_reviewer,
-    verification_rejection_reason = case when p_decision = 'rejected' then btrim(p_reason) else null end,
+    verification_rejection_reason = case when p_decision in ('more_info_required', 'rejected') then btrim(p_reason) else null end,
     updated_at = now()
   where p.user_id = p_user_id;
 
@@ -505,7 +501,7 @@ begin
     (select verification_reviewed_at from public.profiles where user_id = p_user_id),
     (select verification_reviewed_by from public.profiles where user_id = p_user_id),
     (select verification_rejection_reason from public.profiles where user_id = p_user_id),
-    case when p_decision = 'verified' then 'verification_approved' else 'verification_rejected' end;
+    case when p_decision = 'verified' then 'verification_approved' when p_decision = 'more_info_required' then 'verification_more_info_required' else 'verification_rejected' end;
 end
 $$;
 
@@ -872,7 +868,7 @@ begin
       coalesce(new.employer_company_name, '') <> coalesce(old.employer_company_name, '')
       or coalesce(v_new_norm_abn, '') <> coalesce(v_old_norm_abn, '');
 
-    if v_identity_changed and old.employer_verification_status in ('pending', 'verified') then
+    if v_identity_changed and old.employer_verification_status in ('pending', 'more_info_required', 'verified') then
       new.employer_verification_status := 'unverified';
       new.verification_requested_at := null;
       new.verification_reviewed_at := null;
@@ -884,12 +880,12 @@ begin
 
   if coalesce(new.employer_verification_status, '') <> coalesce(old.employer_verification_status, '') then
     if v_auto_reset_applied
-       and old.employer_verification_status in ('pending', 'verified')
+      and old.employer_verification_status in ('pending', 'more_info_required', 'verified')
        and new.employer_verification_status = 'unverified' then
       return new;
     end if;
 
-    if old.employer_verification_status in ('unverified', 'rejected')
+    if old.employer_verification_status in ('unverified', 'more_info_required', 'rejected')
        and new.employer_verification_status = 'pending'
        and v_transition = 'submit_employer_verification'
        and v_transition_uid is not null
@@ -897,8 +893,8 @@ begin
       return new;
     end if;
 
-    if old.employer_verification_status = 'pending'
-       and new.employer_verification_status in ('verified', 'rejected')
+     if old.employer_verification_status = 'pending'
+       and new.employer_verification_status in ('more_info_required', 'verified', 'rejected')
        and v_transition = 'admin_review_employer_verification'
        and v_transition_uid is not null
        and v_transition_uid = new.user_id then
@@ -3121,11 +3117,11 @@ begin
     raise exception 'missing_user_id' using errcode = '23502';
   end if;
 
-  if p_decision not in ('verified', 'rejected') then
+  if p_decision not in ('verified', 'more_info_required', 'rejected') then
     raise exception 'invalid_decision' using errcode = '23514';
   end if;
 
-  if p_decision = 'rejected' and btrim(coalesce(p_reason, '')) = '' then
+  if p_decision in ('more_info_required', 'rejected') and btrim(coalesce(p_reason, '')) = '' then
     raise exception 'missing_rejection_reason' using errcode = '23514';
   end if;
 
@@ -3161,7 +3157,7 @@ begin
     employer_verification_status = p_decision,
     verification_reviewed_at = now(),
     verification_reviewed_by = v_reviewer,
-    verification_rejection_reason = case when p_decision = 'rejected' then btrim(p_reason) else null end,
+    verification_rejection_reason = case when p_decision in ('more_info_required', 'rejected') then btrim(p_reason) else null end,
     updated_at = now()
   where p.user_id = p_user_id
   returning
@@ -3186,10 +3182,11 @@ begin
     p_user_id,
     null,
     case when p_decision = 'verified' then 'verification_approved' else 'verification_rejected' end,
-    case when p_decision = 'verified' then 'Employer verification approved.' else 'Employer verification requires action.' end,
+    case when p_decision = 'verified' then 'Employer verification approved.' when p_decision = 'more_info_required' then 'More information required for employer verification.' else 'Employer verification requires action.' end,
     case when p_decision = 'verified'
       then 'Your employer account can now access verified employer workflows.'
-      else 'Review your employer details and submit verification again.'
+      when p_decision = 'more_info_required' then 'Review the requested information and submit verification again.'
+      else 'Contact support if you believe this decision needs review.'
     end,
     'profile',
     p_user_id,
@@ -3203,7 +3200,7 @@ begin
     v_result_reviewed_at,
     v_result_reviewed_by,
     v_result_rejection_reason,
-    case when p_decision = 'verified' then 'verification_approved' else 'verification_rejected' end;
+    case when p_decision = 'verified' then 'verification_approved' when p_decision = 'more_info_required' then 'verification_more_info_required' else 'verification_rejected' end;
 end
 $$;
 
@@ -3720,7 +3717,7 @@ begin
       or coalesce(lower(btrim(new.employer_website)), '') <> coalesce(lower(btrim(old.employer_website)), '')
       or coalesce(v_new_website_key, '') <> coalesce(v_old_website_key, '');
 
-    if v_identity_changed and old.employer_verification_status in ('pending', 'verified') then
+    if v_identity_changed and old.employer_verification_status in ('pending', 'more_info_required', 'verified') then
       new.employer_verification_status := 'unverified';
       new.verification_requested_at := null;
       new.verification_reviewed_at := null;
@@ -3738,14 +3735,14 @@ begin
 
   if v_verification_metadata_changed and not v_auto_reset_applied then
     if not (
-      old.employer_verification_status in ('unverified', 'rejected')
+      old.employer_verification_status in ('unverified', 'more_info_required', 'rejected')
       and new.employer_verification_status = 'pending'
       and v_transition = 'submit_employer_verification'
       and v_transition_uid is not null
       and v_transition_uid = new.user_id
     ) and not (
       old.employer_verification_status = 'pending'
-      and new.employer_verification_status in ('verified', 'rejected')
+      and new.employer_verification_status in ('more_info_required', 'verified', 'rejected')
       and v_transition = 'admin_review_employer_verification'
       and v_transition_uid is not null
       and v_transition_uid = new.user_id
@@ -3774,12 +3771,12 @@ begin
 
   if coalesce(new.employer_verification_status, '') <> coalesce(old.employer_verification_status, '') then
     if v_auto_reset_applied
-       and old.employer_verification_status in ('pending', 'verified')
+      and old.employer_verification_status in ('pending', 'more_info_required', 'verified')
        and new.employer_verification_status = 'unverified' then
       return new;
     end if;
 
-    if old.employer_verification_status in ('unverified', 'rejected')
+    if old.employer_verification_status in ('unverified', 'more_info_required', 'rejected')
        and new.employer_verification_status = 'pending'
        and v_transition = 'submit_employer_verification'
        and v_transition_uid is not null
@@ -3787,8 +3784,8 @@ begin
       return new;
     end if;
 
-    if old.employer_verification_status = 'pending'
-       and new.employer_verification_status in ('verified', 'rejected')
+     if old.employer_verification_status = 'pending'
+       and new.employer_verification_status in ('more_info_required', 'verified', 'rejected')
        and v_transition = 'admin_review_employer_verification'
        and v_transition_uid is not null
        and v_transition_uid = new.user_id then
