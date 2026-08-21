@@ -315,10 +315,12 @@ export async function loadDiscoveryResults(accessToken: string | null | undefine
       reason: "unverified_employer",
       message:
         viewer.viewerRow.employer_verification_status === "pending"
-          ? "Your employer verification is pending. Discovery unlocks once your account is verified."
-          : viewer.viewerRow.employer_verification_status === "rejected"
-            ? "Your employer verification was rejected. Update your company details before accessing discovery."
-            : "Your employer account must be verified before you can access discovery.",
+          ? "Your employer verification is under review. Talent Discovery unlocks once your account is verified."
+          : viewer.viewerRow.employer_verification_status === "more_info_required"
+            ? "We need more information about your business to complete verification. Update your company details on your dashboard to continue."
+            : viewer.viewerRow.employer_verification_status === "rejected"
+              ? "Your employer verification was rejected. Update your company details and resubmit for verification to access discovery."
+              : "Your employer account must be verified before you can access discovery.",
       profiles: [],
     };
   }
@@ -341,8 +343,8 @@ export async function loadDiscoveryResults(accessToken: string | null | undefine
   if (!hasEmployerSubscriptionAccess(employerSubscription)) {
     return {
       allowed: false,
-      reason: "unverified_employer",
-      message: "An active employer subscription is required before employer discovery is available.",
+      reason: "inactive_employer_subscription",
+      message: "Your business is verified. Choose an Employer plan to start discovering Talent.",
       profiles: [],
     };
   }
@@ -448,7 +450,7 @@ export async function loadTalentPassport(accessToken: string | null | undefined,
     if (!hasEmployerSubscriptionAccess(employerSubscription)) {
       return {
         allowed: false,
-        reason: "unverified_employer",
+        reason: "inactive_employer_subscription",
         message: "An active employer subscription is required before talent passports are available.",
       };
     }

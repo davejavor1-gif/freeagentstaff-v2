@@ -79,16 +79,49 @@ const matchesExperience = (years: number, filter: ExperienceFilter) => {
 
 const normalizeSearchableText = (value: string | undefined | null) => (value ?? "").toLowerCase();
 
-const getAccessGateCopy = (reason?: DiscoveryApiResponse["reason"]) => {
+const getAccessGateContent = (reason?: DiscoveryApiResponse["reason"]) => {
   if (reason === "wrong_account_type") {
-    return "FreeAgent verifies employers before providing access to our talent network, helping create a trusted space for everyone.";
+    return {
+      header: "EMPLOYER VERIFICATION REQUIRED",
+      title: "UNLOCK TALENT SEARCH",
+      copy: "FreeAgent verifies employers before providing access to our talent network, helping create a trusted space for everyone.",
+      ctaLabel: "Continue verification",
+      ctaHref: "/dashboard",
+      showCtaForUnauthenticated: false,
+    };
   }
 
   if (reason === "not_signed_in") {
-    return "Sign in with your employer account to continue to Talent Search.";
+    return {
+      header: "EMPLOYER VERIFICATION REQUIRED",
+      title: "UNLOCK TALENT SEARCH",
+      copy: "Sign in with your employer account to continue to Talent Search.",
+      ctaLabel: "Sign in",
+      ctaHref: "/employer/auth",
+      showCtaForUnauthenticated: true,
+    };
   }
 
-  return "FreeAgent verifies employers before providing access to our talent network, helping create a trusted space for everyone.";
+  if (reason === "inactive_employer_subscription") {
+    return {
+      header: "ACTIVATE EMPLOYER ACCESS",
+      title: "START DISCOVERING TALENT",
+      copy: "Your business is verified. Choose an Employer plan to start discovering Talent.",
+      ctaLabel: "Choose Employer Plan",
+      ctaHref: "/pricing",
+      showCtaForUnauthenticated: false,
+    };
+  }
+
+  // unverified, pending, more_info_required, rejected, invalid_abn, etc.
+  return {
+    header: "EMPLOYER VERIFICATION REQUIRED",
+    title: "UNLOCK TALENT SEARCH",
+    copy: "FreeAgent verifies employers before providing access to our talent network, helping create a trusted space for everyone.",
+    ctaLabel: "Complete employer verification",
+    ctaHref: "/dashboard",
+    showCtaForUnauthenticated: false,
+  };
 };
 
 export default function EmployerTalentSearch() {
@@ -308,32 +341,33 @@ export default function EmployerTalentSearch() {
   }, [filteredProfiles, sort]);
 
   if (!isLoading && !canAccessSearch) {
+    const gateContent = getAccessGateContent(accessReason);
     return (
       <section className="mx-auto max-w-7xl px-6 py-12 sm:px-8 lg:px-12">
         <div className="rounded-[36px] border border-[#cda64d]/45 bg-[#f7ebcf]/90 p-8 text-[#071426] shadow-[0_18px_55px_rgba(6,16,33,0.12)] sm:p-10">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">EMPLOYER VERIFICATION REQUIRED</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">{gateContent.header}</p>
           <h2 className="mt-4 text-3xl font-black uppercase tracking-[0.12em] text-[#0f2744] sm:text-4xl">
-            UNLOCK TALENT SEARCH
+            {gateContent.title}
           </h2>
           <p className="mt-4 max-w-3xl text-base leading-8 text-[#27405f]">
-            {getAccessGateCopy(accessReason)}
+            {gateContent.copy}
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            {hasSession ? (
+            {hasSession && gateContent.showCtaForUnauthenticated === false ? (
               <Link
-                href="/dashboard"
+                href={gateContent.ctaHref}
                 className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#0f2744]/25 bg-[#0f2744] px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f]"
               >
-                Complete employer verification
+                {gateContent.ctaLabel}
               </Link>
-            ) : (
+            ) : !hasSession ? (
               <Link
-                href="/employer/auth"
+                href={gateContent.ctaHref}
                 className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#0f2744]/25 bg-[#0f2744] px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f]"
               >
-                Create employer account
+                {gateContent.ctaLabel}
               </Link>
-            )}
+            ) : null}
           </div>
         </div>
       </section>

@@ -6,6 +6,7 @@ export type DiscoveryDeniedReason =
   | "wrong_account_type"
   | "unverified_employer"
   | "invalid_abn"
+  | "inactive_employer_subscription"
   | "not_available"
   | "error";
 
