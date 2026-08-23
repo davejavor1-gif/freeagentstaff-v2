@@ -22,6 +22,13 @@ export const metadata: Metadata = {
   applicationName: "Free Agent Staff",
   title: siteTitle,
   description: siteDescription,
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/favicon.png", type: "image/png", sizes: "512x512" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+  },
   alternates: {
     canonical: "/",
   },
