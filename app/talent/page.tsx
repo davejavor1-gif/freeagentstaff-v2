@@ -52,9 +52,9 @@ export default function TalentPage() {
         <div className="pointer-events-none absolute -right-20 bottom-8 h-64 w-64 rounded-full border border-[#aff546]/16" />
         <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-6 py-12 sm:px-8 sm:py-16 lg:grid-cols-[1fr_0.8fr] lg:px-12 lg:py-20">
           <div className="max-w-2xl">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#2bd7ef]">For Talent</p>
-            <h1 className="mt-4 max-w-[11ch] font-serif text-[3.4rem] font-semibold uppercase leading-[0.9] text-[#f7e8c6] sm:text-[5.2rem]">
-              Resumes look the same. People don&apos;t.
+            <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#aff546]">For Talent</p>
+            <h1 className="mt-4 max-w-2xl font-serif text-[2rem] font-semibold leading-tight text-[#f7e8c6] sm:text-[2.8rem]">
+              Thanks to AI, resumes and cover letters are all looking the same, making it hard to stand out.
             </h1>
             <p className="mt-6 max-w-xl text-base leading-8 text-[#f7e8c6]/84 sm:text-lg">
               Free Agent Staff gives professionals a different way to present themselves to employers. Create a FreeAgent Card and Talent Passport that show what you can do, what you&apos;ve achieved and what makes you different.
@@ -79,7 +79,7 @@ export default function TalentPage() {
       <section className="bg-[#f7e8c6] text-[#071321]">
         <div className="mx-auto max-w-7xl px-6 py-14 sm:px-8 lg:px-12 lg:py-20">
           <div className="max-w-3xl">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#1bc8e4]">A fuller picture of you</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#aff546]">A fuller picture of you</p>
             <h2 className="mt-3 max-w-[16ch] font-serif text-[2.6rem] font-semibold uppercase leading-[0.94] sm:text-[3.7rem]">Your career is more than a document.</h2>
             <p className="mt-5 max-w-2xl text-base leading-8 text-[#071321]/78">
               Your FreeAgent Card is the clear, visual front door to your professional story. Your Talent Passport gives you space to add the detail employers need to understand your skills, experience, availability, education and goals.
@@ -90,7 +90,7 @@ export default function TalentPage() {
               const Icon = step.icon;
               return (
                 <article key={step.title} className="border-t border-[#071321]/18 pt-5">
-                  <Icon className="h-6 w-6 text-[#1bc8e4]" />
+                  <Icon className="h-6 w-6 text-[#aff546]" />
                   <h3 className="mt-5 font-serif text-[1.8rem] leading-tight">{step.title}</h3>
                   <p className="mt-3 text-[0.98rem] leading-7 text-[#071321]/76">{step.text}</p>
                 </article>
@@ -109,7 +109,7 @@ export default function TalentPage() {
           </div>
           <div className="grid gap-6 sm:grid-cols-2">
             <div className="border-l border-[#2bd7ef]/35 pl-5">
-              <Lock className="h-5 w-5 text-[#2bd7ef]" />
+              <Lock className="h-5 w-5 text-[#aff546]" />
               <h3 className="mt-4 font-serif text-[1.7rem]">Control your visibility</h3>
               <p className="mt-3 text-sm leading-7 text-[#f7e8c6]/78">Explore opportunities openly or privately. Your profile visibility and the information employers can see remain under your control.</p>
             </div>
@@ -121,7 +121,7 @@ export default function TalentPage() {
           </div>
           <div className="flex flex-wrap items-center gap-4 lg:col-span-2">
             <Link href="/login" className="inline-flex items-center rounded-full bg-[#aff546] px-6 py-3 text-sm font-semibold text-[#071321] transition hover:bg-[#9fea37]">Create Your FreeAgent Card <span className="ml-2">→</span></Link>
-            <Link href="/employers" className="text-sm font-semibold text-[#f7e8c6] underline decoration-[#2bd7ef] underline-offset-4">See the employer side</Link>
+            <Link href="/employers" className="text-sm font-semibold text-[#f7e8c6] underline decoration-[#aff546] underline-offset-4">See the employer side</Link>
           </div>
         </div>
       </section>

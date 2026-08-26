@@ -177,12 +177,16 @@ export default function Navbar() {
               href={item.href}
               className={`text-[1.04rem] transition hover:text-[#2bd7ef] ${
                 "kind" in item && item.kind === "talent-auth"
-                  ? "rounded-full bg-[#2bd7ef] px-4 py-2 text-sm font-semibold text-[#071321] hover:bg-[#1fcce7]"
+                  ? "rounded-full bg-[#aff546] px-4 py-2 text-sm font-semibold text-[#071321] hover:bg-[#9fea37]"
                   : "kind" in item && item.kind === "employer-auth"
-                    ? "rounded-full bg-[#aff546] px-4 py-2 text-sm font-semibold text-[#071321] hover:bg-[#9fea37]"
+                    ? "rounded-full bg-[#2bd7ef] px-4 py-2 text-sm font-semibold text-[#071321] hover:bg-[#1fcce7]"
                     : ""
               } ${
-                pathname === item.href && !("kind" in item) ? "font-semibold text-[#8fdc3a]" : "text-[#071321]/92"
+                pathname === item.href && item.href === "/talent"
+                  ? "font-semibold text-[#8fdc3a]"
+                  : pathname === item.href && item.href === "/employers"
+                    ? "font-semibold text-[#1bc8e4]"
+                    : "text-[#071321]/92"
               }`}
             >
               {item.label}
@@ -245,9 +249,9 @@ export default function Navbar() {
               href={item.href}
               className={`flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold transition hover:bg-[#2cd3e8]/12 hover:text-[#2cd3e8] ${
                 "kind" in item && item.kind === "talent-auth"
-                  ? "bg-[#2bd7ef] text-[#071321] hover:bg-[#1fcce7] hover:text-[#071321]"
+                  ? "bg-[#aff546] text-[#071321] hover:bg-[#9fea37] hover:text-[#071321]"
                   : "kind" in item && item.kind === "employer-auth"
-                    ? "bg-[#aff546] text-[#071321] hover:bg-[#9fea37] hover:text-[#071321]"
+                    ? "bg-[#2bd7ef] text-[#071321] hover:bg-[#1fcce7] hover:text-[#071321]"
                     : ""
               } ${
                 pathname === item.href ? "text-[#8fdc3a]" : "text-[#071321]/92"
