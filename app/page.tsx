@@ -1,11 +1,37 @@
 import Link from "next/link";
 import Image from "next/image";
+import type { Metadata } from "next";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { IdCard, Lock, ShieldCheck, Search, Eye } from "lucide-react";
 import TalentCard from "@/components/TalentCard";
 import type { FreeAgentProfile } from "@/types/freeagent";
 import { homepagePassportProfiles } from "@/data/homepage-passports";
+
+const siteUrl = "https://freeagentstaff.com/";
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "/",
+  },
+};
+
+const homepageStructuredData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      name: "Free Agent Staff",
+      url: siteUrl,
+      logo: `${siteUrl}FullLogo-clean-v2.png`,
+    },
+    {
+      "@type": "WebSite",
+      name: "Free Agent Staff",
+      url: siteUrl,
+    },
+  ],
+};
 
 const featureCards = [
   {
@@ -442,6 +468,10 @@ function HomeFooter() {
 export default function Home() {
   return (
     <main className="bg-[#0B111D] text-[#f7e8c6]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(homepageStructuredData) }}
+      />
       <Navbar />
 
       <section className="relative isolate mb-8 overflow-hidden border-b border-[#2bd7ef]/12 max-sm:mb-5">

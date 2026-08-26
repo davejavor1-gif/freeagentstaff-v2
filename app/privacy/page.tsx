@@ -1,4 +1,12 @@
 import InformationPage from "@/components/layout/InformationPage";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+  description: "Read how Free Agent Staff collects, uses, and protects information across the platform.",
+  alternates: { canonical: "/privacy" },
+  openGraph: { url: "https://freeagentstaff.com/privacy" },
+};
 
 // LEGAL: Final solicitor review required before public production launch.
 export default function PrivacyPage() {

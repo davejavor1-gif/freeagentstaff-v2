@@ -1,4 +1,12 @@
 import InformationPage from "@/components/layout/InformationPage";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Terms of Use",
+  description: "Read the terms that guide access to and use of the Free Agent Staff platform.",
+  alternates: { canonical: "/terms" },
+  openGraph: { url: "https://freeagentstaff.com/terms" },
+};
 
 // LEGAL: Final solicitor review required before public production launch.
 export default function TermsPage() {

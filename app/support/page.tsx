@@ -1,6 +1,14 @@
 import InformationPage from "@/components/layout/InformationPage";
+import type { Metadata } from "next";
 
 const SUPPORT_EMAIL = "support@freeagentstaff.com";
+
+export const metadata: Metadata = {
+  title: "Support",
+  description: "Get help using Free Agent Staff, managing your account, and keeping your information secure.",
+  alternates: { canonical: "/support" },
+  openGraph: { url: "https://freeagentstaff.com/support" },
+};
 
 export default function SupportPage() {
   return (

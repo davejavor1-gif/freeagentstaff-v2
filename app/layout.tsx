@@ -12,25 +12,36 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const siteUrl = "https://freeagentstaff.com";
+const siteUrl = "https://freeagentstaff.com/";
 const siteTitle = "Free Agent Staff | Talent Discovery & Professional Profiles";
 const siteDescription =
   "Free Agent Staff connects employers with talent through professional FreeAgent Cards and Talent Passports. Build your profile, showcase your experience and get discovered.";
+const isPreviewDeployment = process.env.VERCEL_ENV === "preview";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   applicationName: "Free Agent Staff",
-  title: siteTitle,
+  title: {
+    default: siteTitle,
+    template: "%s | Free Agent Staff",
+  },
   description: siteDescription,
+  robots: isPreviewDeployment
+    ? {
+        index: false,
+        follow: false,
+        googleBot: {
+          index: false,
+          follow: false,
+        },
+      }
+    : undefined,
   icons: {
     icon: [
       { url: "/favicon.ico" },
       { url: "/favicon-v2.png", type: "image/png", sizes: "512x512" },
     ],
     apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
-  },
-  alternates: {
-    canonical: "/",
   },
   openGraph: {
     type: "website",

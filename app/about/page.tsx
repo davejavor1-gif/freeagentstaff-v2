@@ -1,6 +1,14 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+
+export const metadata: Metadata = {
+  title: "About",
+  description: "Learn how Free Agent Staff helps hiring teams discover polished professional talent profiles.",
+  alternates: { canonical: "/about" },
+  openGraph: { url: "https://freeagentstaff.com/about" },
+};
 
 export default function AboutPage() {
   return (

@@ -1,10 +1,18 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import BillingButton from "@/components/BillingButton";
 import EmployerPricingButton from "@/components/EmployerPricingButton";
 import FreeAgentProBadge from "@/components/FreeAgentProBadge";
 import { CANONICAL_PRICING_PLANS } from "@/lib/talent-subscription";
+
+export const metadata: Metadata = {
+  title: "Pricing",
+  description: "Explore Free Agent Staff plans for professionals creating Talent Passports and employers discovering talent.",
+  alternates: { canonical: "/pricing" },
+  openGraph: { url: "https://freeagentstaff.com/pricing" },
+};
 
 const basicTalentFeatures = [
   "FreeAgent Card",
