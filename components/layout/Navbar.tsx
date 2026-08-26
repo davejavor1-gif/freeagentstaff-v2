@@ -9,10 +9,12 @@ import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase-client";
 
 const guestNavItems = [
-  { label: "Home", href: "/" },
-  { label: "Find talent", href: "/find-talent" },
-  { label: "Pricing", href: "/pricing" },
   { label: "About", href: "/about" },
+  { label: "For Talent", href: "/talent" },
+  { label: "For Employers", href: "/employers" },
+  { label: "Pricing", href: "/pricing" },
+  { label: "Talent Sign In", href: "/login", kind: "talent-auth" as const },
+  { label: "Employer Sign In", href: "/employer/auth", kind: "employer-auth" as const },
 ];
 
 const talentNavItems = [
@@ -174,7 +176,13 @@ export default function Navbar() {
               key={item.href}
               href={item.href}
               className={`text-[1.04rem] transition hover:text-[#2bd7ef] ${
-                pathname === item.href ? "font-semibold text-[#8fdc3a]" : "text-[#071321]/92"
+                "kind" in item && item.kind === "talent-auth"
+                  ? "rounded-full bg-[#2bd7ef] px-4 py-2 text-sm font-semibold text-[#071321] hover:bg-[#1fcce7]"
+                  : "kind" in item && item.kind === "employer-auth"
+                    ? "rounded-full bg-[#aff546] px-4 py-2 text-sm font-semibold text-[#071321] hover:bg-[#9fea37]"
+                    : ""
+              } ${
+                pathname === item.href && !("kind" in item) ? "font-semibold text-[#8fdc3a]" : "text-[#071321]/92"
               }`}
             >
               {item.label}
@@ -193,33 +201,6 @@ export default function Navbar() {
               {notificationCount > 0 ? (
                 <span className="ml-1 rounded-full bg-[#aff546] px-1.5 text-[10px] font-black text-[#071426]">{notificationCount}</span>
               ) : null}
-            </Link>
-          ) : null}
-
-          {!isEmployerSession && !isAdminSession ? (
-            <Link
-              href={session ? "/dashboard" : "/login"}
-              className="hidden text-[1.04rem] text-[#071321]/92 transition hover:text-[#2bd7ef] lg:inline-flex"
-            >
-              {session ? "Dashboard" : "Sign in"}
-            </Link>
-          ) : null}
-
-          {!isEmployerSession && !isAdminSession ? (
-            <Link
-              href="/builder"
-              className="hidden rounded-xl bg-[#aff546] px-5 py-2 text-sm font-semibold text-[#071426] transition hover:-translate-y-0.5 hover:bg-[#9fea37] md:inline-flex"
-            >
-              Create your card
-            </Link>
-          ) : null}
-
-          {!session ? (
-            <Link
-              href="/employer/auth"
-              className="hidden text-[1.04rem] text-[#071321]/92 transition hover:text-[#2bd7ef] lg:inline-flex"
-            >
-              Employer sign in
             </Link>
           ) : null}
 
@@ -263,6 +244,12 @@ export default function Navbar() {
               key={item.href}
               href={item.href}
               className={`flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold transition hover:bg-[#2cd3e8]/12 hover:text-[#2cd3e8] ${
+                "kind" in item && item.kind === "talent-auth"
+                  ? "bg-[#2bd7ef] text-[#071321] hover:bg-[#1fcce7] hover:text-[#071321]"
+                  : "kind" in item && item.kind === "employer-auth"
+                    ? "bg-[#aff546] text-[#071321] hover:bg-[#9fea37] hover:text-[#071321]"
+                    : ""
+              } ${
                 pathname === item.href ? "text-[#8fdc3a]" : "text-[#071321]/92"
               }`}
               onClick={() => setMenuOpen(false)}
@@ -270,24 +257,6 @@ export default function Navbar() {
               <span>{item.label}</span>
             </Link>
           ))}
-          {!isEmployerSession && !isAdminSession ? (
-            <Link
-              href={session ? "/dashboard" : "/login"}
-              className="block rounded-2xl border border-[#d7c79f] px-4 py-3 text-sm font-semibold text-[#071321]/92 transition hover:bg-[#2cd3e8]/8"
-              onClick={() => setMenuOpen(false)}
-            >
-              {session ? "Open dashboard" : "Sign in"}
-            </Link>
-          ) : null}
-          {!isEmployerSession && !isAdminSession ? (
-            <Link
-              href="/builder"
-              className="block rounded-2xl bg-[#acf75a] px-4 py-3 text-sm font-bold text-[#07111f] transition hover:bg-[#98eb46]"
-              onClick={() => setMenuOpen(false)}
-            >
-              Create your card
-            </Link>
-          ) : null}
           {isAdminSession ? (
             <Link
               href="/admin"
@@ -295,15 +264,6 @@ export default function Navbar() {
               onClick={() => setMenuOpen(false)}
             >
               Admin
-            </Link>
-          ) : null}
-          {!session ? (
-            <Link
-              href="/employer/auth"
-              className="block rounded-2xl border border-[#d7c79f] px-4 py-3 text-sm font-semibold text-[#071321]/92 transition hover:bg-[#2cd3e8]/8"
-              onClick={() => setMenuOpen(false)}
-            >
-              Employer sign in
             </Link>
           ) : null}
           {isEmployerSession ? (
