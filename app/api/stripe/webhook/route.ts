@@ -5,6 +5,7 @@ import {
   getStripeClient,
   mapStripeSubscriptionStatus,
   planForPriceId,
+  subscriptionCancelAt,
   subscriptionPeriodEnd,
 } from "@/lib/stripe-billing";
 
@@ -64,6 +65,7 @@ async function applySubscription(subscription: Stripe.Subscription) {
 
   const status = mapStripeSubscriptionStatus(subscription.status);
   const periodEnd = subscriptionPeriodEnd(subscription);
+  const cancelAt = subscriptionCancelAt(subscription);
   const customerId = String(subscription.customer);
 
   if (resolvedPlan === "employer" && profile.account_type === "employer") {
@@ -100,6 +102,7 @@ async function applySubscription(subscription: Stripe.Subscription) {
       talent_plan: status === "canceled" || status === "inactive" ? "free_agent" : "free_agent_pro",
       talent_subscription_status: status,
       talent_subscription_current_period_ends_at: periodEnd,
+      talent_subscription_cancel_at: cancelAt,
       talent_subscription_cancel_at_period_end: subscription.cancel_at_period_end,
     } as never).eq("user_id", profile.user_id);
   }

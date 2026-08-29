@@ -349,12 +349,15 @@ export default function DashboardPage() {
     plan: "free_agent",
     status: "inactive",
     currentPeriodEndsAt: null,
+    cancelAt: null,
     cancelAtPeriodEnd: false,
+    scheduledCancellationAt: null,
+    hasScheduledCancellation: false,
     hasProAccess: false,
   };
   const isProTalent = talentSubscription.hasProAccess;
-  const hasScheduledCancellation = isProTalent && talentSubscription.cancelAtPeriodEnd && Boolean(talentSubscription.currentPeriodEndsAt);
-  const scheduledCancellationDate = hasScheduledCancellation ? formatFriendlyDate(talentSubscription.currentPeriodEndsAt) : null;
+  const hasScheduledCancellation = isProTalent && talentSubscription.hasScheduledCancellation;
+  const scheduledCancellationDate = hasScheduledCancellation ? formatFriendlyDate(talentSubscription.scheduledCancellationAt ?? talentSubscription.currentPeriodEndsAt) : null;
   const talentDisplayName = useMemo(
     () => resolveSignedInDisplayName(session, profileName),
     [profileName, session],
@@ -796,7 +799,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <div className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] ${isProTalent ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-[#aff546]/50 bg-[#f4ffd9] text-[#0f2744]"}`}>
-                  {hasScheduledCancellation ? `Cancels ${scheduledCancellationDate}` : isProTalent ? "ACTIVE" : talentSubscription.status === "canceled" ? "Canceled" : "Free plan"}
+                  {hasScheduledCancellation ? `CANCELS ${scheduledCancellationDate?.toUpperCase()}` : isProTalent ? "ACTIVE" : talentSubscription.status === "canceled" ? "Canceled" : "Free plan"}
                 </div>
               </div>
 

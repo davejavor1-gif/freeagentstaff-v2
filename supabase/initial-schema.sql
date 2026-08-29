@@ -51,6 +51,7 @@ create table if not exists profiles (
   talent_plan text not null default 'free_agent' check (talent_plan in ('free_agent', 'free_agent_pro')),
   talent_subscription_status text not null default 'inactive' check (talent_subscription_status in ('inactive', 'active', 'trialing', 'past_due', 'canceled')),
   talent_subscription_current_period_ends_at timestamptz,
+  talent_subscription_cancel_at timestamptz,
   talent_subscription_cancel_at_period_end boolean not null default false,
   stripe_customer_id text unique,
   stripe_talent_subscription_id text unique,
@@ -235,6 +236,7 @@ begin
       new.talent_plan := 'free_agent';
       new.talent_subscription_status := 'inactive';
       new.talent_subscription_current_period_ends_at := null;
+      new.talent_subscription_cancel_at := null;
       new.talent_subscription_cancel_at_period_end := false;
       new.stripe_customer_id := null;
       new.stripe_talent_subscription_id := null;
@@ -248,6 +250,7 @@ begin
       new.talent_plan := old.talent_plan;
       new.talent_subscription_status := old.talent_subscription_status;
       new.talent_subscription_current_period_ends_at := old.talent_subscription_current_period_ends_at;
+      new.talent_subscription_cancel_at := old.talent_subscription_cancel_at;
       new.talent_subscription_cancel_at_period_end := old.talent_subscription_cancel_at_period_end;
       new.stripe_customer_id := old.stripe_customer_id;
       new.stripe_talent_subscription_id := old.stripe_talent_subscription_id;

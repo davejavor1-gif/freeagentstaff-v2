@@ -76,7 +76,10 @@ export interface TalentSubscriptionSummary {
   plan: "free_agent" | "free_agent_pro";
   status: "inactive" | "active" | "trialing" | "past_due" | "canceled";
   currentPeriodEndsAt: string | null;
+  cancelAt: string | null;
   cancelAtPeriodEnd: boolean;
+  scheduledCancellationAt: string | null;
+  hasScheduledCancellation: boolean;
   hasProAccess: boolean;
 }
 

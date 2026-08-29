@@ -119,6 +119,22 @@ export function subscriptionPeriodEnd(subscription: Stripe.Subscription) {
   return periodEnd ? new Date(periodEnd * 1000).toISOString() : null;
 }
 
+export function subscriptionCancelAt(subscription: Stripe.Subscription) {
+  if (typeof subscription.cancel_at !== "number") {
+    return null;
+  }
+
+  return new Date(subscription.cancel_at * 1000).toISOString();
+}
+
+export function hasScheduledCancellation(subscription: Stripe.Subscription) {
+  const futureCancelAt = typeof subscription.cancel_at === "number"
+    ? subscription.cancel_at > Math.floor(Date.now() / 1000)
+    : false;
+
+  return Boolean(subscription.cancel_at_period_end) || futureCancelAt;
+}
+
 export function billingOrigin(request: Request) {
   const forwardedHost = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
   const forwardedProto = request.headers.get("x-forwarded-proto") ?? "https";

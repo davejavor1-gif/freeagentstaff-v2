@@ -51,6 +51,7 @@ export interface ProfilesRow {
   talent_plan: "free_agent" | "free_agent_pro";
   talent_subscription_status: "inactive" | "active" | "trialing" | "past_due" | "canceled";
   talent_subscription_current_period_ends_at: string | null;
+  talent_subscription_cancel_at: string | null;
   talent_subscription_cancel_at_period_end: boolean;
   stripe_customer_id: string | null;
   stripe_talent_subscription_id: string | null;
@@ -115,6 +116,7 @@ export interface ProfilesInsert {
   talent_plan?: ProfilesRow["talent_plan"];
   talent_subscription_status?: ProfilesRow["talent_subscription_status"];
   talent_subscription_current_period_ends_at?: string | null;
+  talent_subscription_cancel_at?: string | null;
   talent_subscription_cancel_at_period_end?: boolean;
   stripe_customer_id?: string | null;
   stripe_talent_subscription_id?: string | null;
@@ -176,6 +178,7 @@ export interface ProfilesUpdate {
   talent_plan?: ProfilesRow["talent_plan"];
   talent_subscription_status?: ProfilesRow["talent_subscription_status"];
   talent_subscription_current_period_ends_at?: string | null;
+  talent_subscription_cancel_at?: string | null;
   talent_subscription_cancel_at_period_end?: boolean;
   stripe_customer_id?: string | null;
   stripe_talent_subscription_id?: string | null;

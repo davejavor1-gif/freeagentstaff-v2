@@ -7,6 +7,9 @@ export interface TalentSubscriptionSnapshot {
   status: TalentSubscriptionStatus;
   currentPeriodEndsAt: string | null;
   cancelAtPeriodEnd: boolean;
+  cancelAt: string | null;
+  scheduledCancellationAt: string | null;
+  hasScheduledCancellation: boolean;
 }
 
 export interface EmployerSubscriptionSnapshot {
@@ -90,12 +93,22 @@ export function normalizeTalentSubscriptionSnapshot(input: {
   status?: string | null;
   currentPeriodEndsAt?: string | null;
   cancelAtPeriodEnd?: boolean | null;
+  cancelAt?: string | null;
 }): TalentSubscriptionSnapshot {
+  const cancelAt = input.cancelAt && !Number.isNaN(new Date(input.cancelAt).getTime())
+    ? new Date(input.cancelAt).toISOString()
+    : null;
+  const scheduledCancellationAt = cancelAt ?? (input.cancelAtPeriodEnd === true ? input.currentPeriodEndsAt ?? null : null);
+  const hasScheduledCancellation = input.cancelAtPeriodEnd === true || (Boolean(cancelAt) && new Date(cancelAt!).getTime() > Date.now());
+
   return {
     plan: normalizePlanCode(input.plan),
     status: normalizeStatus(input.status),
     currentPeriodEndsAt: input.currentPeriodEndsAt ?? null,
     cancelAtPeriodEnd: input.cancelAtPeriodEnd === true,
+    cancelAt,
+    scheduledCancellationAt,
+    hasScheduledCancellation,
   };
 }
 
