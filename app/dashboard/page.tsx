@@ -75,6 +75,23 @@ function formatDateTime(value: string | null | undefined) {
   return parsed.toLocaleString();
 }
 
+function formatFriendlyDate(value: string | null | undefined) {
+  if (!value) {
+    return "your renewal date";
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return "your renewal date";
+  }
+
+  return new Intl.DateTimeFormat("en-AU", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(parsed);
+}
+
 function formatVerificationSubmittedAt(value: string | null) {
   if (!value) {
     return "Pending confirmation";
@@ -336,6 +353,8 @@ export default function DashboardPage() {
     hasProAccess: false,
   };
   const isProTalent = talentSubscription.hasProAccess;
+  const hasScheduledCancellation = isProTalent && talentSubscription.cancelAtPeriodEnd && Boolean(talentSubscription.currentPeriodEndsAt);
+  const scheduledCancellationDate = hasScheduledCancellation ? formatFriendlyDate(talentSubscription.currentPeriodEndsAt) : null;
   const talentDisplayName = useMemo(
     () => resolveSignedInDisplayName(session, profileName),
     [profileName, session],
@@ -777,18 +796,20 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <div className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] ${isProTalent ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-[#aff546]/50 bg-[#f4ffd9] text-[#0f2744]"}`}>
-                  {isProTalent ? "Active" : talentSubscription.status === "canceled" ? "Canceled" : "Free plan"}
+                  {hasScheduledCancellation ? `Cancels ${scheduledCancellationDate}` : isProTalent ? "ACTIVE" : talentSubscription.status === "canceled" ? "Canceled" : "Free plan"}
                 </div>
               </div>
 
               <p className="text-sm leading-7 text-slate-600">
-                {isProTalent
-                  ? "Your Free Agent Pro subscription is active."
-                  : "Upgrade to Free Agent Pro to publish a video introduction and unlock analytics insights."}
+                {hasScheduledCancellation
+                  ? `Your Free Agent Pro subscription will end on ${scheduledCancellationDate}. You’ll keep Pro access until then.`
+                  : isProTalent
+                    ? "Your Free Agent Pro subscription is active."
+                    : "Upgrade to Free Agent Pro to publish a video introduction and unlock analytics insights."}
               </p>
 
-              {talentSubscription.cancelAtPeriodEnd && talentSubscription.currentPeriodEndsAt ? (
-                <p className="mt-3 text-sm font-semibold text-amber-800">Pro access remains active until {formatDateTime(talentSubscription.currentPeriodEndsAt)}.</p>
+              {hasScheduledCancellation ? (
+                <p className="mt-3 text-sm font-semibold text-amber-800">Your access remains active until {scheduledCancellationDate}.</p>
               ) : null}
 
               <p className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
