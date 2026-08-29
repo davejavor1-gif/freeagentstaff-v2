@@ -11,7 +11,6 @@ import FreeAgentProBadge from "@/components/FreeAgentProBadge";
 import type { Session } from "@supabase/supabase-js";
 import { buildCanonicalTalentColumns } from "@/lib/talent-profile-columns";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
-import { CANONICAL_PRICING_PLANS } from "@/lib/talent-subscription";
 import type {
   AccountType,
   EmployerVerificationStatus,
@@ -52,6 +51,8 @@ const verificationLabel: Record<EmployerVerificationStatus, string> = {
 };
 
 type ProfileRow = {
+  name?: string | null;
+  slug?: string | null;
   account_type?: AccountType;
   employer_company_name?: string | null;
   employer_verification_status?: EmployerVerificationStatus;
@@ -60,7 +61,6 @@ type ProfileRow = {
 };
 
 const summaryCardClassName = "rounded-2xl border border-[#cda64d]/45 bg-[#f7ebcf] p-5 text-[#0f2744] shadow-[0_10px_28px_rgba(6,16,33,0.12)]";
-const freeAgentProPlan = CANONICAL_PRICING_PLANS.find((plan) => plan.code === "free_agent_pro");
 
 function formatDateTime(value: string | null | undefined) {
   if (!value) {
@@ -96,6 +96,25 @@ function visibilityLabel(value: string) {
   return value === "confidential" ? "Confidential" : "Public";
 }
 
+function resolveSignedInDisplayName(session: Session | null, profileName?: string | null) {
+  const candidates = [
+    profileName,
+    session?.user?.user_metadata?.full_name,
+    session?.user?.user_metadata?.name,
+    session?.user?.user_metadata?.display_name,
+  ];
+
+  for (const candidate of candidates) {
+    const trimmed = typeof candidate === "string" ? candidate.trim() : "";
+    if (trimmed.length > 0 && trimmed.toLowerCase() !== session?.user?.email?.toLowerCase()) {
+      return trimmed;
+    }
+  }
+
+  const emailName = session?.user?.email?.split("@")[0]?.trim();
+  return emailName || "Free Agent";
+}
+
 export default function DashboardPage() {
   const [session, setSession] = useState<Session | null>(null);
   const [accountType, setAccountType] = useState<AccountType>("talent");
@@ -105,6 +124,8 @@ export default function DashboardPage() {
   const [employerCompanyName, setEmployerCompanyName] = useState("");
   const [employerSummary, setEmployerSummary] = useState<EmployerSummaryPayload | null>(null);
   const [talentSummary, setTalentSummary] = useState<TalentSummaryPayload | null>(null);
+  const [profileName, setProfileName] = useState("");
+  const [talentSlug, setTalentSlug] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -184,7 +205,7 @@ export default function DashboardPage() {
 
       const { data: profileRow } = await supabase
         .from("profiles")
-        .select("profile, slug, account_type, employer_company_name, employer_verification_status, verification_requested_at, verification_rejection_reason")
+        .select("name, profile, slug, account_type, employer_company_name, employer_verification_status, verification_requested_at, verification_rejection_reason")
         .eq("user_id", activeSession.user.id)
         .maybeSingle();
 
@@ -237,6 +258,8 @@ export default function DashboardPage() {
       const resolvedAccountType = profileRowData?.account_type === "employer" ? "employer" : "talent";
 
       setAccountType(resolvedAccountType);
+      setProfileName(profileRowData?.name ?? "");
+      setTalentSlug(profileRowData?.slug ?? null);
       setVerificationStatus(profileRowData?.employer_verification_status ?? "unverified");
       setVerificationRequestedAt(profileRowData?.verification_requested_at ?? null);
       setVerificationRejectionReason(profileRowData?.verification_rejection_reason ?? null);
@@ -313,6 +336,13 @@ export default function DashboardPage() {
     hasProAccess: false,
   };
   const isProTalent = talentSubscription.hasProAccess;
+  const talentDisplayName = useMemo(
+    () => resolveSignedInDisplayName(session, profileName),
+    [profileName, session],
+  );
+  const dashboardWelcomeName = accountType === "talent" ? talentDisplayName : session?.user.email ?? "Free Agent";
+  const hasCompletedTalentCard = Boolean(profileName.trim()) || isPublished;
+  const talentPassportHref = talentSlug ? `/talent/${talentSlug}` : "/builder";
 
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get("checkout") !== "success" || !session) {
@@ -453,7 +483,7 @@ export default function DashboardPage() {
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">Secure dashboard</p>
-              <h1 className="mt-3 text-3xl font-black tracking-tight text-[#0f2744]">Welcome back, {session?.user.email ?? "Free Agent"}</h1>
+              <h1 className="mt-3 text-3xl font-black tracking-tight text-[#0f2744]">Welcome back, {dashboardWelcomeName}</h1>
               <p className="mt-3 max-w-2xl text-sm leading-7 text-[#27405f]">
                 {accountType === "employer"
                   ? "Track your verification status and run hiring workflows from one operational home."
@@ -741,20 +771,20 @@ export default function DashboardPage() {
                   <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Subscription</p>
                   <div className="mt-2 flex flex-wrap items-center gap-3">
                     <h2 className="text-2xl font-black tracking-tight text-slate-900">
-                      {isProTalent ? "Free Agent Pro" : "Free Agent"}
+                      {isProTalent ? "Free Agent Pro" : "Free Agent Basic"}
                     </h2>
                     {isProTalent ? <FreeAgentProBadge size="standard" className="h-12" /> : null}
                   </div>
                 </div>
-                <div className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-700">
-                  {talentSubscription.status.replace("_", " ")}
+                <div className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] ${isProTalent ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-[#aff546]/50 bg-[#f4ffd9] text-[#0f2744]"}`}>
+                  {isProTalent ? "Active" : talentSubscription.status === "canceled" ? "Canceled" : "Free plan"}
                 </div>
               </div>
 
               <p className="text-sm leading-7 text-slate-600">
                 {isProTalent
-                  ? `${freeAgentProPlan?.name} analytics and video publishing are active for your profile at ${freeAgentProPlan?.priceLabel} / ${freeAgentProPlan?.cadenceLabel}.`
-                  : `Upgrade to ${freeAgentProPlan?.name} at ${freeAgentProPlan?.priceLabel} / ${freeAgentProPlan?.cadenceLabel} to publish a video introduction and unlock analytics insights.`}
+                  ? "Your Free Agent Pro subscription is active."
+                  : "Upgrade to Free Agent Pro to publish a video introduction and unlock analytics insights."}
               </p>
 
               {talentSubscription.cancelAtPeriodEnd && talentSubscription.currentPeriodEndsAt ? (
@@ -768,17 +798,39 @@ export default function DashboardPage() {
               <div className="mt-5 flex flex-wrap gap-3">
                 {isProTalent ? (
                   <BillingButton action="portal" className="inline-flex min-h-[44px] items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-slate-800">
-                    Manage subscription
+                    MANAGE SUBSCRIPTION
                   </BillingButton>
                 ) : (
-                  <BillingButton action="checkout" plan="free_agent_pro" className="inline-flex min-h-[44px] items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-slate-800">
-                    Upgrade to Pro
+                  <BillingButton action="checkout" plan="free_agent_pro" className="inline-flex min-h-[44px] items-center justify-center rounded-2xl bg-[#aff546] px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-[#071426] transition hover:bg-[#9fea37]">
+                    UPGRADE TO PRO
                   </BillingButton>
                 )}
                 <Link href="/pricing" className="inline-flex min-h-[44px] items-center justify-center rounded-2xl border border-slate-300 px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-slate-800 transition hover:bg-slate-50">
                   View pricing
                 </Link>
               </div>
+            </section>
+
+            <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <Link href="/builder" className="rounded-3xl border border-[#cda64d]/55 bg-[#f7ebcf] p-5 text-[#0f2744] shadow-[0_16px_40px_rgba(6,16,33,0.18)] transition hover:-translate-y-0.5 hover:bg-[#fff7dd]">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">Free Agent Card</p>
+                <p className="mt-3 text-lg font-black uppercase tracking-[0.12em]">{hasCompletedTalentCard ? "Edit Your Card" : "Create Your Card"}</p>
+              </Link>
+
+              <Link href={talentPassportHref} className="rounded-3xl border border-[#cda64d]/55 bg-[#f7ebcf] p-5 text-[#0f2744] shadow-[0_16px_40px_rgba(6,16,33,0.18)] transition hover:-translate-y-0.5 hover:bg-[#fff7dd]">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">Talent Passport</p>
+                <p className="mt-3 text-lg font-black uppercase tracking-[0.12em]">Talent Passport</p>
+              </Link>
+
+              <Link href="/connections" className="rounded-3xl border border-[#cda64d]/55 bg-[#f7ebcf] p-5 text-[#0f2744] shadow-[0_16px_40px_rgba(6,16,33,0.18)] transition hover:-translate-y-0.5 hover:bg-[#fff7dd]">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">Connections</p>
+                <p className="mt-3 text-lg font-black uppercase tracking-[0.12em]">Connections</p>
+              </Link>
+
+              <Link href="/settings/privacy" className="rounded-3xl border border-[#cda64d]/55 bg-[#f7ebcf] p-5 text-[#0f2744] shadow-[0_16px_40px_rgba(6,16,33,0.18)] transition hover:-translate-y-0.5 hover:bg-[#fff7dd]">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">Privacy & Visibility</p>
+                <p className="mt-3 text-lg font-black uppercase tracking-[0.12em]">Privacy & Visibility</p>
+              </Link>
             </section>
 
             {isProTalent && talentSummary?.proAnalytics ? (

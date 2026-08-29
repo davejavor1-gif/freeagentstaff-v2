@@ -18,7 +18,7 @@ const guestNavItems = [
 ];
 
 const talentNavItems = [
-  { label: "Home", href: "/" },
+  { label: "Dashboard", href: "/dashboard" },
   { label: "Notifications", href: "/notifications" },
   { label: "Connections", href: "/connections" },
   { label: "Privacy & Visibility", href: "/settings/privacy" },
@@ -171,27 +171,34 @@ export default function Navbar() {
         </Link>
 
         <nav className="hidden items-center gap-8 text-sm md:flex">
-          {visibleNavItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`text-[1.04rem] transition hover:text-[#2bd7ef] ${
-                "kind" in item && item.kind === "talent-auth"
-                  ? "rounded-full bg-[#aff546] px-4 py-2 text-sm font-semibold text-[#071321] hover:bg-[#9fea37]"
-                  : "kind" in item && item.kind === "employer-auth"
-                    ? "rounded-full bg-[#2bd7ef] px-4 py-2 text-sm font-semibold text-[#071321] hover:bg-[#1fcce7]"
-                    : ""
-              } ${
-                pathname === item.href && item.href === "/talent"
-                  ? "font-semibold text-[#8fdc3a]"
-                  : pathname === item.href && item.href === "/employers"
-                    ? "font-semibold text-[#1bc8e4]"
-                    : "text-[#071321]/92"
-              }`}
-            >
-              {item.label}
-            </Link>
-          ))}
+          {visibleNavItems.map((item) => {
+            const isActiveLink = pathname === item.href;
+            const isTalentActive = isTalentSession && isActiveLink;
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`text-[1.04rem] transition ${
+                  "kind" in item && item.kind === "talent-auth"
+                    ? "rounded-full bg-[#aff546] px-4 py-2 text-sm font-semibold text-[#071321] hover:bg-[#9fea37]"
+                    : "kind" in item && item.kind === "employer-auth"
+                      ? "rounded-full bg-[#2bd7ef] px-4 py-2 text-sm font-semibold text-[#071321] hover:bg-[#1fcce7]"
+                      : "hover:text-[#2bd7ef]"
+                } ${
+                  isTalentActive
+                    ? "font-semibold text-[#aff546]"
+                    : pathname === item.href && item.href === "/talent"
+                      ? "font-semibold text-[#8fdc3a]"
+                      : pathname === item.href && item.href === "/employers"
+                        ? "font-semibold text-[#1bc8e4]"
+                        : "text-[#071321]/92"
+                }`}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="flex items-center gap-3">
