@@ -2,6 +2,7 @@ import "server-only";
 
 import Stripe from "stripe";
 import { createServiceRoleSupabaseClient } from "@/lib/server-supabase";
+import { getPublicAppOrigin } from "@/lib/site-url";
 
 let stripeClient: Stripe | null = null;
 
@@ -136,7 +137,5 @@ export function hasScheduledCancellation(subscription: Stripe.Subscription) {
 }
 
 export function billingOrigin(request: Request) {
-  const forwardedHost = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
-  const forwardedProto = request.headers.get("x-forwarded-proto") ?? "https";
-  return forwardedHost ? `${forwardedProto}://${forwardedHost}` : new URL(request.url).origin;
+  return getPublicAppOrigin({ request, forStripe: true });
 }

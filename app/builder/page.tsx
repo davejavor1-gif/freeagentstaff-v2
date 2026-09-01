@@ -8,6 +8,7 @@ import TalentCard from "@/components/TalentCard";
 import { freeAgentProfiles } from "@/data/freeagents";
 import { buildCanonicalTalentColumns } from "@/lib/talent-profile-columns";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
+import { getPublicAppUrl } from "@/lib/site-url";
 import VideoIntroductionSection from "@/components/settings/VideoIntroductionSection";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -315,7 +316,7 @@ export default function BuilderPage() {
       return;
     }
 
-    const shareUrl = `${window.location.origin}/profile/${profile.slug}`;
+    const shareUrl = getPublicAppUrl(`/profile/${profile.slug}`);
 
     try {
       await navigator.clipboard.writeText(shareUrl);

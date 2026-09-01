@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createUserServerSupabaseClient } from "@/lib/server-supabase";
-import { billingOrigin, getStripeClient } from "@/lib/stripe-billing";
+import { getPublicAppOrigin } from "@/lib/site-url";
+import { getStripeClient } from "@/lib/stripe-billing";
 
 function getBearerToken(request: Request) {
   const authorization = request.headers.get("authorization");
@@ -32,7 +33,7 @@ export async function POST(request: Request) {
   try {
     const session = await getStripeClient().billingPortal.sessions.create({
       customer: profile.stripe_customer_id,
-      return_url: `${billingOrigin(request)}/dashboard`,
+      return_url: `${getPublicAppOrigin({ forStripe: true })}/dashboard`,
     });
 
     return NextResponse.json({ ok: true, url: session.url });

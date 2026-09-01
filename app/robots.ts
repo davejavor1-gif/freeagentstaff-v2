@@ -22,8 +22,6 @@ export default function robots(): MetadataRoute.Robots {
           // Talent Passports are gated to the owner or verified employers, so crawlers only ever reach a sign-in wall.
           "/talent/",
           "/profile/",
-          "/media-verification",
-          "/talent-card-preview",
           "/login",
           "/employer/auth",
           "/forgot-password",

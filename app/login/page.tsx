@@ -7,6 +7,7 @@ import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
 import { buildCanonicalTalentColumns } from "@/lib/talent-profile-columns";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
+import { getPublicAppUrl } from "@/lib/site-url";
 import type { AccountType, EmployerVerificationStatus, FreeAgentProfile } from "@/types/freeagent";
 
 const createBlankTalentProfile = (userId: string, email?: string | null): FreeAgentProfile => ({
@@ -95,7 +96,7 @@ export default function LoginPage() {
       password,
       options: {
         data: { account_type: accountType },
-        emailRedirectTo: `${window.location.origin}${accountType === "employer" ? "/onboarding/employer" : "/dashboard"}`,
+        emailRedirectTo: getPublicAppUrl(accountType === "employer" ? "/onboarding/employer" : "/dashboard"),
       },
     });
     setIsSubmitting(false);

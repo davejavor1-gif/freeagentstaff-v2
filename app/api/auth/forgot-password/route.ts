@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { getPublicAppOrigin } from "@/lib/site-url";
 
 const GENERIC_MESSAGE = "If an account exists for that email, password reset instructions have been sent.";
 
@@ -8,10 +9,7 @@ type ForgotPasswordBody = {
 };
 
 function getResetRedirect(request: Request) {
-  const configuredOrigin = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || null;
-  const requestOrigin = new URL(request.url).origin;
-  const baseOrigin = configuredOrigin || requestOrigin;
-
+  const baseOrigin = getPublicAppOrigin({ request });
   return `${baseOrigin}/reset-password`;
 }
 

@@ -7,6 +7,7 @@ import { Building2, ShieldCheck, Sparkles } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
+import { getPublicAppUrl } from "@/lib/site-url";
 import type { AccountType, EmployerVerificationStatus } from "@/types/freeagent";
 
 type EmployerProfileRow = {
@@ -160,7 +161,7 @@ export default function EmployerAuthPage() {
       password,
       options: {
         data: { account_type: "employer" },
-        emailRedirectTo: `${window.location.origin}/onboarding/employer`,
+        emailRedirectTo: getPublicAppUrl("/onboarding/employer"),
       },
     });
     setIsSubmitting(false);

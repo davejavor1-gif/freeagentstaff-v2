@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createUserServerSupabaseClient } from "@/lib/server-supabase";
+import { getPublicAppOrigin } from "@/lib/site-url";
 import {
-  billingOrigin,
   findOrCreateStripeCustomer,
   getStripeClient,
   getStripePriceId,
@@ -90,7 +90,7 @@ export async function POST(request: Request) {
       email: userData.user.email ?? profile.email,
       name: profile.account_type === "employer" ? profile.employer_company_name : profile.name,
     });
-    const origin = billingOrigin(request);
+    const origin = getPublicAppOrigin({ forStripe: true });
 
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
