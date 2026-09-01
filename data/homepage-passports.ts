@@ -77,7 +77,7 @@ export const homepagePassportProfiles: Record<string, FreeAgentProfile> = {
     ],
     photoUrl: "/images/homepage-talent-model.jpg",
     imageAlt: "Fictional professional portrait",
-    intro_video_url: "/videos/sarahs%20intro.mp4",
+    intro_video_url: "/videos/maya-intro.mp4",
   },
   "daniel-brooks": {
     id: "homepage-passport-daniel-brooks",
