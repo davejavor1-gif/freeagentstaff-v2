@@ -383,15 +383,15 @@ export default function TalentCard({
 
                             <div className="absolute inset-0 bg-gradient-to-t from-[#071426]/90 via-[#071426]/15 to-transparent" />
                             <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
-                              <div className="relative rounded-[20px] border border-white/12 bg-[#071426]/70 p-3.5 shadow-[0_10px_24px_rgba(0,0,0,0.22)] backdrop-blur-md">
-                                <div className="space-y-2.5">
+                              <div className="relative rounded-[20px] border border-white/12 bg-[#071426]/70 p-3 shadow-[0_10px_24px_rgba(0,0,0,0.22)] backdrop-blur-md">
+                                <div className="space-y-1.5">
                                   <div className="space-y-1">
                                     <h3 className="text-[1rem] font-black uppercase leading-[1.08] tracking-[0.16em] text-[#f7ebcf]">
                                       {confidentialName}
                                     </h3>
                                     <p className="text-sm text-[#dfe7ef]">{confidentialTitle}</p>
                                   </div>
-                                  <div className="pt-1">
+                                  <div className="pt-0.5">
                                     <span className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#dfe7ef]">
                                       <span className="h-2.5 w-2.5 rounded-full bg-[#8be4c5]" />
                                       {confidentialAvailability}
@@ -431,8 +431,8 @@ export default function TalentCard({
 
                             <div className="absolute inset-0 bg-gradient-to-t from-[#071426]/90 via-[#071426]/15 to-transparent" />
                             <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
-                              <div className="relative rounded-[20px] border border-white/12 bg-[#071426]/70 p-3.5 shadow-[0_10px_24px_rgba(0,0,0,0.22)] backdrop-blur-md">
-                                <div className="space-y-2.5">
+                              <div className="relative rounded-[20px] border border-white/12 bg-[#071426]/70 p-3 shadow-[0_10px_24px_rgba(0,0,0,0.22)] backdrop-blur-md">
+                                <div className="space-y-1.5">
                                   <div className="space-y-1">
                                     <h3 className="text-[1rem] font-black uppercase leading-[1.08] tracking-[0.08em] text-[#f7ebcf]">
                                       {confidential ? confidentialName : profile.name}
@@ -446,14 +446,14 @@ export default function TalentCard({
                                           event.stopPropagation();
                                           handleOpenVideo();
                                         }}
-                                        className="mt-2 inline-flex min-h-11 items-center gap-1.5 rounded-full border border-[#8be4c5]/70 bg-[#8be4c5]/12 px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.2em] text-[#dffcf1] shadow-[0_8px_18px_rgba(0,0,0,0.16)] transition hover:bg-[#8be4c5]/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8be4c5]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#071426]"
+                                        className="mt-1.5 inline-flex min-h-8 items-center gap-1.5 rounded-full border border-[#8be4c5]/70 bg-[#8be4c5]/12 px-3 py-1 text-[9px] font-semibold uppercase tracking-[0.2em] text-[#dffcf1] shadow-[0_8px_18px_rgba(0,0,0,0.16)] transition hover:bg-[#8be4c5]/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8be4c5]/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#071426]"
                                       >
                                         <Play className="h-3.5 w-3.5" />
                                         Play video introduction
                                       </button>
                                     ) : null}
                                   </div>
-                                  <div className="pt-1">
+                                  <div className="pt-0.5">
                                     <span className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#dfe7ef]">
                                       <span className="h-2.5 w-2.5 rounded-full bg-[#8be4c5]" />
                                       {confidential ? confidentialAvailability : profile.availability}
