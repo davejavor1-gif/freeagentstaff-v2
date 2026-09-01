@@ -101,7 +101,7 @@ const employerDiscoveryResults = [
     company: "Northstar Labs",
     period: "2021-Present",
     qualification: "Bachelor of Computer Science",
-    photoUrl: "/images/homepage-talent-model.jpg",
+    photoUrl: "/images/sarah-photo.jpeg",
     tone: "lime" as const,
   },
   {

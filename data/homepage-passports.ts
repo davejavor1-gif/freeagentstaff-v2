@@ -34,7 +34,7 @@ export const homepagePassportProfiles: Record<string, FreeAgentProfile> = {
         skills: [],
       },
     ],
-    photoUrl: "/images/homepage-talent-model.jpg",
+    photoUrl: "/images/sarah-photo.jpeg",
     imageAlt: "Fictional professional portrait",
   },
   "maya-ellis": {
