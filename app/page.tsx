@@ -88,7 +88,7 @@ const employerDiscoveryFilters = ["Sydney", "Leadership", "Available now"];
 
 const employerDiscoveryResults = [
   {
-    name: "Sarah Jones",
+    name: "Sarah Gonzales",
     initials: "SJ",
     role: "Senior Software Engineer",
     location: "Sydney, Australia",
@@ -247,7 +247,7 @@ function EmployerDiscoveryResult({
             profile={profile}
             href={profile.slug === "sarah-jones" ? "/talent/sarah-jones" : `/profile/${profile.slug ?? ""}`}
             verificationStatus="verified"
-            hasProAccess={result.name === "Sarah Jones" || result.name === "Daniel Brooks"}
+            hasProAccess={result.name === "Sarah Gonzales" || result.name === "Daniel Brooks"}
             className="w-[380px] max-w-none"
           />
         </div>

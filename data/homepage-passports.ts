@@ -5,7 +5,7 @@ export const homepagePassportProfiles: Record<string, FreeAgentProfile> = {
     id: "homepage-passport-sarah-jones",
     slug: "sarah-jones",
     visibility: "public",
-    name: "Sarah Jones",
+    name: "Sarah Gonzales",
     title: "Senior Software Engineer",
     location: "Sydney, Australia",
     availability: "Open to Opportunities",
