@@ -117,8 +117,9 @@ export const homepagePassportProfiles: Record<string, FreeAgentProfile> = {
         skills: [],
       },
     ],
-    photoUrl: "/images/openart-64f1b59a62fd4bc1a7a2678ed4580466_00001__raw.png",
+    photoUrl: "/images/daniel-photo.jpeg",
     imageAlt: "Fictional professional portrait",
+    intro_video_url: "/videos/daniel-intro.mp4",
   },
   "james-cole": {
     id: "homepage-passport-james-cole",

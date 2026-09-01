@@ -119,11 +119,11 @@ const employerDiscoveryResults = [
     topStrength:
       "Builds calm, repeatable operations that help ambitious teams deliver at their best.",
     focusArea: "Operations",
-    introVideoUrl: "/videos/daniels%20intro.mp4",
+    introVideoUrl: "/videos/daniel-intro.mp4",
     company: "Harbour Works",
     period: "2020–Present",
     qualification: "Certified Operations Professional",
-    photoUrl: "/images/openart-64f1b59a62fd4bc1a7a2678ed4580466_00001__raw.png",
+    photoUrl: "/images/daniel-photo.jpeg",
     tone: "cyan" as const,
   },
   {
@@ -171,7 +171,7 @@ const homepageDemoProfile: FreeAgentProfile = {
 
 const homepageLowerDemoProfile: FreeAgentProfile = {
   ...homepagePassportProfiles["daniel-brooks"],
-  intro_video_url: "/videos/daniels%20intro.mp4",
+  intro_video_url: "/videos/daniel-intro.mp4",
 };
 
 function TalentCardDemo() {

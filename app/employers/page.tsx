@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 
 const danielProfile = {
   ...homepagePassportProfiles["daniel-brooks"],
-  intro_video_url: "/videos/daniels%20intro.mp4",
+  intro_video_url: "/videos/daniel-intro.mp4",
 };
 
 const employerSteps = [
