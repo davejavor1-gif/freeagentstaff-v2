@@ -120,12 +120,10 @@ export default function AboutPage() {
                     Why we exist
                   </p>
                   <h2 className="mt-3 text-2xl font-black uppercase leading-tight tracking-[0.06em] text-[#f7ebcf]">
-                    Built for talent.
-                    <br />
-                    Built to get you hired.
+                    Built for connecting jobs with the right people.
                   </h2>
                   <p className="mt-4 text-sm leading-7 text-[#dfe7ef]">
-                    We don&apos;t want talent on FreeAgentStaff forever. We want you hired and thriving in the next step of your career.
+                    We don&apos;t want you on FreeAgentStaff forever. We want you hired and thriving in your next role as quickly as possible. We want your dream job to find you, and when it does, we don&apos;t ever want to see you again.
                   </p>
                 </div>
 
@@ -140,10 +138,6 @@ export default function AboutPage() {
                     className="h-auto w-full max-w-[220px] object-contain sm:max-w-[260px]"
                   />
                 </div>
-
-                <p className="mt-6 text-sm font-semibold uppercase tracking-[0.18em] text-[#dfe7ef]">
-                  Your next opportunity is the goal, not the profile.
-                </p>
               </div>
             </div>
           </div>
