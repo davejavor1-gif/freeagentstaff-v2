@@ -53,7 +53,7 @@ export default function EmployersPage() {
         <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-6 py-12 sm:px-8 sm:py-16 lg:grid-cols-[0.95fr_0.85fr] lg:px-12 lg:py-20">
           <div className="max-w-2xl">
             <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#2bd7ef]">For Employers</p>
-            <h1 className="mt-4 max-w-2xl font-serif text-[2rem] font-semibold leading-tight text-[#f7e8c6] sm:text-[2.8rem]">Putting up a job ad and waiting for applications to dribble in? Here, you can see candidates when you&apos;re ready to hire.</h1>
+            <h1 className="mt-4 max-w-2xl font-serif text-[2rem] font-semibold leading-tight text-[#f7e8c6] sm:text-[2.8rem]">Recruitment takes too much time. Putting up an ad and waiting for resumes to come in. Here, you can browse talented staff right now.</h1>
             <p className="mt-6 max-w-xl text-base leading-8 text-[#f7e8c6]/84 sm:text-lg">Free Agent Staff reverses the traditional job-board model. Instead of relying only on people applying to individual advertisements, discover professionals who are open to their next opportunity.</p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="/employer/auth" className="inline-flex items-center justify-center rounded-full bg-[#2bd7ef] px-6 py-3 text-sm font-semibold text-[#071321] transition hover:-translate-y-0.5 hover:bg-[#1fcce7]">Find Your Next Superstar <span className="ml-2">→</span></Link>

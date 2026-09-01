@@ -54,7 +54,7 @@ export default function TalentPage() {
           <div className="max-w-2xl">
             <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#aff546]">For Talent</p>
             <h1 className="mt-4 max-w-2xl font-serif text-[2rem] font-semibold leading-tight text-[#f7e8c6] sm:text-[2.8rem]">
-              Thanks to AI, resumes and cover letters are all looking the same, making it hard to stand out.
+              Want to stand out? Create your Talent Card, record a video and let your experience and personality shine.
             </h1>
             <p className="mt-6 max-w-xl text-base leading-8 text-[#f7e8c6]/84 sm:text-lg">
               Free Agent Staff gives professionals a different way to present themselves to employers. Create a FreeAgent Card and Talent Passport that show what you can do, what you&apos;ve achieved and what makes you different.

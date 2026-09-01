@@ -141,7 +141,7 @@ const employerDiscoveryResults = [
     topStrength:
       "Creates polished, high-volume service experiences with calm, precise execution.",
     focusArea: "Guest Experience",
-    photoUrl: "/images/openart-e14435db735f43f281bdfd72be04e16a_00001__raw.png",
+    photoUrl: "/images/james-cole-photo.jpg",
     tone: "lime" as const,
   },
 ];
