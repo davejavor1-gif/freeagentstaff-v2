@@ -16,7 +16,7 @@ export default function InformationPage({
   children,
 }: InformationPageProps) {
   return (
-    <main className="flex min-h-screen flex-col bg-[#0f2744] text-[#f7ebcf]">
+    <main className="flex min-h-screen flex-col bg-[#08111F] text-[#f7ebcf]">
       <Navbar />
       <section className="relative overflow-hidden bg-[#0f2744] px-6 py-14 text-[#f7ebcf] sm:px-8 sm:py-18 lg:px-12">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_12%,rgba(43,215,239,0.08),transparent_24%),radial-gradient(circle_at_88%_86%,rgba(175,245,70,0.08),transparent_24%)]" />
