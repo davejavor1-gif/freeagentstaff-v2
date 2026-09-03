@@ -61,6 +61,10 @@ create table if not exists profiles (
   employer_subscription_cancel_at_period_end boolean not null default false,
   stripe_employer_subscription_id text unique,
   stripe_employer_price_id text,
+  terms_accepted_at timestamptz,
+  terms_version text,
+  privacy_acknowledged_at timestamptz,
+  privacy_version text,
   profile jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -3707,6 +3711,22 @@ declare
 begin
   if tg_op <> 'UPDATE' then
     return new;
+  end if;
+
+  if old.terms_accepted_at is not null and new.terms_accepted_at is distinct from old.terms_accepted_at then
+    raise exception 'terms_accepted_at_immutable' using errcode = '42501';
+  end if;
+
+  if old.terms_version is not null and new.terms_version is distinct from old.terms_version then
+    raise exception 'terms_version_immutable' using errcode = '42501';
+  end if;
+
+  if old.privacy_acknowledged_at is not null and new.privacy_acknowledged_at is distinct from old.privacy_acknowledged_at then
+    raise exception 'privacy_acknowledged_at_immutable' using errcode = '42501';
+  end if;
+
+  if old.privacy_version is not null and new.privacy_version is distinct from old.privacy_version then
+    raise exception 'privacy_version_immutable' using errcode = '42501';
   end if;
 
   if coalesce(new.account_type, '') <> coalesce(old.account_type, '') then

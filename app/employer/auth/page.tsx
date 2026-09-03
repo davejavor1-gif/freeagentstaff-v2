@@ -8,6 +8,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
 import { getPublicAppUrl } from "@/lib/site-url";
+import { PRIVACY_VERSION, TERMS_VERSION } from "@/lib/legal-versions";
 import type { AccountType, EmployerVerificationStatus } from "@/types/freeagent";
 
 type EmployerProfileRow = {
@@ -36,6 +37,7 @@ export default function EmployerAuthPage() {
   const [authMode, setAuthMode] = useState<"sign-in" | "sign-up">("sign-up");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -123,6 +125,12 @@ export default function EmployerAuthPage() {
       return;
     }
 
+    if (authMode === "sign-up" && !agreedToTerms) {
+      setStatus("You must agree to the Terms & Conditions and acknowledge the Privacy Policy to create an account.");
+      setIsSubmitting(false);
+      return;
+    }
+
     if (authMode === "sign-in") {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       setIsSubmitting(false);
@@ -172,11 +180,16 @@ export default function EmployerAuthPage() {
     }
 
     if (data.session) {
+      const acceptedAt = new Date().toISOString();
       const { error: insertError } = await supabase.from("profiles").upsert(
         [
           {
             user_id: data.session.user.id,
             account_type: "employer",
+            terms_accepted_at: acceptedAt,
+            terms_version: TERMS_VERSION,
+            privacy_acknowledged_at: acceptedAt,
+            privacy_version: PRIVACY_VERSION,
             ...defaultEmployerProfile,
           } as never,
         ],
@@ -305,19 +318,28 @@ export default function EmployerAuthPage() {
                   <div className="rounded-2xl border border-[#cda64d]/45 bg-[#f7ebcf] px-4 py-3 text-sm text-[#27405f]">{status}</div>
                 ) : null}
 
+                {authMode === "sign-up" ? (
+                  <label className="flex items-start gap-3 text-sm leading-6 text-[#27405f]">
+                    <input
+                      type="checkbox"
+                      checked={agreedToTerms}
+                      onChange={(event) => setAgreedToTerms(event.target.checked)}
+                      required
+                      className="mt-0.5 h-5 w-5 shrink-0 rounded border-[#cda64d]/60 accent-[#2BD7EF]"
+                    />
+                    <span>
+                      I agree to the <Link href="/terms" className="font-semibold text-[#0f2744] underline decoration-[#2bd7ef]/70 underline-offset-4">Terms &amp; Conditions</Link> and acknowledge the <Link href="/privacy" className="font-semibold text-[#0f2744] underline decoration-[#2bd7ef]/70 underline-offset-4">Privacy Policy</Link>.
+                    </span>
+                  </label>
+                ) : null}
+
                 <button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || (authMode === "sign-up" && !agreedToTerms)}
                   className="w-full rounded-2xl bg-[#aff546] px-4 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-[#071426] transition hover:bg-[#9fea37] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isSubmitting ? "Processing..." : authMode === "sign-in" ? "Sign in" : "Create employer account"}
                 </button>
-
-                {authMode === "sign-up" ? (
-                  <p className="text-xs leading-5 text-[#27405f]">
-                    By creating an account, you agree to the <Link href="/terms" className="font-semibold text-[#0f2744] underline decoration-[#2bd7ef]/70 underline-offset-4">Terms of Use</Link> and acknowledge the <Link href="/privacy" className="font-semibold text-[#0f2744] underline decoration-[#2bd7ef]/70 underline-offset-4">Privacy Policy</Link>.
-                  </p>
-                ) : null}
               </form>
 
               <p className="mt-6 text-center text-xs leading-5 text-[#27405f]">

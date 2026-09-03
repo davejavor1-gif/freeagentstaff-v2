@@ -8,6 +8,7 @@ import Navbar from "@/components/layout/Navbar";
 import { buildCanonicalTalentColumns } from "@/lib/talent-profile-columns";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
 import { getPublicAppUrl } from "@/lib/site-url";
+import { PRIVACY_VERSION, TERMS_VERSION } from "@/lib/legal-versions";
 import type { AccountType, EmployerVerificationStatus, FreeAgentProfile } from "@/types/freeagent";
 
 const createBlankTalentProfile = (userId: string, email?: string | null): FreeAgentProfile => ({
@@ -34,6 +35,7 @@ export default function LoginPage() {
   const [accountType, setAccountType] = useState<AccountType>("talent");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
@@ -67,6 +69,12 @@ export default function LoginPage() {
 
     if (!email || !password) {
       setStatus("Email and password are required.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (authMode === "sign-up" && !agreedToTerms) {
+      setStatus("You must agree to the Terms & Conditions and acknowledge the Privacy Policy to create an account.");
       setIsSubmitting(false);
       return;
     }
@@ -115,6 +123,7 @@ export default function LoginPage() {
         : {};
       const verificationStatus: EmployerVerificationStatus = "unverified";
       const slug = accountType === "talent" ? `freeagent-${data.session.user.id.slice(0, 8)}` : null;
+      const acceptedAt = new Date().toISOString();
 
       const { error: insertError } = await supabase.from("profiles").upsert(
         [
@@ -129,6 +138,10 @@ export default function LoginPage() {
             employer_industry: null,
             employer_company_size: null,
             employer_verification_status: verificationStatus,
+            terms_accepted_at: acceptedAt,
+            terms_version: TERMS_VERSION,
+            privacy_acknowledged_at: acceptedAt,
+            privacy_version: PRIVACY_VERSION,
             ...(accountType === "talent"
               ? buildCanonicalTalentColumns(blankTalentProfile as FreeAgentProfile, data.session.user.email)
               : {
@@ -269,9 +282,26 @@ export default function LoginPage() {
               </div>
             ) : null}
 
+            {authMode === "sign-up" ? (
+              <label className="flex items-start gap-3 text-sm leading-6 text-[#27405f]">
+                <input
+                  type="checkbox"
+                  checked={agreedToTerms}
+                  onChange={(event) => setAgreedToTerms(event.target.checked)}
+                  required
+                  className={`mt-0.5 h-5 w-5 shrink-0 rounded border-[#cda64d]/60 ${
+                    accountType === "employer" ? "accent-[#2BD7EF]" : "accent-[#AFF546]"
+                  }`}
+                />
+                <span>
+                  I agree to the <Link href="/terms" className="font-semibold text-[#0f2744] underline underline-offset-4">Terms &amp; Conditions</Link> and acknowledge the <Link href="/privacy" className="font-semibold text-[#0f2744] underline underline-offset-4">Privacy Policy</Link>.
+                </span>
+              </label>
+            ) : null}
+
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || (authMode === "sign-up" && !agreedToTerms)}
               className="w-full rounded-2xl bg-[#aff546] px-4 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-[#071426] transition hover:bg-[#9fea37] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? "Processing..." : authMode === "sign-in" ? "Sign in" : "Create account"}

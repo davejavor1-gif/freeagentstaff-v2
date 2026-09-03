@@ -211,12 +211,15 @@ export default function Navbar() {
           {session ? (
             <Link
               href="/notifications"
-              className={`hidden rounded-full border p-2 transition sm:inline-flex ${isEmployerSession ? "border-[#2bd7ef]/45 text-[#0b2a45] hover:border-[#2bd7ef]/75 hover:text-[#2bd7ef]" : "border-[#aff546]/45 text-[#0b2a45] hover:border-[#aff546]/75 hover:text-[#aff546]"}`}
+              className={`hidden items-center gap-1.5 rounded-full px-3 py-2 transition sm:inline-flex ${isEmployerSession ? "bg-[#2bd7ef] hover:brightness-105" : "bg-[#aff546] hover:brightness-105"}`}
               aria-label="Notifications"
             >
-              <Bell className={`h-4 w-4 ${isEmployerSession ? "text-[#2bd7ef]" : "text-[#aff546]"}`} />
+              <Bell
+                className="h-4 w-4 text-[#08111F]"
+                fill={notificationCount > 0 ? "#08111F" : "none"}
+              />
               {notificationCount > 0 ? (
-                <span className={`ml-1 rounded-full px-1.5 text-[10px] font-black text-[#08111F] ${isEmployerSession ? "bg-[#2bd7ef]" : "bg-[#aff546]"}`}>{notificationCount}</span>
+                <span className="text-[10px] font-black text-[#08111F]">{notificationCount}</span>
               ) : null}
             </Link>
           ) : null}

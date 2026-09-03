@@ -61,6 +61,10 @@ export interface ProfilesRow {
   employer_subscription_cancel_at_period_end: boolean;
   stripe_employer_subscription_id: string | null;
   stripe_employer_price_id: string | null;
+  terms_accepted_at: string | null;
+  terms_version: string | null;
+  privacy_acknowledged_at: string | null;
+  privacy_version: string | null;
   profile: Json;
   created_at: string;
   updated_at: string;
@@ -126,6 +130,10 @@ export interface ProfilesInsert {
   employer_subscription_cancel_at_period_end?: boolean;
   stripe_employer_subscription_id?: string | null;
   stripe_employer_price_id?: string | null;
+  terms_accepted_at?: string | null;
+  terms_version?: string | null;
+  privacy_acknowledged_at?: string | null;
+  privacy_version?: string | null;
   profile: Json;
 }
 
@@ -188,6 +196,10 @@ export interface ProfilesUpdate {
   employer_subscription_cancel_at_period_end?: boolean;
   stripe_employer_subscription_id?: string | null;
   stripe_employer_price_id?: string | null;
+  terms_accepted_at?: string | null;
+  terms_version?: string | null;
+  privacy_acknowledged_at?: string | null;
+  privacy_version?: string | null;
   profile?: Json;
 }
 
