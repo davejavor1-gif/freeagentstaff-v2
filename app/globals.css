@@ -194,3 +194,43 @@
 .nav-fade {
   animation: navFade 500ms ease-out both;
 }
+
+@layer components {
+  .dashboard-kicker {
+    @apply text-[10px] font-semibold uppercase tracking-[0.24em] text-[#F7F4EC]/45;
+  }
+
+  .dashboard-panel {
+    @apply rounded-[18px] border border-[#08111F]/15 bg-[#f7e8c6] text-[#08111F] shadow-[0_18px_45px_rgba(0,0,0,0.16)];
+  }
+
+  .dashboard-hero {
+    @apply mb-8 flex flex-col gap-8 rounded-[18px] border border-[#08111F]/15 bg-[#f7e8c6] p-6 text-[#08111F] shadow-[0_18px_45px_rgba(0,0,0,0.16)] sm:p-8 lg:flex-row lg:items-end lg:justify-between;
+  }
+
+  .dashboard-status {
+    @apply inline-flex items-center gap-2 rounded-full border border-[#08111F]/15 bg-[#08111F]/5 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#08111F]/75;
+  }
+
+  .dashboard-action {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[var(--dashboard-accent)] px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-[#08111F] transition duration-200 hover:-translate-y-0.5 hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--dashboard-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[#08111F];
+  }
+
+  .dashboard-action-outline {
+    @apply border border-[#08111F]/20 bg-[#08111F] text-[#F7F4EC] hover:border-[var(--dashboard-accent)] hover:bg-[#10233A];
+  }
+
+  .dashboard-metric {
+    @apply flex min-h-[165px] flex-col rounded-[16px] border border-[#08111F]/15 bg-[#f7e8c6] p-5 text-[#08111F] shadow-[0_12px_30px_rgba(0,0,0,0.12)] transition duration-200 hover:-translate-y-0.5 hover:border-[var(--dashboard-accent)] hover:shadow-[0_12px_35px_var(--dashboard-glow)];
+  }
+
+  .dashboard-metric-compact {
+    @apply h-[115px] min-h-[115px] p-4;
+  }
+
+  .dashboard-upgrade-pill,
+  .dashboard-talent-green-action {
+    @apply inline-flex min-h-8 items-center justify-center gap-1 rounded-xl bg-[#AFF546] px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.1em] text-[#08111F] transition hover:-translate-y-0.5 hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#AFF546] focus-visible:ring-offset-2 focus-visible:ring-offset-[#f7e8c6] disabled:cursor-wait disabled:opacity-70;
+  }
+
+}

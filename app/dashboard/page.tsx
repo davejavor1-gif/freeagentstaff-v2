@@ -8,6 +8,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import BillingButton from "@/components/BillingButton";
 import FreeAgentProBadge from "@/components/FreeAgentProBadge";
+import DashboardView from "@/components/dashboard/DashboardView";
 import type { Session } from "@supabase/supabase-js";
 import { buildCanonicalTalentColumns } from "@/lib/talent-profile-columns";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
@@ -50,8 +51,30 @@ const verificationLabel: Record<EmployerVerificationStatus, string> = {
   rejected: "Unable to Verify",
 };
 
+const summaryCardClassName = "rounded-2xl border border-[#cda64d]/45 bg-[#f7ebcf] p-5 text-[#0f2744] shadow-[0_10px_28px_rgba(6,16,33,0.12)]";
+
 type ProfileRow = {
   name?: string | null;
+  title?: string | null;
+  location?: string | null;
+  summary?: string | null;
+  bio?: string | null;
+  skills?: string[] | null;
+  career_journey?: unknown;
+  education?: string | null;
+  current_employer?: string | null;
+  visibility?: FreeAgentProfile["visibility"] | null;
+  availability?: FreeAgentProfile["availability"] | null;
+  top_strength?: string | null;
+  experience_years?: number | null;
+  focus_area?: string | null;
+  languages?: string[] | null;
+  passions?: string[] | null;
+  photo_url?: string | null;
+  photo_storage_path?: string | null;
+  intro_video_url?: string | null;
+  intro_video_storage_path?: string | null;
+  is_published?: boolean | null;
   slug?: string | null;
   account_type?: AccountType;
   employer_company_name?: string | null;
@@ -60,7 +83,61 @@ type ProfileRow = {
   verification_rejection_reason?: string | null;
 };
 
-const summaryCardClassName = "rounded-2xl border border-[#cda64d]/45 bg-[#f7ebcf] p-5 text-[#0f2744] shadow-[0_10px_28px_rgba(6,16,33,0.12)]";
+type ProfileProductStatus = "Not started" | "In progress" | "Created" | "Ready";
+
+function buildDashboardTalentProfile(profile: ProfileRow | null | undefined, session: Session): FreeAgentProfile {
+  const profileData = profile ?? {};
+
+  return {
+    id: session.user.id,
+    slug: profileData.slug ?? undefined,
+    visibility: profileData.visibility ?? "public",
+    name: profileData.name ?? "",
+    title: profileData.title ?? "",
+    location: profileData.location ?? "",
+    availability: profileData.availability ?? "Available Now",
+    topStrength: profileData.top_strength ?? "",
+    experienceYears: profileData.experience_years ?? 0,
+    focusArea: profileData.focus_area ?? "",
+    summary: profileData.summary ?? "",
+    bio: profileData.bio ?? "",
+    skills: Array.isArray(profileData.skills) ? profileData.skills : [],
+    languages: Array.isArray(profileData.languages) ? profileData.languages : [],
+    passions: Array.isArray(profileData.passions) ? profileData.passions : [],
+    careerJourney: Array.isArray(profileData.career_journey) ? profileData.career_journey as FreeAgentProfile["careerJourney"] : [],
+    education: profileData.education ?? "",
+    currentEmployer: profileData.current_employer ?? "",
+    email: session.user.email ?? "",
+    photoUrl: profileData.photo_storage_path ? undefined : profileData.photo_url ?? undefined,
+    photo_storage_path: profileData.photo_storage_path ?? null,
+    intro_video_url: profileData.intro_video_url ?? null,
+    intro_video_storage_path: profileData.intro_video_storage_path ?? null,
+  };
+}
+
+function resolveProfileProductStatus(profile: ProfileRow | null | undefined, isPublished: boolean): ProfileProductStatus {
+  const populatedFields = [
+    profile?.name,
+    profile?.title,
+    profile?.location,
+    profile?.summary,
+    profile?.bio,
+    profile?.education,
+    profile?.current_employer,
+  ].filter((value) => typeof value === "string" && value.trim().length > 0).length;
+  const hasSkills = Array.isArray(profile?.skills) && profile.skills.length > 0;
+  const hasCareerJourney = Array.isArray(profile?.career_journey) && profile.career_journey.length > 0;
+
+  if (isPublished) {
+    return "Ready";
+  }
+
+  if (populatedFields === 0 && !hasSkills && !hasCareerJourney) {
+    return "Not started";
+  }
+
+  return populatedFields >= 3 || hasSkills || hasCareerJourney ? "Created" : "In progress";
+}
 
 function formatDateTime(value: string | null | undefined) {
   if (!value) {
@@ -143,6 +220,9 @@ export default function DashboardPage() {
   const [talentSummary, setTalentSummary] = useState<TalentSummaryPayload | null>(null);
   const [profileName, setProfileName] = useState("");
   const [talentSlug, setTalentSlug] = useState<string | null>(null);
+  const [cardStatus, setCardStatus] = useState<ProfileProductStatus>("Not started");
+  const [passportStatus, setPassportStatus] = useState<ProfileProductStatus>("Not started");
+  const [dashboardTalentProfile, setDashboardTalentProfile] = useState<FreeAgentProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -222,7 +302,7 @@ export default function DashboardPage() {
 
       const { data: profileRow } = await supabase
         .from("profiles")
-        .select("name, profile, slug, account_type, employer_company_name, employer_verification_status, verification_requested_at, verification_rejection_reason")
+        .select("name, title, location, availability, top_strength, experience_years, focus_area, summary, bio, skills, languages, passions, career_journey, education, current_employer, visibility, photo_url, photo_storage_path, intro_video_url, intro_video_storage_path, is_published, profile, slug, account_type, employer_company_name, employer_verification_status, verification_requested_at, verification_rejection_reason")
         .eq("user_id", activeSession.user.id)
         .maybeSingle();
 
@@ -266,6 +346,9 @@ export default function DashboardPage() {
         setVerificationRequestedAt(null);
         setVerificationRejectionReason(null);
         setEmployerCompanyName("");
+        setCardStatus("Not started");
+        setPassportStatus("Not started");
+        setDashboardTalentProfile(null);
         await loadDashboardSummary(activeSession, fallbackAccountType);
         setLoading(false);
         return;
@@ -277,6 +360,9 @@ export default function DashboardPage() {
       setAccountType(resolvedAccountType);
       setProfileName(profileRowData?.name ?? "");
       setTalentSlug(profileRowData?.slug ?? null);
+      setCardStatus(resolveProfileProductStatus(profileRowData, Boolean(profileRowData?.is_published)));
+      setPassportStatus(resolveProfileProductStatus(profileRowData, Boolean(profileRowData?.is_published)));
+      setDashboardTalentProfile(resolvedAccountType === "talent" ? buildDashboardTalentProfile(profileRowData, activeSession) : null);
       setVerificationStatus(profileRowData?.employer_verification_status ?? "unverified");
       setVerificationRequestedAt(profileRowData?.verification_requested_at ?? null);
       setVerificationRejectionReason(profileRowData?.verification_rejection_reason ?? null);
@@ -493,6 +579,44 @@ export default function DashboardPage() {
     );
   }
 
+  return (
+    <DashboardView
+      audience={accountType}
+      name={dashboardWelcomeName}
+      companyName={employerCompanyName}
+      verificationStatus={verificationStatus}
+      verificationRequestedAt={verificationRequestedAt ?? ""}
+      verificationRejectionReason={verificationRejectionReason}
+      employerSummary={employerSummary}
+      talentSummary={talentSummary}
+      isVerifiedEmployer={isVerifiedEmployer}
+      hasEmployerAccess={hasEmployerAccess}
+      isPublished={isPublished}
+      visibility={visibilityLabel(visibility)}
+      isProTalent={isProTalent}
+      hasScheduledCancellation={hasScheduledCancellation}
+      scheduledCancellationDate={scheduledCancellationDate}
+      talentPassportHref={talentPassportHref}
+      hasCompletedTalentCard={hasCompletedTalentCard}
+      dashboardTalentProfile={dashboardTalentProfile}
+      cardStatus={cardStatus}
+      passportStatus={passportStatus}
+      formatDateTime={formatDateTime}
+      verificationLabel={verificationLabel[verificationStatus]}
+      formattedRequestedAt={formattedRequestedAt}
+      withdrawRequest={(requestId) => {
+        void withdrawRequest(requestId);
+      }}
+      updateTalentRequest={(requestId, action) => {
+        void updateTalentRequest(requestId, action);
+      }}
+      signOut={() => {
+        void signOut();
+      }}
+      updatingId={updatingId}
+    />
+  );
+
   const employerRequestPreview = employerSummary?.requestPreview ?? [];
   const employerConnectionPreview = employerSummary?.connectionPreview ?? [];
   const talentRequestPreview = talentSummary?.requestPreview ?? [];
@@ -563,8 +687,8 @@ export default function DashboardPage() {
                         ? "Your organisation has been approved to join the Free Agent Staff Employer network. Activate Employer Access to start discovering Talent."
                         : "Free Agent Staff verifies employers before providing access to the Talent network."}
                   </p>
-                  {employerSummary?.subscription.cancelAtPeriodEnd && employerSummary.subscription.currentPeriodEndsAt ? (
-                    <p className="mt-3 text-sm font-semibold text-amber-800">Access remains active until {formatDateTime(employerSummary.subscription.currentPeriodEndsAt)}.</p>
+                  {employerSummary?.subscription.cancelAtPeriodEnd && employerSummary?.subscription.currentPeriodEndsAt ? (
+                    <p className="mt-3 text-sm font-semibold text-amber-800">Access remains active until {formatDateTime(employerSummary?.subscription.currentPeriodEndsAt)}.</p>
                   ) : null}
                 </div>
                 <div className="flex flex-col items-start gap-2 sm:items-end">
@@ -868,11 +992,11 @@ export default function DashboardPage() {
                 <div className="mt-5 grid gap-3 sm:grid-cols-2">
                   <div className={summaryCardClassName}>
                     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Profile views</p>
-                    <p className="mt-2 text-3xl font-black text-slate-900">{talentSummary.proAnalytics.profileViews}</p>
+                    <p className="mt-2 text-3xl font-black text-slate-900">{talentSummary?.proAnalytics?.profileViews ?? 0}</p>
                   </div>
                   <div className={summaryCardClassName}>
                     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Employer saves</p>
-                    <p className="mt-2 text-3xl font-black text-slate-900">{talentSummary.proAnalytics.employerSaves}</p>
+                    <p className="mt-2 text-3xl font-black text-slate-900">{talentSummary?.proAnalytics?.employerSaves ?? 0}</p>
                   </div>
                 </div>
               </section>
