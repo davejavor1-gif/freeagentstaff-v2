@@ -376,7 +376,7 @@ export default function EmployerTalentSearch() {
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-10 lg:py-12">
-      <div className="rounded-[36px] border border-[#cda64d]/45 bg-[#f7ebcf]/78 p-5 shadow-[0_18px_55px_rgba(6,16,33,0.12)] sm:p-7 lg:p-8">
+      <div className="rounded-[36px] border border-[#08111F]/15 bg-[#f7e8c6] p-5 shadow-[0_18px_55px_rgba(6,16,33,0.12)] sm:p-7 lg:p-8">
         <header className="grid gap-6 border-b border-[#cda64d]/30 pb-7 lg:grid-cols-[1.1fr_1fr] lg:items-end">
           <div className="max-w-2xl">
             <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">PREMIUM TALENT</p>
@@ -409,7 +409,7 @@ export default function EmployerTalentSearch() {
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               placeholder="Search by role, skill or keyword"
-              className="h-12 w-full rounded-[16px] border border-[#f2cc63]/35 bg-[#f7ebcf] px-10 text-sm font-semibold text-[#071426] outline-none transition placeholder:text-[#6f7f92] focus:border-[#8be4c5]"
+              className="h-12 w-full rounded-[16px] border border-[#f2cc63]/35 bg-[#f7e8c6] px-10 text-sm font-semibold text-[#08111F] outline-none transition placeholder:text-[#08111F]/60 focus:border-[#8be4c5]"
             />
           </div>
           <p className="mt-2 text-xs text-[#dfe7ef]">e.g. Venue Manager, events, operations, leadership</p>
@@ -437,7 +437,7 @@ export default function EmployerTalentSearch() {
                 id="filter-location"
                 value={location}
                 onChange={(event) => setLocation(event.target.value)}
-                className="h-11 w-full rounded-[14px] border border-[#f2cc63]/35 bg-[#f7ebcf] px-3 text-sm text-[#0f2744] outline-none focus:border-[#8be4c5]"
+                className="h-11 w-full rounded-[14px] border border-[#f2cc63]/35 bg-[#f7e8c6] px-3 text-sm text-[#08111F] outline-none focus:border-[#8be4c5]"
               >
                 {locations.map((option) => (
                   <option key={option} value={option}>
@@ -455,7 +455,7 @@ export default function EmployerTalentSearch() {
                   id="filter-experience"
                   value={experience}
                   onChange={(event) => setExperience(event.target.value as ExperienceFilter)}
-                  className="h-11 w-full rounded-[14px] border border-[#f2cc63]/35 bg-[#f7ebcf] px-3 text-sm text-[#0f2744] outline-none focus:border-[#8be4c5]"
+                  className="h-11 w-full rounded-[14px] border border-[#f2cc63]/35 bg-[#f7e8c6] px-3 text-sm text-[#08111F] outline-none focus:border-[#8be4c5]"
                 >
                   {experienceOptions.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -473,7 +473,7 @@ export default function EmployerTalentSearch() {
                   id="filter-availability"
                   value={availability}
                   onChange={(event) => setAvailability(event.target.value)}
-                  className="h-11 w-full rounded-[14px] border border-[#f2cc63]/35 bg-[#f7ebcf] px-3 text-sm text-[#0f2744] outline-none focus:border-[#8be4c5]"
+                  className="h-11 w-full rounded-[14px] border border-[#f2cc63]/35 bg-[#f7e8c6] px-3 text-sm text-[#08111F] outline-none focus:border-[#8be4c5]"
                 >
                   {availabilityOptions.map((option) => (
                     <option key={option} value={option}>
@@ -491,7 +491,7 @@ export default function EmployerTalentSearch() {
                   id="filter-skills"
                   value={skill}
                   onChange={(event) => setSkill(event.target.value)}
-                  className="h-11 w-full rounded-[14px] border border-[#f2cc63]/35 bg-[#f7ebcf] px-3 text-sm text-[#0f2744] outline-none focus:border-[#8be4c5]"
+                  className="h-11 w-full rounded-[14px] border border-[#f2cc63]/35 bg-[#f7e8c6] px-3 text-sm text-[#08111F] outline-none focus:border-[#8be4c5]"
                 >
                   {skills.map((option) => (
                     <option key={option} value={option}>
@@ -509,7 +509,7 @@ export default function EmployerTalentSearch() {
                   id="filter-focus"
                   value={focusArea}
                   onChange={(event) => setFocusArea(event.target.value)}
-                  className="h-11 w-full rounded-[14px] border border-[#f2cc63]/35 bg-[#f7ebcf] px-3 text-sm text-[#0f2744] outline-none focus:border-[#8be4c5]"
+                  className="h-11 w-full rounded-[14px] border border-[#f2cc63]/35 bg-[#f7e8c6] px-3 text-sm text-[#08111F] outline-none focus:border-[#8be4c5]"
                 >
                   {focusAreas.map((option) => (
                     <option key={option} value={option}>
@@ -527,7 +527,7 @@ export default function EmployerTalentSearch() {
                 id="sort-results"
                 value={sort}
                 onChange={(event) => setSort(event.target.value as SortOption)}
-                className="h-11 w-full rounded-[14px] border border-[#f2cc63]/35 bg-[#f7ebcf] px-3 text-sm text-[#0f2744] outline-none focus:border-[#8be4c5]"
+                className="h-11 w-full rounded-[14px] border border-[#f2cc63]/35 bg-[#f7e8c6] px-3 text-sm text-[#08111F] outline-none focus:border-[#8be4c5]"
               >
                 {sortOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -548,7 +548,7 @@ export default function EmployerTalentSearch() {
           </div>
         ) : null}
 
-        <div className="mt-6">
+        <div className="mt-6 rounded-[30px] border border-[#2BD7EF]/25 bg-[#0f2744] p-4 shadow-[0_12px_40px_rgba(6,16,33,0.16)] sm:p-6">
 
         {isLoading ? (
           <div role="status" aria-live="polite" className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">

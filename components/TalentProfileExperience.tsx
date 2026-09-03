@@ -15,6 +15,7 @@ import {
 import Footer from "@/components/layout/Footer";
 import FreeAgentProBadge from "@/components/FreeAgentProBadge";
 import Navbar from "@/components/layout/Navbar";
+import PassportFold from "@/components/PassportFold";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
 import { salaryExpectationOptions } from "@/lib/talent-profile-options";
 import type { TalentPassportApiResponse } from "@/types/discovery";
@@ -349,7 +350,7 @@ export default function TalentProfileExperience({
               </Link>
             ) : null}
           </div>
-          <div className="relative mx-auto max-w-5xl rounded-[38px] bg-[#285a3b] p-2.5 shadow-[0_24px_58px_rgba(6,16,33,0.28)] [background-image:radial-gradient(circle_at_18%_12%,rgba(242,204,99,0.08),transparent_24%),repeating-linear-gradient(135deg,rgba(247,235,207,0.045)_0,rgba(247,235,207,0.045)_1px,transparent_1px,transparent_6px),repeating-linear-gradient(45deg,transparent_0,transparent_10px,rgba(0,0,0,0.14)_11px,transparent_11px)] sm:p-4">
+          <div className="relative mx-auto max-w-5xl rounded-[38px] border border-[#D4AF37]/20 bg-[#651D2A] p-2.5 shadow-[0_24px_58px_rgba(46,13,20,0.42)] [background-image:radial-gradient(circle_at_18%_12%,rgba(212,175,55,0.1),transparent_24%),repeating-linear-gradient(135deg,rgba(247,235,207,0.045)_0,rgba(247,235,207,0.045)_1px,transparent_1px,transparent_6px),repeating-linear-gradient(45deg,transparent_0,transparent_10px,rgba(46,13,20,0.2)_11px,transparent_11px)] sm:p-4">
             <section className="relative overflow-hidden rounded-[27px] border border-[#f7ebcf]/80 bg-[#f7ebcf] p-6 shadow-[inset_0_1px_0_rgba(255,250,240,0.8),inset_0_-10px_24px_rgba(111,83,16,0.08),0_8px_18px_rgba(6,16,33,0.12)] [background-image:radial-gradient(circle_at_12%_18%,rgba(255,250,240,0.55),transparent_25%),repeating-linear-gradient(0deg,rgba(15,39,68,0.025)_0,rgba(15,39,68,0.025)_1px,transparent_1px,transparent_5px),repeating-linear-gradient(90deg,transparent_0,transparent_14px,rgba(154,109,21,0.025)_15px,transparent_16px)] sm:p-8 lg:p-10">
               <div className="mt-6 grid gap-8 sm:grid-cols-[minmax(0,1fr)_12rem] sm:items-start">
                 <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
@@ -436,9 +437,7 @@ export default function TalentProfileExperience({
                 </div>
               ) : null}
             </section>
-            <div className="relative mx-auto h-11 w-[86%] overflow-hidden bg-[#173d2a] shadow-[inset_0_7px_10px_rgba(6,16,33,0.3),inset_0_-7px_10px_rgba(6,16,33,0.3)] [background:linear-gradient(to_bottom,rgba(247,235,207,0)_0%,rgba(247,235,207,0.12)_34%,rgba(7,26,18,0.92)_44%,#071a12_50%,rgba(7,26,18,0.92)_56%,rgba(247,235,207,0.1)_66%,rgba(247,235,207,0)_100%)] sm:h-11" aria-hidden="true">
-              <div className="absolute inset-0 top-1/2 h-1 -translate-y-1/2 bg-[#071a12] shadow-[0_-3px_5px_rgba(247,235,207,0.14),0_3px_5px_rgba(6,16,33,0.55)]" />
-            </div>
+            <PassportFold />
             <section className="relative overflow-hidden rounded-[27px] border border-[#f7ebcf]/80 bg-[#fffaf0] p-6 shadow-[inset_0_10px_24px_rgba(111,83,16,0.07),inset_0_-1px_0_rgba(255,250,240,0.85),0_8px_18px_rgba(6,16,33,0.12)] [background-image:radial-gradient(circle_at_88%_12%,rgba(255,250,240,0.7),transparent_28%),repeating-linear-gradient(0deg,rgba(15,39,68,0.022)_0,rgba(15,39,68,0.022)_1px,transparent_1px,transparent_5px),repeating-linear-gradient(90deg,transparent_0,transparent_14px,rgba(154,109,21,0.022)_15px,transparent_16px)] sm:p-8 lg:p-10">
               <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
                 <BriefcaseBusiness className="h-4 w-4" /> Professional record

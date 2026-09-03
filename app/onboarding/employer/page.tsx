@@ -384,7 +384,7 @@ export default function EmployerOnboardingPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#f7ebcf_0%,_#f4e4bf_40%,_#e7d7a7_100%)] text-[#071426]">
+      <main className="min-h-screen bg-[#08111F] text-[#071426]">
         <Navbar />
         <div className="mx-auto max-w-5xl px-5 py-12 sm:px-8 lg:px-10">
           <div className="rounded-[32px] border border-[#cda64d]/55 bg-[#0f2744] p-8 text-[#f7ebcf] shadow-[0_20px_60px_rgba(6,16,33,0.16)]">
@@ -403,9 +403,9 @@ export default function EmployerOnboardingPage() {
     <main className="min-h-screen bg-[#08111F] text-[#071426]">
       <Navbar />
       <div className="mx-auto max-w-5xl px-5 py-10 sm:px-8 lg:px-10">
-        <section className="rounded-[36px] border border-[#cda64d]/60 bg-[#0f2744] p-6 text-[#f7ebcf] shadow-[0_20px_60px_rgba(6,16,33,0.16)] sm:p-8 lg:p-10">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">Employer setup</p>
-          <h1 className="mt-4 text-3xl font-black uppercase tracking-[0.12em] text-[#f7ebcf] sm:text-4xl">
+        <section className="rounded-[36px] border border-[#08111F]/15 bg-[#f7e8c6] p-6 text-[#08111F] shadow-[0_20px_60px_rgba(6,16,33,0.16)] sm:p-8 lg:p-10">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#08111F]/60">Employer setup</p>
+          <h1 className="mt-4 text-3xl font-black uppercase tracking-[0.12em] text-[#08111F] sm:text-4xl">
             {verificationStatus === "pending"
               ? "We're verifying your business"
               : verificationStatus === "more_info_required"
@@ -416,7 +416,7 @@ export default function EmployerOnboardingPage() {
                     ? "Your business is verified"
                     : "Verify your business"}
           </h1>
-          <p className="mt-4 max-w-3xl text-sm leading-7 text-[#dfe7ef] sm:text-base sm:leading-8">
+          <p className="mt-4 max-w-3xl text-sm leading-7 text-[#08111F]/70 sm:text-base sm:leading-8">
             {verificationStatus === "pending"
               ? "Your details have been submitted to Free Agent Staff for review. We'll let you know once your business has been verified."
               : verificationStatus === "more_info_required"
@@ -429,46 +429,46 @@ export default function EmployerOnboardingPage() {
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
-            <span className="rounded-full border border-[#f2cc63]/45 bg-[#f7ebcf]/10 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f2cc63]">
+            <span className="rounded-full border border-[#2BD7EF]/60 bg-[#2BD7EF] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#08111F]">
               Status: {verificationStatus === "pending" ? "Under Review" : verificationStatus === "more_info_required" ? "More Information Required" : verificationStatus === "rejected" ? "Unable to Verify" : verificationStatus === "verified" ? "Verified" : "Unverified"}
             </span>
             {verificationStatus === "verified" ? (
-              <span className="rounded-full border border-[#9fdd66]/55 bg-[#9fdd66]/20 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#e7ffd1]">
+              <span className="rounded-full border border-[#2BD7EF]/60 bg-[#2BD7EF] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#08111F]">
                 Verification complete
               </span>
             ) : (
-              <span className="rounded-full border border-[#f2cc63]/30 bg-[#f7ebcf]/10 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf]">
+              <span className="rounded-full border border-[#08111F]/15 bg-[#fffaf0] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#08111F]/70">
                 Find Talent locked until verified
               </span>
             )}
           </div>
 
           {verificationStatus === "pending" ? (
-            <div className="mt-6 rounded-[24px] border border-[#f2cc63]/35 bg-[#f7ebcf]/10 p-5 text-sm leading-7 text-[#f7ebcf]">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">Under Review</p>
+            <div className="mt-6 rounded-[24px] border border-[#08111F]/15 bg-[#fffaf0] p-5 text-sm leading-7 text-[#08111F]/70">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#08111F]">Under Review</p>
               <p className="mt-2">Your details have been submitted to Free Agent Staff for review. We&apos;ll let you know once your business has been verified.</p>
-              <p className="mt-2 text-[#dfe7ef]">Submitted: {requestedAt ? new Date(requestedAt).toLocaleString() : "Pending confirmation"}</p>
-              <p className="mt-2 text-[#dfe7ef]">
+              <p className="mt-2 text-[#08111F]/60">Submitted: {requestedAt ? new Date(requestedAt).toLocaleString() : "Pending confirmation"}</p>
+              <p className="mt-2 text-[#08111F]/60">
                 If you edit company verification details like company name or ABN, your account may need to be reviewed again.
               </p>
             </div>
           ) : null}
 
           {verificationStatus === "more_info_required" ? (
-            <div className="mt-6 rounded-[24px] border border-[#f2cc63]/35 bg-[#f7ebcf]/10 p-5 text-sm leading-7 text-[#f7ebcf]">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">More Information Required</p>
+            <div className="mt-6 rounded-[24px] border border-[#08111F]/15 bg-[#fffaf0] p-5 text-sm leading-7 text-[#08111F]/70">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#08111F]">More Information Required</p>
               <p className="mt-2">We need some additional information before we can complete your business verification.</p>
-              {rejectionReason ? <p className="mt-2 text-[#dfe7ef]">Reviewer message: {rejectionReason}</p> : null}
+              {rejectionReason ? <p className="mt-2 text-[#08111F]/60">Reviewer message: {rejectionReason}</p> : null}
             </div>
           ) : null}
 
           {verificationStatus === "verified" ? (
-            <div className="mt-6 rounded-[24px] border border-[#9fdd66]/35 bg-[#9fdd66]/12 p-5 text-sm leading-7 text-[#e8ffd2]">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#d8ffab]">Your business is verified</p>
+            <div className="mt-6 rounded-[24px] border border-[#2BD7EF]/35 bg-[#0f2744] p-5 text-sm leading-7 text-[#f7e8c6]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f7e8c6]">Your business is verified</p>
               <p className="mt-2">Your organisation has been approved to join the Free Agent Staff Employer network. Activate Employer Access to start discovering Talent.</p>
               <Link
                 href="/dashboard"
-                className="mt-4 inline-flex min-h-[44px] items-center justify-center rounded-full border border-[#d8ffab]/45 bg-[#d8ffab] px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.24em] text-[#0f2744] transition hover:bg-[#e8ffc4]"
+                className="mt-4 inline-flex min-h-[44px] items-center justify-center rounded-full border border-[#2BD7EF]/60 bg-[#2BD7EF] px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.24em] text-[#08111F] transition hover:brightness-105"
               >
                 Choose Employer Plan
               </Link>
@@ -487,13 +487,13 @@ export default function EmployerOnboardingPage() {
           ) : null}
 
           {(verificationStatus === "pending" || verificationStatus === "verified") && identityChanged ? (
-            <div className="mt-6 rounded-[22px] border border-[#f2cc63]/40 bg-[#f7ebcf]/12 p-4 text-sm leading-7 text-[#f7ebcf]">
+            <div className="mt-6 rounded-[22px] border border-[#08111F]/15 bg-[#fffaf0] p-4 text-sm leading-7 text-[#08111F]/70">
               Changing your company name, ABN or company website will require your employer account to be verified again.
             </div>
           ) : null}
 
           {statusMessage ? (
-            <p role="status" className="mt-6 rounded-[18px] border border-[#9fdd66]/35 bg-[#9fdd66]/12 px-4 py-3 text-sm text-[#e8ffd2]">
+            <p role="status" className="mt-6 rounded-[18px] border border-[#2BD7EF]/45 bg-[#effcff] px-4 py-3 text-sm text-[#08111F]">
               {statusMessage}
             </p>
           ) : null}
@@ -505,7 +505,7 @@ export default function EmployerOnboardingPage() {
           ) : null}
         </section>
 
-        <section className="mt-8 rounded-[30px] border border-[#cda64d]/55 bg-[#f7ebcf]/88 p-6 shadow-[0_12px_40px_rgba(6,16,33,0.12)] sm:p-8">
+        <section className="mt-8 rounded-[30px] border border-[#08111F]/15 bg-[#f7e8c6] p-6 shadow-[0_12px_40px_rgba(6,16,33,0.12)] sm:p-8">
           <form className="space-y-7" onSubmit={(event) => event.preventDefault()}>
             <fieldset className="space-y-4">
               <legend className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Your details</legend>
@@ -518,7 +518,7 @@ export default function EmployerOnboardingPage() {
                   value={form.contactName}
                   onChange={(event) => setForm((current) => ({ ...current, contactName: event.target.value }))}
                   readOnly={isPendingReadOnly}
-                  className="mt-2 min-h-[44px] w-full rounded-2xl border border-[#cda64d]/35 bg-white px-4 py-3 text-sm text-[#071426] outline-none transition focus:border-[#9a6d15] focus:ring-2 focus:ring-[#f2cc63]/45"
+                  className="mt-2 min-h-[44px] w-full rounded-2xl border border-[#08111F]/20 bg-[#fffaf0] px-4 py-3 text-sm text-[#08111F] outline-none transition focus:border-[#2BD7EF] focus:ring-2 focus:ring-[#2BD7EF]/25"
                   aria-required="true"
                 />
                 {touchedSubmit && !form.contactName.trim() ? <p className="mt-2 text-sm text-[#a2472f]">Contact name is required.</p> : null}
@@ -532,7 +532,7 @@ export default function EmployerOnboardingPage() {
                   value={form.contactRole}
                   onChange={(event) => setForm((current) => ({ ...current, contactRole: event.target.value }))}
                   readOnly={isPendingReadOnly}
-                  className="mt-2 min-h-[44px] w-full rounded-2xl border border-[#cda64d]/35 bg-white px-4 py-3 text-sm text-[#071426] outline-none transition focus:border-[#9a6d15] focus:ring-2 focus:ring-[#f2cc63]/45"
+                  className="mt-2 min-h-[44px] w-full rounded-2xl border border-[#08111F]/20 bg-[#fffaf0] px-4 py-3 text-sm text-[#08111F] outline-none transition focus:border-[#2BD7EF] focus:ring-2 focus:ring-[#2BD7EF]/25"
                   aria-required="true"
                 />
                 {touchedSubmit && !form.contactRole.trim() ? <p className="mt-2 text-sm text-[#a2472f]">Your role is required.</p> : null}
@@ -550,7 +550,7 @@ export default function EmployerOnboardingPage() {
                   value={form.companyName}
                   onChange={(event) => setForm((current) => ({ ...current, companyName: event.target.value }))}
                   readOnly={isPendingReadOnly}
-                  className="mt-2 min-h-[44px] w-full rounded-2xl border border-[#cda64d]/35 bg-white px-4 py-3 text-sm text-[#071426] outline-none transition focus:border-[#9a6d15] focus:ring-2 focus:ring-[#f2cc63]/45"
+                  className="mt-2 min-h-[44px] w-full rounded-2xl border border-[#08111F]/20 bg-[#fffaf0] px-4 py-3 text-sm text-[#08111F] outline-none transition focus:border-[#2BD7EF] focus:ring-2 focus:ring-[#2BD7EF]/25"
                   aria-required="true"
                 />
                 {touchedSubmit && !form.companyName.trim() ? <p className="mt-2 text-sm text-[#a2472f]">Company name is required.</p> : null}
@@ -564,7 +564,7 @@ export default function EmployerOnboardingPage() {
                   value={form.abn}
                   onChange={(event) => setForm((current) => ({ ...current, abn: formatAbnInput(event.target.value) }))}
                   readOnly={isPendingReadOnly}
-                  className="mt-2 min-h-[44px] w-full rounded-2xl border border-[#cda64d]/35 bg-white px-4 py-3 text-sm text-[#071426] outline-none transition focus:border-[#9a6d15] focus:ring-2 focus:ring-[#f2cc63]/45"
+                  className="mt-2 min-h-[44px] w-full rounded-2xl border border-[#08111F]/20 bg-[#fffaf0] px-4 py-3 text-sm text-[#08111F] outline-none transition focus:border-[#2BD7EF] focus:ring-2 focus:ring-[#2BD7EF]/25"
                   aria-required="true"
                   aria-describedby="abn-help"
                   inputMode="numeric"
@@ -585,7 +585,7 @@ export default function EmployerOnboardingPage() {
                     value={form.website}
                     onChange={(event) => setForm((current) => ({ ...current, website: event.target.value }))}
                     readOnly={isPendingReadOnly}
-                    className="mt-2 min-h-[44px] w-full rounded-2xl border border-[#cda64d]/35 bg-white px-4 py-3 text-sm text-[#071426] outline-none transition focus:border-[#9a6d15] focus:ring-2 focus:ring-[#f2cc63]/45"
+                    className="mt-2 min-h-[44px] w-full rounded-2xl border border-[#08111F]/20 bg-[#fffaf0] px-4 py-3 text-sm text-[#08111F] outline-none transition focus:border-[#2BD7EF] focus:ring-2 focus:ring-[#2BD7EF]/25"
                     aria-required="true"
                   />
                   {touchedSubmit && !form.website.trim() ? <p className="mt-2 text-sm text-[#a2472f]">Website is required.</p> : null}
@@ -599,7 +599,7 @@ export default function EmployerOnboardingPage() {
                     value={form.industry}
                     onChange={(event) => setForm((current) => ({ ...current, industry: event.target.value }))}
                     readOnly={isPendingReadOnly}
-                    className="mt-2 min-h-[44px] w-full rounded-2xl border border-[#cda64d]/35 bg-white px-4 py-3 text-sm text-[#071426] outline-none transition focus:border-[#9a6d15] focus:ring-2 focus:ring-[#f2cc63]/45"
+                    className="mt-2 min-h-[44px] w-full rounded-2xl border border-[#08111F]/20 bg-[#fffaf0] px-4 py-3 text-sm text-[#08111F] outline-none transition focus:border-[#2BD7EF] focus:ring-2 focus:ring-[#2BD7EF]/25"
                     aria-required="true"
                   />
                   {touchedSubmit && !form.industry.trim() ? <p className="mt-2 text-sm text-[#a2472f]">Industry is required.</p> : null}
@@ -616,7 +616,7 @@ export default function EmployerOnboardingPage() {
                     setFormError(null);
                     setStatusMessage(null);
                   }}
-                  className="min-h-[44px] rounded-full border border-[#0f2744]/25 bg-white px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#0f2744] transition hover:bg-[#f0e1bc]"
+                    className="min-h-[44px] rounded-full border border-[#08111F]/20 bg-[#fffaf0] px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#08111F] transition hover:bg-[#f0e1bc]"
                 >
                   Edit submission
                 </button>
@@ -626,7 +626,7 @@ export default function EmployerOnboardingPage() {
                     type="button"
                     onClick={() => void saveDetails()}
                     disabled={saving || submitting}
-                    className="min-h-[44px] rounded-full border border-[#0f2744]/25 bg-white px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#0f2744] transition hover:bg-[#f0e1bc] disabled:cursor-not-allowed disabled:opacity-55"
+                    className="min-h-[44px] rounded-full border border-[#2BD7EF]/60 bg-[#2BD7EF] px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#08111F] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-55"
                   >
                     {saving ? "Saving..." : "Save details"}
                   </button>
@@ -636,7 +636,7 @@ export default function EmployerOnboardingPage() {
                       type="button"
                       onClick={() => void submitVerification()}
                       disabled={submitting || saving}
-                      className="min-h-[44px] rounded-full border border-[#0f2744]/25 bg-[#0f2744] px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f] disabled:cursor-not-allowed disabled:opacity-55"
+                      className="min-h-[44px] rounded-full border border-[#2BD7EF]/60 bg-[#2BD7EF] px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.24em] text-[#08111F] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-55"
                     >
                       {submitting
                         ? "Submitting..."
@@ -662,7 +662,7 @@ export default function EmployerOnboardingPage() {
 
               <Link
                 href="/dashboard"
-                className="min-h-[44px] rounded-full border border-[#cda64d]/35 bg-[#f7ebcf] px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#0f2744] transition hover:bg-[#e9d88f]"
+                className="min-h-[44px] rounded-full border border-[#2BD7EF]/60 bg-[#2BD7EF] px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#08111F] transition hover:brightness-105"
               >
                 Back to dashboard
               </Link>

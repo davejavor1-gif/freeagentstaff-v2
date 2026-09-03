@@ -262,8 +262,8 @@ export default function ConnectionsPage() {
       <main className="flex min-h-screen flex-col bg-[#08111F] text-[#071426]">
         <Navbar />
         <section className="flex-1 mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-10">
-          <div className="rounded-[32px] border border-[#cda64d]/45 bg-[#f7ebcf]/85 p-8 shadow-[0_18px_55px_rgba(6,16,33,0.12)]">
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#0f2744]">Loading connections</p>
+          <div className="rounded-[32px] border border-[#08111F]/15 bg-[#f7e8c6] p-8 text-[#08111F] shadow-[0_18px_55px_rgba(6,16,33,0.12)]">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#08111F]">Loading connections</p>
           </div>
         </section>
         <Footer />
@@ -275,13 +275,13 @@ export default function ConnectionsPage() {
     <main className="flex min-h-screen flex-col bg-[#08111F] text-[#071426]">
       <Navbar />
       <section className="flex-1 mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-10 lg:py-12">
-        <div className="rounded-[36px] border border-[#cda64d]/45 bg-[#f7ebcf]/78 p-5 shadow-[0_18px_55px_rgba(6,16,33,0.12)] sm:p-7 lg:p-8">
+        <div className="rounded-[36px] border border-[#08111F]/15 bg-[#f7e8c6] p-5 text-[#08111F] shadow-[0_18px_55px_rgba(6,16,33,0.12)] sm:p-7 lg:p-8">
           <header className="flex flex-col gap-4 border-b border-[#cda64d]/30 pb-7 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
                 {accountType === "employer" ? "Employer workspace" : "Talent workspace"}
               </p>
-              <h1 className="mt-3 text-4xl font-black uppercase tracking-[0.12em] text-[#0f2744] sm:text-5xl">Connections</h1>
+              <h1 className="mt-3 text-4xl font-black uppercase tracking-[0.12em] text-[#08111F] sm:text-5xl">Connections</h1>
               <p className="mt-3 text-base font-semibold text-[#17355f] sm:text-lg">
                 {accountType === "employer"
                   ? "Manage active connection access and open Talent Passports."
@@ -321,8 +321,8 @@ export default function ConnectionsPage() {
                       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                         <div>
                           <div className="flex flex-wrap items-center gap-2">
-                            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#0f2744]">{displayName}</p>
-                            <span className="rounded-full bg-[#0f2744] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf]">
+                            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#08111F]">{displayName}</p>
+                            <span className="rounded-full bg-[#2BD7EF] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#f7e8c6]">
                               {item.status}
                             </span>
                             <span className="rounded-full border border-[#cda64d]/40 bg-[#fff5db] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#6f5315]">
@@ -360,7 +360,7 @@ export default function ConnectionsPage() {
                           {item.talent?.slug && item.isCurrentlyEligible ? (
                             <Link
                               href={`/talent/${item.talent.slug}`}
-                              className="inline-flex min-h-11 items-center rounded-full border border-[#0f2744]/25 bg-[#f7ebcf] px-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#0f2744] transition hover:bg-[#e9d88f]"
+                              className="inline-flex min-h-11 items-center rounded-full bg-[#2BD7EF] px-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f7e8c6] transition hover:brightness-105"
                             >
                               View Talent Passport
                             </Link>
@@ -373,7 +373,7 @@ export default function ConnectionsPage() {
                                 void loadEmployerContact(item);
                               }}
                               disabled={contactState?.loading === true}
-                              className="inline-flex min-h-11 items-center rounded-full border border-[#0f2744]/25 bg-[#0f2744] px-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf] transition hover:bg-[#17355f] disabled:opacity-60"
+                              className="inline-flex min-h-11 items-center rounded-full bg-[#2BD7EF] px-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f7e8c6] transition hover:brightness-105 disabled:opacity-60"
                             >
                               {contactState?.loading ? "Loading contact" : "View contact details"}
                             </button>
@@ -403,10 +403,10 @@ export default function ConnectionsPage() {
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
-                          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#0f2744]">
+                          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#08111F]">
                             {item.employerCompanyName ?? "Verified employer"}
                           </p>
-                          <span className="rounded-full bg-[#0f2744] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf]">
+                          <span className="rounded-full bg-[#2BD7EF] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#f7e8c6]">
                             {item.status}
                           </span>
                         </div>

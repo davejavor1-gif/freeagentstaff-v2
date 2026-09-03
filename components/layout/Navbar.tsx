@@ -17,8 +17,10 @@ const guestNavItems = [
   { label: "Employer Sign In", href: "/employer/auth", kind: "employer-auth" as const },
 ];
 
-const talentNavItems = [
+const talentNavItems = (talentSlug: string | null) => [
   { label: "Dashboard", href: "/dashboard" },
+  { label: "Talent Card", href: "/builder" },
+  ...(talentSlug ? [{ label: "Talent Passport", href: `/talent/${talentSlug}` }] : []),
   { label: "Notifications", href: "/notifications" },
   { label: "Connections", href: "/connections" },
   { label: "Privacy & Visibility", href: "/settings/privacy" },
@@ -31,6 +33,7 @@ export default function Navbar() {
   const [session, setSession] = useState<Session | null>(null);
   const [notificationCount, setNotificationCount] = useState(0);
   const [accountType, setAccountType] = useState<"talent" | "employer" | null>(null);
+  const [talentSlug, setTalentSlug] = useState<string | null>(null);
   const [isSystemAdmin, setIsSystemAdmin] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const pathname = usePathname();
@@ -44,6 +47,7 @@ export default function Navbar() {
         if (mounted) {
           setNotificationCount(0);
           setAccountType(null);
+          setTalentSlug(null);
           setIsSystemAdmin(false);
         }
         return;
@@ -51,10 +55,11 @@ export default function Navbar() {
 
       const { data: profileRow } = await supabase
         .from("profiles")
-        .select("account_type")
+        .select("account_type, slug")
         .eq("user_id", currentSession.user.id)
         .maybeSingle();
       const rowAccountType = (profileRow as { account_type?: string } | null | undefined)?.account_type;
+      const rowTalentSlug = (profileRow as { slug?: string | null } | null | undefined)?.slug ?? null;
       let count = 0;
 
       if (currentSession.access_token) {
@@ -78,6 +83,7 @@ export default function Navbar() {
       if (mounted) {
         setNotificationCount(count);
         setAccountType(rowAccountType === "employer" ? "employer" : "talent");
+        setTalentSlug(rowTalentSlug);
       }
 
       if (currentSession.access_token) {
@@ -124,11 +130,11 @@ export default function Navbar() {
   const isTalentSession = Boolean(session) && accountType !== "employer";
   const visibleNavItems = isEmployerSession
     ? [
-        { label: "Notifications", href: "/notifications" },
+      { label: "Dashboard", href: "/dashboard" },
         { label: "Find talent", href: "/find-talent" },
         { label: "Saved talent", href: "/saved-talent" },
+      { label: "Notifications", href: "/notifications" },
         { label: "Connections", href: "/connections" },
-        { label: "Dashboard", href: "/dashboard" },
         { label: "Employer account", href: "/onboarding/employer" },
       ]
     : isAdminSession
@@ -137,7 +143,7 @@ export default function Navbar() {
           { label: "Dashboard", href: "/dashboard" },
         ]
     : isTalentSession
-      ? talentNavItems
+      ? talentNavItems(talentSlug)
       : guestNavItems;
 
   async function handleEmployerSignOut() {
@@ -205,12 +211,12 @@ export default function Navbar() {
           {session ? (
             <Link
               href="/notifications"
-              className="hidden rounded-full border border-[#2bd7ef]/45 p-2 text-[#0b2a45] transition hover:border-[#2bd7ef]/75 hover:text-[#2bd7ef] sm:inline-flex"
+              className={`hidden rounded-full border p-2 transition sm:inline-flex ${isEmployerSession ? "border-[#2bd7ef]/45 text-[#0b2a45] hover:border-[#2bd7ef]/75 hover:text-[#2bd7ef]" : "border-[#aff546]/45 text-[#0b2a45] hover:border-[#aff546]/75 hover:text-[#aff546]"}`}
               aria-label="Notifications"
             >
-              <Bell className="h-4 w-4" />
+              <Bell className={`h-4 w-4 ${isEmployerSession ? "text-[#2bd7ef]" : "text-[#aff546]"}`} />
               {notificationCount > 0 ? (
-                <span className="ml-1 rounded-full bg-[#aff546] px-1.5 text-[10px] font-black text-[#071426]">{notificationCount}</span>
+                <span className={`ml-1 rounded-full px-1.5 text-[10px] font-black text-[#08111F] ${isEmployerSession ? "bg-[#2bd7ef]" : "bg-[#aff546]"}`}>{notificationCount}</span>
               ) : null}
             </Link>
           ) : null}

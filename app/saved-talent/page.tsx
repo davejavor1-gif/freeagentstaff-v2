@@ -429,7 +429,7 @@ export default function SavedTalentPage() {
     <main className="min-h-screen bg-[#08111F] text-[#071426]">
       <Navbar />
       <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-10 lg:py-12">
-        <div className="rounded-[36px] border border-[#cda64d]/45 bg-[#f7ebcf]/78 p-5 shadow-[0_18px_55px_rgba(6,16,33,0.12)] sm:p-7 lg:p-8">
+        <div className="rounded-[36px] border border-[#08111F]/15 bg-[#f7e8c6] p-5 shadow-[0_18px_55px_rgba(6,16,33,0.12)] sm:p-7 lg:p-8">
           <header className="grid gap-6 border-b border-[#cda64d]/30 pb-7 lg:grid-cols-[1.1fr_1fr] lg:items-end">
             <div className="max-w-2xl">
               <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">EMPLOYER WORKSPACE</p>
@@ -527,7 +527,7 @@ export default function SavedTalentPage() {
             </div>
           ) : null}
 
-          <div className="mt-6">
+          <div className="mt-6 rounded-[30px] border border-[#2BD7EF]/25 bg-[#0f2744] p-4 shadow-[0_12px_40px_rgba(6,16,33,0.16)] sm:p-6">
             {isLoading ? (
               <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                 {Array.from({ length: 6 }).map((_, index) => (
