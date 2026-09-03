@@ -22,7 +22,7 @@ export default function Footer() {
                 Privacy Policy
               </Link>
               <Link href="/terms" className="inline-flex min-h-10 items-center rounded-sm transition hover:text-[#4f9f4e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4f9f4e] focus-visible:ring-offset-4 focus-visible:ring-offset-[#f7e8c6] sm:min-h-0">
-                Terms of Use
+                Terms & Conditions
               </Link>
               <Link href="/support" className="inline-flex min-h-10 items-center rounded-sm transition hover:text-[#4f9f4e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4f9f4e] focus-visible:ring-offset-4 focus-visible:ring-offset-[#f7e8c6] sm:min-h-0">
                 Support

@@ -13,8 +13,8 @@ export const metadata: Metadata = {
 export default function SupportPage() {
   return (
     <InformationPage
-      eyebrow="Support"
-      title="Here to Help"
+      title="Support"
+      titleColor="#AFF546"
       description="Practical help for using Freeagentstaff, managing your account, and keeping your information secure."
     >
           <div className="border-b border-[#cda64d]/45 pb-8">

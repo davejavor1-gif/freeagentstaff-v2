@@ -100,7 +100,7 @@ export default function TalentPage() {
         </div>
       </section>
 
-      <section className="bg-[#17355f] text-[#f7e8c6]">
+      <section className="bg-[#08111F] text-[#f7e8c6]">
         <div className="mx-auto grid max-w-7xl gap-10 px-6 py-14 sm:px-8 lg:grid-cols-[0.8fr_1.2fr] lg:px-12 lg:py-20">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#aff546]">Your privacy matters</p>

@@ -37,6 +37,8 @@ const proTalentFeatures = [
   "Employer Saves analytics",
 ];
 
+const PLAN_PILL_BASE = "-ml-5 inline-flex items-center rounded-full px-5 py-2 text-2xl font-black uppercase tracking-[0.08em] text-[#08111F] sm:-ml-6 sm:px-6 sm:py-2.5 sm:text-3xl";
+
 export default function PricingPage() {
   const basicPlan = CANONICAL_PRICING_PLANS.find((plan) => plan.code === "free_agent");
   const proPlan = CANONICAL_PRICING_PLANS.find((plan) => plan.code === "free_agent_pro");
@@ -50,26 +52,28 @@ export default function PricingPage() {
     <main className="flex min-h-screen flex-col bg-[#08111F] text-[#071426]">
       <Navbar />
       <div className="flex-1 mx-auto w-full max-w-7xl px-6 py-12 sm:px-8 lg:px-12">
-        <div className="mb-12 space-y-6">
-          <p className="text-sm font-semibold uppercase tracking-[0.32em] text-[#f7ebcf]">
-            Pricing
-          </p>
-          <h1 className="text-4xl font-black uppercase tracking-[0.12em] text-[#f7ebcf] sm:text-5xl">
-            Clear plans for free agents and employers.
-          </h1>
-          <p className="max-w-2xl text-base leading-8 text-[#f7ebcf]/80">
-            Choose the Talent profile features that suit you, or unlock verified employer access to discover and connect with Talent.
-          </p>
-          <p className="max-w-2xl rounded-2xl border border-[#0f2744]/15 bg-[#f7ebcf] px-4 py-3 text-sm font-semibold text-[#0f2744]">
-            Fairness guarantee: Pro does not influence ranking, ordering, or eligibility in talent discovery.
-          </p>
+        <div className="mb-12 rounded-[36px] border border-[#cda64d]/40 bg-[#f7e8c6] p-6 shadow-[0_18px_55px_rgba(6,16,33,0.12)] sm:p-10">
+          <div className="space-y-6">
+            <p className="text-sm font-semibold uppercase tracking-[0.32em] text-[#08111F]">
+              Pricing
+            </p>
+            <h1 className="text-4xl font-black uppercase tracking-[0.12em] text-[#08111F] sm:text-5xl">
+              Clear plans for free agents and employers.
+            </h1>
+            <p className="max-w-2xl text-base leading-8 text-[#08111F]">
+              Choose the Talent profile features that suit you, or unlock verified employer access to discover and connect with Talent.
+            </p>
+            <p className="max-w-2xl rounded-2xl bg-[#AFF546] px-4 py-3 text-sm font-semibold text-[#08111F]">
+              Fairness guarantee: Pro does not influence ranking, ordering, or eligibility in talent discovery.
+            </p>
+          </div>
         </div>
 
         <section>
           <div className="mt-4 grid items-start gap-5 md:grid-cols-2 xl:grid-cols-3">
             <div className="rounded-[36px] border border-[#cda64d]/40 bg-[#f7ebcf] p-8 text-[#071426] shadow-[0_18px_55px_rgba(6,16,33,0.12)]">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">BASIC</p>
-              <p className="mt-2 text-4xl font-black tracking-[0.1em]">FREE</p>
+              <p className={`${PLAN_PILL_BASE} bg-[#AFF546]`}>BASIC</p>
+              <p className="mt-2 text-4xl font-black tracking-[0.1em] text-[#08111F]">FREE</p>
               <p className="mt-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#27405f]">{basicPlan.cadenceLabel}</p>
               <p className="mt-6 text-sm leading-7 text-[#27405f]">Create your FreeAgent Card and Talent Passport and be discovered by employers.</p>
               <ul className="mt-6 grid gap-3 text-sm text-[#27405f] sm:grid-cols-2">
@@ -83,8 +87,8 @@ export default function PricingPage() {
             <div className="rounded-[36px] border border-[#cda64d]/40 bg-[#f7ebcf] p-8 text-[#071426] shadow-[0_18px_55px_rgba(6,16,33,0.12)]">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">PRO</p>
-                  <p className="mt-2 text-4xl font-black tracking-[0.1em]">{proPlan.priceLabel}</p>
+                  <p className={`${PLAN_PILL_BASE} bg-[#AFF546]`}>PRO</p>
+                  <p className="mt-2 text-4xl font-black tracking-[0.1em] text-[#08111F]">{proPlan.priceLabel}</p>
                   <p className="mt-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#27405f]">{proPlan.cadenceLabel}</p>
                 </div>
                 <FreeAgentProBadge size="large" />
@@ -98,8 +102,8 @@ export default function PricingPage() {
               <BillingButton action="checkout" plan="free_agent_pro" className="mt-8 inline-flex w-full items-center justify-center rounded-full bg-[#AFF546] px-5 py-3 text-sm font-semibold uppercase tracking-[0.24em] text-[#08111F] transition hover:brightness-105">Go Pro</BillingButton>
             </div>
             <div className="rounded-[36px] border border-[#cda64d]/40 bg-[#f7ebcf] p-8 text-[#071426] shadow-[0_18px_55px_rgba(6,16,33,0.12)]">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">EMPLOYER</p>
-              <p className="mt-2 text-4xl font-black tracking-[0.1em]">{employerPlan.priceLabel}</p>
+              <p className={`${PLAN_PILL_BASE} bg-[#2BD7EF]`}>EMPLOYER</p>
+              <p className="mt-2 text-4xl font-black tracking-[0.1em] text-[#08111F]">{employerPlan.priceLabel}</p>
               <p className="mt-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#27405f]">{employerPlan.cadenceLabel}</p>
               <p className="mt-6 text-sm leading-7 text-[#27405f]">{employerPlan.description}</p>
               <ul className="mt-6 space-y-3 text-sm text-[#27405f]">{employerPlan.bullets.map((feature) => <li key={feature} className="flex items-center gap-3"><span className="h-2.5 w-2.5 rounded-full bg-[#cda64d]" />{feature === "Verified employer discovery" ? "Employer Talent discovery" : feature}</li>)}</ul>

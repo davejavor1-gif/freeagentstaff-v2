@@ -331,16 +331,16 @@ export default function PrivacySettingsPage() {
                       disabled={isSaving || !settings}
                       className={`w-full rounded-[24px] border p-5 text-left transition ${
                         active
-                          ? "border-[#AFF546]/70 bg-[#AFF546]/10"
-                          : "border-[#08111F]/15 bg-[#08111F]/[0.03] hover:bg-[#08111F]/[0.06]"
+                          ? "border-[#AFF546]/70 bg-[#0f2744]"
+                          : "border-[#cda64d]/25 bg-[#0f2744] hover:bg-[#17355f]"
                       }`}
                     >
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#08111F]">{option.title}</p>
-                          <p className="mt-2 text-sm leading-7 text-[#08111F]/70">{option.description}</p>
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f7ebcf]">{option.title}</p>
+                          <p className="mt-2 text-sm leading-7 text-[#f7ebcf]/80">{option.description}</p>
                         </div>
-                        <span className={`rounded-full border px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] ${active ? "border-[#AFF546]/70 bg-[#AFF546] text-[#08111F]" : "border-[#08111F]/15 bg-[#08111F]/[0.04] text-[#08111F]/70"}`}>
+                        <span className={`rounded-full border px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] ${active ? "border-[#AFF546]/70 bg-[#AFF546] text-[#08111F]" : "border-[#f7ebcf]/40 bg-[#f7ebcf] text-[#08111F]"}`}>
                           {active ? "Selected" : "Choose"}
                         </span>
                       </div>
@@ -369,16 +369,16 @@ export default function PrivacySettingsPage() {
                     disabled={isSaving || !settings}
                     className={`w-full rounded-[24px] border p-5 text-left transition ${
                       active
-                        ? "border-[#AFF546]/70 bg-[#AFF546]/10"
-                        : "border-[#08111F]/15 bg-[#08111F]/[0.03] hover:bg-[#08111F]/[0.06]"
+                        ? "border-[#AFF546]/70 bg-[#0f2744]"
+                        : "border-[#cda64d]/25 bg-[#0f2744] hover:bg-[#17355f]"
                     }`}
                   >
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#08111F]">{option.title}</p>
-                          <p className="mt-2 text-sm leading-7 text-[#08111F]/70">{option.description}</p>
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f7ebcf]">{option.title}</p>
+                          <p className="mt-2 text-sm leading-7 text-[#f7ebcf]/80">{option.description}</p>
                       </div>
-                        <span className={`rounded-full border px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] ${active ? "border-[#AFF546]/70 bg-[#AFF546] text-[#08111F]" : "border-[#08111F]/15 bg-[#08111F]/[0.04] text-[#08111F]/70"}`}>
+                        <span className={`rounded-full border px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] ${active ? "border-[#AFF546]/70 bg-[#AFF546] text-[#08111F]" : "border-[#f7ebcf]/40 bg-[#f7ebcf] text-[#08111F]"}`}>
                         {active ? "Selected" : "Choose"}
                       </span>
                     </div>
@@ -389,8 +389,8 @@ export default function PrivacySettingsPage() {
           ) : null}
 
           {accountType === "talent" && !isLoading ? (
-            <div className="privacy-light-row mt-10 rounded-[24px] border border-[#08111F]/15 bg-[#08111F]/[0.03] p-6 text-sm leading-7 text-[#08111F]/70">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#08111F]">Blocked companies</p>
+            <div className="privacy-light-row mt-10 rounded-[24px] border border-[#cda64d]/25 bg-[#0f2744] p-6 text-sm leading-7 text-[#f7ebcf]/80">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f7ebcf]">Blocked companies</p>
               <p className="mt-2">
                 Block by company name, domain, or ABN. FreeAgent stores a canonical privacy key behind the scenes and hides blocked employers from discovery and contact access where current rules apply.
               </p>
@@ -407,7 +407,7 @@ export default function PrivacySettingsPage() {
                     void addBlockedCompany();
                   }}
                   disabled={isSaving || blockInput.trim().length === 0}
-                  className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-[#08111F]/20 bg-[#08111F] px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.24em] text-[#f7e8c6] transition hover:bg-[#10233A] disabled:opacity-60"
+                  className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-[#AFF546]/70 bg-[#AFF546] px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.24em] text-[#08111F] transition hover:brightness-105 disabled:opacity-60"
                 >
                   Add block
                 </button>

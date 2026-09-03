@@ -88,7 +88,7 @@ export default function EmployersPage() {
         </div>
       </section>
 
-      <section className="bg-[#17355f] text-[#f7e8c6]">
+      <section className="bg-[#08111F] text-[#f7e8c6]">
         <div className="mx-auto max-w-7xl px-6 py-14 sm:px-8 lg:px-12 lg:py-20">
           <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
             <div>
