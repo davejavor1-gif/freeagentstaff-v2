@@ -259,7 +259,7 @@ export default function ConnectionsPage() {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen flex-col bg-[radial-gradient(circle_at_top,_#f7ebcf_0%,_#f4e4bf_40%,_#e7d7a7_100%)] text-[#071426]">
+      <main className="flex min-h-screen flex-col bg-[#08111F] text-[#071426]">
         <Navbar />
         <section className="flex-1 mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-10">
           <div className="rounded-[32px] border border-[#cda64d]/45 bg-[#f7ebcf]/85 p-8 shadow-[0_18px_55px_rgba(6,16,33,0.12)]">
@@ -272,7 +272,7 @@ export default function ConnectionsPage() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col bg-[radial-gradient(circle_at_top,_#f7ebcf_0%,_#f4e4bf_40%,_#e7d7a7_100%)] text-[#071426]">
+    <main className="flex min-h-screen flex-col bg-[#08111F] text-[#071426]">
       <Navbar />
       <section className="flex-1 mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-10 lg:py-12">
         <div className="rounded-[36px] border border-[#cda64d]/45 bg-[#f7ebcf]/78 p-5 shadow-[0_18px_55px_rgba(6,16,33,0.12)] sm:p-7 lg:p-8">

@@ -451,7 +451,7 @@ export default function BuilderPage() {
 
   if (isLoading) {
     return (
-      <><Navbar /><main className="min-h-screen bg-[#0f2744] px-4 py-8 text-[#0f2744] sm:px-6 lg:px-8">
+      <><Navbar /><main className="min-h-screen bg-[#08111F] px-4 py-8 text-[#0f2744] sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-7xl items-center justify-center py-24">
           <div className="rounded-[32px] border border-[#cda64d]/70 bg-[#0f2744] px-8 py-12 text-center text-[#f7ebcf] shadow-[0_18px_55px_rgba(6,16,33,0.28)]">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">Loading profile</p>
@@ -659,7 +659,7 @@ export default function BuilderPage() {
   };
 
   return (
-    <><Navbar /><main className="min-h-screen bg-[#0f2744] px-4 py-8 text-[#0f2744] sm:px-6 lg:px-8">
+    <><Navbar /><main className="min-h-screen bg-[#08111F] px-4 py-8 text-[#0f2744] sm:px-6 lg:px-8">
       <div className="mx-auto flex max-w-7xl flex-col gap-6 lg:flex-row lg:items-start">
         <section className="box-border w-full rounded-[32px] border-[32px] border-[#f7ebcf] bg-[#0f2744] p-6 text-[#f7ebcf] shadow-[0_18px_55px_rgba(6,16,33,0.28)] lg:w-[62%] lg:p-8">
           <div className="inline-flex items-center rounded-full border border-[#f2cc63]/40 bg-[#f7ebcf]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">

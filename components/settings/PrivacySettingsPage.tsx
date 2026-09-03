@@ -264,14 +264,14 @@ export default function PrivacySettingsPage() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col bg-[radial-gradient(circle_at_top,_#f7ebcf_0%,_#f4e4bf_40%,_#e7d7a7_100%)] text-[#071426]">
+    <main className="privacy-page flex min-h-screen flex-col bg-[#08111F] text-[#08111F]">
       <Navbar />
       <div className="flex-1 mx-auto w-full max-w-5xl px-6 py-12 sm:px-8 lg:px-12">
-        <div className="rounded-[36px] border border-[#cda64d]/60 bg-[#0f2744] p-8 text-[#f7ebcf] shadow-[0_18px_55px_rgba(6,16,33,0.18)] sm:p-10">
-          <p className="text-sm font-semibold uppercase tracking-[0.32em] text-[#f2cc63]">
+        <div className="privacy-panel rounded-[36px] border border-[#08111F]/15 bg-[#f7e8c6] p-8 text-[#08111F] shadow-[0_18px_55px_rgba(6,16,33,0.18)] sm:p-10">
+          <p className="text-sm font-semibold uppercase tracking-[0.32em] text-[#08111F]/60">
             Settings / Privacy
           </p>
-          <h1 className="mt-4 text-4xl font-black uppercase tracking-[0.12em] text-[#f7ebcf] sm:text-5xl">
+          <h1 className="mt-4 text-4xl font-black uppercase tracking-[0.12em] text-[#08111F] sm:text-5xl">
             Privacy & Visibility
           </h1>
           {accountType === "talent" ? (
@@ -286,18 +286,18 @@ export default function PrivacySettingsPage() {
           ) : null}
 
           {accountType === "employer" ? (
-            <p className="mt-6 max-w-3xl text-base leading-8 text-[#dfe7ef]">
+            <p className="mt-6 max-w-3xl text-base leading-8 text-[#08111F]/70">
               These settings apply to Talent Passports. Employer profile controls stay in Dashboard.
             </p>
           ) : (
-            <p className="mt-6 max-w-3xl text-base leading-8 text-[#dfe7ef]">
+            <p className="mt-6 max-w-3xl text-base leading-8 text-[#08111F]/70">
               Choose who can see your profile when it is published, how it appears in the employer marketplace, and which employer identities are blocked. Publishing is managed in Builder Studio.
             </p>
           )}
 
           {activeVisibility === "confidential" && accountType === "talent" ? (
-            <div className="mt-8 rounded-[24px] border border-[#f2cc63]/35 bg-[#f7ebcf]/12 p-6 text-sm leading-7 text-[#dfe7ef]">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">Confidential Mode active</p>
+            <div className="privacy-light-row mt-8 rounded-[24px] border border-[#08111F]/15 bg-[#08111F]/[0.03] p-6 text-sm leading-7 text-[#08111F]/70">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#08111F]/60">Confidential Mode active</p>
               <p className="mt-3">
                 Name, photo, current employer and contact details are hidden. Employers see an anonymised Talent Card instead.
               </p>
@@ -306,13 +306,13 @@ export default function PrivacySettingsPage() {
 
           <div className="mt-10 space-y-4">
             {accountType === "employer" ? (
-              <div className="rounded-[24px] border border-[#f2cc63]/20 bg-[#f7ebcf]/10 p-6 text-sm leading-7 text-[#dfe7ef]">
+              <div className="privacy-light-row rounded-[24px] border border-[#08111F]/15 bg-[#08111F]/[0.03] p-6 text-sm leading-7 text-[#08111F]/70">
                 Employer account detected. Use Dashboard to manage verification details.
               </div>
             ) : null}
 
             {isLoading ? (
-              <div className="rounded-[24px] border border-[#f2cc63]/20 bg-[#f7ebcf]/10 p-6 text-sm text-[#dfe7ef]">
+              <div className="privacy-light-row rounded-[24px] border border-[#08111F]/15 bg-[#08111F]/[0.03] p-6 text-sm text-[#08111F]/70">
                 Loading your settings...
               </div>
             ) : null}
@@ -331,16 +331,16 @@ export default function PrivacySettingsPage() {
                       disabled={isSaving || !settings}
                       className={`w-full rounded-[24px] border p-5 text-left transition ${
                         active
-                          ? "border-[#f2cc63]/70 bg-[#f7ebcf]/15"
-                          : "border-[#f2cc63]/20 bg-[#f7ebcf]/10 hover:bg-[#f7ebcf]/15"
+                          ? "border-[#AFF546]/70 bg-[#AFF546]/10"
+                          : "border-[#08111F]/15 bg-[#08111F]/[0.03] hover:bg-[#08111F]/[0.06]"
                       }`}
                     >
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">{option.title}</p>
-                          <p className="mt-2 text-sm leading-7 text-[#dfe7ef]">{option.description}</p>
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#08111F]">{option.title}</p>
+                          <p className="mt-2 text-sm leading-7 text-[#08111F]/70">{option.description}</p>
                         </div>
-                        <span className={`rounded-full px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] ${active ? "bg-[#f2cc63] text-[#0f2744]" : "bg-[#0f2744]/80 text-[#f7ebcf]"}`}>
+                        <span className={`rounded-full border px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] ${active ? "border-[#AFF546]/70 bg-[#AFF546] text-[#08111F]" : "border-[#08111F]/15 bg-[#08111F]/[0.04] text-[#08111F]/70"}`}>
                           {active ? "Selected" : "Choose"}
                         </span>
                       </div>
@@ -352,7 +352,7 @@ export default function PrivacySettingsPage() {
 
           {accountType === "talent" && !isLoading ? (
             <div className="mt-10 space-y-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">Opportunity status</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#08111F]">Opportunity status</p>
               {opportunityOptions.map((option) => {
                 const active = (settings?.opportunityStatus ?? "actively_open") === option.value;
 
@@ -369,16 +369,16 @@ export default function PrivacySettingsPage() {
                     disabled={isSaving || !settings}
                     className={`w-full rounded-[24px] border p-5 text-left transition ${
                       active
-                        ? "border-[#f2cc63]/70 bg-[#f7ebcf]/15"
-                        : "border-[#f2cc63]/20 bg-[#f7ebcf]/10 hover:bg-[#f7ebcf]/15"
+                        ? "border-[#AFF546]/70 bg-[#AFF546]/10"
+                        : "border-[#08111F]/15 bg-[#08111F]/[0.03] hover:bg-[#08111F]/[0.06]"
                     }`}
                   >
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">{option.title}</p>
-                        <p className="mt-2 text-sm leading-7 text-[#dfe7ef]">{option.description}</p>
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#08111F]">{option.title}</p>
+                          <p className="mt-2 text-sm leading-7 text-[#08111F]/70">{option.description}</p>
                       </div>
-                      <span className={`rounded-full px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] ${active ? "bg-[#f2cc63] text-[#0f2744]" : "bg-[#0f2744]/80 text-[#f7ebcf]"}`}>
+                        <span className={`rounded-full border px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] ${active ? "border-[#AFF546]/70 bg-[#AFF546] text-[#08111F]" : "border-[#08111F]/15 bg-[#08111F]/[0.04] text-[#08111F]/70"}`}>
                         {active ? "Selected" : "Choose"}
                       </span>
                     </div>
@@ -389,8 +389,8 @@ export default function PrivacySettingsPage() {
           ) : null}
 
           {accountType === "talent" && !isLoading ? (
-            <div className="mt-10 rounded-[24px] border border-[#f2cc63]/20 bg-[#f7ebcf]/10 p-6 text-sm leading-7 text-[#dfe7ef]">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">Blocked companies</p>
+            <div className="privacy-light-row mt-10 rounded-[24px] border border-[#08111F]/15 bg-[#08111F]/[0.03] p-6 text-sm leading-7 text-[#08111F]/70">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#08111F]">Blocked companies</p>
               <p className="mt-2">
                 Block by company name, domain, or ABN. FreeAgent stores a canonical privacy key behind the scenes and hides blocked employers from discovery and contact access where current rules apply.
               </p>
@@ -399,7 +399,7 @@ export default function PrivacySettingsPage() {
                   value={blockInput}
                   onChange={(event) => setBlockInput(event.target.value)}
                   placeholder="Company name, domain, or ABN"
-                  className="min-h-[44px] w-full rounded-2xl border border-[#f2cc63]/30 bg-[#f7ebcf]/8 px-4 py-3 text-sm text-[#f7ebcf] outline-none transition focus:border-[#f2cc63]"
+                  className="min-h-[44px] w-full rounded-2xl border border-[#08111F]/20 bg-[#fffaf0] px-4 py-3 text-sm text-[#08111F] outline-none transition focus:border-[#AFF546]"
                 />
                 <button
                   type="button"
@@ -407,7 +407,7 @@ export default function PrivacySettingsPage() {
                     void addBlockedCompany();
                   }}
                   disabled={isSaving || blockInput.trim().length === 0}
-                  className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-[#f2cc63]/35 bg-[#0f2744] px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f] disabled:opacity-60"
+                  className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-[#08111F]/20 bg-[#08111F] px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.24em] text-[#f7e8c6] transition hover:bg-[#10233A] disabled:opacity-60"
                 >
                   Add block
                 </button>
@@ -415,10 +415,10 @@ export default function PrivacySettingsPage() {
 
               <div className="mt-4 space-y-3">
                 {settings?.blockedCompanies.length ? settings.blockedCompanies.map((key) => (
-                  <div key={key} className="flex flex-col gap-3 rounded-2xl border border-[#f2cc63]/20 bg-[#0f2744]/25 p-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div key={key} className="flex flex-col gap-3 rounded-2xl border border-[#08111F]/15 bg-[#fffaf0] p-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <p className="font-semibold text-[#f7ebcf]">{formatBlockedKey(key)}</p>
-                      <p className="text-xs uppercase tracking-[0.18em] text-[#f2cc63]">{key}</p>
+                      <p className="font-semibold text-[#08111F]">{formatBlockedKey(key)}</p>
+                      <p className="text-xs uppercase tracking-[0.18em] text-[#08111F]/60">{key}</p>
                     </div>
                     <button
                       type="button"
@@ -426,13 +426,13 @@ export default function PrivacySettingsPage() {
                         void removeBlockedCompany(key);
                       }}
                       disabled={isSaving}
-                      className="inline-flex min-h-[40px] items-center justify-center rounded-full border border-[#f2cc63]/35 px-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f2cc63] transition hover:bg-[#f7ebcf]/10 disabled:opacity-60"
+                      className="inline-flex min-h-[40px] items-center justify-center rounded-full border border-[#08111F]/20 px-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#08111F] transition hover:bg-[#08111F]/[0.05] disabled:opacity-60"
                     >
                       Remove
                     </button>
                   </div>
                 )) : (
-                  <div className="rounded-2xl border border-dashed border-[#f2cc63]/20 p-4 text-sm text-[#dfe7ef]">
+                  <div className="rounded-2xl border border-dashed border-[#08111F]/20 p-4 text-sm text-[#08111F]/60">
                     No blocked companies yet.
                   </div>
                 )}
@@ -441,13 +441,13 @@ export default function PrivacySettingsPage() {
           ) : null}
 
           {accountType === "talent" ? (
-            <div className="mt-8 text-xs text-[#dfe7ef]">
-              Prefer a full profile edit? <Link href="/builder" className="font-semibold text-[#f2cc63] underline underline-offset-4">Return to your Talent Passport builder</Link>.
+            <div className="mt-8 text-xs text-[#08111F]/60">
+              Prefer a full profile edit? <Link href="/builder" className="font-semibold text-[#08111F] underline underline-offset-4">Return to your Talent Passport builder</Link>.
             </div>
           ) : null}
 
           {saveMessage ? (
-            <div className="mt-6 rounded-[20px] border border-[#f2cc63]/25 bg-[#f7ebcf]/10 px-4 py-3 text-sm text-[#dfe7ef]">
+            <div className="mt-6 rounded-[20px] border border-[#08111F]/15 bg-[#fffaf0] px-4 py-3 text-sm text-[#08111F]/70">
               {saveMessage}
             </div>
           ) : null}

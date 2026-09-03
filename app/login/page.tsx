@@ -153,7 +153,7 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#0f2744] text-[#f7ebcf]">
+    <main className="min-h-screen bg-[#08111F] text-[#f7ebcf]">
       <Navbar />
       <div className="mx-auto flex min-h-screen max-w-3xl flex-col justify-center px-6 py-16 sm:px-10">
         <div className="rounded-3xl border border-[#cda64d]/55 bg-[#f7ebcf] p-10 text-[#0f2744] shadow-[0_18px_50px_rgba(6,16,33,0.22)]">

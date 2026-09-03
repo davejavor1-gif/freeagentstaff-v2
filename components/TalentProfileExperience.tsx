@@ -276,7 +276,7 @@ export default function TalentProfileExperience({
     return (
       <>
         <Navbar />
-        <main className="min-h-screen bg-[#0f2744] px-6 py-12 text-[#0f2744]">
+        <main className="min-h-screen bg-[#08111F] px-6 py-12 text-[#0f2744]">
           <div className="mx-auto max-w-6xl rounded-[32px] bg-[#f7ebcf] p-8">
             <p className="font-semibold uppercase tracking-[0.24em]">
               Loading talent passport...
@@ -291,7 +291,7 @@ export default function TalentProfileExperience({
     return (
       <>
         <Navbar />
-        <main className="min-h-screen bg-[#0f2744] px-6 py-12 text-[#0f2744]">
+        <main className="min-h-screen bg-[#08111F] px-6 py-12 text-[#0f2744]">
           <div className="mx-auto max-w-6xl rounded-[32px] border border-[#cda64d]/60 bg-[#f7ebcf] p-8">
             <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
               Passport restricted
@@ -329,7 +329,7 @@ export default function TalentProfileExperience({
   return (
     <>
       <Navbar />
-      <main className="min-h-screen overflow-x-hidden bg-[#0f2744] px-4 py-8 text-[#0f2744] sm:px-6 lg:px-10">
+      <main className="min-h-screen overflow-x-hidden bg-[#08111F] px-4 py-8 text-[#0f2744] sm:px-6 lg:px-10">
         <div className="mx-auto max-w-7xl">
           <div className="mb-6 flex flex-wrap items-end justify-end gap-4">
             {showEmployerBackButton ? (

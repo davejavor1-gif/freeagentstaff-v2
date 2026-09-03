@@ -196,7 +196,7 @@ export default function NotificationsPage() {
 
   if (loading) {
     return (
-      <><Navbar /><main className="min-h-screen bg-[#0f2744] text-[#f7ebcf]">
+      <><Navbar /><main className="min-h-screen bg-[#08111F] text-[#f7ebcf]">
         <div className="mx-auto flex min-h-screen max-w-4xl items-center justify-center px-6 py-16">
           <div className="rounded-3xl border border-[#cda64d]/55 bg-[#f7ebcf] px-8 py-10 text-[#0f2744] shadow-[0_16px_40px_rgba(6,16,33,0.2)]">
             <p className="text-center text-sm font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">Loading notifications</p>
@@ -207,7 +207,7 @@ export default function NotificationsPage() {
   }
 
   return (
-    <><Navbar /><main className="min-h-screen bg-[#0f2744] text-[#f7ebcf]">
+    <><Navbar /><main className="min-h-screen bg-[#08111F] text-[#f7ebcf]">
       <div className="mx-auto max-w-4xl px-4 py-8 sm:px-8 sm:py-12 lg:py-14">
         <section className="rounded-3xl border border-[#cda64d]/55 bg-[#f7ebcf] p-6 text-[#0f2744] shadow-[0_16px_40px_rgba(6,16,33,0.18)] sm:p-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">

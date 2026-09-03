@@ -400,7 +400,7 @@ export default function EmployerOnboardingPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#f7ebcf_0%,_#f4e4bf_40%,_#e7d7a7_100%)] text-[#071426]">
+    <main className="min-h-screen bg-[#08111F] text-[#071426]">
       <Navbar />
       <div className="mx-auto max-w-5xl px-5 py-10 sm:px-8 lg:px-10">
         <section className="rounded-[36px] border border-[#cda64d]/60 bg-[#0f2744] p-6 text-[#f7ebcf] shadow-[0_20px_60px_rgba(6,16,33,0.16)] sm:p-8 lg:p-10">
