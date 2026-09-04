@@ -633,7 +633,13 @@ export default function TalentCard({
                   {educationEntries.length > 0 ? (
                     <div>
                       <p className="text-[9px] font-semibold uppercase tracking-[0.26em] text-[#9a6d15]">Education</p>
-                      <p className="mt-0.5 text-[0.64rem] leading-4 text-[#27405f]">{educationEntries.join(" | ")}</p>
+                      <div className="mt-0.5 space-y-1">
+                        {educationEntries.map((entry, index) => (
+                          <p key={`${entry}-${index}`} className="min-w-0 break-words text-[0.64rem] leading-4 text-[#27405f] [overflow-wrap:anywhere]">
+                            {entry}
+                          </p>
+                        ))}
+                      </div>
                     </div>
                   ) : null}
 
@@ -644,10 +650,11 @@ export default function TalentCard({
                     <div className="mt-0.5 grid grid-cols-1 gap-1.5 sm:grid-cols-2">
                       {recentRoles.map((role, index) => (
                           <div key={`${role.role}-${role.company}`} className={`min-w-0 py-0.25 ${index > 0 ? "border-t border-[#0f2744]/10 pt-1.5 sm:border-l sm:border-t-0 sm:pl-1.5 sm:pt-0" : "sm:pr-1.5"}`}>
-                            <p className="text-[0.64rem] font-semibold uppercase tracking-[0.16em] text-[#0f2744]">{role.role}</p>
-                            <p className="text-[0.64rem] text-[#27405f]">{role.company}</p>
-                            <p className="text-[0.58rem] uppercase tracking-[0.2em] text-[#8a6b24]">{role.period}</p>
-                            {role.description ? <p className="mt-0.5 line-clamp-2 text-[0.58rem] leading-3 text-[#27405f]">{role.description}</p> : null}
+                            <p className="min-w-0 break-words whitespace-normal text-[0.64rem] font-semibold uppercase tracking-[0.16em] text-[#0f2744] [overflow-wrap:anywhere]">{role.role}</p>
+                            <p className="min-w-0 break-words whitespace-normal text-[0.64rem] text-[#27405f] [overflow-wrap:anywhere]">{role.company}</p>
+                            <p className="min-w-0 break-words whitespace-normal text-[0.58rem] uppercase tracking-[0.2em] text-[#8a6b24] [overflow-wrap:anywhere]">{role.period}</p>
+                            {role.location ? <p className="min-w-0 break-words whitespace-normal text-[0.58rem] text-[#27405f] [overflow-wrap:anywhere]">{role.location}</p> : null}
+                            {role.description ? <p className="mt-0.5 min-w-0 break-words whitespace-normal text-[0.58rem] leading-3 text-[#27405f] [overflow-wrap:anywhere]">{role.description}</p> : null}
                           </div>
                       ))}
                     </div>

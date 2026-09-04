@@ -220,6 +220,10 @@
     @apply border border-[#08111F]/20 bg-[#08111F] text-[#F7F4EC] hover:border-[var(--dashboard-accent)] hover:bg-[#10233A];
   }
 
+  .dashboard-employer-blue-action {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#2BD7EF] px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-[#08111F] transition duration-200 hover:-translate-y-0.5 hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2BD7EF] focus-visible:ring-offset-2 focus-visible:ring-offset-[#08111F] disabled:cursor-wait disabled:opacity-70;
+  }
+
   .dashboard-metric {
     @apply flex min-h-[165px] flex-col rounded-[16px] border border-[#08111F]/15 bg-[#f7e8c6] p-5 text-[#08111F] shadow-[0_12px_30px_rgba(0,0,0,0.12)] transition duration-200 hover:-translate-y-0.5 hover:border-[var(--dashboard-accent)] hover:shadow-[0_12px_35px_var(--dashboard-glow)];
   }
