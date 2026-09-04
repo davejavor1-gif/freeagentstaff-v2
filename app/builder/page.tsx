@@ -660,26 +660,16 @@ export default function BuilderPage() {
           <div className="inline-flex items-center rounded-full border border-[#AFF546]/40 bg-[#AFF546] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#08111F]">
             Card Builder Studio
           </div>
-          <h1 className="mt-6 text-3xl font-black uppercase leading-tight tracking-[0.16em] text-[#f7ebcf] sm:text-4xl">
-            Create Your FreeAgent Card
-          </h1>
-          <p className="mt-3 max-w-2xl text-base leading-7 text-[#dfe7ef]">
-            Edit your profile and watch your card update live.
-          </p>
-          <div className="mt-5 max-w-2xl space-y-3 text-sm leading-6 text-[#dfe7ef]">
-            <p>Build your Talent Card and Passport by adding the information employers need to understand who you are, what you do, and what you&apos;re looking for.</p>
-            <p className="font-semibold text-[#f7ebcf]">Complete each section below to:</p>
-            <ul className="grid gap-1.5 sm:grid-cols-2">
-              <li>• add your photo and video introduction</li>
-              <li>• highlight your skills, education and strengths</li>
-              <li>• set your availability and salary expectations</li>
-              <li>• upload your resume</li>
-              <li>• control how your profile appears to employers</li>
-            </ul>
-          </div>
 
-          <div className="mt-6 rounded-2xl border border-[#651D2A]/20 bg-[#f7ebcf] p-4">
-            <div className="flex flex-wrap items-center gap-2.5">
+          <div className="mt-5 rounded-2xl border border-[#651D2A]/20 bg-[#f7ebcf] p-5 sm:p-6">
+            <h1 className="font-serif text-4xl font-semibold uppercase leading-[0.95] text-[#08111F] sm:text-5xl">
+              Create Your FreeAgent Card
+            </h1>
+            <p className="mt-3 max-w-2xl text-lg leading-7 text-[#08111F]">
+              Edit your profile and build your Talent Card and Talent Passport.
+            </p>
+
+            <div className="mt-5 flex flex-wrap items-center gap-2.5">
               <button
                 type="button"
                 onClick={() => void saveProfile()}
@@ -727,6 +717,16 @@ export default function BuilderPage() {
             </p>
             {saveStatus ? <p className="mt-1 text-xs font-semibold text-emerald-700">{saveStatus}</p> : null}
             {saveError ? <p className="mt-1 text-xs font-semibold text-rose-700">{saveError}</p> : null}
+
+            <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-[#0f2744]/10 pt-4">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#6a7a91]">Where your information appears</p>
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#08111F]">
+                <span className="h-2.5 w-2.5 rounded-full bg-[#AFF546]" /> Card + Passport
+              </span>
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#08111F]">
+                <span className="h-2.5 w-2.5 rounded-full bg-[#651D2A]" /> Passport only
+              </span>
+            </div>
           </div>
 
           <form
@@ -736,28 +736,6 @@ export default function BuilderPage() {
               saveProfile();
             }}
           >
-            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 rounded-[18px] border border-[#0f2744]/10 bg-[#fffaf0] px-4 py-3">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#6a7a91]">Where your information appears</p>
-              <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#08111F]">
-                <span className="h-2.5 w-2.5 rounded-full bg-[#AFF546]" /> Card + Passport
-              </span>
-              <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#08111F]">
-                <span className="h-2.5 w-2.5 rounded-full bg-[#651D2A]" /> Passport only
-              </span>
-            </div>
-
-          {hasProAccess ? (
-            <div className="mt-6 rounded-[24px] border border-[#0f2744]/15 border-t-4 border-t-[#4f9f4e] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
-              <VideoIntroductionSection
-                profile={profile}
-                onProfileChange={(nextProfile) => setProfile(nextProfile)}
-                isSaving={isSaving}
-                visibility={profile.visibility}
-                hasProAccess={hasProAccess}
-              />
-            </div>
-          ) : null}
-
           <div className="space-y-2 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#AFF546] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <label htmlFor="name" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
@@ -806,6 +784,14 @@ export default function BuilderPage() {
                 placeholder="Enter your role"
               />
             </div>
+
+            <VideoIntroductionSection
+              profile={profile}
+              onProfileChange={(nextProfile) => setProfile(nextProfile)}
+              isSaving={isSaving}
+              visibility={profile.visibility}
+              hasProAccess={hasProAccess}
+            />
 
             <div className="space-y-2 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#AFF546] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
               <div className="flex flex-wrap items-center justify-between gap-2">
@@ -939,13 +925,13 @@ export default function BuilderPage() {
                   const draft = journeyDrafts[position.id] ?? { achievement: "", skill: "" };
 
                   return (
-                    <div key={position.id} className="rounded-[24px] border border-[#cda64d]/40 bg-[#f7ebcf] p-4 shadow-sm">
+                    <div key={position.id} className="rounded-[24px] border border-[#f7ebcf]/15 bg-[#10233A] p-4 shadow-sm">
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">
                             Position {index + 1}
                           </p>
-                          <p className="mt-1 text-sm font-semibold text-[#0f2744]">
+                          <p className="mt-1 text-sm font-semibold text-[#f7ebcf]">
                             {position.role || "New position"}
                           </p>
                         </div>
@@ -953,21 +939,21 @@ export default function BuilderPage() {
                           <button
                             type="button"
                             onClick={() => moveCareerPosition(position.id, -1)}
-                            className="rounded-full border border-[#cda64d]/40 bg-white/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#0f2744]"
+                            className="rounded-full border border-[#f7ebcf]/30 bg-[#f7ebcf] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#0f2744]"
                           >
                             ↑
                           </button>
                           <button
                             type="button"
                             onClick={() => moveCareerPosition(position.id, 1)}
-                            className="rounded-full border border-[#cda64d]/40 bg-white/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#0f2744]"
+                            className="rounded-full border border-[#f7ebcf]/30 bg-[#f7ebcf] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#0f2744]"
                           >
                             ↓
                           </button>
                           <button
                             type="button"
                             onClick={() => removeCareerPosition(position.id)}
-                            className="rounded-full border border-[#cda64d]/40 bg-white/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#0f2744]"
+                            className="rounded-full border border-[#f7ebcf]/30 bg-[#f7ebcf] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#0f2744]"
                           >
                             Remove
                           </button>
@@ -976,66 +962,66 @@ export default function BuilderPage() {
 
                       <div className="mt-4 grid gap-3 md:grid-cols-2">
                         <div className="space-y-2">
-                          <label className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                          <label className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">
                             Role
                           </label>
                           <input
                             value={position.role}
                             onChange={(event) => updateCareerPosition(position.id, "role", event.target.value)}
-                            className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-3 py-2.5 text-sm text-[#071426] outline-none transition focus:border-[#0f2744]"
+                            className="w-full rounded-2xl border border-[#cda64d]/50 bg-white px-3 py-2.5 text-sm text-[#08111F] outline-none transition focus:border-[#0f2744]"
                             placeholder="e.g. Lead Product Designer"
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                          <label className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">
                             Company
                           </label>
                           <input
                             value={position.company}
                             onChange={(event) => updateCareerPosition(position.id, "company", event.target.value)}
-                            className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-3 py-2.5 text-sm text-[#071426] outline-none transition focus:border-[#0f2744]"
+                            className="w-full rounded-2xl border border-[#cda64d]/50 bg-white px-3 py-2.5 text-sm text-[#08111F] outline-none transition focus:border-[#0f2744]"
                             placeholder="e.g. Northstar Labs"
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                          <label className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">
                             Period
                           </label>
                           <input
                             value={position.period}
                             onChange={(event) => updateCareerPosition(position.id, "period", event.target.value)}
-                            className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-3 py-2.5 text-sm text-[#071426] outline-none transition focus:border-[#0f2744]"
+                            className="w-full rounded-2xl border border-[#cda64d]/50 bg-white px-3 py-2.5 text-sm text-[#08111F] outline-none transition focus:border-[#0f2744]"
                             placeholder="e.g. 2022 — Present"
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                          <label className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">
                             Location
                           </label>
                           <input
                             value={position.location}
                             onChange={(event) => updateCareerPosition(position.id, "location", event.target.value)}
-                            className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-3 py-2.5 text-sm text-[#071426] outline-none transition focus:border-[#0f2744]"
+                            className="w-full rounded-2xl border border-[#cda64d]/50 bg-white px-3 py-2.5 text-sm text-[#08111F] outline-none transition focus:border-[#0f2744]"
                             placeholder="e.g. London, UK"
                           />
                         </div>
                       </div>
 
                       <div className="mt-4 space-y-2">
-                        <label className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                        <label className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">
                           Description
                         </label>
                         <textarea
                           value={position.description}
                           onChange={(event) => updateCareerPosition(position.id, "description", event.target.value)}
                           rows={4}
-                          className="min-h-[110px] w-full rounded-[20px] border border-[#cda64d]/50 bg-white/80 px-3 py-2.5 text-sm text-[#071426] outline-none transition focus:border-[#0f2744]"
+                          className="min-h-[110px] w-full rounded-[20px] border border-[#cda64d]/50 bg-white px-3 py-2.5 text-sm text-[#08111F] outline-none transition focus:border-[#0f2744]"
                           placeholder="Describe the role, scope and impact in a professional way."
                         />
                       </div>
 
                       <div className="mt-4 grid gap-3 md:grid-cols-2">
-                        <div className="space-y-3 rounded-[20px] border border-[#cda64d]/35 bg-white/70 p-3">
+                        <div className="space-y-3 rounded-[20px] border border-[#cda64d]/35 bg-[#f7ebcf] p-3">
                           <div className="flex items-center justify-between gap-2">
                             <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
                               Achievements
@@ -1046,7 +1032,7 @@ export default function BuilderPage() {
                             <input
                               value={draft.achievement}
                               onChange={(event) => updateJourneyDraft(position.id, "achievement", event.target.value)}
-                              className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-3 py-2 text-sm text-[#071426] outline-none transition focus:border-[#0f2744]"
+                              className="w-full rounded-2xl border border-[#cda64d]/50 bg-white px-3 py-2 text-sm text-[#08111F] outline-none transition focus:border-[#0f2744]"
                               placeholder="Add an achievement"
                             />
                             <button
@@ -1072,7 +1058,7 @@ export default function BuilderPage() {
                           </div>
                         </div>
 
-                        <div className="space-y-3 rounded-[20px] border border-[#cda64d]/35 bg-white/70 p-3">
+                        <div className="space-y-3 rounded-[20px] border border-[#cda64d]/35 bg-[#f7ebcf] p-3">
                           <div className="flex items-center justify-between gap-2">
                             <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
                               Skills used
@@ -1083,7 +1069,7 @@ export default function BuilderPage() {
                             <input
                               value={draft.skill}
                               onChange={(event) => updateJourneyDraft(position.id, "skill", event.target.value)}
-                              className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-3 py-2 text-sm text-[#071426] outline-none transition focus:border-[#0f2744]"
+                              className="w-full rounded-2xl border border-[#cda64d]/50 bg-white px-3 py-2 text-sm text-[#08111F] outline-none transition focus:border-[#0f2744]"
                               placeholder="Add a skill"
                             />
                             <button

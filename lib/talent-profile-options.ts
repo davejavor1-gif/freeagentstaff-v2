@@ -1,4 +1,4 @@
-import type { SalaryExpectation } from "@/types/freeagent";
+import type { AvailabilityStatus, SalaryExpectation } from "@/types/freeagent";
 
 export const salaryExpectationOptions: ReadonlyArray<{ value: SalaryExpectation; label: string }> = [
   { value: "under_60k", label: "Under $60,000" },
@@ -14,3 +14,18 @@ export const salaryExpectationOptions: ReadonlyArray<{ value: SalaryExpectation;
 export const salaryExpectationLabels: Record<SalaryExpectation, string> = Object.fromEntries(
   salaryExpectationOptions.map((option) => [option.value, option.label]),
 ) as Record<SalaryExpectation, string>;
+
+// "Open to new projects" is a legacy stored value; canonical display wording is "Open to Opportunities".
+const availabilityDisplayLabels: Partial<Record<AvailabilityStatus, string>> = {
+  "Open to new projects": "Open to Opportunities",
+};
+
+export function formatAvailabilityLabel(
+  value: AvailabilityStatus | string | null | undefined,
+): string {
+  if (!value) {
+    return "";
+  }
+
+  return availabilityDisplayLabels[value as AvailabilityStatus] ?? value;
+}

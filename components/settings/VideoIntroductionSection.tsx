@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { AlertCircle, ImageIcon, Play, Trash2, UploadCloud, Video } from "lucide-react";
 import { supabase } from "@/lib/supabase-client";
 import { resolveProfilePhotoUrl, resolveProfileVideoUrl } from "@/lib/profile-media";
@@ -114,14 +114,6 @@ export default function ProfileMediaSection({
       active = false;
     };
   }, [profile.photo_storage_path, profile.intro_video_storage_path, profile.photoUrl, profile.intro_video_url]);
-
-  const infoText = useMemo(() => {
-    if (isConfidential) {
-      return "Your media stays private in your editor and on confidential cards. Employers only see identifying media when visibility permissions allow it.";
-    }
-
-    return "Upload a portrait photo and a short introduction video so employers can get to know you beyond your Talent Card.";
-  }, [isConfidential]);
 
   const clearPreview = () => {
     if (photoPreviewUrl?.startsWith("blob:")) {
@@ -364,17 +356,7 @@ export default function ProfileMediaSection({
   };
 
   return (
-    <section className="space-y-4 rounded-[24px] border border-[#cda64d]/40 bg-white/80 p-4 sm:p-5">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">PROFILE MEDIA</p>
-          <p className="mt-2 text-sm leading-7 text-[#27405f]">{infoText}</p>
-        </div>
-        <div className="rounded-full border border-[#f2cc63]/35 bg-[#f7ebcf]/80 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#0f2744]">
-          {hasPhoto || hasVideo ? "Media ready" : "No media yet"}
-        </div>
-      </div>
-
+    <>
       {message ? (
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{message}</div>
       ) : null}
@@ -386,18 +368,16 @@ export default function ProfileMediaSection({
         </div>
       ) : null}
 
-      <div className="space-y-4 rounded-[20px] border border-[#cda64d]/40 bg-[#f7ebcf]/70 p-4">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">PROFILE PHOTO</p>
-            <p className="mt-2 text-sm leading-7 text-[#27405f]">
-              For best results, use a clear portrait photo with your face centred and enough space around your head and shoulders.
-            </p>
-          </div>
-          <div className="rounded-full border border-[#f2cc63]/35 bg-[#f7ebcf]/80 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#0f2744]">
-            {hasPhoto ? "Photo added" : "No photo yet"}
-          </div>
+      <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#AFF546] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Profile Photo</p>
+          <span className="inline-flex shrink-0 items-center whitespace-nowrap rounded-full bg-[#AFF546] px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.14em] text-[#08111F]">
+            Card + Passport
+          </span>
         </div>
+        <p className="text-sm leading-6 text-[#27405f]">
+          For best results, use a clear portrait photo with your face centred and enough space around your head and shoulders.
+        </p>
 
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
           <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#cda64d]/50 bg-[#0f2744] shadow-[0_10px_24px_rgba(7,20,38,0.18)]">
@@ -412,7 +392,7 @@ export default function ProfileMediaSection({
             <p className="text-sm leading-7 text-[#27405f]">
               Upload a JPG, JPEG, PNG, or WebP file up to 10MB. The card will use the same portrait image without cropping automatically.
             </p>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f] focus-within:outline-none focus-within:ring-2 focus-within:ring-[#f2cc63] disabled:cursor-not-allowed disabled:opacity-60">
                 <UploadCloud className="h-4 w-4" />
                 {hasPhoto ? "Replace photo" : "Upload profile photo"}
@@ -428,89 +408,98 @@ export default function ProfileMediaSection({
                 <Trash2 className="h-4 w-4" />
                 Remove photo
               </button>
+
+              <span className="rounded-full border border-[#f2cc63]/35 bg-[#f7ebcf]/80 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#0f2744]">
+                {hasPhoto ? "Photo added" : "No photo yet"}
+              </span>
             </div>
             {isUploadingPhoto ? <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">Uploading photo...</p> : null}
           </div>
         </div>
       </div>
 
-      <div className="space-y-4 rounded-[20px] border border-[#cda64d]/40 bg-[#f7ebcf]/70 p-4">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">YOUR VIDEO INTRODUCTION</p>
-          <p className="mt-2 text-sm leading-7 text-[#27405f]">
+      {hasProAccess ? (
+        <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#AFF546] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Your Video Introduction</p>
+            <span className="inline-flex shrink-0 items-center whitespace-nowrap rounded-full bg-[#AFF546] px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.14em] text-[#08111F]">
+              Card only
+            </span>
+          </div>
+          <p className="text-sm leading-7 text-[#27405f]">
             Keep it short and let employers get to know the person behind the Passport. Answer each question in no more than 15 seconds.
           </p>
-          <ul className="mt-3 space-y-1.5 text-sm leading-6 text-[#27405f]">
+          <ul className="space-y-1.5 text-sm leading-6 text-[#27405f]">
             <li><strong>Tell us about yourself.</strong></li>
             <li><strong>What excites you professionally?</strong></li>
             <li><strong>What are your best skills?</strong></li>
             <li><strong>What kind of jobs do you think you&apos;d be suited to?</strong></li>
           </ul>
-          <p className="mt-3 text-sm font-semibold text-[#0f2744]">Keep each answer to 15 seconds or less.</p>
-        </div>
+          <p className="text-sm font-semibold text-[#0f2744]">Keep each answer to 15 seconds or less.</p>
 
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="rounded-full border border-[#f2cc63]/35 bg-[#f7ebcf]/80 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#0f2744]">
-            {hasVideo ? "Video introduction added" : "No video yet"}
-          </div>
-        </div>
-
-        {isConfidential ? (
-          <div className="rounded-2xl border border-[#cda64d]/35 bg-white/70 px-3 py-2 text-sm text-[#27405f]">
-            Videos remain hidden on confidential cards. Your introduction stays protected unless your visibility settings allow it.
-          </div>
-        ) : null}
-
-        {canShowVideo ? (
-          <div className="rounded-[20px] border border-[#cda64d]/40 bg-[#f7ebcf]/70 p-3">
-            <div className="mb-3 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">
-              <Play className="h-3.5 w-3.5" />
-              Preview
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="rounded-full border border-[#f2cc63]/35 bg-[#f7ebcf]/80 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#0f2744]">
+              {hasVideo ? "Video introduction added" : "No video yet"}
             </div>
-            <video
-              className="w-full rounded-[16px] border border-[#0f2744]/15 bg-[#071426]"
-              src={resolvedVideoUrl ?? profile.intro_video_url ?? undefined}
-              controls
-              playsInline
-              preload="metadata"
-              muted
-            />
           </div>
-        ) : null}
 
-        <div className="flex flex-wrap gap-3">
-          <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f] focus-within:outline-none focus-within:ring-2 focus-within:ring-[#f2cc63] disabled:cursor-not-allowed disabled:opacity-60">
-            <UploadCloud className="h-4 w-4" />
-            {hasVideo ? "Replace video" : "Upload video introduction"}
-            <input type="file" className="hidden" accept="video/mp4,video/quicktime,video/webm" onChange={handleVideoUpload} disabled={!hasProAccess || isUploadingPhoto || isUploadingVideo} />
-          </label>
+          {isConfidential ? (
+            <div className="rounded-2xl border border-[#cda64d]/35 bg-white/70 px-3 py-2 text-sm text-[#27405f]">
+              Videos remain hidden on confidential cards. Your introduction stays protected unless your visibility settings allow it.
+            </div>
+          ) : null}
 
-          <button
-            type="button"
-            onClick={handleDeleteVideo}
-            disabled={!hasProAccess || !hasVideo || isDeletingVideo || isUploadingPhoto || isUploadingVideo}
-            className="inline-flex items-center gap-2 rounded-full border border-[#cda64d]/40 bg-transparent px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#0f2744] transition hover:bg-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f2cc63] disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            <Trash2 className="h-4 w-4" />
-            Remove video
-          </button>
-        </div>
+          {canShowVideo ? (
+            <div className="rounded-[20px] border border-[#cda64d]/40 bg-[#f7ebcf]/70 p-3">
+              <div className="mb-3 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">
+                <Play className="h-3.5 w-3.5" />
+                Preview
+              </div>
+              <video
+                className="w-full rounded-[16px] border border-[#0f2744]/15 bg-[#071426]"
+                src={resolvedVideoUrl ?? profile.intro_video_url ?? undefined}
+                controls
+                playsInline
+                preload="metadata"
+                muted
+              />
+            </div>
+          ) : null}
 
-        <div className="rounded-[18px] border border-[#cda64d]/30 bg-[#f7ebcf]/50 p-3 text-sm text-[#27405f]">
-          <div className="flex flex-wrap items-center gap-2">
-            <Video className="h-4 w-4 text-[#0f2744]" />
-            <span>Accepted formats: MP4, MOV, WebM. Maximum 60 seconds and 100MB.</span>
+          <div className="flex flex-wrap gap-3">
+            <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f] focus-within:outline-none focus-within:ring-2 focus-within:ring-[#f2cc63] disabled:cursor-not-allowed disabled:opacity-60">
+              <UploadCloud className="h-4 w-4" />
+              {hasVideo ? "Replace video" : "Upload video introduction"}
+              <input type="file" className="hidden" accept="video/mp4,video/quicktime,video/webm" onChange={handleVideoUpload} disabled={!hasProAccess || isUploadingPhoto || isUploadingVideo} />
+            </label>
+
+            <button
+              type="button"
+              onClick={handleDeleteVideo}
+              disabled={!hasProAccess || !hasVideo || isDeletingVideo || isUploadingPhoto || isUploadingVideo}
+              className="inline-flex items-center gap-2 rounded-full border border-[#cda64d]/40 bg-transparent px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#0f2744] transition hover:bg-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f2cc63] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <Trash2 className="h-4 w-4" />
+              Remove video
+            </button>
           </div>
-        </div>
 
-        {isUploadingVideo ? <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">Uploading video...</p> : null}
-      </div>
+          <div className="rounded-[18px] border border-[#cda64d]/30 bg-[#f7ebcf]/50 p-3 text-sm text-[#27405f]">
+            <div className="flex flex-wrap items-center gap-2">
+              <Video className="h-4 w-4 text-[#0f2744]" />
+              <span>Accepted formats: MP4, MOV, WebM. Maximum 60 seconds and 100MB.</span>
+            </div>
+          </div>
+
+          {isUploadingVideo ? <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">Uploading video...</p> : null}
+        </div>
+      ) : null}
 
       {isUploadingPhoto || isUploadingVideo || isDeletingPhoto || isDeletingVideo || isSaving ? (
         <div className="text-sm font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">
           {isUploadingPhoto ? "Uploading photo..." : isUploadingVideo ? "Uploading video..." : isDeletingPhoto ? "Deleting photo..." : isDeletingVideo ? "Deleting video..." : "Saving profile..."}
         </div>
       ) : null}
-    </section>
+    </>
   );
 }

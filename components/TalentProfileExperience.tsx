@@ -17,7 +17,7 @@ import FreeAgentProBadge from "@/components/FreeAgentProBadge";
 import Navbar from "@/components/layout/Navbar";
 import PassportFold from "@/components/PassportFold";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
-import { salaryExpectationOptions } from "@/lib/talent-profile-options";
+import { salaryExpectationOptions, formatAvailabilityLabel } from "@/lib/talent-profile-options";
 import type { TalentPassportApiResponse } from "@/types/discovery";
 import type {
   PrivateAccessRequest,
@@ -36,9 +36,11 @@ function accessLabel(status: PrivateAccessState["status"]) {
 export default function TalentProfileExperience({
   slug,
   demoProfile,
+  demoHasProAccess = false,
 }: {
   slug: string;
   demoProfile?: FreeAgentProfile;
+  demoHasProAccess?: boolean;
 }) {
   const isDemo = Boolean(demoProfile);
   const [payload, setPayload] = useState<TalentPassportApiResponse | null>(
@@ -49,6 +51,7 @@ export default function TalentProfileExperience({
           isOwner: false,
           verificationStatus: "verified",
           profile: demoProfile,
+          hasProAccess: demoHasProAccess,
           privateAccess: {
             requestId: null,
             isOwner: false,
@@ -370,9 +373,9 @@ export default function TalentProfileExperience({
                     <p className="mt-2 text-sm font-semibold uppercase tracking-[0.18em] text-[#651D2A]">
                       {profile.location}
                     </p>
-                    <div className="mt-4 flex flex-wrap gap-2">
+                    <div className="mt-4 flex flex-wrap items-center gap-2">
                       <span className="rounded-full bg-[#AFF546] px-3 py-2 text-xs font-semibold text-[#08111F]">
-                        {profile.availability}
+                        {formatAvailabilityLabel(profile.availability)}
                       </span>
                       <span className="rounded-full border border-[#651D2A]/40 bg-[#f7ebcf] px-3 py-2 text-xs font-semibold text-[#651D2A]">
                         {profile.focusArea}
