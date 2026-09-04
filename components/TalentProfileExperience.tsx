@@ -325,7 +325,10 @@ export default function TalentProfileExperience({
       )?.label
     : null;
   const showEmployerBackButton = viewerAccountType === "employer" && !isOwner;
-  const showTalentBackButton = viewerAccountType === "talent" && isOwner;
+  const educationEntries = (profile.education ?? "")
+    .split(/\n+/)
+    .map((entry) => entry.trim())
+    .filter(Boolean);
 
   return (
     <>
@@ -341,14 +344,6 @@ export default function TalentProfileExperience({
                 Back to talent search
               </Link>
             ) : null}
-            {showTalentBackButton ? (
-              <Link
-                href="/builder"
-                className="rounded-full bg-[#aff546] px-5 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#071426] transition hover:bg-[#9fea37] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#aff546] focus-visible:ring-offset-2"
-              >
-                Back to create your card
-              </Link>
-            ) : null}
           </div>
           <div className="relative mx-auto max-w-5xl rounded-[38px] border border-[#D4AF37]/20 bg-[#651D2A] p-2.5 shadow-[0_24px_58px_rgba(46,13,20,0.42)] [background-image:radial-gradient(circle_at_18%_12%,rgba(212,175,55,0.1),transparent_24%),repeating-linear-gradient(135deg,rgba(247,235,207,0.045)_0,rgba(247,235,207,0.045)_1px,transparent_1px,transparent_6px),repeating-linear-gradient(45deg,transparent_0,transparent_10px,rgba(46,13,20,0.2)_11px,transparent_11px)] sm:p-4">
             <section className="relative overflow-hidden rounded-[27px] border border-[#f7ebcf]/80 bg-[#f7ebcf] p-6 shadow-[inset_0_1px_0_rgba(255,250,240,0.8),inset_0_-10px_24px_rgba(111,83,16,0.08),0_8px_18px_rgba(6,16,33,0.12)] [background-image:radial-gradient(circle_at_12%_18%,rgba(255,250,240,0.55),transparent_25%),repeating-linear-gradient(0deg,rgba(15,39,68,0.025)_0,rgba(15,39,68,0.025)_1px,transparent_1px,transparent_5px),repeating-linear-gradient(90deg,transparent_0,transparent_14px,rgba(154,109,21,0.025)_15px,transparent_16px)] sm:p-8 lg:p-10">
@@ -361,25 +356,25 @@ export default function TalentProfileExperience({
                       className="h-40 w-32 rounded-[22px] object-cover"
                     />
                   ) : (
-                    <div className="flex h-40 w-32 items-center justify-center rounded-[22px] bg-[#0f2744] text-4xl font-black text-[#f7ebcf]">
+                    <div className="flex h-40 w-32 items-center justify-center rounded-[22px] bg-[#651D2A] text-4xl font-black text-[#f7ebcf]">
                       ?
                     </div>
                   )}
                   <div className="min-w-0">
-                    <h2 className="text-3xl font-black uppercase leading-tight tracking-[0.05em] text-[#0f2744] sm:text-4xl">
+                    <h2 className="text-3xl font-black uppercase leading-tight tracking-[0.05em] text-[#1a1a1a] sm:text-4xl">
                       {profile.name || "Confidential profile"}
                     </h2>
-                    <p className="mt-2 text-lg font-semibold text-[#27405f]">
+                    <p className="mt-2 text-lg font-semibold text-[#1a1a1a]/80">
                       {profile.title}
                     </p>
-                    <p className="mt-2 text-sm font-semibold uppercase tracking-[0.18em] text-[#9a6d15]">
+                    <p className="mt-2 text-sm font-semibold uppercase tracking-[0.18em] text-[#651D2A]">
                       {profile.location}
                     </p>
                     <div className="mt-4 flex flex-wrap gap-2">
-                      <span className="rounded-full bg-[#0f2744] px-3 py-2 text-xs font-semibold text-[#f7ebcf]">
+                      <span className="rounded-full bg-[#AFF546] px-3 py-2 text-xs font-semibold text-[#08111F]">
                         {profile.availability}
                       </span>
-                      <span className="rounded-full bg-[#8be4c5] px-3 py-2 text-xs font-semibold text-[#071426]">
+                      <span className="rounded-full border border-[#651D2A]/40 bg-[#f7ebcf] px-3 py-2 text-xs font-semibold text-[#651D2A]">
                         {profile.focusArea}
                       </span>
                       {payload.hasProAccess ? <FreeAgentProBadge size="standard" /> : null}
@@ -392,7 +387,7 @@ export default function TalentProfileExperience({
                     className="flex aspect-square w-[10.35rem] items-center justify-center sm:w-[11.5rem]"
                   >
                     <img
-                      src="/Free%20agent%20staff%20talent%20passport.png"
+                      src="/newpassportlogo.png"
                       alt=""
                       className="h-[10.35rem] w-[10.35rem] object-contain sm:h-[11.5rem] sm:w-[11.5rem]"
                     />
@@ -400,152 +395,175 @@ export default function TalentProfileExperience({
                 </div>
               </div>
               {profile.bio?.trim() ? (
-                <div className="mt-7 border-t border-[#0f2744]/15 pt-6">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                <div className="mt-7 border-t border-[#651D2A]/20 pt-6">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#651D2A]">
                     Bio
                   </p>
-                  <p className="mt-3 min-w-0 break-words text-sm leading-7 text-[#27405f] [overflow-wrap:anywhere]">
+                  <p className="mt-3 min-w-0 break-words text-sm leading-7 text-[#1a1a1a] [overflow-wrap:anywhere]">
                     {profile.bio.trim()}
                   </p>
                 </div>
               ) : null}
-              {profile.topStrength ? (
-                <div className="mt-6 rounded-[20px] border-l-4 border-[#4f9f4e] bg-[#fffaf0] p-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">
-                    Top strength
-                  </p>
-                  <p className="mt-2 min-w-0 break-words font-semibold text-[#0f2744] [overflow-wrap:anywhere]">
-                    {profile.topStrength}
-                  </p>
-                </div>
-              ) : null}
-              {profile.passions?.length ? (
-                <div className="mt-6 rounded-[20px] border-l-4 border-[#2bd7ef] bg-[#effcff] p-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">
-                    Passions
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {profile.passions.map((passion) => (
-                      <span
-                        key={passion}
-                        className="rounded-full border border-[#0f2744]/15 bg-[#f7ebcf] px-3 py-2 text-xs font-semibold text-[#0f2744]"
-                      >
-                        {passion}
-                      </span>
-                    ))}
-                  </div>
+              {profile.topStrength || profile.passions?.length ? (
+                <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                  {profile.topStrength ? (
+                    <div className="min-w-0 rounded-[20px] border border-[#651D2A]/25 bg-[#fffaf0] p-4">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#651D2A]">
+                        Top strength
+                      </p>
+                      <p className="mt-2 min-w-0 break-words font-semibold text-[#1a1a1a] [overflow-wrap:anywhere]">
+                        {profile.topStrength}
+                      </p>
+                    </div>
+                  ) : null}
+                  {profile.passions?.length ? (
+                    <div className="min-w-0 rounded-[20px] border border-[#651D2A]/25 bg-[#fffaf0] p-4">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#651D2A]">
+                        Passions
+                      </p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {profile.passions.map((passion) => (
+                          <span
+                            key={passion}
+                            className="rounded-full border border-[#651D2A]/25 bg-[#f7ebcf] px-3 py-2 text-xs font-semibold text-[#1a1a1a]"
+                          >
+                            {passion}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
               ) : null}
             </section>
             <PassportFold />
             <section className="relative overflow-hidden rounded-[27px] border border-[#f7ebcf]/80 bg-[#fffaf0] p-6 shadow-[inset_0_10px_24px_rgba(111,83,16,0.07),inset_0_-1px_0_rgba(255,250,240,0.85),0_8px_18px_rgba(6,16,33,0.12)] [background-image:radial-gradient(circle_at_88%_12%,rgba(255,250,240,0.7),transparent_28%),repeating-linear-gradient(0deg,rgba(15,39,68,0.022)_0,rgba(15,39,68,0.022)_1px,transparent_1px,transparent_5px),repeating-linear-gradient(90deg,transparent_0,transparent_14px,rgba(154,109,21,0.022)_15px,transparent_16px)] sm:p-8 lg:p-10">
-              <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+              <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#651D2A]">
                 <BriefcaseBusiness className="h-4 w-4" /> Professional record
               </div>
-              <div className="mt-6">
-                <div className="min-w-0">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">
-                    Skills
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {profile.skills.map((skill) => (
-                      <span
-                        key={skill}
-                        className="rounded-full border border-[#0f2744]/15 bg-[#f7ebcf] px-3 py-2 text-xs font-semibold text-[#0f2744]"
-                      >
-                        {skill}
-                      </span>
-                    ))}
+              <div className="mt-6 space-y-6">
+                <div className="grid gap-6 sm:grid-cols-2">
+                  <div className="min-w-0 rounded-[20px] border border-[#651D2A]/25 bg-[#f7ebcf]/65 p-5">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#651D2A]">
+                      Skills
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {profile.skills.map((skill) => (
+                        <span
+                          key={skill}
+                          className="rounded-full border border-[#651D2A]/25 bg-[#f7ebcf] px-3 py-2 text-xs font-semibold text-[#1a1a1a]"
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                    {profile.languages?.length ? (
+                      <div className="mt-6 min-w-0">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#651D2A]">
+                          Languages
+                        </p>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {profile.languages.map((language) => (
+                            <span
+                              key={language}
+                              className="rounded-full border border-[#651D2A]/25 bg-[#f7ebcf] px-3 py-2 text-xs font-semibold text-[#1a1a1a]"
+                            >
+                              {language}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                  <div className="min-w-0 rounded-[20px] border border-[#651D2A]/25 bg-[#f7ebcf]/65 p-5">
+                    <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#651D2A]">
+                      Salary expectations
+                    </p>
+                    <p className="mt-2 font-semibold text-[#1a1a1a]">
+                      {salaryLabel ?? "Not listed"}
+                    </p>
                   </div>
                 </div>
-              </div>
-              {profile.languages?.length ? (
-                <div className="mt-6 min-w-0">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">
-                    Languages
+                <div className="min-w-0 rounded-[20px] border border-[#651D2A]/25 bg-[#f7ebcf]/65 p-5">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#651D2A]">
+                    Education
                   </p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {profile.languages.map((language) => (
-                      <span
-                        key={language}
-                        className="rounded-full border border-[#0f2744]/15 bg-[#effcff] px-3 py-2 text-xs font-semibold text-[#0f2744]"
-                      >
-                        {language}
-                      </span>
-                    ))}
-                  </div>
+                  {educationEntries.length > 0 ? (
+                    <div className="mt-3 grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] items-start gap-3">
+                      {educationEntries.map((entry, index) => (
+                        <div
+                          key={`${entry}-${index}`}
+                          className="min-w-0 rounded-[16px] border border-[#651D2A]/20 bg-[#fffaf0] p-4"
+                        >
+                          <p className="min-w-0 break-words text-sm leading-6 text-[#1a1a1a] [overflow-wrap:anywhere]">
+                            {entry}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="mt-3 text-sm leading-7 text-[#1a1a1a]/60">
+                      Not listed
+                    </p>
+                  )}
                 </div>
-              ) : null}
-              {salaryLabel ? (
-                <div className="mt-6 rounded-[20px] border-l-4 border-[#2bd7ef] bg-[#effcff] p-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">
-                    Salary expectations
-                  </p>
-                  <p className="mt-2 font-semibold text-[#0f2744]">
-                    {salaryLabel}
-                  </p>
-                </div>
-              ) : null}
-              <div className="mt-6 min-w-0 rounded-[20px] border-l-4 border-[#cda64d] bg-[#f7ebcf]/65 p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">
-                  Education
-                </p>
-                <p className="mt-3 min-w-0 whitespace-pre-line break-words text-sm leading-7 text-[#27405f] [overflow-wrap:anywhere]">
-                  {profile.education || "Not listed"}
-                </p>
-              </div>
-              {profile.careerJourney.length > 0 ? (
-                <div className="mt-8">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                <div className="min-w-0 rounded-[20px] border border-[#651D2A]/25 bg-[#f7ebcf]/65 p-5">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#651D2A]">
                     Career journey
                   </p>
-                  <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                    {profile.careerJourney.map((position) => (
-                      <div
-                        key={position.id}
-                        className="min-w-0 rounded-[20px] border-l-2 border-[#cda64d] bg-[#f7ebcf]/45 p-4"
-                      >
-                        <p className="min-w-0 break-words text-xs font-semibold uppercase tracking-[0.18em] text-[#9a6d15] [overflow-wrap:anywhere]">
-                          {position.period}
-                        </p>
-                        <h3 className="mt-1 min-w-0 break-words font-bold text-[#0f2744] [overflow-wrap:anywhere]">
-                          {position.role}
-                        </h3>
-                        <p className="min-w-0 break-words text-sm text-[#27405f] [overflow-wrap:anywhere]">
-                          {[position.company, position.location]
-                            .filter(Boolean)
-                            .join(" · ")}
-                        </p>
-                        {position.description ? (
-                          <p className="mt-2 min-w-0 break-words text-sm leading-6 text-[#27405f] [overflow-wrap:anywhere]">
-                            {position.description}
+                  {profile.careerJourney.length > 0 ? (
+                    <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      {profile.careerJourney.map((position) => (
+                        <div
+                          key={position.id}
+                          className="min-w-0 rounded-[16px] border border-[#651D2A]/20 bg-[#fffaf0] p-4"
+                        >
+                          <p className="min-w-0 break-words text-xs font-semibold uppercase tracking-[0.18em] text-[#651D2A] [overflow-wrap:anywhere]">
+                            {position.period}
                           </p>
-                        ) : null}
-                        {position.achievements.length > 0 ? (
-                          <div className="mt-3 min-w-0">
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#9a6d15]">Achievements</p>
-                            <ul className="mt-2 space-y-1.5 text-sm leading-6 text-[#27405f]">
-                              {position.achievements.map((achievement) => (
-                                <li key={achievement} className="flex gap-2"><span className="text-[#cda64d]">•</span><span>{achievement}</span></li>
-                              ))}
-                            </ul>
-                          </div>
-                        ) : null}
-                        {position.skills.length > 0 ? (
-                          <div className="mt-3 min-w-0">
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#9a6d15]">Skills used</p>
-                            <div className="mt-2 flex flex-wrap gap-2">
-                              {position.skills.map((skill) => (
-                                <span key={skill} className="rounded-full border border-[#0f2744]/15 bg-[#effcff] px-2.5 py-1 text-xs font-semibold text-[#0f2744]">{skill}</span>
-                              ))}
+                          <h3 className="mt-1 min-w-0 break-words font-bold text-[#1a1a1a] [overflow-wrap:anywhere]">
+                            {position.role}
+                          </h3>
+                          <p className="min-w-0 break-words text-sm text-[#1a1a1a]/80 [overflow-wrap:anywhere]">
+                            {[position.company, position.location]
+                              .filter(Boolean)
+                              .join(" · ")}
+                          </p>
+                          {position.description ? (
+                            <p className="mt-2 min-w-0 break-words text-sm leading-6 text-[#1a1a1a]/80 [overflow-wrap:anywhere]">
+                              {position.description}
+                            </p>
+                          ) : null}
+                          {position.achievements.length > 0 ? (
+                            <div className="mt-3 min-w-0">
+                              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#651D2A]">Achievements</p>
+                              <ul className="mt-2 space-y-1.5 text-sm leading-6 text-[#1a1a1a]/80">
+                                {position.achievements.map((achievement) => (
+                                  <li key={achievement} className="flex gap-2"><span className="text-[#651D2A]">•</span><span>{achievement}</span></li>
+                                ))}
+                              </ul>
                             </div>
-                          </div>
-                        ) : null}
-                      </div>
-                    ))}
-                  </div>
+                          ) : null}
+                          {position.skills.length > 0 ? (
+                            <div className="mt-3 min-w-0">
+                              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#651D2A]">Skills used</p>
+                              <div className="mt-2 flex flex-wrap gap-2">
+                                {position.skills.map((skill) => (
+                                  <span key={skill} className="rounded-full border border-[#651D2A]/25 bg-[#f7ebcf] px-2.5 py-1 text-xs font-semibold text-[#1a1a1a]">{skill}</span>
+                                ))}
+                              </div>
+                            </div>
+                          ) : null}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="mt-4 text-sm leading-7 text-[#1a1a1a]/60">
+                      Not listed
+                    </p>
+                  )}
                 </div>
-              ) : null}
+              </div>
             </section>
           </div>
           <section className="mt-5 rounded-[28px] border border-[#f7ebcf]/80 bg-[#f7ebcf] p-6 shadow-[0_14px_32px_rgba(6,16,33,0.12)] sm:p-8">

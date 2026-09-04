@@ -8,7 +8,6 @@ import TalentCard from "@/components/TalentCard";
 import { freeAgentProfiles } from "@/data/freeagents";
 import { buildCanonicalTalentColumns } from "@/lib/talent-profile-columns";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
-import { getPublicAppUrl } from "@/lib/site-url";
 import VideoIntroductionSection from "@/components/settings/VideoIntroductionSection";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -18,6 +17,19 @@ import type { AccountType, CareerPosition, FreeAgentProfile, ProfileVisibility }
 import type { Database, Json } from "@/types/supabase";
 
 const initialProfile = freeAgentProfiles[0];
+
+function DestinationPill({ tone, label }: { tone: "card" | "passport"; label: string }) {
+  const toneClasses =
+    tone === "card" ? "bg-[#AFF546] text-[#08111F]" : "bg-[#651D2A] text-[#f7ebcf]";
+
+  return (
+    <span
+      className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-full px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.14em] ${toneClasses}`}
+    >
+      {label}
+    </span>
+  );
+}
 
 type ProfilesTable = Database["public"]["Tables"]["profiles"];
 type ProfileInsert = ProfilesTable["Insert"];
@@ -172,7 +184,6 @@ export default function BuilderPage() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [isCopySuccess, setIsCopySuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [resumeBusy, setResumeBusy] = useState(false);
   const [resumeError, setResumeError] = useState<string | null>(null);
@@ -310,22 +321,6 @@ export default function BuilderPage() {
       window.clearTimeout(debounce);
     };
   }, [profile, profileLoaded, session]);
-
-  const copyShareLink = async () => {
-    if (!profile.slug) {
-      return;
-    }
-
-    const shareUrl = getPublicAppUrl(`/profile/${profile.slug}`);
-
-    try {
-      await navigator.clipboard.writeText(shareUrl);
-      setIsCopySuccess(true);
-      window.setTimeout(() => setIsCopySuccess(false), 2500);
-    } catch {
-      setSaveError("Unable to copy share link. Please try again.");
-    }
-  };
 
   const saveProfile = async (): Promise<boolean> => {
     if (!session || !profileLoaded) {
@@ -662,8 +657,8 @@ export default function BuilderPage() {
     <><Navbar /><main className="min-h-screen bg-[#08111F] px-4 py-8 text-[#0f2744] sm:px-6 lg:px-8">
       <div className="mx-auto flex max-w-7xl flex-col gap-6 lg:flex-row lg:items-start">
         <section className="box-border w-full rounded-[32px] border-[32px] border-[#f7ebcf] bg-[#0f2744] p-6 text-[#f7ebcf] shadow-[0_18px_55px_rgba(6,16,33,0.28)] lg:w-[62%] lg:p-8">
-          <div className="inline-flex items-center rounded-full border border-[#f2cc63]/40 bg-[#f7ebcf]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">
-            Builder Studio
+          <div className="inline-flex items-center rounded-full border border-[#AFF546]/40 bg-[#AFF546] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#08111F]">
+            Card Builder Studio
           </div>
           <h1 className="mt-6 text-3xl font-black uppercase leading-tight tracking-[0.16em] text-[#f7ebcf] sm:text-4xl">
             Create Your FreeAgent Card
@@ -683,82 +678,73 @@ export default function BuilderPage() {
             </ul>
           </div>
 
-          <div className="mt-6 flex flex-col gap-3 rounded-2xl border border-[#8fdc3a]/35 bg-[#17355f] p-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex flex-col gap-1">
-              {saveStatus ? (
-                <p className="text-sm font-semibold text-emerald-700">{saveStatus}</p>
-              ) : null}
-              {saveError ? (
-                <p className="text-sm font-semibold text-rose-700">{saveError}</p>
-              ) : null}
-            </div>
-            <div className="flex w-full flex-col items-stretch gap-3 sm:w-auto sm:items-end">
-              <div>
+          <div className="mt-6 rounded-2xl border border-[#651D2A]/20 bg-[#f7ebcf] p-4">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <button
+                type="button"
+                onClick={() => void saveProfile()}
+                disabled={isSaving || !profileLoaded}
+                className="inline-flex items-center justify-center rounded-full bg-[#aff546] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-[#08111F] transition hover:bg-[#9fea37] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isSaving ? "Saving..." : "Save profile"}
+              </button>
+              {profile.slug ? (
+                <Link
+                  href={`/talent/${profile.slug}`}
+                  className="inline-flex items-center justify-center rounded-full bg-[#651D2A] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-[#f7ebcf] transition hover:bg-[#7a2536]"
+                >
+                  Go to Passport
+                </Link>
+              ) : (
+                <span className="inline-flex cursor-not-allowed items-center justify-center rounded-full bg-[#651D2A]/40 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-[#f7ebcf]/70">
+                  Go to Passport
+                </span>
+              )}
+              {isPublished ? (
                 <button
                   type="button"
-                  onClick={() => void saveProfile()}
+                  onClick={() => void publishProfile(false)}
                   disabled={isSaving || !profileLoaded}
-                  className="inline-flex w-full items-center justify-center rounded-full bg-[#aff546] px-5 py-3 text-sm font-semibold uppercase tracking-[0.24em] text-[#071426] transition hover:bg-[#9fea37] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                  className="inline-flex items-center justify-center rounded-full border border-[#2BD7EF]/60 bg-[#2BD7EF] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-[#08111F] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {isSaving ? "Saving..." : "Save profile"}
+                  Published ✓
                 </button>
-                <p className="mt-2 text-xs text-[#dfe7ef]">Save your changes without changing your profile visibility.</p>
-              </div>
-              {isPublished ? (
-                <div className="text-left sm:text-right">
-                  <button
-                    type="button"
-                    onClick={() => void publishProfile(false)}
-                    disabled={isSaving || !profileLoaded}
-                    className="inline-flex w-full items-center justify-center rounded-full border border-[#aff546]/70 bg-[#17355f] px-5 py-3 text-sm font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#214873] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
-                  >
-                    Published ✓
-                  </button>
-                  <p className="mt-2 text-xs text-[#dfe7ef]">Future saved changes update your published profile.</p>
-                  <p className="mt-1 text-xs text-[#dfe7ef]">Select Published ✓ to unpublish your profile.</p>
-                </div>
               ) : (
-                <div>
-                  <button
-                    type="button"
-                    onClick={() => void publishProfile(true)}
-                    disabled={isSaving || !profileLoaded}
-                    className="inline-flex w-full items-center justify-center rounded-full border border-[#aff546]/70 bg-[#17355f] px-5 py-3 text-sm font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#214873] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
-                  >
-                    Publish profile
-                  </button>
-                  <p className="mt-2 text-xs text-[#dfe7ef]">Make your FreeAgent profile discoverable according to your Privacy &amp; Visibility settings.</p>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => void publishProfile(true)}
+                  disabled={isSaving || !profileLoaded}
+                  className="inline-flex items-center justify-center rounded-full border border-[#2BD7EF]/60 bg-[#2BD7EF] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-[#08111F] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Publish profile
+                </button>
               )}
             </div>
+            <p className="mt-2.5 text-[11px] leading-5 text-[#08111F]/65">
+              {isPublished
+                ? "Save updates your published profile instantly. Select Published \u2713 to unpublish."
+                : "Save your changes, then publish to make your profile discoverable per your Privacy & Visibility settings."}
+            </p>
+            {saveStatus ? <p className="mt-1 text-xs font-semibold text-emerald-700">{saveStatus}</p> : null}
+            {saveError ? <p className="mt-1 text-xs font-semibold text-rose-700">{saveError}</p> : null}
           </div>
 
           <form
-            className="mt-8 space-y-4 rounded-[24px] border border-[#f2cc63]/35 bg-[#f7ebcf] p-5 text-[#071426]"
+            className="mt-8 space-y-4"
             onSubmit={(event) => {
               event.preventDefault();
               saveProfile();
             }}
           >
-            <div className="mt-4 rounded-[24px] border border-[#0f2744]/15 border-t-4 border-t-[#2bd7ef] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Public profile URL</p>
-                <p className="mt-1 text-sm text-[#27405f]">Save your profile and share it with employers or collaborators.</p>
-              </div>
-              <button
-                type="button"
-                onClick={copyShareLink}
-                disabled={!profile.slug}
-                className="rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f] disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isCopySuccess ? "Copied!" : "Copy share link"}
-              </button>
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 rounded-[18px] border border-[#0f2744]/10 bg-[#fffaf0] px-4 py-3">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#6a7a91]">Where your information appears</p>
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#08111F]">
+                <span className="h-2.5 w-2.5 rounded-full bg-[#AFF546]" /> Card + Passport
+              </span>
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#08111F]">
+                <span className="h-2.5 w-2.5 rounded-full bg-[#651D2A]" /> Passport only
+              </span>
             </div>
-            <div className="mt-3 flex min-w-0 items-center gap-1 rounded-2xl border border-[#0f2744]/20 bg-white/90 px-4 py-3 text-sm text-[#071426]">
-              {profile.slug ? <><span className="shrink-0 text-[#6a7a91]">/profile/</span><span className="min-w-0 break-all font-semibold">{profile.slug}</span></> : "Save your profile to generate a shareable link."}
-            </div>
-          </div>
 
           {hasProAccess ? (
             <div className="mt-6 rounded-[24px] border border-[#0f2744]/15 border-t-4 border-t-[#4f9f4e] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
@@ -772,10 +758,13 @@ export default function BuilderPage() {
             </div>
           ) : null}
 
-          <div className="space-y-2">
-              <label htmlFor="name" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
-                Name
-              </label>
+          <div className="space-y-2 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#AFF546] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <label htmlFor="name" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                  Name
+                </label>
+                <DestinationPill tone="card" label="Card + Passport" />
+              </div>
               <input
                 id="name"
                 value={profile.name}
@@ -785,10 +774,30 @@ export default function BuilderPage() {
               />
             </div>
 
-            <div className="space-y-2">
-              <label htmlFor="title" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
-                Professional Title
-              </label>
+            <div className="rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#AFF546] bg-[#fffaf0] p-4 text-[#071426] shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <label htmlFor="availability" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Availability</label>
+                <DestinationPill tone="card" label="Card + Passport" />
+              </div>
+              <select
+                id="availability"
+                value={profile.availability}
+                onChange={(event) => updateTextField("availability", event.target.value)}
+                className="mt-3 w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] shadow-sm outline-none transition focus:border-[#0f2744]"
+              >
+                <option value="Available Now">Available Now</option>
+                <option value="Open to new projects">Open to Opportunities</option>
+                <option value="Booked">Booked</option>
+              </select>
+            </div>
+
+            <div className="space-y-2 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#AFF546] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <label htmlFor="title" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                  Professional Title
+                </label>
+                <DestinationPill tone="card" label="Card + Passport" />
+              </div>
               <input
                 id="title"
                 value={profile.title}
@@ -798,26 +807,13 @@ export default function BuilderPage() {
               />
             </div>
 
-            <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#4f9f4e] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
-              <label htmlFor="bio" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
-                Bio <span className="font-normal normal-case tracking-normal text-[#6a7a91]">(optional)</span>
-              </label>
-              <p className="text-sm leading-6 text-[#27405f]">Introduce yourself in a few sentences. Share your professional background, what you enjoy doing and what you&apos;re looking for next.</p>
-              <textarea
-                id="bio"
-                maxLength={750}
-                value={profile.bio ?? ""}
-                onChange={(event) => updateTextField("bio", event.target.value)}
-                className="min-h-[120px] w-full resize-y rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] shadow-sm outline-none transition focus:border-[#0f2744]"
-                placeholder="Tell employers a little about your professional background..."
-              />
-              <p className="text-right text-xs text-[#6a7a91]">{(profile.bio ?? "").length}/750</p>
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="location" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
-                Location
-              </label>
+            <div className="space-y-2 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#AFF546] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <label htmlFor="location" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                  Location
+                </label>
+                <DestinationPill tone="card" label="Card + Passport" />
+              </div>
               <input
                 id="location"
                 value={profile.location}
@@ -827,10 +823,13 @@ export default function BuilderPage() {
               />
             </div>
 
-            <div className="space-y-2">
-              <label htmlFor="topStrength" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
-                Top Strength
-              </label>
+            <div className="space-y-2 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#AFF546] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <label htmlFor="topStrength" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                  Top Strength
+                </label>
+                <DestinationPill tone="card" label="Card + Passport" />
+              </div>
               <input
                 id="topStrength"
                 value={profile.topStrength}
@@ -840,23 +839,13 @@ export default function BuilderPage() {
               />
             </div>
 
-            <div className="space-y-2">
-              <label htmlFor="focusArea" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
-                Focus Area
-              </label>
-              <input
-                id="focusArea"
-                value={profile.focusArea}
-                onChange={(event) => updateTextField("focusArea", event.target.value)}
-                className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] shadow-sm outline-none transition focus:border-[#0f2744]"
-                placeholder="Enter your focus area"
-              />
-            </div>
-
-            <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#cda64d] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
-              <label htmlFor="education" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
-                Education <span className="font-normal normal-case tracking-normal text-[#6a7a91]">(optional)</span>
-              </label>
+            <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#AFF546] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <label htmlFor="education" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                  Education <span className="font-normal normal-case tracking-normal text-[#6a7a91]">(optional)</span>
+                </label>
+                <DestinationPill tone="card" label="Card + Passport" />
+              </div>
               <textarea
                 id="education"
                 value={profile.education ?? ""}
@@ -866,31 +855,17 @@ export default function BuilderPage() {
               />
             </div>
 
-            <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#4f9f4e] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Contact details</p>
-                <p className="mt-1 text-sm text-[#27405f]">This stays private until you choose to connect with an employer.</p>
-              </div>
-              <label htmlFor="contactEmail" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Contact email</label>
-              <input
-                id="contactEmail"
-                type="email"
-                value={profile.contactEmail ?? ""}
-                onChange={(event) => updateTextField("contactEmail", event.target.value)}
-                className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] outline-none transition focus:border-[#0f2744]"
-                placeholder="you@example.com"
-                autoComplete="email"
-              />
-            </div>
-
-            <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#2bd7ef] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
-                  Skills
-                </p>
-                <p className="mt-1 text-sm text-[#27405f]">
-                  Build a skill set that appears on the card.
-                </p>
+            <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#AFF546] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                    Skills
+                  </p>
+                  <p className="mt-1 text-sm text-[#27405f]">
+                    Build a skill set that appears on the card.
+                  </p>
+                </div>
+                <DestinationPill tone="card" label="Card + Passport" />
               </div>
 
               <div className="flex flex-col gap-2 sm:flex-row">
@@ -934,69 +909,20 @@ export default function BuilderPage() {
               ) : null}
             </div>
 
-            <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#cda64d] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
-              <div className="flex items-center justify-between gap-3">
+            <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#AFF546] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+              <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
-                    Passions
-                  </p>
-                  <p className="mt-1 text-sm text-[#27405f]">
-                    Add up to 8 passions to show what motivates you.
-                  </p>
-                </div>
-                <p className="text-xs font-semibold text-[#6a7a91]">{(profile.passions ?? []).length}/8</p>
-              </div>
-
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <input
-                  value={passionInput}
-                  onChange={(event) => setPassionInput(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter") {
-                      event.preventDefault();
-                      addListItem("passions", passionInput);
-                    }
-                  }}
-                  className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] shadow-sm outline-none transition focus:border-[#0f2744]"
-                  placeholder="Type a passion..."
-                />
-                <button
-                  type="button"
-                  onClick={() => addListItem("passions", passionInput)}
-                  disabled={(profile.passions ?? []).length >= 8}
-                  className="rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f] disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  Add
-                </button>
-              </div>
-
-              {(profile.passions ?? []).length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {(profile.passions ?? []).map((passion) => (
-                    <button
-                      key={passion}
-                      type="button"
-                      onClick={() => removeListItem("passions", passion)}
-                      className="inline-flex items-center gap-2 rounded-full border border-[#f2cc63]/70 bg-[#0f2744] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf] shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#f2cc63] hover:bg-[#17355f] hover:shadow-[0_8px_16px_rgba(7,20,38,0.16)]"
-                    >
-                      <span>{passion}</span>
-                      <span className="flex h-4 w-4 items-center justify-center rounded-full border border-[#f2cc63]/40 bg-[#f7ebcf]/10 text-[10px] leading-none text-[#f7ebcf]">
-                        ×
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-
-            <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#cda64d] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
-                    Career Journey
-                  </p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                      Career Journey
+                    </p>
+                    <DestinationPill tone="card" label="Card + Passport" />
+                  </div>
                   <p className="mt-1 text-sm text-[#27405f]">
                     Shape a rich timeline with multiple roles, achievements and skills.
+                  </p>
+                  <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#9a6d15]">
+                    Card · First 2 entries · Passport · Full career journey
                   </p>
                 </div>
                 <button
@@ -1207,45 +1133,111 @@ export default function BuilderPage() {
           </section>
 
           <section className="box-border rounded-[32px] border-[32px] border-[#f7ebcf] bg-[#0f2744] p-5 text-[#f7ebcf] shadow-[0_18px_55px_rgba(6,16,33,0.28)] sm:p-6">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">Builder Studio</p>
-            <h2 className="mt-3 text-2xl font-black uppercase tracking-[0.08em] text-[#f7ebcf]">Continue building your card</h2>
-            <p className="mt-3 text-sm leading-6 text-[#dfe7ef]">Keep your secondary profile settings aligned with the opportunities you want.</p>
+            <div className="inline-flex items-center rounded-full border border-[#651D2A]/40 bg-[#651D2A] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f7ebcf]">
+              Passport Builder Studio
+            </div>
+            <h2 className="mt-4 text-2xl font-black uppercase leading-tight tracking-[0.08em] text-[#f7ebcf]">Continue building your card</h2>
+            <p className="mt-3 text-sm leading-6 text-[#dfe7ef]">Build out the details that complete your Talent Passport.</p>
 
             <div className="mt-5 space-y-4">
-              <div className="space-y-3 rounded-[20px] border border-[#cda64d]/35 border-t-4 border-t-[#cda64d] bg-[#fffaf0] p-4 text-[#071426] shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Resume</p>
-                  <p className="mt-1 text-sm text-[#27405f]">Private PDF, DOC, or DOCX files up to 10 MB.</p>
+              <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#651D2A] bg-[#fffaf0] p-4 text-[#071426] shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <label htmlFor="bio" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                    Bio <span className="font-normal normal-case tracking-normal text-[#6a7a91]">(optional)</span>
+                  </label>
+                  <DestinationPill tone="passport" label="Passport only" />
                 </div>
-                {profile.resumeOriginalFilename ? (
-                  <div className="space-y-3 rounded-2xl border border-[#cda64d]/35 bg-white/80 p-3">
-                    <p className="whitespace-nowrap text-sm font-semibold uppercase tracking-[0.18em] text-[#4f9f4e]">Resume uploaded ✓</p>
-                    <div className="flex flex-wrap gap-2">
-                      <label className="inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf]">
-                        Replace resume
-                        <input type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" className="sr-only" disabled={resumeBusy} onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadResume(file); event.target.value = ""; }} />
-                      </label>
-                      <button type="button" onClick={() => void removeResume()} disabled={resumeBusy} className="min-h-[44px] rounded-full border border-rose-900/20 bg-white px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-rose-900 disabled:opacity-50">Remove</button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    <p className="whitespace-nowrap text-sm font-semibold uppercase tracking-[0.18em] text-[#9a6d15]">Upload resume</p>
-                    <label className="inline-flex min-h-[46px] w-full cursor-pointer items-center justify-center rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf]">
-                      {resumeBusy ? "Uploading..." : "Upload resume"}
-                      <input type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" className="sr-only" disabled={resumeBusy} onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadResume(file); event.target.value = ""; }} />
-                    </label>
-                  </div>
-                )}
-                {resumeError ? <p className="text-sm font-semibold text-rose-700">{resumeError}</p> : null}
+                <p className="text-sm leading-6 text-[#27405f]">Introduce yourself in a few sentences. Share your professional background, what you enjoy doing and what you&apos;re looking for next.</p>
+                <textarea
+                  id="bio"
+                  maxLength={750}
+                  value={profile.bio ?? ""}
+                  onChange={(event) => updateTextField("bio", event.target.value)}
+                  className="min-h-[120px] w-full resize-y rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] shadow-sm outline-none transition focus:border-[#0f2744]"
+                  placeholder="Tell employers a little about your professional background..."
+                />
+                <p className="text-right text-xs text-[#6a7a91]">{(profile.bio ?? "").length}/750</p>
               </div>
 
-              <div className="space-y-3 rounded-[20px] border border-[#cda64d]/35 border-t-4 border-t-[#4f9f4e] bg-[#fffaf0] p-4 text-[#071426] shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Languages</p>
-                    <p className="mt-1 text-sm text-[#27405f]">Add up to 10 languages for your talent passport.</p>
+              <div className="space-y-2 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#651D2A] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <label htmlFor="focusArea" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                    Focus Area
+                  </label>
+                  <DestinationPill tone="passport" label="Passport only" />
+                </div>
+                <input
+                  id="focusArea"
+                  value={profile.focusArea}
+                  onChange={(event) => updateTextField("focusArea", event.target.value)}
+                  className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] shadow-sm outline-none transition focus:border-[#0f2744]"
+                  placeholder="Enter your focus area"
+                />
+              </div>
+
+              <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#651D2A] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                    Passions
+                  </p>
+                  <DestinationPill tone="passport" label="Passport only" />
+                </div>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-sm text-[#27405f]">
+                    Add up to 8 passions to show what motivates you.
+                  </p>
+                  <p className="text-xs font-semibold text-[#6a7a91]">{(profile.passions ?? []).length}/8</p>
+                </div>
+
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <input
+                    value={passionInput}
+                    onChange={(event) => setPassionInput(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") {
+                        event.preventDefault();
+                        addListItem("passions", passionInput);
+                      }
+                    }}
+                    className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] shadow-sm outline-none transition focus:border-[#0f2744]"
+                    placeholder="Type a passion..."
+                  />
+                  <button
+                    type="button"
+                    onClick={() => addListItem("passions", passionInput)}
+                    disabled={(profile.passions ?? []).length >= 8}
+                    className="rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f] disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    Add
+                  </button>
+                </div>
+
+                {(profile.passions ?? []).length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {(profile.passions ?? []).map((passion) => (
+                      <button
+                        key={passion}
+                        type="button"
+                        onClick={() => removeListItem("passions", passion)}
+                        className="inline-flex items-center gap-2 rounded-full border border-[#f2cc63]/70 bg-[#0f2744] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf] shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#f2cc63] hover:bg-[#17355f] hover:shadow-[0_8px_16px_rgba(7,20,38,0.16)]"
+                      >
+                        <span>{passion}</span>
+                        <span className="flex h-4 w-4 items-center justify-center rounded-full border border-[#f2cc63]/40 bg-[#f7ebcf]/10 text-[10px] leading-none text-[#f7ebcf]">
+                          ×
+                        </span>
+                      </button>
+                    ))}
                   </div>
+                ) : null}
+              </div>
+
+              <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#651D2A] bg-[#fffaf0] p-4 text-[#071426] shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Languages</p>
+                  <DestinationPill tone="passport" label="Passport only" />
+                </div>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-sm text-[#27405f]">Add up to 10 languages for your talent passport.</p>
                   <p className="text-xs font-semibold text-[#6a7a91]">{(profile.languages ?? []).length}/10</p>
                 </div>
                 <div className="flex flex-col gap-2 sm:flex-row">
@@ -1270,22 +1262,11 @@ export default function BuilderPage() {
                 ) : null}
               </div>
 
-              <div className="rounded-[20px] border border-[#cda64d]/35 border-t-4 border-t-[#2bd7ef] bg-[#fffaf0] p-4 text-[#071426]">
-                <label htmlFor="availability" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Availability</label>
-                <select
-                  id="availability"
-                  value={profile.availability}
-                  onChange={(event) => updateTextField("availability", event.target.value)}
-                  className="mt-3 w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] shadow-sm outline-none transition focus:border-[#0f2744]"
-                >
-                  <option value="Available Now">Available Now</option>
-                  <option value="Open to new projects">Open to Opportunities</option>
-                  <option value="Booked">Booked</option>
-                </select>
-              </div>
-
-              <div className="rounded-[20px] border border-[#cda64d]/35 border-t-4 border-t-[#2bd7ef] bg-[#fffaf0] p-4 text-[#071426]">
-                <label htmlFor="salaryExpectation" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Salary expectations <span className="font-normal normal-case tracking-normal text-[#6a7a91]">(optional)</span></label>
+              <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#651D2A] bg-[#fffaf0] p-4 text-[#071426] shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+                <div className="flex items-center justify-between gap-2">
+                  <label htmlFor="salaryExpectation" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Salary expectations <span className="font-normal normal-case tracking-normal text-[#6a7a91]">(optional)</span></label>
+                  <DestinationPill tone="passport" label="Passport only" />
+                </div>
                 <select
                   id="salaryExpectation"
                   value={profile.salaryExpectation ?? ""}
@@ -1299,7 +1280,58 @@ export default function BuilderPage() {
                 </select>
               </div>
 
-              <div className="rounded-[20px] border border-[#cda64d]/35 border-t-4 border-t-[#2bd7ef] bg-[#fffaf0] p-4 text-sm leading-6 text-[#27405f]">
+              <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#651D2A] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Contact details</p>
+                    <p className="mt-1 text-sm text-[#27405f]">This stays private until you choose to connect with an employer.</p>
+                  </div>
+                  <DestinationPill tone="passport" label="Passport · After connection" />
+                </div>
+                <label htmlFor="contactEmail" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Contact email</label>
+                <input
+                  id="contactEmail"
+                  type="email"
+                  value={profile.contactEmail ?? ""}
+                  onChange={(event) => updateTextField("contactEmail", event.target.value)}
+                  className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] outline-none transition focus:border-[#0f2744]"
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                />
+              </div>
+
+              <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#651D2A] bg-[#fffaf0] p-4 text-[#071426] shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Resume</p>
+                    <p className="mt-1 text-sm text-[#27405f]">Private PDF, DOC, or DOCX files up to 10 MB.</p>
+                  </div>
+                  <DestinationPill tone="passport" label="Passport · After connection" />
+                </div>
+                {profile.resumeOriginalFilename ? (
+                  <div className="space-y-3 rounded-2xl border border-[#cda64d]/35 bg-white/80 p-3">
+                    <p className="whitespace-nowrap text-sm font-semibold uppercase tracking-[0.18em] text-[#4f9f4e]">Resume uploaded ✓</p>
+                    <div className="flex flex-wrap gap-2">
+                      <label className="inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf]">
+                        Replace resume
+                        <input type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" className="sr-only" disabled={resumeBusy} onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadResume(file); event.target.value = ""; }} />
+                      </label>
+                      <button type="button" onClick={() => void removeResume()} disabled={resumeBusy} className="min-h-[44px] rounded-full border border-rose-900/20 bg-white px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-rose-900 disabled:opacity-50">Remove</button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="whitespace-nowrap text-sm font-semibold uppercase tracking-[0.18em] text-[#9a6d15]">Upload resume</p>
+                    <label className="inline-flex min-h-[46px] w-full cursor-pointer items-center justify-center rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf]">
+                      {resumeBusy ? "Uploading..." : "Upload resume"}
+                      <input type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" className="sr-only" disabled={resumeBusy} onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadResume(file); event.target.value = ""; }} />
+                    </label>
+                  </div>
+                )}
+                {resumeError ? <p className="text-sm font-semibold text-rose-700">{resumeError}</p> : null}
+              </div>
+
+              <div className="rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#2bd7ef] bg-[#fffaf0] p-4 text-sm leading-6 text-[#27405f] shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Privacy & visibility</p>
                 <p className="mt-2">Marketplace visibility and blocked companies are managed from Privacy & Visibility. Publish state is managed here in Builder Studio.</p>
                 <Link href="/settings/privacy" className="mt-3 inline-flex min-h-[44px] items-center justify-center rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f]">Open privacy settings</Link>

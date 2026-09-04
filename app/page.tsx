@@ -3,7 +3,7 @@ import Image from "next/image";
 import type { Metadata } from "next";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import { IdCard, Lock, ShieldCheck, Search, Eye } from "lucide-react";
+import { IdCard, Lock, ShieldCheck, Search, Eye, ArrowRight } from "lucide-react";
 import TalentCard from "@/components/TalentCard";
 import type { FreeAgentProfile } from "@/types/freeagent";
 import { homepagePassportProfiles } from "@/data/homepage-passports";
@@ -150,19 +150,27 @@ const visibilityStates = [
   {
     key: "open" as const,
     title: "Open to opportunities",
-    description: "Employers can discover your Talent Card.",
+    description: "Ready to be discovered and open to conversations.",
+    icon: Eye,
+    accent: "#AFF546",
   },
   {
-    key: "selective" as const,
-    title: "Selective",
-    description: "Choose who can discover you.",
+    key: "exploring" as const,
+    title: "Exploring",
+    description: "Open to selective conversations for the right opportunity.",
+    icon: Search,
+    accent: "#2BD7EF",
   },
   {
-    key: "private" as const,
-    title: "Private",
-    description: "Your Talent Card stays hidden until you're ready.",
+    key: "confidential" as const,
+    title: "Confidential",
+    description: "Be discovered without revealing your identity.",
+    icon: Lock,
+    accent: "#AFF546",
   },
 ];
+
+const confidentialHiddenFields = ["Name", "Photo", "Contact details", "Current employer"];
 
 const homepageDemoProfile: FreeAgentProfile = {
   ...homepagePassportProfiles["sarah-jones"],
@@ -323,38 +331,31 @@ function VisibilityControlPanel() {
       <div className="pointer-events-none absolute -left-6 -top-6 h-16 w-16 rounded-full border border-[#2bd7ef]/22" />
       <div className="pointer-events-none absolute -right-8 bottom-8 h-20 w-20 rounded-full border border-[#aff546]/26" />
 
-      <div className="rounded-[30px] border border-[#071321]/12 bg-[linear-gradient(180deg,rgba(247,232,198,0.88),rgba(244,225,187,0.95))] p-3 sm:p-4">
-        <div className="grid gap-2.5 rounded-[22px] border border-[#071321]/10 bg-[#f7e8c6]/80 p-2.5 sm:grid-cols-3 sm:gap-2 sm:p-3">
+      <div className="rounded-[30px] border border-[#f7e8c6]/12 bg-[#08111F] p-4 sm:p-5">
+        <div className="grid gap-3 sm:grid-cols-3">
           {visibilityStates.map((state) => {
-            const isActive = state.key === "selective";
-
-            const Icon =
-              state.key === "open"
-                ? Eye
-                : state.key === "private"
-                  ? Lock
-                  : ShieldCheck;
+            const isSelected = state.key === "confidential";
+            const Icon = state.icon;
 
             return (
               <div
                 key={state.key}
-                className={`rounded-[16px] border px-3 py-3 text-left sm:px-3.5 ${
-                  isActive
-                    ? "border-[#2bd7ef]/55 bg-[linear-gradient(180deg,rgba(43,215,239,0.12),rgba(175,245,70,0.08))]"
-                    : "border-[#071321]/10 bg-[#f7e8c6]/86"
+                className={`rounded-[18px] border bg-[#f7e8c6] px-3.5 py-3.5 text-left ${
+                  isSelected ? "border-2 border-[#aff546]" : "border-[#071321]/10"
                 }`}
               >
-                <div className="flex items-center gap-2">
-                  <Icon
-                    className={`h-4 w-4 ${isActive ? "text-[#1bc8e4]" : "text-[#071321]/56"}`}
-                  />
-                  <p
-                    className={`text-[0.67rem] font-semibold uppercase tracking-[0.16em] ${isActive ? "text-[#071321]" : "text-[#071321]/75"}`}
-                  >
-                    {state.title}
-                  </p>
+                <div className="flex items-center justify-between gap-2">
+                  <Icon className="h-4 w-4" style={{ color: state.accent }} />
+                  {isSelected ? (
+                    <span className="inline-flex items-center rounded-full bg-[#aff546] px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#071321]">
+                      Selected
+                    </span>
+                  ) : null}
                 </div>
-                <p className="mt-2 text-[0.76rem] leading-5 text-[#071321]/78">
+                <p className="mt-2 text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-[#071321]">
+                  {state.title}
+                </p>
+                <p className="mt-1.5 text-[0.76rem] leading-5 text-[#071321]/78">
                   {state.description}
                 </p>
               </div>
@@ -363,20 +364,32 @@ function VisibilityControlPanel() {
         </div>
 
         <div className="mt-3 rounded-[22px] border border-[#071321]/10 bg-[#f7e8c6] px-4 py-4 sm:px-5">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#1bc8e4]">
-              Selected: Selective
-            </p>
-            <p className="inline-flex items-center gap-1.5 rounded-full border border-[#9be645]/45 bg-[#aff546]/12 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#071321]">
-              <ShieldCheck className="h-3.5 w-3.5 text-[#7fcf2e]" />
-              Verified employers only
-            </p>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#071321]">
+            Confidential Mode
+          </p>
+          <p className="mt-2 text-[0.82rem] leading-6 text-[#071321]/78">
+            Employers can discover your Talent Card while your identity stays
+            protected.
+          </p>
+
+          <div className="mt-3 flex flex-wrap gap-2">
+            {confidentialHiddenFields.map((field) => (
+              <span
+                key={field}
+                className="inline-flex items-center gap-1.5 rounded-full border border-[#f7e8c6]/12 bg-[#08111F] px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#f7e8c6]"
+              >
+                <Lock className="h-2.5 w-2.5 text-[#f7e8c6]" />
+                {field}
+              </span>
+            ))}
           </div>
-          <div className="mt-3 rounded-[16px] border border-[#071321]/10 bg-[linear-gradient(180deg,rgba(7,19,33,0.97),rgba(8,24,44,0.99))] px-3.5 py-3 text-[#f7e8c6]">
-            <p className="text-[0.79rem] leading-6 text-[#f7e8c6]/86">
-              Employers see your profile when you allow discovery, while your
-              details remain under your control.
-            </p>
+
+          <div className="mt-4 flex flex-wrap items-center gap-1.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#071321]">
+            <span>Discovered anonymously</span>
+            <ArrowRight className="h-3 w-3 text-[#2bd7ef]" />
+            <span>Connection</span>
+            <ArrowRight className="h-3 w-3 text-[#2bd7ef]" />
+            <span className="text-[#7fcf2e]">Identity revealed</span>
           </div>
         </div>
       </div>
