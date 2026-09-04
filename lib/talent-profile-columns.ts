@@ -25,6 +25,7 @@ type TalentRowCore = Pick<ProfilesInsert,
   | "intro_video_storage_path"
   | "profile"
   | "education"
+  | "education_entries"
   | "salary_expectation"
   | "contact_email"
   | "resume_storage_path"
@@ -94,6 +95,11 @@ export function buildCanonicalTalentColumns(
   const privateSafeProfile = { ...profile };
   delete privateSafeProfile.email;
   delete privateSafeProfile.contactEmail;
+  const educationEntries = Array.isArray(profile.educationEntries) ? profile.educationEntries : [];
+  const educationText = educationEntries
+    .map((entry) => [entry.qualification, entry.institution].map((value) => value.trim()).filter(Boolean).join(" - "))
+    .filter(Boolean)
+    .join("\n");
 
   return {
     visibility: normalizeVisibility(profile.visibility),
@@ -104,7 +110,8 @@ export function buildCanonicalTalentColumns(
     availability: normalizeAvailability(profile.availability),
     top_strength: normalizeString(profile.topStrength),
     focus_area: normalizeString(profile.focusArea),
-    education: normalizeString(profile.education),
+    education: normalizeString(educationText || profile.education),
+    education_entries: educationEntries as unknown as Json,
     salary_expectation: profile.salaryExpectation ?? null,
     contact_email: contactEmail,
     resume_storage_path: normalizeString(profile.resumeStoragePath),

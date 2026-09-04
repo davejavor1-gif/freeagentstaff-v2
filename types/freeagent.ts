@@ -39,8 +39,14 @@ export interface CareerPosition {
   period: string;
   location: string;
   description: string;
-  achievements: string[];
-  skills: string[];
+  achievements?: string[];
+  skills?: string[];
+}
+
+export interface EducationEntry {
+  id: string;
+  qualification: string;
+  institution: string;
 }
 
 export interface FreeAgentProfile {
@@ -62,6 +68,7 @@ export interface FreeAgentProfile {
   passions: string[];
   careerJourney: CareerPosition[];
   education?: string;
+  educationEntries?: EducationEntry[];
   salaryExpectation?: SalaryExpectation | null;
   contactEmail?: string;
   resumeStoragePath?: string | null;

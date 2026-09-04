@@ -14,25 +14,25 @@ export const metadata: Metadata = {
   openGraph: { url: "https://freeagentstaff.com/pricing" },
 };
 
-const basicTalentFeatures = [
-  "FreeAgent Card",
-  "Full Talent Passport",
-  "One profile photo",
-  "Experience, education, skills and languages",
-  "Resume upload",
-  "Availability and salary expectations",
-  "Privacy & Visibility controls",
-  "Public, Verified Employer Network and Confidential visibility options",
-  "Equal exposure in Find Talent",
-  "Employer saves",
-  "Receive introduction requests",
-  "Accept employer introductions and connections",
+const basicTalentFeatureColumns = [
+  [
+    "FreeAgent Card",
+    "One profile photo",
+    "Resume upload",
+    "Privacy & Visibility controls",
+    "Accept employer connections",
+  ],
+  [
+    "Talent Passport",
+    "Experience, education, skills and languages",
+    "Availability and salary expectations",
+    "Verified employer network and confidential visibility options",
+  ],
 ];
 
 const proTalentFeatures = [
   "Everything in FreeAgent Basic",
   "Video Introduction",
-  "FreeAgent Pro sport badge",
   "Profile Views",
   "Employer Saves analytics",
 ];
@@ -76,11 +76,15 @@ export default function PricingPage() {
               <p className="mt-2 text-4xl font-black tracking-[0.1em] text-[#08111F]">FREE</p>
               <p className="mt-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#27405f]">{basicPlan.cadenceLabel}</p>
               <p className="mt-6 text-sm leading-7 text-[#27405f]">Create your FreeAgent Card and Talent Passport and be discovered by employers.</p>
-              <ul className="mt-6 grid gap-3 text-sm text-[#27405f] sm:grid-cols-2">
-                {basicTalentFeatures.map((feature) => (
-                  <li key={feature} className="flex items-start gap-3"><span className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-[#cda64d]" /><span>{feature}</span></li>
+              <div className="mt-6 grid gap-x-6 sm:grid-cols-2">
+                {basicTalentFeatureColumns.map((features, columnIndex) => (
+                  <ul key={columnIndex} className="space-y-2 text-sm text-[#27405f]">
+                    {features.map((feature) => (
+                      <li key={feature} className="flex items-start gap-3"><span className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-[#cda64d]" /><span className="leading-[1.08]">{feature}</span></li>
+                    ))}
+                  </ul>
                 ))}
-              </ul>
+              </div>
               <Link href="/builder" className="mt-8 inline-flex w-full items-center justify-center rounded-full bg-[#AFF546] px-5 py-3 text-sm font-semibold uppercase tracking-[0.24em] text-[#08111F] transition hover:brightness-105">Create your card</Link>
             </div>
 
@@ -94,9 +98,9 @@ export default function PricingPage() {
                 <FreeAgentProBadge size="large" />
               </div>
               <p className="mt-6 text-sm leading-7 text-[#27405f]">Everything in FreeAgent Basic, plus more ways to showcase yourself and understand employer interest.</p>
-              <ul className="mt-6 space-y-3 text-sm text-[#27405f]">
+              <ul className="mt-6 space-y-2 text-sm text-[#27405f]">
                 {proTalentFeatures.map((feature) => (
-                  <li key={feature} className="flex items-center gap-3"><span className="h-2.5 w-2.5 shrink-0 rounded-full bg-[#f2cc63]" /><span>{feature}</span></li>
+                  <li key={feature} className="flex items-start gap-3"><span className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-[#f2cc63]" /><span className="leading-[1.08]">{feature}</span></li>
                 ))}
               </ul>
               <BillingButton action="checkout" plan="free_agent_pro" className="mt-8 inline-flex w-full items-center justify-center rounded-full bg-[#AFF546] px-5 py-3 text-sm font-semibold uppercase tracking-[0.24em] text-[#08111F] transition hover:brightness-105">Go Pro</BillingButton>
@@ -106,7 +110,7 @@ export default function PricingPage() {
               <p className="mt-2 text-4xl font-black tracking-[0.1em] text-[#08111F]">{employerPlan.priceLabel}</p>
               <p className="mt-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#27405f]">{employerPlan.cadenceLabel}</p>
               <p className="mt-6 text-sm leading-7 text-[#27405f]">{employerPlan.description}</p>
-              <ul className="mt-6 space-y-3 text-sm text-[#27405f]">{employerPlan.bullets.map((feature) => <li key={feature} className="flex items-center gap-3"><span className="h-2.5 w-2.5 rounded-full bg-[#cda64d]" />{feature === "Verified employer discovery" ? "Employer Talent discovery" : feature}</li>)}</ul>
+              <ul className="mt-6 space-y-2 text-sm text-[#27405f]">{employerPlan.bullets.map((feature) => <li key={feature} className="flex items-start gap-3"><span className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-[#cda64d]" /><span className="leading-[1.08]">{feature === "Verified employer discovery" ? "Employer Talent discovery" : feature}</span></li>)}</ul>
               <EmployerPricingButton className="mt-8 inline-flex w-full items-center justify-center rounded-full bg-[#2BD7EF] px-5 py-3 text-sm font-semibold uppercase tracking-[0.24em] text-[#08111F] transition hover:brightness-105" />
             </div>
           </div>

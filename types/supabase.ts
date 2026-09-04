@@ -30,6 +30,7 @@ export interface ProfilesRow {
   experience_years: number;
   focus_area: string | null;
   education: string | null;
+  education_entries: Json;
   salary_expectation: "under_60k" | "60k_80k" | "80k_100k" | "100k_120k" | "120k_150k" | "150k_200k" | "200k_plus" | "prefer_not_to_say" | null;
   contact_email: string | null;
   resume_storage_path: string | null;
@@ -99,6 +100,7 @@ export interface ProfilesInsert {
   experience_years?: number;
   focus_area?: string | null;
   education?: string | null;
+  education_entries?: Json;
   salary_expectation?: ProfilesRow["salary_expectation"];
   contact_email?: string | null;
   resume_storage_path?: string | null;
@@ -165,6 +167,7 @@ export interface ProfilesUpdate {
   experience_years?: number;
   focus_area?: string | null;
   education?: string | null;
+  education_entries?: Json;
   salary_expectation?: ProfilesRow["salary_expectation"];
   contact_email?: string | null;
   resume_storage_path?: string | null;

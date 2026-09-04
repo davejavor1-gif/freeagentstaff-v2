@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Heart, Lock, MapPin, Pause, Play, RotateCw, Volume2, VolumeX, X } from "lucide-react";
+import { ChevronDown, ChevronUp, Heart, Lock, MapPin, Pause, Play, RotateCw, Volume2, VolumeX, X } from "lucide-react";
 import FreeAgentProBadge from "@/components/FreeAgentProBadge";
 import type { EmployerVerificationStatus, FreeAgentProfile } from "@/types/freeagent";
 import { getSessionWithRetry } from "@/lib/supabase-client";
@@ -76,6 +76,8 @@ export default function TalentCard({
   const [showVideoControls, setShowVideoControls] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [showBackScrollFade, setShowBackScrollFade] = useState(false);
+  const [backHasOverflow, setBackHasOverflow] = useState(false);
+  const [backScrollAtBottom, setBackScrollAtBottom] = useState(false);
   const [resolvedPhotoUrl, setResolvedPhotoUrl] = useState<string | null>(null);
   const [resolvedVideoUrl, setResolvedVideoUrl] = useState<string | null>(null);
   const [optimisticSaved, setOptimisticSaved] = useState<boolean | null>(null);
@@ -143,7 +145,9 @@ export default function TalentCard({
     const updateScrollFade = () => {
       const hasOverflow = content.scrollHeight > content.clientHeight + 1;
       const isAtBottom = content.scrollTop + content.clientHeight >= content.scrollHeight - 1;
+      setBackHasOverflow(hasOverflow);
       setShowBackScrollFade(hasOverflow && !isAtBottom);
+      setBackScrollAtBottom(isAtBottom);
     };
 
     const observer = new ResizeObserver(updateScrollFade);
@@ -152,6 +156,19 @@ export default function TalentCard({
 
     return () => observer.disconnect();
   }, [profile]);
+
+  useEffect(() => {
+    const content = backContentRef.current;
+
+    if (!content) {
+      return;
+    }
+
+    content.scrollTo({ top: 0, behavior: "auto" });
+    setBackHasOverflow(content.scrollHeight > content.clientHeight + 1);
+    setShowBackScrollFade(content.scrollHeight > content.clientHeight + 1);
+    setBackScrollAtBottom(false);
+  }, [isFlipped]);
 
   useEffect(() => {
     const settleDelay = reducedMotion ? 0 : 520;
@@ -328,6 +345,9 @@ export default function TalentCard({
   };
 
   const recentRoles = profile.careerJourney?.slice(0, 2) ?? [];
+  const educationEntries = profile.educationEntries?.length
+    ? profile.educationEntries.map((entry) => [entry.qualification, entry.institution].map((value) => value.trim()).filter(Boolean).join(" - ")).filter(Boolean)
+    : (profile.education ?? "").split(/\n+/).map((entry) => entry.trim()).filter(Boolean);
 
   return (
     <article
@@ -560,11 +580,13 @@ export default function TalentCard({
                     const content = event.currentTarget;
                     const hasOverflow = content.scrollHeight > content.clientHeight + 1;
                     const isAtBottom = content.scrollTop + content.clientHeight >= content.scrollHeight - 1;
+                    setBackHasOverflow(hasOverflow);
                     setShowBackScrollFade(hasOverflow && !isAtBottom);
+                    setBackScrollAtBottom(isAtBottom);
                   }}
                   className="h-full overflow-y-auto bg-[#f7ebcf] p-2 sm:p-2.25"
                 >
-                  <div className="space-y-1">
+                  <div className="space-y-1 pb-10">
                   <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,42%)] items-start gap-x-2 gap-y-1">
                     <div className="min-w-0">
                       <h3 className="text-[0.9rem] font-black uppercase tracking-[0.08em] text-[#0f2744]">
@@ -608,14 +630,14 @@ export default function TalentCard({
 
                   <div className="h-px w-full bg-[#0f2744]/10" />
 
-                  {profile.education?.trim() ? (
+                  {educationEntries.length > 0 ? (
                     <div>
                       <p className="text-[9px] font-semibold uppercase tracking-[0.26em] text-[#9a6d15]">Education</p>
-                      <p className="mt-0.5 whitespace-pre-line text-[0.64rem] leading-4 text-[#27405f]">{profile.education.trim()}</p>
+                      <p className="mt-0.5 text-[0.64rem] leading-4 text-[#27405f]">{educationEntries.join(" | ")}</p>
                     </div>
                   ) : null}
 
-                  {profile.education?.trim() ? <div className="h-px w-full bg-[#0f2744]/10" /> : null}
+                  {educationEntries.length > 0 ? <div className="h-px w-full bg-[#0f2744]/10" /> : null}
 
                   <div>
                     <p className="text-[9px] font-semibold uppercase tracking-[0.26em] text-[#9a6d15]">Experience</p>
@@ -626,17 +648,20 @@ export default function TalentCard({
                             <p className="text-[0.64rem] text-[#27405f]">{role.company}</p>
                             <p className="text-[0.58rem] uppercase tracking-[0.2em] text-[#8a6b24]">{role.period}</p>
                             {role.description ? <p className="mt-0.5 line-clamp-2 text-[0.58rem] leading-3 text-[#27405f]">{role.description}</p> : null}
-                            {role.achievements.length > 0 ? <p className="mt-0.5 line-clamp-1 text-[0.56rem] leading-3 text-[#27405f]"><span className="font-semibold text-[#0f2744]">Achievement: </span>{role.achievements[0]}</p> : null}
-                            {role.skills.length > 0 ? (
-                              <div className="mt-0.75 flex flex-wrap gap-1">
-                                {role.skills.slice(0, 3).map((skill) => (
-                                  <span key={skill} className="rounded-full border border-[#0f2744]/10 bg-[#f7ebcf] px-1 py-0.25 text-[0.5rem] font-semibold uppercase tracking-[0.12em] text-[#27405f]">{skill}</span>
-                                ))}
-                              </div>
-                            ) : null}
                           </div>
                       ))}
                     </div>
+                    {backHasOverflow ? (
+                      <button
+                        type="button"
+                        onClick={() => backContentRef.current?.scrollTo({ top: backScrollAtBottom ? 0 : backContentRef.current.scrollHeight, behavior: "smooth" })}
+                        className="absolute bottom-2 right-2 z-10 inline-flex items-center gap-1 rounded-full border border-[#0f2744]/20 bg-[#0f2744]/90 px-2.5 py-1.5 text-[8px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf] shadow-sm backdrop-blur transition hover:bg-[#17355f]"
+                        aria-label={backScrollAtBottom ? "Scroll back to top" : "Scroll down"}
+                      >
+                        {backScrollAtBottom ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                        {backScrollAtBottom ? "Back to top" : "Scroll"}
+                      </button>
+                    ) : null}
                   </div>
                   </div>
                 </div>

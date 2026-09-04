@@ -13,7 +13,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { salaryExpectationOptions } from "@/lib/talent-profile-options";
 import { hasTalentProAccess, normalizeTalentSubscriptionSnapshot } from "@/lib/talent-subscription";
-import type { AccountType, CareerPosition, FreeAgentProfile, ProfileVisibility } from "@/types/freeagent";
+import type { AccountType, CareerPosition, EducationEntry, FreeAgentProfile, ProfileVisibility } from "@/types/freeagent";
 import type { Database, Json } from "@/types/supabase";
 
 const initialProfile = freeAgentProfiles[0];
@@ -61,6 +61,7 @@ type ProfileSelectResult = {
   photo_storage_path?: string | null;
   intro_video_storage_path?: string | null;
   education?: string | null;
+  education_entries?: Json;
   salary_expectation?: FreeAgentProfile["salaryExpectation"];
   contact_email?: string | null;
   resume_storage_path?: string | null;
@@ -102,6 +103,22 @@ const normalizeAvailability = (value: string | null | undefined): FreeAgentProfi
   return "Available Now";
 };
 
+function toEducationEntries(value: Json | null | undefined): EducationEntry[] {
+  if (Array.isArray(value)) {
+    return value.flatMap((entry, index): EducationEntry[] => {
+      if (!entry || typeof entry !== "object" || Array.isArray(entry)) return [];
+      const candidate = entry as Record<string, Json>;
+      return [{
+        id: typeof candidate.id === "string" ? candidate.id : `education-${index + 1}`,
+        qualification: typeof candidate.qualification === "string" ? candidate.qualification : "",
+        institution: typeof candidate.institution === "string" ? candidate.institution : "",
+      }];
+    });
+  }
+
+  return [];
+}
+
 function hydrateBuilderProfile(profileResult: ProfileSelectResult, fallbackEmail?: string | null): FreeAgentProfile {
   const loadedProfile = profileResult.profile as unknown as FreeAgentProfile;
 
@@ -116,6 +133,7 @@ function hydrateBuilderProfile(profileResult: ProfileSelectResult, fallbackEmail
   loadedProfile.experienceYears = profileResult.experience_years ?? loadedProfile.experienceYears ?? 0;
   loadedProfile.focusArea = profileResult.focus_area ?? loadedProfile.focusArea ?? "";
   loadedProfile.education = profileResult.education ?? loadedProfile.education ?? "";
+  loadedProfile.educationEntries = toEducationEntries(profileResult.education_entries);
   loadedProfile.salaryExpectation = profileResult.salary_expectation ?? loadedProfile.salaryExpectation ?? null;
   loadedProfile.contactEmail = profileResult.contact_email ?? loadedProfile.contactEmail ?? fallbackEmail ?? "";
   loadedProfile.resumeStoragePath = profileResult.resume_storage_path ?? loadedProfile.resumeStoragePath ?? null;
@@ -151,6 +169,7 @@ const createBlankProfile = (userId: string, email?: string | null): FreeAgentPro
   experienceYears: 0,
   focusArea: "",
   education: "",
+  educationEntries: [],
   salaryExpectation: null,
   contactEmail: email ?? "",
   resumeStoragePath: null,
@@ -190,7 +209,6 @@ export default function BuilderPage() {
   const [skillInput, setSkillInput] = useState("");
   const [languageInput, setLanguageInput] = useState("");
   const [passionInput, setPassionInput] = useState("");
-  const [journeyDrafts, setJourneyDrafts] = useState<Record<string, { achievement: string; skill: string }>>({});
   const router = useRouter();
 
   useEffect(() => {
@@ -212,7 +230,7 @@ export default function BuilderPage() {
 
       const { data, error } = await supabase
         .from("profiles")
-        .select("slug, profile, account_type, visibility, opportunity_status, is_published, name, title, location, availability, top_strength, experience_years, focus_area, education, salary_expectation, contact_email, resume_storage_path, resume_original_filename, resume_uploaded_at, summary, bio, skills, languages, passions, career_journey, email, image_alt, current_employer, intro_video_url, photo_url, photo_storage_path, intro_video_storage_path, talent_plan, talent_subscription_status, talent_subscription_current_period_ends_at")
+        .select("slug, profile, account_type, visibility, opportunity_status, is_published, name, title, location, availability, top_strength, experience_years, focus_area, education, education_entries, salary_expectation, contact_email, resume_storage_path, resume_original_filename, resume_uploaded_at, summary, bio, skills, languages, passions, career_journey, email, image_alt, current_employer, intro_video_url, photo_url, photo_storage_path, intro_video_storage_path, talent_plan, talent_subscription_status, talent_subscription_current_period_ends_at")
         .eq("user_id", supabaseSession.user.id)
         .maybeSingle();
 
@@ -458,10 +476,31 @@ export default function BuilderPage() {
   }
 
   const updateTextField = (
-    field: "name" | "title" | "location" | "topStrength" | "availability" | "focusArea" | "education" | "salaryExpectation" | "contactEmail" | "bio",
+    field: "name" | "title" | "location" | "topStrength" | "availability" | "focusArea" | "salaryExpectation" | "contactEmail" | "bio",
     value: string,
   ) => {
     setProfile((current) => ({ ...current, [field]: value }));
+  };
+
+  const createEducationEntry = (): EducationEntry => ({
+    id: `education-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    qualification: "",
+    institution: "",
+  });
+
+  const addEducationEntry = () => {
+    setProfile((current) => ({ ...current, educationEntries: [...(current.educationEntries ?? []), createEducationEntry()] }));
+  };
+
+  const updateEducationEntry = (entryId: string, field: keyof Omit<EducationEntry, "id">, value: string) => {
+    setProfile((current) => ({
+      ...current,
+      educationEntries: (current.educationEntries ?? []).map((entry) => entry.id === entryId ? { ...entry, [field]: value } : entry),
+    }));
+  };
+
+  const removeEducationEntry = (entryId: string) => {
+    setProfile((current) => ({ ...current, educationEntries: (current.educationEntries ?? []).filter((entry) => entry.id !== entryId) }));
   };
 
   const createCareerPosition = (): CareerPosition => ({
@@ -471,8 +510,6 @@ export default function BuilderPage() {
     period: "",
     location: "",
     description: "",
-    achievements: [],
-    skills: [],
   });
 
   const addSkill = () => {
@@ -590,66 +627,6 @@ export default function BuilderPage() {
     setProfile((current) => ({
       ...current,
       careerJourney: current.careerJourney.map((position) => (position.id === positionId ? { ...position, [field]: value } : position)),
-    }));
-  };
-
-  const updateJourneyDraft = (positionId: string, kind: "achievement" | "skill", value: string) => {
-    setJourneyDrafts((current) => ({
-      ...current,
-      [positionId]: {
-        achievement: current[positionId]?.achievement ?? "",
-        skill: current[positionId]?.skill ?? "",
-        [kind]: value,
-      },
-    }));
-  };
-
-  const addCareerListItem = (positionId: string, kind: "achievement" | "skill") => {
-    const draftValue = (journeyDrafts[positionId]?.[kind] ?? "").trim();
-
-    if (!draftValue) {
-      return;
-    }
-
-    setProfile((current) => ({
-      ...current,
-      careerJourney: current.careerJourney.map((position) => {
-        if (position.id !== positionId) {
-          return position;
-        }
-
-        const nextItems = kind === "achievement" ? [...position.achievements, draftValue] : [...position.skills, draftValue];
-        return {
-          ...position,
-          [kind === "achievement" ? "achievements" : "skills"]: nextItems,
-        };
-      }),
-    }));
-
-    setJourneyDrafts((current) => ({
-      ...current,
-      [positionId]: {
-        achievement: kind === "achievement" ? "" : current[positionId]?.achievement ?? "",
-        skill: kind === "skill" ? "" : current[positionId]?.skill ?? "",
-      },
-    }));
-  };
-
-  const removeCareerListItem = (positionId: string, kind: "achievement" | "skill", valueToRemove: string) => {
-    setProfile((current) => ({
-      ...current,
-      careerJourney: current.careerJourney.map((position) => {
-        if (position.id !== positionId) {
-          return position;
-        }
-
-        const nextItems = kind === "achievement" ? position.achievements.filter((item) => item !== valueToRemove) : position.skills.filter((item) => item !== valueToRemove);
-
-        return {
-          ...position,
-          [kind === "achievement" ? "achievements" : "skills"]: nextItems,
-        };
-      }),
     }));
   };
 
@@ -827,18 +804,28 @@ export default function BuilderPage() {
 
             <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#AFF546] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <label htmlFor="education" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
                   Education <span className="font-normal normal-case tracking-normal text-[#6a7a91]">(optional)</span>
-                </label>
+                </p>
                 <DestinationPill tone="card" label="Card + Passport" />
+                <button type="button" onClick={addEducationEntry} className="rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f]">
+                  Add education
+                </button>
               </div>
-              <textarea
-                id="education"
-                value={profile.education ?? ""}
-                onChange={(event) => updateTextField("education", event.target.value)}
-                className="min-h-24 w-full resize-y rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] shadow-sm outline-none transition focus:border-[#0f2744]"
-                placeholder="Bachelor of Business - UTS"
-              />
+              <div className="space-y-3">
+                {(profile.educationEntries ?? []).map((entry, index) => (
+                  <div key={entry.id} className="space-y-3 rounded-[20px] border border-[#cda64d]/35 bg-white/70 p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">Education {index + 1}</p>
+                      <button type="button" onClick={() => removeEducationEntry(entry.id)} className="rounded-full border border-rose-900/20 bg-white px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-900">Remove</button>
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <input value={entry.qualification} onChange={(event) => updateEducationEntry(entry.id, "qualification", event.target.value)} className="w-full rounded-2xl border border-[#cda64d]/50 bg-white px-3 py-2.5 text-sm text-[#071426] outline-none transition focus:border-[#0f2744]" placeholder="Qualification or course" />
+                      <input value={entry.institution} onChange={(event) => updateEducationEntry(entry.id, "institution", event.target.value)} className="w-full rounded-2xl border border-[#cda64d]/50 bg-white px-3 py-2.5 text-sm text-[#071426] outline-none transition focus:border-[#0f2744]" placeholder="Institution" />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#AFF546] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
@@ -905,10 +892,7 @@ export default function BuilderPage() {
                     <DestinationPill tone="card" label="Card + Passport" />
                   </div>
                   <p className="mt-1 text-sm text-[#27405f]">
-                    Shape a rich timeline with multiple roles, achievements and skills.
-                  </p>
-                  <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#9a6d15]">
-                    Card · First 2 entries · Passport · Full career journey
+                    Your two most recent roles appear on your Talent Card. Your full career history appears in your Talent Passport.
                   </p>
                 </div>
                 <button
@@ -922,8 +906,6 @@ export default function BuilderPage() {
 
               <div className="space-y-3">
                 {profile.careerJourney.map((position, index) => {
-                  const draft = journeyDrafts[position.id] ?? { achievement: "", skill: "" };
-
                   return (
                     <div key={position.id} className="rounded-[24px] border border-[#f7ebcf]/15 bg-[#10233A] p-4 shadow-sm">
                       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -1020,81 +1002,6 @@ export default function BuilderPage() {
                         />
                       </div>
 
-                      <div className="mt-4 grid gap-3 md:grid-cols-2">
-                        <div className="space-y-3 rounded-[20px] border border-[#cda64d]/35 bg-[#f7ebcf] p-3">
-                          <div className="flex items-center justify-between gap-2">
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
-                              Achievements
-                            </p>
-                            <span className="text-[11px] text-[#27405f]">{position.achievements.length}</span>
-                          </div>
-                          <div className="flex flex-col gap-2 sm:flex-row">
-                            <input
-                              value={draft.achievement}
-                              onChange={(event) => updateJourneyDraft(position.id, "achievement", event.target.value)}
-                              className="w-full rounded-2xl border border-[#cda64d]/50 bg-white px-3 py-2 text-sm text-[#08111F] outline-none transition focus:border-[#0f2744]"
-                              placeholder="Add an achievement"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => addCareerListItem(position.id, "achievement")}
-                              className="rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f]"
-                            >
-                              Add
-                            </button>
-                          </div>
-                          <div className="flex flex-wrap gap-2">
-                            {position.achievements.map((item) => (
-                              <button
-                                key={`${position.id}-${item}`}
-                                type="button"
-                                onClick={() => removeCareerListItem(position.id, "achievement", item)}
-                                className="inline-flex items-center gap-2 rounded-full border border-[#f2cc63]/70 bg-[#0f2744] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf]"
-                              >
-                                <span>{item}</span>
-                                <span className="text-[#f7ebcf]">×</span>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="space-y-3 rounded-[20px] border border-[#cda64d]/35 bg-[#f7ebcf] p-3">
-                          <div className="flex items-center justify-between gap-2">
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
-                              Skills used
-                            </p>
-                            <span className="text-[11px] text-[#27405f]">{position.skills.length}</span>
-                          </div>
-                          <div className="flex flex-col gap-2 sm:flex-row">
-                            <input
-                              value={draft.skill}
-                              onChange={(event) => updateJourneyDraft(position.id, "skill", event.target.value)}
-                              className="w-full rounded-2xl border border-[#cda64d]/50 bg-white px-3 py-2 text-sm text-[#08111F] outline-none transition focus:border-[#0f2744]"
-                              placeholder="Add a skill"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => addCareerListItem(position.id, "skill")}
-                              className="rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f]"
-                            >
-                              Add
-                            </button>
-                          </div>
-                          <div className="flex flex-wrap gap-2">
-                            {position.skills.map((item) => (
-                              <button
-                                key={`${position.id}-${item}`}
-                                type="button"
-                                onClick={() => removeCareerListItem(position.id, "skill", item)}
-                                className="inline-flex items-center gap-2 rounded-full border border-[#f2cc63]/70 bg-[#0f2744] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf]"
-                              >
-                                <span>{item}</span>
-                                <span className="text-[#f7ebcf]">×</span>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
                     </div>
                   );
                 })}
@@ -1321,6 +1228,17 @@ export default function BuilderPage() {
                 <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Privacy & visibility</p>
                 <p className="mt-2">Marketplace visibility and blocked companies are managed from Privacy & Visibility. Publish state is managed here in Builder Studio.</p>
                 <Link href="/settings/privacy" className="mt-3 inline-flex min-h-[44px] items-center justify-center rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f]">Open privacy settings</Link>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => void saveProfile()}
+                  disabled={isSaving || !profileLoaded}
+                  className="inline-flex min-h-[48px] w-full items-center justify-center rounded-full bg-[#AFF546] px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#08111F] transition hover:bg-[#9fea37] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isSaving ? "Saving..." : "Save profile"}
+                </button>
               </div>
             </div>
           </section>

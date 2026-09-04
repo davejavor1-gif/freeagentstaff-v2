@@ -30,6 +30,7 @@ create table if not exists profiles (
   experience_years integer not null default 0 check (experience_years >= 0),
   focus_area text,
   education text,
+  education_entries jsonb not null default '[]'::jsonb,
   salary_expectation text check (salary_expectation in ('under_60k', '60k_80k', '80k_100k', '100k_120k', '120k_150k', '150k_200k', '200k_plus', 'prefer_not_to_say')),
   contact_email text check (contact_email is null or contact_email ~* '^[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+$'),
   resume_storage_path text,
@@ -3891,22 +3892,21 @@ as $$
 declare
   base_slug text;
   candidate text;
-  suffix text;
-  attempt integer := 0;
+  attempt integer := 1;
 begin
-  if new.slug is not null and btrim(new.slug) <> '' and not (tg_op = 'UPDATE' and old.slug = 'member') then
+  if new.slug is not null and btrim(new.slug) <> '' then
     return new;
   end if;
 
   base_slug := regexp_replace(lower(extensions.unaccent(coalesce(nullif(btrim(new.name), ''), 'member'))), '[^a-z0-9]+', '-', 'g');
   base_slug := regexp_replace(base_slug, '(^-+|-+$)', '', 'g');
   base_slug := left(coalesce(nullif(base_slug, ''), 'member'), 48);
+  perform pg_advisory_xact_lock(hashtextextended(base_slug, 0));
   candidate := base_slug;
 
   while exists (select 1 from public.profiles p where p.slug = candidate and p.user_id <> new.user_id) loop
     attempt := attempt + 1;
-    suffix := substr(md5(new.user_id::text || ':' || attempt::text), 1, 4);
-    candidate := left(base_slug, 43) || '-' || suffix;
+    candidate := left(base_slug, 48 - length('-' || attempt::text)) || '-' || attempt::text;
   end loop;
 
   new.slug := candidate;

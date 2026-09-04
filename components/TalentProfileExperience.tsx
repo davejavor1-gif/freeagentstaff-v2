@@ -328,10 +328,9 @@ export default function TalentProfileExperience({
       )?.label
     : null;
   const showEmployerBackButton = viewerAccountType === "employer" && !isOwner;
-  const educationEntries = (profile.education ?? "")
-    .split(/\n+/)
-    .map((entry) => entry.trim())
-    .filter(Boolean);
+  const educationEntries = profile.educationEntries?.length
+    ? profile.educationEntries.map((entry) => [entry.qualification, entry.institution].map((value) => value.trim()).filter(Boolean).join(" - ")).filter(Boolean)
+    : (profile.education ?? "").split(/\n+/).map((entry) => entry.trim()).filter(Boolean);
 
   return (
     <>
@@ -438,6 +437,18 @@ export default function TalentProfileExperience({
                   ) : null}
                 </div>
               ) : null}
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <div className="min-w-0 rounded-[20px] border border-[#651D2A]/25 bg-[#fffaf0] p-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#651D2A]">Skills</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {profile.skills.map((skill) => <span key={skill} className="rounded-full border border-[#651D2A]/25 bg-[#f7ebcf] px-3 py-2 text-xs font-semibold text-[#1a1a1a]">{skill}</span>)}
+                  </div>
+                </div>
+                <div className="min-w-0 rounded-[20px] border border-[#651D2A]/25 bg-[#fffaf0] p-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#651D2A]">Salary expectations</p>
+                  <p className="mt-2 break-words font-semibold text-[#1a1a1a]">{salaryLabel ?? "Not listed"}</p>
+                </div>
+              </div>
             </section>
             <PassportFold />
             <section className="relative overflow-hidden rounded-[27px] border border-[#f7ebcf]/80 bg-[#fffaf0] p-6 shadow-[inset_0_10px_24px_rgba(111,83,16,0.07),inset_0_-1px_0_rgba(255,250,240,0.85),0_8px_18px_rgba(6,16,33,0.12)] [background-image:radial-gradient(circle_at_88%_12%,rgba(255,250,240,0.7),transparent_28%),repeating-linear-gradient(0deg,rgba(15,39,68,0.022)_0,rgba(15,39,68,0.022)_1px,transparent_1px,transparent_5px),repeating-linear-gradient(90deg,transparent_0,transparent_14px,rgba(154,109,21,0.022)_15px,transparent_16px)] sm:p-8 lg:p-10">
@@ -445,48 +456,7 @@ export default function TalentProfileExperience({
                 <BriefcaseBusiness className="h-4 w-4" /> Professional record
               </div>
               <div className="mt-6 space-y-6">
-                <div className="grid gap-6 sm:grid-cols-2">
-                  <div className="min-w-0 rounded-[20px] border border-[#651D2A]/25 bg-[#f7ebcf]/65 p-5">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#651D2A]">
-                      Skills
-                    </p>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {profile.skills.map((skill) => (
-                        <span
-                          key={skill}
-                          className="rounded-full border border-[#651D2A]/25 bg-[#f7ebcf] px-3 py-2 text-xs font-semibold text-[#1a1a1a]"
-                        >
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
-                    {profile.languages?.length ? (
-                      <div className="mt-6 min-w-0">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#651D2A]">
-                          Languages
-                        </p>
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {profile.languages.map((language) => (
-                            <span
-                              key={language}
-                              className="rounded-full border border-[#651D2A]/25 bg-[#f7ebcf] px-3 py-2 text-xs font-semibold text-[#1a1a1a]"
-                            >
-                              {language}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    ) : null}
-                  </div>
-                  <div className="min-w-0 rounded-[20px] border border-[#651D2A]/25 bg-[#f7ebcf]/65 p-5">
-                    <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#651D2A]">
-                      Salary expectations
-                    </p>
-                    <p className="mt-2 font-semibold text-[#1a1a1a]">
-                      {salaryLabel ?? "Not listed"}
-                    </p>
-                  </div>
-                </div>
+                {profile.languages?.length ? <div className="min-w-0 rounded-[20px] border border-[#651D2A]/25 bg-[#f7ebcf]/65 p-5"><p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#651D2A]">Languages</p><div className="mt-3 flex flex-wrap gap-2">{profile.languages.map((language) => <span key={language} className="rounded-full border border-[#651D2A]/25 bg-[#f7ebcf] px-3 py-2 text-xs font-semibold text-[#1a1a1a]">{language}</span>)}</div></div> : null}
                 <div className="min-w-0 rounded-[20px] border border-[#651D2A]/25 bg-[#f7ebcf]/65 p-5">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#651D2A]">
                     Education
@@ -536,26 +506,6 @@ export default function TalentProfileExperience({
                             <p className="mt-2 min-w-0 break-words text-sm leading-6 text-[#1a1a1a]/80 [overflow-wrap:anywhere]">
                               {position.description}
                             </p>
-                          ) : null}
-                          {position.achievements.length > 0 ? (
-                            <div className="mt-3 min-w-0">
-                              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#651D2A]">Achievements</p>
-                              <ul className="mt-2 space-y-1.5 text-sm leading-6 text-[#1a1a1a]/80">
-                                {position.achievements.map((achievement) => (
-                                  <li key={achievement} className="flex gap-2"><span className="text-[#651D2A]">•</span><span>{achievement}</span></li>
-                                ))}
-                              </ul>
-                            </div>
-                          ) : null}
-                          {position.skills.length > 0 ? (
-                            <div className="mt-3 min-w-0">
-                              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#651D2A]">Skills used</p>
-                              <div className="mt-2 flex flex-wrap gap-2">
-                                {position.skills.map((skill) => (
-                                  <span key={skill} className="rounded-full border border-[#651D2A]/25 bg-[#f7ebcf] px-2.5 py-1 text-xs font-semibold text-[#1a1a1a]">{skill}</span>
-                                ))}
-                              </div>
-                            </div>
                           ) : null}
                         </div>
                       ))}
