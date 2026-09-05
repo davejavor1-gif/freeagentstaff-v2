@@ -53,10 +53,14 @@ export default function EmployersPage() {
         <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-6 py-12 sm:px-8 sm:py-16 lg:grid-cols-[0.95fr_0.85fr] lg:px-12 lg:py-20">
           <div className="max-w-2xl">
             <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#2bd7ef]">For Employers</p>
-            <h1 className="mt-4 max-w-2xl font-serif text-[2rem] font-semibold leading-tight text-[#f7e8c6] sm:text-[2.8rem]">Recruitment takes too much time. Putting up an ad and waiting for resumes to come in. Here, you can browse talented staff right now.</h1>
+            <h1 className="mt-4 max-w-2xl font-serif text-[2rem] font-semibold leading-tight text-[#f7e8c6] sm:text-[2.8rem]">
+              <span className="block">Recruitment takes too much time.</span>
+              <span className="block">Putting up an ad and waiting for resumes to come in.</span>
+              <span className="block">Here, you can browse talented staff right now.</span>
+            </h1>
             <p className="mt-6 max-w-xl text-base leading-8 text-[#f7e8c6]/84 sm:text-lg">Free Agent Staff reverses the traditional job-board model. Instead of relying only on people applying to individual advertisements, discover professionals who are open to their next opportunity.</p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/employer/auth" className="inline-flex items-center justify-center rounded-full bg-[#2bd7ef] px-6 py-3 text-sm font-semibold text-[#071321] transition hover:-translate-y-0.5 hover:bg-[#1fcce7]">Find Your Next Superstar <span className="ml-2">→</span></Link>
+              <Link href="/employer/auth" className="inline-flex items-center justify-center rounded-full bg-[#2bd7ef] px-6 py-3 text-sm font-semibold text-[#071321] transition hover:-translate-y-0.5 hover:bg-[#1fcce7]">Employer Sign In</Link>
               <Link href="/pricing" className="inline-flex items-center justify-center rounded-full border border-[#2bd7ef]/65 px-6 py-3 text-sm font-semibold text-[#f7e8c6] transition hover:-translate-y-0.5 hover:bg-[#2bd7ef]/10">View Employer Plans</Link>
             </div>
           </div>
@@ -119,7 +123,7 @@ export default function EmployersPage() {
             <p className="mt-5 max-w-2xl text-base leading-8 text-[#071321]/78">Join Free Agent Staff to discover professionals who are open to opportunity, while respecting the privacy controls and permissions that keep the connection thoughtful.</p>
           </div>
           <div className="mt-8 flex flex-wrap items-center gap-4">
-            <Link href="/employer/auth" className="inline-flex items-center rounded-full bg-[#2bd7ef] px-6 py-3 text-sm font-semibold text-[#071321] transition hover:bg-[#1fcce7]">Find Your Next Superstar <span className="ml-2">→</span></Link>
+            <Link href="/employer/auth" className="inline-flex items-center rounded-full bg-[#2bd7ef] px-6 py-3 text-sm font-semibold text-[#071321] transition hover:bg-[#1fcce7]">Employer Sign In</Link>
             <Link href="/pricing" className="text-sm font-semibold text-[#071321] underline decoration-[#1bc8e4] underline-offset-4">View Employer Plans</Link>
           </div>
         </div>

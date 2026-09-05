@@ -54,15 +54,16 @@ export default function TalentPage() {
           <div className="max-w-2xl">
             <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#aff546]">For Talent</p>
             <h1 className="mt-4 max-w-2xl font-serif text-[2rem] font-semibold leading-tight text-[#f7e8c6] sm:text-[2.8rem]">
-              Want to stand out? Create your Talent Card, record a video and let your experience and personality shine.
+              <span className="block">Want to stand out?</span>
+              <span className="block">Create your Talent Card and Passport.</span>
+              <span className="block">Record a video and let your personality and experience shine.</span>
             </h1>
             <p className="mt-6 max-w-xl text-base leading-8 text-[#f7e8c6]/84 sm:text-lg">
               Free Agent Staff gives professionals a different way to present themselves to employers. Create a FreeAgent Card and Talent Passport that show what you can do, what you&apos;ve achieved and what makes you different.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="/login" className="inline-flex items-center justify-center rounded-full bg-[#aff546] px-6 py-3 text-sm font-semibold text-[#071321] transition hover:-translate-y-0.5 hover:bg-[#9fea37]">
-                Create Your FreeAgent Card
-                <span className="ml-2">→</span>
+                Talent Sign In
               </Link>
               <Link href="/about" className="inline-flex items-center justify-center rounded-full border border-[#2bd7ef]/65 px-6 py-3 text-sm font-semibold text-[#f7e8c6] transition hover:-translate-y-0.5 hover:bg-[#2bd7ef]/10">
                 How it works
@@ -120,8 +121,8 @@ export default function TalentPage() {
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-4 lg:col-span-2">
-            <Link href="/login" className="inline-flex items-center rounded-full bg-[#aff546] px-6 py-3 text-sm font-semibold text-[#071321] transition hover:bg-[#9fea37]">Create Your FreeAgent Card <span className="ml-2">→</span></Link>
-            <Link href="/employers" className="text-sm font-semibold text-[#f7e8c6] underline decoration-[#aff546] underline-offset-4">See the employer side</Link>
+            <Link href="/login" className="inline-flex items-center rounded-full bg-[#aff546] px-6 py-3 text-sm font-semibold text-[#071321] transition hover:bg-[#9fea37]">Talent Sign In</Link>
+            <Link href="/employers" className="text-sm font-semibold text-[#f7e8c6] underline decoration-[#2bd7ef] underline-offset-4">See the employer side</Link>
           </div>
         </div>
       </section>

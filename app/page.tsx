@@ -411,10 +411,7 @@ function FinalConversionSection() {
         <div className="mt-6 grid gap-5 sm:mt-8 sm:gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-0 xl:gap-4">
           <div className="relative lg:pr-8 xl:pr-12">
             <div className="pointer-events-none absolute right-[-0.25rem] top-0 hidden h-full w-px bg-gradient-to-b from-[#2bd7ef]/25 via-[#f7e8c6]/15 to-transparent lg:block" />
-            <p className="font-serif text-[3.2rem] leading-none text-[#aff546] sm:text-[4rem]">
-              01
-            </p>
-            <p className="mt-4 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#aff546]">
+            <p className="text-[20px] font-semibold uppercase tracking-[0.24em] text-[#aff546]">
               FOR TALENT
             </p>
             <h3 className="mt-3 max-w-[12ch] font-serif text-[1.95rem] leading-[0.95] text-[#f7e8c6] sm:text-[2.28rem] lg:text-[2.4rem] xl:text-[2.5rem]">
@@ -434,10 +431,7 @@ function FinalConversionSection() {
           </div>
 
           <div className="relative border-t border-[#f7e8c6]/12 pt-7 sm:pt-8 lg:border-t-0 lg:pl-8 lg:pt-0 xl:pl-12">
-            <p className="font-serif text-[3.2rem] leading-none text-[#2bd7ef] sm:text-[4rem]">
-              02
-            </p>
-            <p className="mt-4 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#2bd7ef]">
+            <p className="text-[20px] font-semibold uppercase tracking-[0.24em] text-[#2bd7ef]">
               FOR EMPLOYERS
             </p>
             <h3 className="mt-3 max-w-[12ch] font-serif text-[1.95rem] leading-[0.95] text-[#f7e8c6] sm:text-[2.28rem] lg:text-[2.4rem] xl:text-[2.5rem]">
@@ -704,7 +698,7 @@ export default function Home() {
         <div className="pointer-events-none absolute right-[-4rem] bottom-16 h-52 w-52 rounded-full border border-[#aff546]/24" />
 
         <div className="relative mx-auto max-w-7xl px-6 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24">
-          <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1.02fr)_minmax(0,0.98fr)] lg:gap-12">
+          <div className="grid items-start gap-10 lg:items-end lg:grid-cols-[minmax(0,1.02fr)_minmax(0,0.98fr)] lg:gap-12">
             <div className="max-w-[38rem]">
               <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#1bc8e4]">
                 Your career. Your terms.
@@ -718,16 +712,9 @@ export default function Home() {
                 world. You control your visibility, what employers can see and
                 when you&apos;re ready to be discovered.
               </p>
-              <Link
-                href="/settings/privacy"
-                className="mt-6 inline-flex items-center rounded-full bg-[#AFF546] px-5 py-3 text-[0.86rem] font-semibold text-[#08111F] transition hover:-translate-y-0.5 hover:bg-[#9fea37] sm:px-6 sm:text-sm"
-              >
-                EXPLORE PRIVACY &amp; VISIBILITY
-                <span className="ml-2">→</span>
-              </Link>
             </div>
 
-            <div className="lg:mt-48">
+            <div>
               <VisibilityControlPanel />
             </div>
           </div>
