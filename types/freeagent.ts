@@ -53,6 +53,8 @@ export interface FreeAgentProfile {
   id: string;
   slug?: string;
   visibility?: ProfileVisibility;
+  // true when a Confidential profile has been unveiled to this specific viewer via an active connection
+  confidentialAccessUnveiled?: boolean;
   opportunityStatus?: OpportunityStatus;
   name: string;
   title: string;

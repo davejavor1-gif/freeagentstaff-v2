@@ -182,6 +182,7 @@ function mapSavedItem(
         id: row.slug,
         slug: row.slug,
         visibility: visibility ?? "public",
+        confidentialAccessUnveiled: visibility === "confidential",
         opportunityStatus: normalizeOpportunityStatus(row.opportunity_status),
         name: row.name ?? "",
         title: row.title ?? "",

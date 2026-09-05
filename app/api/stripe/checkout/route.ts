@@ -24,6 +24,40 @@ function normalizeAbn(value: string | null | undefined) {
   return total % 89 === 0 ? digits : null;
 }
 
+function normalizeAcn(value: string | null | undefined) {
+  const digits = (value ?? "").replace(/\D/g, "");
+
+  if (digits.length !== 9) {
+    return null;
+  }
+
+  const weights = [8, 7, 6, 5, 4, 3, 2, 1];
+  const weightedSum = digits
+    .slice(0, 8)
+    .split("")
+    .reduce((sum, digit, index) => sum + Number(digit) * weights[index], 0);
+  const checkDigit = ((10 - (weightedSum % 10)) % 10).toString();
+
+  return checkDigit === digits[8] ? digits : null;
+}
+
+function hasValidEmployerIdentifier(profile: {
+  employer_abn: string | null;
+  employer_acn: string | null;
+  employer_identifier_type: string | null;
+}) {
+  if (profile.employer_identifier_type === "acn") {
+    return Boolean(normalizeAcn(profile.employer_acn));
+  }
+
+  if (profile.employer_identifier_type === "abn") {
+    return Boolean(normalizeAbn(profile.employer_abn));
+  }
+
+  // Legacy rows without an explicit identifier type fall back to ABN-only behavior.
+  return Boolean(normalizeAbn(profile.employer_abn));
+}
+
 function getBearerToken(request: Request) {
   const authorization = request.headers.get("authorization");
   return authorization?.startsWith("Bearer ") ? authorization.slice(7).trim() || null : null;
@@ -49,7 +83,7 @@ export async function POST(request: Request) {
 
   const { data: profile, error: profileError } = await userClient
     .from("profiles")
-    .select("account_type, email, name, employer_company_name, employer_abn, employer_verification_status, stripe_talent_subscription_id, talent_subscription_status, stripe_employer_subscription_id, employer_subscription_status")
+    .select("account_type, email, name, employer_company_name, employer_abn, employer_acn, employer_identifier_type, employer_verification_status, stripe_talent_subscription_id, talent_subscription_status, stripe_employer_subscription_id, employer_subscription_status")
     .eq("user_id", userData.user.id)
     .maybeSingle<{
       account_type: "talent" | "employer";
@@ -57,6 +91,8 @@ export async function POST(request: Request) {
       name: string | null;
       employer_company_name: string | null;
       employer_abn: string | null;
+      employer_acn: string | null;
+      employer_identifier_type: string | null;
       employer_verification_status: string | null;
       stripe_talent_subscription_id: string | null;
       talent_subscription_status: string | null;
@@ -73,7 +109,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, message: "That subscription is not available for this account type." }, { status: 403 });
   }
 
-  if (plan === "employer" && (profile.employer_verification_status !== "verified" || !normalizeAbn(profile.employer_abn))) {
+  if (plan === "employer" && (profile.employer_verification_status !== "verified" || !hasValidEmployerIdentifier(profile))) {
     return NextResponse.json({ ok: false, message: "Employer verification must be completed before checkout." }, { status: 403 });
   }
 

@@ -14,6 +14,8 @@ export interface ProfilesRow {
   employer_contact_name: string | null;
   employer_contact_role: string | null;
   employer_abn: string | null;
+  employer_acn: string | null;
+  employer_identifier_type: "abn" | "acn" | null;
   employer_website: string | null;
   employer_industry: string | null;
   employer_company_size: string | null;
@@ -84,6 +86,8 @@ export interface ProfilesInsert {
   employer_contact_name?: string | null;
   employer_contact_role?: string | null;
   employer_abn?: string | null;
+  employer_acn?: string | null;
+  employer_identifier_type?: "abn" | "acn" | null;
   employer_website?: string | null;
   employer_industry?: string | null;
   employer_company_size?: string | null;
@@ -151,6 +155,8 @@ export interface ProfilesUpdate {
   employer_contact_name?: string | null;
   employer_contact_role?: string | null;
   employer_abn?: string | null;
+  employer_acn?: string | null;
+  employer_identifier_type?: "abn" | "acn" | null;
   employer_website?: string | null;
   employer_industry?: string | null;
   employer_company_size?: string | null;
@@ -499,6 +505,8 @@ export interface Database {
           employer_contact_role: string | null;
           employer_company_name: string | null;
           employer_abn: string | null;
+          employer_acn: string | null;
+          employer_identifier_type: "abn" | "acn" | null;
           employer_website: string | null;
           employer_industry: string | null;
           employer_company_size: string | null;

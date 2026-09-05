@@ -341,7 +341,7 @@ export default function TalentProfileExperience({
             {showEmployerBackButton ? (
               <Link
                 href="/find-talent"
-                className="rounded-full bg-[#aff546] px-5 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#071426] transition hover:bg-[#9fea37] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#aff546] focus-visible:ring-offset-2"
+                className="rounded-full bg-[#2BD7EF] px-5 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#08111F] transition hover:bg-[#1fc2d9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2BD7EF] focus-visible:ring-offset-2"
               >
                 Back to talent search
               </Link>

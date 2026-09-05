@@ -10,7 +10,7 @@ import { hasEmployerSubscriptionAccess, hasTalentProAccess, normalizeEmployerSub
 
 const SIGNED_URL_TTL_SECONDS = 60 * 60;
 
-type ViewerRow = Pick<ProfilesRow, "account_type" | "employer_verification_status" | "employer_abn" | "employer_company_name" | "employer_subscription_status" | "employer_subscription_current_period_ends_at" | "employer_subscription_cancel_at_period_end">;
+type ViewerRow = Pick<ProfilesRow, "account_type" | "employer_verification_status" | "employer_abn" | "employer_acn" | "employer_identifier_type" | "employer_company_name" | "employer_subscription_status" | "employer_subscription_current_period_ends_at" | "employer_subscription_cancel_at_period_end">;
 type DiscoveryRpcRow = Database["public"]["Functions"]["discovery_profiles_for_verified_employer_v2"]["Returns"][number];
 type PassportRpcRow = Database["public"]["Functions"]["talent_passport_for_viewer_v3"]["Returns"][number];
 
@@ -36,6 +36,32 @@ function normalizeAbn(value: string | null | undefined) {
     .reduce((sum, digit, index) => sum + ((index === 0 ? digit - 1 : digit) * weights[index]), 0);
 
   return checksum % 89 === 0 ? digits : null;
+}
+
+function normalizeAcn(value: string | null | undefined) {
+  const digits = (value ?? "").replace(/\D/g, "");
+
+  if (digits.length !== 9) {
+    return null;
+  }
+
+  const weights = [8, 7, 6, 5, 4, 3, 2, 1];
+  const weightedSum = digits
+    .slice(0, 8)
+    .split("")
+    .reduce((sum, digit, index) => sum + Number(digit) * weights[index], 0);
+  const checkDigit = ((10 - (weightedSum % 10)) % 10).toString();
+
+  return checkDigit === digits[8] ? digits : null;
+}
+
+function hasValidEmployerIdentifier(viewerRow: Pick<ViewerRow, "employer_abn" | "employer_acn" | "employer_identifier_type">) {
+  if (viewerRow.employer_identifier_type === "acn") {
+    return Boolean(normalizeAcn(viewerRow.employer_acn));
+  }
+
+  // Legacy rows without an explicit identifier type fall back to ABN-only behavior.
+  return Boolean(normalizeAbn(viewerRow.employer_abn));
 }
 
 function normalizeVisibility(value: string | null | undefined): Exclude<ProfileVisibility, "employer_network"> | null {
@@ -152,7 +178,7 @@ async function getViewerContext(accessToken: string): Promise<ViewerContext | nu
 
   const { data: viewerRow } = await userClient
     .from("profiles")
-    .select("account_type, employer_verification_status, employer_abn, employer_subscription_status, employer_subscription_current_period_ends_at, employer_subscription_cancel_at_period_end")
+    .select("account_type, employer_verification_status, employer_abn, employer_acn, employer_identifier_type, employer_subscription_status, employer_subscription_current_period_ends_at, employer_subscription_cancel_at_period_end")
     .eq("user_id", data.user.id)
     .maybeSingle();
 
@@ -170,7 +196,8 @@ function buildDiscoveryProfile(
   hasProAccess: boolean,
 ): DiscoveryProfileCard {
   const visibility = normalizeVisibility(row.visibility);
-  const isConfidential = visibility === "confidential";
+  // can_view_identifying_info already accounts for an active employer-talent connection reveal.
+  const isConfidential = visibility === "confidential" && !row.can_view_identifying_info;
 
   if (isConfidential) {
     return {
@@ -204,6 +231,7 @@ function buildDiscoveryProfile(
       id: row.slug,
       slug: row.slug,
       visibility: visibility ?? "confidential",
+      confidentialAccessUnveiled: visibility === "confidential",
       opportunityStatus: normalizeOpportunityStatus(row.opportunity_status),
       name: row.name ?? "",
       title: row.title ?? "",
@@ -255,6 +283,7 @@ function buildPassportProfile(row: PassportRpcRow, photoUrl: string | null, vide
     id: row.slug,
     slug: row.slug,
     visibility: visibility ?? "confidential",
+    confidentialAccessUnveiled: visibility === "confidential",
     opportunityStatus: normalizeOpportunityStatus(row.opportunity_status),
     name: row.name ?? "",
     title: row.title ?? "",
@@ -325,11 +354,11 @@ export async function loadDiscoveryResults(accessToken: string | null | undefine
     };
   }
 
-  if (!normalizeAbn(viewer.viewerRow.employer_abn)) {
+  if (!hasValidEmployerIdentifier(viewer.viewerRow)) {
     return {
       allowed: false,
       reason: "invalid_abn",
-      message: "A valid structured ABN is required before employer discovery is available.",
+      message: "A valid structured ABN or ACN is required before employer discovery is available.",
       profiles: [],
     };
   }
@@ -433,11 +462,11 @@ export async function loadTalentPassport(accessToken: string | null | undefined,
       };
     }
 
-    if (!normalizeAbn(viewer.viewerRow.employer_abn)) {
+    if (!hasValidEmployerIdentifier(viewer.viewerRow)) {
       return {
         allowed: false,
         reason: "invalid_abn",
-        message: "A valid structured ABN is required before employer passport access is available.",
+        message: "A valid structured ABN or ACN is required before employer passport access is available.",
       };
     }
 

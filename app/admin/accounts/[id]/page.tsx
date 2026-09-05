@@ -184,7 +184,10 @@ export default function AdminAccountDetailPage() {
               <div><dt className="text-[#6f5c34]">Contact name</dt><dd>{account.employerContactName ?? "Not available"}</dd></div>
               <div><dt className="text-[#6f5c34]">Contact role</dt><dd>{account.employerContactRole ?? "Not available"}</dd></div>
               <div><dt className="text-[#6f5c34]">Company name</dt><dd>{account.employerCompanyName ?? "Not available"}</dd></div>
-              <div><dt className="text-[#6f5c34]">ABN</dt><dd>{account.employerAbn ?? "Not available"}</dd></div>
+              <div>
+                <dt className="text-[#6f5c34]">{account.employerIdentifierType === "acn" ? "ACN" : "ABN"}</dt>
+                <dd>{(account.employerIdentifierType === "acn" ? account.employerAcn : account.employerAbn) ?? "Not available"}</dd>
+              </div>
               <div><dt className="text-[#6f5c34]">Website</dt><dd>{account.employerWebsite ?? "Not available"}</dd></div>
               <div><dt className="text-[#6f5c34]">Industry</dt><dd>{account.employerIndustry ?? "Not available"}</dd></div>
               <div><dt className="text-[#6f5c34]">Verification requested</dt><dd>{account.verificationRequestedAt ?? "Not available"}</dd></div>

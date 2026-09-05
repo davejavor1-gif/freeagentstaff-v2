@@ -252,6 +252,10 @@ export default function PrivacySettingsPage() {
       return `ABN ${key.slice(4)}`;
     }
 
+    if (key.startsWith("acn:")) {
+      return `ACN ${key.slice(4)}`;
+    }
+
     if (key.startsWith("domain:")) {
       return `Domain ${key.slice(7)}`;
     }
@@ -392,13 +396,13 @@ export default function PrivacySettingsPage() {
             <div className="privacy-light-row mt-10 rounded-[24px] border border-[#cda64d]/25 bg-[#0f2744] p-6 text-sm leading-7 text-[#f7ebcf]/80">
               <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f7ebcf]">Blocked companies</p>
               <p className="mt-2">
-                Block by company name, domain, or ABN. FreeAgent stores a canonical privacy key behind the scenes and hides blocked employers from discovery and contact access where current rules apply.
+                Block by company name, domain, ABN, or ACN. FreeAgent stores a canonical privacy key behind the scenes and hides blocked employers from discovery and contact access where current rules apply.
               </p>
               <div className="mt-4 flex flex-col gap-3 sm:flex-row">
                 <input
                   value={blockInput}
                   onChange={(event) => setBlockInput(event.target.value)}
-                  placeholder="Company name, domain, or ABN"
+                  placeholder="Company name, domain, ABN, or ACN"
                   className="min-h-[44px] w-full rounded-2xl border border-[#08111F]/20 bg-[#fffaf0] px-4 py-3 text-sm text-[#08111F] outline-none transition focus:border-[#AFF546]"
                 />
                 <button

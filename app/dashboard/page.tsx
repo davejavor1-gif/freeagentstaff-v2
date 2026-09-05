@@ -1080,6 +1080,11 @@ export default function DashboardPage() {
                               This request can no longer be actioned because current privacy/block settings no longer allow this relationship.
                             </p>
                           ) : null}
+                          {visibility === "confidential" && request.status === "pending" && request.canTalentRespond ? (
+                            <p className="mt-3 rounded-2xl border border-[#2BD7EF]/40 bg-[#effcff] px-4 py-3 text-sm leading-6 text-[#0f2744]">
+                              By accepting this connection, your Talent Card and Talent Passport will be unveiled to this employer, including the details you keep hidden in Confidential Mode. Your information will only be visible to this connection.
+                            </p>
+                          ) : null}
                         </div>
                         {request.status === "pending" && request.canTalentRespond ? (
                           <div className="flex flex-wrap gap-2">

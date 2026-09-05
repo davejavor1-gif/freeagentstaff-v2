@@ -25,7 +25,8 @@ interface TalentCardProps {
   playVideoRequest?: number;
 }
 
-const isConfidential = (profile: FreeAgentProfile) => (profile.visibility ?? "public") === "confidential";
+const isConfidential = (profile: FreeAgentProfile) =>
+  (profile.visibility ?? "public") === "confidential" && !profile.confidentialAccessUnveiled;
 const buildInitials = (name: string) => {
   const words = name.trim().split(/\s+/).filter(Boolean);
   if (words.length === 0) return "FA";

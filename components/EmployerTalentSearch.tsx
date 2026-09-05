@@ -55,7 +55,7 @@ const availabilityRank: Record<string, number> = {
 };
 
 const isConfidentialProfile = (profile: FreeAgentProfile) =>
-  (profile.visibility ?? "public") === "confidential";
+  (profile.visibility ?? "public") === "confidential" && !profile.confidentialAccessUnveiled;
 
 const matchesExperience = (years: number, filter: ExperienceFilter) => {
   if (filter === "all") {

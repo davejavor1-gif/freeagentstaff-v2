@@ -7,11 +7,15 @@ import Navbar from "@/components/layout/Navbar";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
 import type { AccountType, EmployerVerificationStatus } from "@/types/freeagent";
 
+type EmployerIdentifierType = "abn" | "acn";
+
 type EmployerFormState = {
   contactName: string;
   contactRole: string;
   companyName: string;
+  identifierType: EmployerIdentifierType;
   abn: string;
+  acn: string;
   website: string;
   industry: string;
 };
@@ -24,6 +28,8 @@ type EmployerProfileRow = {
   employer_contact_role?: string | null;
   employer_company_name?: string | null;
   employer_abn?: string | null;
+  employer_acn?: string | null;
+  employer_identifier_type?: EmployerIdentifierType | null;
   employer_website?: string | null;
   employer_industry?: string | null;
   verification_requested_at?: string | null;
@@ -36,16 +42,17 @@ const blankForm: EmployerFormState = {
   contactName: "",
   contactRole: "",
   companyName: "",
+  identifierType: "abn",
   abn: "",
+  acn: "",
   website: "",
   industry: "",
 };
 
-const requiredFieldLabels: Record<keyof EmployerFormState, string> = {
+const requiredFieldLabels: Record<keyof Omit<EmployerFormState, "identifierType" | "abn" | "acn">, string> = {
   contactName: "Contact name",
   contactRole: "Your role",
   companyName: "Company name",
-  abn: "ABN",
   website: "Website",
   industry: "Industry",
 };
@@ -78,10 +85,36 @@ function formatAbnInput(value: string): string {
   return `${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5, 8)} ${digits.slice(8)}`;
 }
 
+function normalizeAcn(value: string): string {
+  const digits = value.replace(/\D/g, "");
+  if (digits.length !== 9) {
+    return "";
+  }
+
+  const weights = [8, 7, 6, 5, 4, 3, 2, 1];
+  const weightedSum = digits
+    .slice(0, 8)
+    .split("")
+    .reduce((sum, digit, index) => sum + Number(digit) * weights[index], 0);
+  const checkDigit = ((10 - (weightedSum % 10)) % 10).toString();
+
+  return checkDigit === digits[8] ? digits : "";
+}
+
+function formatAcnInput(value: string): string {
+  const digits = value.replace(/\D/g, "").slice(0, 9);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `${digits.slice(0, 3)} ${digits.slice(3)}`;
+  return `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`;
+}
+
 function mapRpcError(errorMessage: string): string {
   const msg = errorMessage.toLowerCase();
   if (msg.includes("invalid_abn")) {
     return "Enter a valid 11-digit Australian Business Number.";
+  }
+  if (msg.includes("invalid_acn")) {
+    return "Enter a valid 9-digit Australian Company Number.";
   }
   if (msg.includes("missing_required_fields")) {
     return "Please complete all required contact and company fields before submitting for verification.";
@@ -109,7 +142,7 @@ export default function EmployerOnboardingPage() {
   const [requestedAt, setRequestedAt] = useState<string | null>(null);
   const [rejectionReason, setRejectionReason] = useState<string | null>(null);
   const [form, setForm] = useState<EmployerFormState>(blankForm);
-  const [baselineIdentity, setBaselineIdentity] = useState<{ companyName: string; abn: string; website: string }>({ companyName: "", abn: "", website: "" });
+  const [baselineIdentity, setBaselineIdentity] = useState<{ companyName: string; identifierType: EmployerIdentifierType; abn: string; acn: string; website: string }>({ companyName: "", identifierType: "abn", abn: "", acn: "", website: "" });
   const [formError, setFormError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [touchedSubmit, setTouchedSubmit] = useState(false);
@@ -120,10 +153,13 @@ export default function EmployerOnboardingPage() {
 
   const normalizedAbn = useMemo(() => normalizeAbn(form.abn), [form.abn]);
   const isAbnValid = normalizedAbn.length === 11;
+  const normalizedAcn = useMemo(() => normalizeAcn(form.acn), [form.acn]);
+  const isAcnValid = normalizedAcn.length === 9;
+  const isIdentifierValid = form.identifierType === "acn" ? isAcnValid : isAbnValid;
 
   const missingRequiredFields = useMemo(() => {
     const missing: string[] = [];
-    (Object.keys(requiredFieldLabels) as Array<keyof EmployerFormState>).forEach((key) => {
+    (Object.keys(requiredFieldLabels) as Array<keyof Omit<EmployerFormState, "identifierType" | "abn" | "acn">>).forEach((key) => {
       if (!form[key].trim()) {
         missing.push(requiredFieldLabels[key]);
       }
@@ -134,16 +170,18 @@ export default function EmployerOnboardingPage() {
   const identityChanged = useMemo(() => {
     return (
       form.companyName.trim() !== baselineIdentity.companyName.trim() ||
+      form.identifierType !== baselineIdentity.identifierType ||
       normalizeAbn(form.abn) !== normalizeAbn(baselineIdentity.abn) ||
+      normalizeAcn(form.acn) !== normalizeAcn(baselineIdentity.acn) ||
       form.website.trim().toLowerCase() !== baselineIdentity.website.trim().toLowerCase()
     );
-  }, [baselineIdentity.abn, baselineIdentity.companyName, baselineIdentity.website, form.abn, form.companyName, form.website]);
+  }, [baselineIdentity.abn, baselineIdentity.acn, baselineIdentity.companyName, baselineIdentity.identifierType, baselineIdentity.website, form.abn, form.acn, form.companyName, form.identifierType, form.website]);
 
   const refreshEmployerRow = async (userId: string): Promise<EmployerProfileRow | null> => {
     const { data, error } = await supabase
       .from("profiles")
       .select(
-        "user_id, account_type, employer_verification_status, employer_contact_name, employer_contact_role, employer_company_name, employer_abn, employer_website, employer_industry, verification_requested_at, verification_rejection_reason",
+        "user_id, account_type, employer_verification_status, employer_contact_name, employer_contact_role, employer_company_name, employer_abn, employer_acn, employer_identifier_type, employer_website, employer_industry, verification_requested_at, verification_rejection_reason",
       )
       .eq("user_id", userId)
       .maybeSingle();
@@ -165,17 +203,26 @@ export default function EmployerOnboardingPage() {
     setRequestedAt(row.verification_requested_at ?? null);
     setRejectionReason(row.verification_rejection_reason ?? null);
 
-    const nextForm = {
+    const nextIdentifierType: EmployerIdentifierType = row.employer_identifier_type ?? (row.employer_abn ? "abn" : "abn");
+    const nextForm: EmployerFormState = {
       contactName: row.employer_contact_name ?? "",
       contactRole: row.employer_contact_role ?? "",
       companyName: row.employer_company_name ?? "",
+      identifierType: nextIdentifierType,
       abn: formatAbnInput(row.employer_abn ?? ""),
+      acn: formatAcnInput(row.employer_acn ?? ""),
       website: row.employer_website ?? "",
       industry: row.employer_industry ?? "",
     };
 
     setForm(nextForm);
-    setBaselineIdentity({ companyName: nextForm.companyName, abn: nextForm.abn, website: nextForm.website });
+    setBaselineIdentity({
+      companyName: nextForm.companyName,
+      identifierType: nextForm.identifierType,
+      abn: nextForm.abn,
+      acn: nextForm.acn,
+      website: nextForm.website,
+    });
   };
 
   useEffect(() => {
@@ -292,7 +339,12 @@ export default function EmployerOnboardingPage() {
         employer_contact_name: form.contactName.trim() || null,
         employer_contact_role: form.contactRole.trim() || null,
         employer_company_name: form.companyName.trim() || null,
-        employer_abn: form.abn.trim() || null,
+        employer_identifier_type: form.identifierType,
+        // Only the active identifier field is written so switching identifier type
+        // never overwrites a previously recorded ABN or ACN.
+        ...(form.identifierType === "abn"
+          ? { employer_abn: form.abn.trim() || null }
+          : { employer_acn: form.acn.trim() || null }),
         employer_website: form.website.trim() || null,
         employer_industry: form.industry.trim() || null,
       } as never)
@@ -327,8 +379,12 @@ export default function EmployerOnboardingPage() {
       return;
     }
 
-    if (!isAbnValid) {
-      setFormError("Enter a valid 11-digit Australian Business Number.");
+    if (!isIdentifierValid) {
+      setFormError(
+        form.identifierType === "acn"
+          ? "Enter a valid 9-digit Australian Company Number."
+          : "Enter a valid 11-digit Australian Business Number.",
+      );
       return;
     }
 
@@ -449,7 +505,7 @@ export default function EmployerOnboardingPage() {
               <p className="mt-2">Your details have been submitted to Free Agent Staff for review. We&apos;ll let you know once your business has been verified.</p>
               <p className="mt-2 text-[#08111F]/60">Submitted: {requestedAt ? new Date(requestedAt).toLocaleString() : "Pending confirmation"}</p>
               <p className="mt-2 text-[#08111F]/60">
-                If you edit company verification details like company name or ABN, your account may need to be reviewed again.
+                If you edit company verification details like company name, ABN or ACN, your account may need to be reviewed again.
               </p>
             </div>
           ) : null}
@@ -488,7 +544,7 @@ export default function EmployerOnboardingPage() {
 
           {(verificationStatus === "pending" || verificationStatus === "verified") && identityChanged ? (
             <div className="mt-6 rounded-[22px] border border-[#08111F]/15 bg-[#fffaf0] p-4 text-sm leading-7 text-[#08111F]/70">
-              Changing your company name, ABN or company website will require your employer account to be verified again.
+              Changing your company name, ABN/ACN or company website will require your employer account to be verified again.
             </div>
           ) : null}
 
@@ -557,24 +613,70 @@ export default function EmployerOnboardingPage() {
               </div>
 
               <div>
-                <label htmlFor="abn" className="text-sm font-semibold text-[#0f2744]">ABN</label>
-                <input
-                  id="abn"
-                  name="abn"
-                  value={form.abn}
-                  onChange={(event) => setForm((current) => ({ ...current, abn: formatAbnInput(event.target.value) }))}
-                  readOnly={isPendingReadOnly}
-                  className="mt-2 min-h-[44px] w-full rounded-2xl border border-[#08111F]/20 bg-[#fffaf0] px-4 py-3 text-sm text-[#08111F] outline-none transition focus:border-[#2BD7EF] focus:ring-2 focus:ring-[#2BD7EF]/25"
-                  aria-required="true"
-                  aria-describedby="abn-help"
-                  inputMode="numeric"
-                />
-                <p id="abn-help" className={`mt-2 text-sm ${isAbnValid ? "text-[#2d6a2e]" : "text-[#a2472f]"}`}>
-                  {isAbnValid
-                    ? "ABN looks valid. This confirms the number format only. FreeAgent will still review your employer account before talent access is enabled."
-                    : "Enter a valid 11-digit Australian Business Number."}
-                </p>
+                <span className="text-sm font-semibold text-[#0f2744]">Company identifier</span>
+                <div className="mt-2 flex gap-2">
+                  <button
+                    type="button"
+                    disabled={isPendingReadOnly}
+                    onClick={() => setForm((current) => ({ ...current, identifierType: "abn" }))}
+                    aria-pressed={form.identifierType === "abn"}
+                    className={`min-h-[40px] rounded-full border px-4 text-[11px] font-semibold uppercase tracking-[0.2em] transition ${form.identifierType === "abn" ? "border-[#2BD7EF]/60 bg-[#2BD7EF] text-[#08111F]" : "border-[#08111F]/20 bg-[#fffaf0] text-[#08111F]/70"}`}
+                  >
+                    ABN
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isPendingReadOnly}
+                    onClick={() => setForm((current) => ({ ...current, identifierType: "acn" }))}
+                    aria-pressed={form.identifierType === "acn"}
+                    className={`min-h-[40px] rounded-full border px-4 text-[11px] font-semibold uppercase tracking-[0.2em] transition ${form.identifierType === "acn" ? "border-[#2BD7EF]/60 bg-[#2BD7EF] text-[#08111F]" : "border-[#08111F]/20 bg-[#fffaf0] text-[#08111F]/70"}`}
+                  >
+                    ACN
+                  </button>
+                </div>
               </div>
+
+              {form.identifierType === "abn" ? (
+                <div>
+                  <label htmlFor="abn" className="text-sm font-semibold text-[#0f2744]">ABN</label>
+                  <input
+                    id="abn"
+                    name="abn"
+                    value={form.abn}
+                    onChange={(event) => setForm((current) => ({ ...current, abn: formatAbnInput(event.target.value) }))}
+                    readOnly={isPendingReadOnly}
+                    className="mt-2 min-h-[44px] w-full rounded-2xl border border-[#08111F]/20 bg-[#fffaf0] px-4 py-3 text-sm text-[#08111F] outline-none transition focus:border-[#2BD7EF] focus:ring-2 focus:ring-[#2BD7EF]/25"
+                    aria-required="true"
+                    aria-describedby="abn-help"
+                    inputMode="numeric"
+                  />
+                  <p id="abn-help" className={`mt-2 text-sm ${isAbnValid ? "text-[#2d6a2e]" : "text-[#a2472f]"}`}>
+                    {isAbnValid
+                      ? "ABN looks valid. This confirms the number format only. FreeAgent will still review your employer account before talent access is enabled."
+                      : "Enter a valid 11-digit Australian Business Number."}
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  <label htmlFor="acn" className="text-sm font-semibold text-[#0f2744]">ACN</label>
+                  <input
+                    id="acn"
+                    name="acn"
+                    value={form.acn}
+                    onChange={(event) => setForm((current) => ({ ...current, acn: formatAcnInput(event.target.value) }))}
+                    readOnly={isPendingReadOnly}
+                    className="mt-2 min-h-[44px] w-full rounded-2xl border border-[#08111F]/20 bg-[#fffaf0] px-4 py-3 text-sm text-[#08111F] outline-none transition focus:border-[#2BD7EF] focus:ring-2 focus:ring-[#2BD7EF]/25"
+                    aria-required="true"
+                    aria-describedby="acn-help"
+                    inputMode="numeric"
+                  />
+                  <p id="acn-help" className={`mt-2 text-sm ${isAcnValid ? "text-[#2d6a2e]" : "text-[#a2472f]"}`}>
+                    {isAcnValid
+                      ? "ACN looks valid. This confirms the number format only. FreeAgent will still review your employer account before talent access is enabled."
+                      : "Enter a valid 9-digit Australian Company Number."}
+                  </p>
+                </div>
+              )}
 
               <div className="grid gap-4 md:grid-cols-2">
                 <div>

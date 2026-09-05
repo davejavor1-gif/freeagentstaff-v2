@@ -110,6 +110,8 @@ function mapAccountDetail(row: AdminDetailRow): AdminAccountDetail {
     employerContactRole: row.employer_contact_role,
     employerCompanyName: row.employer_company_name,
     employerAbn: row.employer_abn,
+    employerAcn: row.employer_acn,
+    employerIdentifierType: row.employer_identifier_type,
     employerWebsite: row.employer_website,
     employerIndustry: row.employer_industry,
     employerCompanySize: row.employer_company_size,

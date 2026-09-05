@@ -77,6 +77,8 @@ export interface AdminAccountDetail {
   employerContactRole: string | null;
   employerCompanyName: string | null;
   employerAbn: string | null;
+  employerAcn: string | null;
+  employerIdentifierType: "abn" | "acn" | null;
   employerWebsite: string | null;
   employerIndustry: string | null;
   employerCompanySize: string | null;
