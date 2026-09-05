@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, ChevronUp, Heart, Lock, MapPin, Pause, Play, RotateCw, Volume2, VolumeX, X } from "lucide-react";
 import FreeAgentProBadge from "@/components/FreeAgentProBadge";
 import type { EmployerVerificationStatus, FreeAgentProfile } from "@/types/freeagent";
@@ -22,6 +22,7 @@ interface TalentCardProps {
   showSaveAction?: boolean;
   initiallySaved?: boolean;
   onSavedChange?: (nextSaved: boolean) => void;
+  playVideoRequest?: number;
 }
 
 const isConfidential = (profile: FreeAgentProfile) => (profile.visibility ?? "public") === "confidential";
@@ -64,6 +65,7 @@ export default function TalentCard({
   showSaveAction = false,
   initiallySaved = false,
   onSavedChange,
+  playVideoRequest = 0,
 }: TalentCardProps) {
   const confidential = isConfidential(profile);
   const isEmployerPresentation = presentation === "employer";
@@ -217,7 +219,7 @@ export default function TalentCard({
     }
   };
 
-  const handleOpenVideo = async () => {
+  const handleOpenVideo = useCallback(async () => {
     if (!hasVideo || confidential) {
       return;
     }
@@ -228,7 +230,19 @@ export default function TalentCard({
     setShouldAutoplay(true);
 
     setIsMuted(false);
-  };
+  }, [confidential, hasVideo]);
+
+  useEffect(() => {
+    if (playVideoRequest <= 0) {
+      return;
+    }
+
+    const requestTimer = window.setTimeout(() => {
+      void handleOpenVideo();
+    }, 0);
+
+    return () => window.clearTimeout(requestTimer);
+  }, [handleOpenVideo, playVideoRequest]);
 
   const handleCloseVideo = () => {
     setVideoOpen(false);

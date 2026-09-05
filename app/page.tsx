@@ -5,6 +5,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { IdCard, Lock, ShieldCheck, Search, Eye, ArrowRight } from "lucide-react";
 import TalentCard from "@/components/TalentCard";
+import { HomepageHeroVideoButton, HomepageHeroVideoCard, HomepageHeroVideoProvider } from "@/components/HomepageHeroVideo";
 import type { FreeAgentProfile } from "@/types/freeagent";
 import { homepagePassportProfiles } from "@/data/homepage-passports";
 
@@ -181,18 +182,6 @@ const homepageLowerDemoProfile: FreeAgentProfile = {
   ...homepagePassportProfiles["daniel-brooks"],
   intro_video_url: "/videos/daniel-intro.mp4",
 };
-
-function TalentCardDemo() {
-  return (
-    <TalentCard
-      profile={homepageDemoProfile}
-      href="/profile/sarah-jones"
-      verificationStatus="verified"
-      hasProAccess
-      className="max-w-[430px]"
-    />
-  );
-}
 
 function EmployerDiscoveryResult({
   result,
@@ -437,11 +426,10 @@ function FinalConversionSection() {
               potential together in one place.
             </p>
             <Link
-              href="/builder"
+              href="/login"
               className="mt-6 inline-flex items-center rounded-full bg-[#aff546] px-5 py-2.75 text-[0.86rem] font-semibold text-[#071321] transition duration-300 hover:-translate-y-0.5 hover:bg-[#9fea37] max-[359px]:w-full sm:px-6 sm:py-3 sm:text-sm"
             >
-              Create your Talent Card
-              <span className="ml-2">→</span>
+              TALENT SIGN IN
             </Link>
           </div>
 
@@ -461,11 +449,10 @@ function FinalConversionSection() {
               who happened to apply.
             </p>
             <Link
-              href="/find-talent"
-              className="mt-6 inline-flex items-center rounded-full border border-[#2bd7ef]/70 bg-transparent px-5 py-2.75 text-[0.86rem] font-semibold text-[#f7e8c6] transition duration-300 hover:-translate-y-0.5 hover:bg-[#2bd7ef]/12 max-[359px]:w-full sm:px-6 sm:py-3 sm:text-sm"
+              href="/employer/auth"
+              className="mt-6 inline-flex items-center rounded-full bg-[#2bd7ef] px-5 py-2.75 text-[0.86rem] font-semibold text-[#08111F] transition duration-300 hover:-translate-y-0.5 hover:brightness-105 max-[359px]:w-full sm:px-6 sm:py-3 sm:text-sm"
             >
-              Find talent
-              <span className="ml-2 text-[#2bd7ef]">→</span>
+              EMPLOYER SIGN IN
             </Link>
           </div>
         </div>
@@ -490,6 +477,7 @@ export default function Home() {
       <section className="relative isolate mb-8 overflow-hidden border-b border-[#2bd7ef]/12 max-sm:mb-5">
         <div className="absolute inset-0 bg-[#0B111D]" />
 
+        <HomepageHeroVideoProvider>
         <div className="nav-fade relative mx-auto grid max-w-7xl items-center gap-10 px-6 pb-10 pt-8 max-sm:gap-1 max-sm:px-4 max-sm:pb-0 max-sm:pt-1 sm:px-8 lg:min-h-[calc(100vh-80px)] lg:grid-cols-[44fr_56fr] lg:px-12 lg:py-6">
           <div className="max-w-xl">
             <Image
@@ -509,30 +497,14 @@ export default function Home() {
             </h1>
 
             <p className="mt-5 max-w-lg text-[1.1rem] leading-8 text-[#f7e8c6]/88 max-sm:mt-1 max-sm:text-[0.98rem] max-sm:leading-6">
-              Create a Talent Card that showcases your skills, experience and
-              value, and get discovered by verified employers, on your terms.
+              Create your Talent Card that showcases your skills and experience and get discovered by verified employers. Record video introductions to leave a better first impression.
             </p>
-
-            <div className="mt-7 flex flex-row gap-2.5 max-[359px]:flex-col sm:flex-row sm:gap-3 max-sm:mt-2">
-              <Link
-                href="/builder"
-                className="inline-flex items-center justify-center rounded-full bg-[#aff546] px-4 py-2.5 text-[0.78rem] font-semibold text-[#071321] transition duration-300 hover:-translate-y-0.5 hover:bg-[#9fea37] max-[359px]:w-full sm:px-7 sm:py-3 sm:text-sm"
-              >
-                Create your Talent Card
-              </Link>
-              <Link
-                href="/find-talent"
-                className="inline-flex items-center justify-center rounded-full border border-[#2bd7ef]/70 bg-transparent px-4 py-2.5 text-[0.78rem] font-semibold text-[#dff9ff] transition duration-300 hover:-translate-y-0.5 hover:bg-[#2bd7ef]/16 max-[359px]:w-full sm:px-7 sm:py-3 sm:text-sm"
-              >
-                Find talent
-              </Link>
-            </div>
+            <HomepageHeroVideoButton />
           </div>
 
-          <div className="relative mx-auto flex w-full max-w-[470px] items-center justify-center max-sm:mt-0 max-sm:mb-0 lg:max-w-[560px]">
-            <TalentCardDemo />
-          </div>
+          <HomepageHeroVideoCard profile={homepageDemoProfile} />
         </div>
+        </HomepageHeroVideoProvider>
       </section>
 
       <section className="bg-[#f7e8c6] text-[#071426]">
@@ -691,14 +663,16 @@ export default function Home() {
               <p className="mt-4 max-w-lg text-[1rem] leading-7 text-[#071321]/78 sm:mt-5 sm:text-[1.08rem] sm:leading-8">
                 Your experience is more than a list of job titles. Free Agent
                 Staff gives you a place to show employers what you can do, what
-                you&apos;ve achieved and what makes you different.
+                you&apos;ve achieved and what makes you different. Your Talent Card
+                will get you discovered. Your Talent Passport will get you the
+                interview.
               </p>
               <Link
-                href="/builder"
-                className="mt-5 inline-flex items-center text-[1rem] font-medium text-[#071321] transition hover:translate-x-0.5 sm:mt-7 sm:text-lg"
+                href="/talent/daniel-brooks"
+                className="mt-5 inline-flex items-center rounded-full bg-[#651D2A] px-5 py-3 text-[0.86rem] font-semibold text-[#f7ebcf] transition hover:-translate-y-0.5 hover:bg-[#7a2536] sm:mt-7 sm:px-6 sm:text-sm"
               >
-                Create your Talent Card
-                <span className="ml-2 text-[#1bc8e4]">→</span>
+                VIEW DANIEL&apos;S PASSPORT
+                <span className="ml-2">→</span>
               </Link>
             </div>
 
@@ -737,22 +711,6 @@ export default function Home() {
                 skills, experience and potential and connect when the
                 opportunity is right.
               </p>
-              <div className="mt-6 flex flex-wrap gap-3 max-[359px]:flex-col sm:mt-8">
-                <Link
-                  href="/find-talent"
-                  className="inline-flex items-center justify-center rounded-full bg-[#aff546] px-5 py-2.5 text-[0.84rem] font-semibold text-[#071321] transition duration-300 hover:-translate-y-0.5 hover:bg-[#9fea37] max-[359px]:w-full sm:px-6 sm:py-3 sm:text-sm"
-                >
-                  Find talent
-                  <span className="ml-2">→</span>
-                </Link>
-                <Link
-                  href="/employer/auth"
-                  className="inline-flex items-center justify-center rounded-full border border-[#2bd7ef]/60 bg-transparent px-5 py-2.5 text-[0.84rem] font-semibold text-[#f7e8c6] transition duration-300 hover:-translate-y-0.5 hover:bg-[#2bd7ef]/10 max-[359px]:w-full sm:px-6 sm:py-3 sm:text-sm"
-                >
-                  For employers
-                  <span className="ml-2 text-[#2bd7ef]">→</span>
-                </Link>
-              </div>
             </div>
 
             <EmployerDiscoveryPanel />
