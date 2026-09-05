@@ -36,7 +36,7 @@ const homepageStructuredData = {
 
 const featureCards = [
   {
-    title: "Talent Card",
+    title: "Talent Card and Passport",
     description:
       "Showcase your skills, experience and achievements in one powerful profile.",
     icon: IdCard,
@@ -515,9 +515,6 @@ export default function Home() {
               feature.tone === "lime"
                 ? "text-[#8fdc3a] border-[#9be645]/50"
                 : "text-[#2bd7ef] border-[#2bd7ef]/50";
-            const linkClass =
-              feature.tone === "lime" ? "text-[#84d735]" : "text-[#1fcce7]";
-
             return (
               <article
                 key={feature.title}
@@ -534,28 +531,12 @@ export default function Home() {
                     <Icon className="h-4.5 w-4.5 sm:h-7 sm:w-7" />
                   </div>
                   <div className="min-w-0 flex-1 sm:mt-5 sm:block">
-                    <h3 className="mt-0 font-serif text-[1.75rem] font-semibold leading-tight text-[#071321] sm:text-4xl">
+                    <h3 className="mt-0 font-serif text-[1.75rem] font-semibold leading-tight text-[#071321] sm:min-h-[4.8rem] sm:text-4xl">
                       {feature.title}
                     </h3>
                     <p className="mt-1.5 text-[0.98rem] leading-6 text-[#071321]/86 sm:mt-3 sm:text-lg sm:leading-8">
                       {feature.description}
                     </p>
-                    {feature.href ? (
-                      <Link
-                        href={feature.href}
-                        className={`mt-2 inline-flex items-center text-[0.98rem] font-medium transition hover:translate-x-0.5 sm:mt-5 sm:text-lg ${linkClass}`}
-                      >
-                        Learn more
-                        <span className="ml-2">→</span>
-                      </Link>
-                    ) : (
-                      <span
-                        className={`mt-2 inline-flex items-center text-[0.98rem] font-medium sm:mt-5 sm:text-lg ${linkClass} opacity-70`}
-                      >
-                        Learn more
-                        <span className="ml-2">→</span>
-                      </span>
-                    )}
                   </div>
                 </div>
               </article>
@@ -737,24 +718,18 @@ export default function Home() {
                 world. You control your visibility, what employers can see and
                 when you&apos;re ready to be discovered.
               </p>
+              <Link
+                href="/settings/privacy"
+                className="mt-6 inline-flex items-center rounded-full bg-[#AFF546] px-5 py-3 text-[0.86rem] font-semibold text-[#08111F] transition hover:-translate-y-0.5 hover:bg-[#9fea37] sm:px-6 sm:text-sm"
+              >
+                EXPLORE PRIVACY &amp; VISIBILITY
+                <span className="ml-2">→</span>
+              </Link>
             </div>
 
-            <VisibilityControlPanel />
-          </div>
-
-          <div className="mt-8 flex flex-col gap-4 sm:mt-9 sm:flex-row sm:items-center sm:justify-between">
-            <p className="inline-flex w-fit items-center gap-2 rounded-full border border-[#071321]/12 bg-[#f7e8c6] px-3.5 py-2 text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-[#071321]">
-              <Lock className="h-3.5 w-3.5 text-[#1bc8e4]" />
-              You&apos;re always in control.
-            </p>
-
-            <Link
-              href="/settings/privacy"
-              className="inline-flex items-center text-[0.98rem] font-medium text-[#071321] transition hover:translate-x-0.5 sm:text-[1.05rem]"
-            >
-              Explore Privacy & Visibility
-              <span className="ml-2 text-[#1bc8e4]">→</span>
-            </Link>
+            <div className="lg:mt-48">
+              <VisibilityControlPanel />
+            </div>
           </div>
         </div>
       </section>
