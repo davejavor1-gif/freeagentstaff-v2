@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createUserServerSupabaseClient } from "@/lib/server-supabase";
+import { normalizeAvailability } from "@/lib/talent-profile-options";
 import type {
   ConnectionErrorReason,
   EmployerConnectionItem,
@@ -94,7 +95,7 @@ function mapEmployerConnectionItem(row: EmployerConnectionRow): EmployerConnecti
         accessScope: row.access_scope,
         visibility: row.visibility,
         verificationStatus: row.verification_status ?? "unverified",
-        availability: row.availability ?? "Available Now",
+        availability: normalizeAvailability(row.availability, row.opportunity_status),
         opportunityStatus: row.opportunity_status ?? "actively_open",
         experienceYears: row.experience_years ?? 0,
         focusArea: row.focus_area ?? "",

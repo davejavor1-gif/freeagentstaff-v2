@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { getSessionWithRetry } from "@/lib/supabase-client";
 import TalentCard from "@/components/TalentCard";
+import { availabilityOptions as canonicalAvailabilityOptions } from "@/lib/talent-profile-options";
 import type { DiscoveryApiResponse, DiscoveryProfileCard } from "@/types/discovery";
 import type { FreeAgentProfile } from "@/types/freeagent";
 
@@ -20,11 +21,7 @@ type SortOption = "recommended" | "most_experienced" | "availability";
 
 const availabilityOptions: ReadonlyArray<string> = [
   "Any availability",
-  "Available Now",
-  "Open to Opportunities",
-  "Open to new projects",
-  "Busy this month",
-  "Booked",
+  ...canonicalAvailabilityOptions.map((option) => option.value),
 ];
 
 const experienceOptions: ReadonlyArray<{ value: ExperienceFilter; label: string }> = [
@@ -49,9 +46,7 @@ const defaultSkill = "All skills";
 const availabilityRank: Record<string, number> = {
   "Available Now": 0,
   "Open to Opportunities": 1,
-  "Open to new projects": 2,
-  "Busy this month": 3,
-  Booked: 4,
+  "Closed to Opportunities": 2,
 };
 
 const isConfidentialProfile = (profile: FreeAgentProfile) =>

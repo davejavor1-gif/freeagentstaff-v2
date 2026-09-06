@@ -1,9 +1,7 @@
 export type AvailabilityStatus =
   | "Available Now"
   | "Open to Opportunities"
-  | "Open to new projects"
-  | "Busy this month"
-  | "Booked";
+  | "Closed to Opportunities";
 
 export type ProfileVisibility = "public" | "verified_employer_network" | "confidential" | "employer_network";
 

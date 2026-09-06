@@ -1,7 +1,8 @@
 import "server-only";
 
 import { createUserServerSupabaseClient } from "@/lib/server-supabase";
-import type { OpportunityStatus, ProfileVisibility } from "@/types/freeagent";
+import { availabilityToOpportunityStatus, normalizeAvailability } from "@/lib/talent-profile-options";
+import type { AvailabilityStatus, OpportunityStatus, ProfileVisibility } from "@/types/freeagent";
 import type {
   TalentBlockedCompanyMutationResponse,
   TalentPrivacyErrorReason,
@@ -14,6 +15,7 @@ type PrivacyRow = {
   slug: string | null;
   visibility: ProfileVisibility | null;
   opportunity_status: OpportunityStatus | null;
+  availability: string | null;
   is_published: boolean | null;
   blocked_companies: string[] | null;
 };
@@ -21,6 +23,7 @@ type PrivacyRow = {
 type UpdatePrivacyRow = {
   visibility: Exclude<ProfileVisibility, "employer_network">;
   opportunity_status: OpportunityStatus;
+  availability?: string | null;
   is_published: boolean;
   blocked_companies: string[] | null;
 };
@@ -53,14 +56,6 @@ function normalizeVisibility(value: ProfileVisibility | null | undefined): Exclu
   return "public";
 }
 
-function normalizeOpportunityStatus(value: string | null | undefined): OpportunityStatus {
-  if (value === "actively_open" || value === "exploring" || value === "not_open") {
-    return value;
-  }
-
-  return "actively_open";
-}
-
 function mapReasonFromError(message: string): TalentPrivacyErrorReason {
   if (message.includes("not_signed_in")) return "not_signed_in";
   if (message.includes("wrong_account_type")) return "wrong_account_type";
@@ -77,7 +72,7 @@ function mapSettings(row: PrivacyRow | UpdatePrivacyRow, slug: string | null): T
   return {
     slug,
     visibility: normalizeVisibility(row.visibility),
-    opportunityStatus: normalizeOpportunityStatus(row.opportunity_status),
+    opportunityStatus: normalizeAvailability(row.availability, row.opportunity_status),
     isPublished: row.is_published ?? false,
     blockedCompanies: row.blocked_companies ?? [],
   };
@@ -104,7 +99,7 @@ export async function getTalentPrivacySettings(
 
   const { data, error } = await userClient
     .from("profiles")
-    .select("account_type, slug, visibility, opportunity_status, is_published, blocked_companies")
+    .select("account_type, slug, visibility, opportunity_status, availability, is_published, blocked_companies")
     .maybeSingle<PrivacyRow>();
 
   if (error) {
@@ -144,7 +139,7 @@ export async function updateTalentPrivacySettings(
 
   const { data, error } = await callRpc<UpdatePrivacyRow[]>(userClient, "update_talent_privacy_settings", {
     p_visibility: visibility,
-    p_opportunity_status: opportunityStatus,
+    p_opportunity_status: availabilityToOpportunityStatus(opportunityStatus),
     p_is_published: isPublished,
   });
 
@@ -165,9 +160,25 @@ export async function updateTalentPrivacySettings(
     };
   }
 
+  const canonicalAvailability: AvailabilityStatus = normalizeAvailability(opportunityStatus);
+  const { data: userData } = await userClient.auth.getUser();
+  const userId = userData.user?.id;
+  if (!userId) {
+    return { ok: false, reason: "not_signed_in", message: "Sign in required." };
+  }
+
+  const { error: availabilityError } = await userClient
+    .from("profiles")
+    .update({ availability: canonicalAvailability } as never)
+    .eq("user_id", userId);
+
+  if (availabilityError) {
+    return { ok: false, reason: "error", message: availabilityError.message };
+  }
+
   return {
     ok: true,
-    settings: mapSettings(row, currentSettings.settings.slug),
+    settings: mapSettings({ ...row, availability: canonicalAvailability }, currentSettings.settings.slug),
   };
 }
 

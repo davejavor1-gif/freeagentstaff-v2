@@ -202,7 +202,7 @@ function EmployerDiscoveryResult({
     location: result.location,
     availability:
       result.availability === "Booked"
-        ? "Booked"
+        ? "Closed to Opportunities"
         : result.availability === "Available Now"
           ? "Available Now"
           : "Open to Opportunities",

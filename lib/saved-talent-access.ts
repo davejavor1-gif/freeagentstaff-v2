@@ -18,6 +18,7 @@ import type { Database, Json } from "@/types/supabase";
 import { createServiceRoleSupabaseClient, createUserServerSupabaseClient } from "@/lib/server-supabase";
 import { loadTalentSubscriptionRowsBySlugs } from "@/lib/talent-pro-analytics";
 import { hasTalentProAccess, normalizeTalentSubscriptionSnapshot } from "@/lib/talent-subscription";
+import { normalizeAvailability as normalizeCanonicalAvailability } from "@/lib/talent-profile-options";
 
 const SIGNED_URL_TTL_SECONDS = 60 * 60;
 
@@ -57,18 +58,8 @@ function normalizeVisibility(value: string | null | undefined): Exclude<ProfileV
   return null;
 }
 
-function normalizeAvailability(value: string | null | undefined): FreeAgentProfile["availability"] {
-  if (
-    value === "Available Now" ||
-    value === "Open to Opportunities" ||
-    value === "Open to new projects" ||
-    value === "Busy this month" ||
-    value === "Booked"
-  ) {
-    return value;
-  }
-
-  return "Available Now";
+function normalizeAvailability(value: string | null | undefined, opportunityStatus?: string | null): FreeAgentProfile["availability"] {
+  return normalizeCanonicalAvailability(value, opportunityStatus);
 }
 
 function normalizeOpportunityStatus(value: string | null | undefined): OpportunityStatus {
@@ -167,7 +158,7 @@ function mapSavedItem(
         name: "Confidential candidate",
         title: row.title ?? "Professional profile",
         location: row.location ?? "",
-        availability: normalizeAvailability(row.availability),
+        availability: normalizeAvailability(row.availability, row.opportunity_status),
         topStrength: row.top_strength ?? "",
         experienceYears: row.experience_years ?? 0,
         focusArea: row.focus_area ?? "",
@@ -187,7 +178,7 @@ function mapSavedItem(
         name: row.name ?? "",
         title: row.title ?? "",
         location: row.location ?? "",
-        availability: normalizeAvailability(row.availability),
+        availability: normalizeAvailability(row.availability, row.opportunity_status),
         topStrength: row.top_strength ?? "",
         experienceYears: row.experience_years ?? 0,
         focusArea: row.focus_area ?? "",

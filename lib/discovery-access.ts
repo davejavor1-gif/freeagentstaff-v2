@@ -7,6 +7,7 @@ import { createServiceRoleSupabaseClient, createUserServerSupabaseClient } from 
 import { loadPrivateAccess } from "@/lib/private-access";
 import { loadTalentSubscriptionRowsBySlugs, trackTalentAnalyticsEvents } from "@/lib/talent-pro-analytics";
 import { hasEmployerSubscriptionAccess, hasTalentProAccess, normalizeEmployerSubscriptionSnapshot, normalizeTalentSubscriptionSnapshot } from "@/lib/talent-subscription";
+import { normalizeAvailability as normalizeCanonicalAvailability } from "@/lib/talent-profile-options";
 
 const SIGNED_URL_TTL_SECONDS = 60 * 60;
 
@@ -76,18 +77,8 @@ function normalizeVisibility(value: string | null | undefined): Exclude<ProfileV
   return null;
 }
 
-function normalizeAvailability(value: string | null | undefined): FreeAgentProfile["availability"] {
-  if (
-    value === "Available Now" ||
-    value === "Open to Opportunities" ||
-    value === "Open to new projects" ||
-    value === "Busy this month" ||
-    value === "Booked"
-  ) {
-    return value;
-  }
-
-  return "Available Now";
+function normalizeAvailability(value: string | null | undefined, opportunityStatus?: string | null): FreeAgentProfile["availability"] {
+  return normalizeCanonicalAvailability(value, opportunityStatus);
 }
 
 function normalizeOpportunityStatus(value: string | null | undefined): OpportunityStatus {
@@ -210,7 +201,7 @@ function buildDiscoveryProfile(
         visibility: visibility ?? "confidential",
         opportunityStatus: normalizeOpportunityStatus(row.opportunity_status),
         location: row.location ?? "",
-        availability: normalizeAvailability(row.availability),
+        availability: normalizeAvailability(row.availability, row.opportunity_status),
         topStrength: row.top_strength ?? "",
         experienceYears: row.experience_years ?? 0,
         focusArea: row.focus_area ?? "",
@@ -236,7 +227,7 @@ function buildDiscoveryProfile(
       name: row.name ?? "",
       title: row.title ?? "",
       location: row.location ?? "",
-      availability: normalizeAvailability(row.availability),
+      availability: normalizeAvailability(row.availability, row.opportunity_status),
       topStrength: row.top_strength ?? "",
       experienceYears: row.experience_years ?? 0,
       focusArea: row.focus_area ?? "",
@@ -267,7 +258,7 @@ function buildPassportProfile(row: PassportRpcRow, photoUrl: string | null, vide
       visibility: visibility ?? "confidential",
       opportunityStatus: normalizeOpportunityStatus(row.opportunity_status),
       location: row.location ?? "",
-      availability: normalizeAvailability(row.availability),
+      availability: normalizeAvailability(row.availability, row.opportunity_status),
       topStrength: row.top_strength ?? "",
       experienceYears: row.experience_years ?? 0,
       focusArea: row.focus_area ?? "",
@@ -288,7 +279,7 @@ function buildPassportProfile(row: PassportRpcRow, photoUrl: string | null, vide
     name: row.name ?? "",
     title: row.title ?? "",
     location: row.location ?? "",
-    availability: normalizeAvailability(row.availability),
+    availability: normalizeAvailability(row.availability, row.opportunity_status),
     topStrength: row.top_strength ?? "",
     experienceYears: row.experience_years ?? 0,
     focusArea: row.focus_area ?? "",

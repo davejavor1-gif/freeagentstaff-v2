@@ -60,8 +60,8 @@ export default function TermsPage() {
 
             <section>
               <h2 className="text-lg font-bold text-[#f7ebcf]">3. Talent accounts</h2>
-              <p className="mt-2">3.1 Talent may use FreeAgentStaff to create and maintain a professional profile.</p>
-              <p className="mt-2">3.2 Depending on available features, this may include:</p>
+              <p className="mt-2">3.1 Talent can use FreeAgentStaff to create and maintain a professional profile.</p>
+              <p className="mt-2">3.2 Depending on available features, a professional profile can include:</p>
               <ul className="mt-2 list-disc space-y-1 pl-5">
                 <li>a FreeAgent Card;</li>
                 <li>a Talent Passport;</li>
@@ -82,18 +82,17 @@ export default function TermsPage() {
 
             <section>
               <h2 className="text-lg font-bold text-[#f7ebcf]">4. Talent discovery and visibility</h2>
-              <p className="mt-2">4.1 FreeAgentStaff is designed around professional discovery. Talent may make themselves discoverable to Employers in accordance with the Privacy &amp; Visibility settings available through the platform.</p>
-              <p className="mt-2">4.2 Depending on available settings, these may include:</p>
+              <p className="mt-2">4.1 FreeAgentStaff is designed around professional discovery. Talent can make themselves discoverable to Employers in accordance with the Privacy &amp; Visibility settings available through the platform.</p>
+              <p className="mt-2">4.2 The available visibility settings are:</p>
               <ul className="mt-2 list-disc space-y-1 pl-5">
                 <li>Public;</li>
-                <li>Verified Employer Network; and</li>
                 <li>Confidential Mode.</li>
               </ul>
-              <p className="mt-2">4.3 Talent may also be able to indicate an opportunity status such as:</p>
+              <p className="mt-2">4.3 Talent can indicate an opportunity status such as:</p>
               <ul className="mt-2 list-disc space-y-1 pl-5">
-                <li>Actively Open;</li>
-                <li>Exploring; or</li>
-                <li>Not Open.</li>
+                <li>Available Now;</li>
+                <li>Open to Opportunities; or</li>
+                <li>Closed to Opportunities.</li>
               </ul>
               <p className="mt-2">4.4 Talent are responsible for selecting the visibility and opportunity settings appropriate to them.</p>
               <p className="mt-2">4.5 Visibility and opportunity settings control how FreeAgentStaff presents a Talent through the platform but do not guarantee that the Talent will or will not be contacted, discovered, interviewed or hired.</p>
@@ -103,9 +102,9 @@ export default function TermsPage() {
             <section>
               <h2 className="text-lg font-bold text-[#f7ebcf]">5. Confidential Mode</h2>
               <p className="mt-2">5.1 Confidential Mode is intended to allow Talent to participate in professional discovery while withholding or anonymising certain identifying information before a connection is established.</p>
-              <p className="mt-2">5.2 Information displayed before a connection may therefore differ from the information available to a connected Employer.</p>
-              <p className="mt-2">5.3 If a Talent using Confidential Mode accepts an Employer&apos;s introduction request, an active connection is created and information previously withheld or anonymised may automatically become visible to that Employer in accordance with the platform&apos;s connection rules.</p>
-              <p className="mt-2">5.4 This may include the Talent&apos;s name, profile photograph, location, professional title, summary, current employer, career information, introduction video, contact information and resume where available.</p>
+              <p className="mt-2">5.2 Information displayed before a connection can therefore differ from the information available to a connected Employer.</p>
+              <p className="mt-2">5.3 If a Talent using Confidential Mode accepts an Employer&apos;s introduction request, an active connection is created and information previously withheld or anonymised will become visible to that Employer in accordance with the platform&apos;s connection rules. The Talent Card and Talent Passport will be unveiled to that Employer, while other Employers remain subject to the Talent&apos;s Confidential Mode.</p>
+              <p className="mt-2">5.4 This includes the Talent&apos;s name, profile photograph, location, professional title, summary, current employer, career information, introduction video, contact information and resume where available.</p>
               <p className="mt-2">5.5 No separate private-access approval is required after the Talent accepts the introduction where the information is made available as part of an active connection.</p>
               <p className="mt-2">5.6 Talent should therefore only accept an introduction where they are comfortable establishing a connection with that Employer.</p>
             </section>
@@ -116,7 +115,7 @@ export default function TermsPage() {
               <p className="mt-2">6.2 Verification may include checking information such as:</p>
               <ul className="mt-2 list-disc space-y-1 pl-5">
                 <li>business identity;</li>
-                <li>ABN;</li>
+                <li>ABN or ACN;</li>
                 <li>business details;</li>
                 <li>account information; and</li>
                 <li>other information reasonably required to assess eligibility.</li>
@@ -160,8 +159,8 @@ export default function TermsPage() {
               <p className="mt-2">8.1 Employers may be able to send introduction requests to Talent through FreeAgentStaff.</p>
               <p className="mt-2">8.2 An introduction request does not create an employment relationship and does not oblige the Talent to respond or accept.</p>
               <p className="mt-2">8.3 If a Talent accepts an introduction request, an active connection is created between the Talent and Employer.</p>
-              <p className="mt-2">8.4 Once a connection is active, additional information may automatically become available to the Employer in accordance with the platform&apos;s connection rules.</p>
-              <p className="mt-2">8.5 This may include:</p>
+              <p className="mt-2">8.4 Once a connection is active, connection-gated information becomes available to the Employer in accordance with the platform&apos;s connection rules.</p>
+              <p className="mt-2">8.5 This includes:</p>
               <ul className="mt-2 list-disc space-y-1 pl-5">
                 <li>the Talent&apos;s full identity;</li>
                 <li>profile photograph;</li>
@@ -173,8 +172,8 @@ export default function TermsPage() {
               </ul>
               <p className="mt-2">8.6 No additional private-access approval is required for information that becomes available as part of the active connection.</p>
               <p className="mt-2">8.7 Talent should only accept an introduction from an Employer where they are comfortable revealing the information made available through a connection.</p>
-              <p className="mt-2">8.8 A Talent may end a connection using available platform controls.</p>
-              <p className="mt-2">8.9 Ending a connection may remove future access to connection-gated information within FreeAgentStaff, but cannot necessarily remove information that an Employer lawfully obtained, downloaded or separately retained while access was authorised.</p>
+              <p className="mt-2">8.8 A Talent can end a connection using available platform controls.</p>
+              <p className="mt-2">8.9 Ending a connection will remove the Employer&apos;s future access to connection-gated information within FreeAgentStaff, but cannot necessarily remove information that the Employer lawfully obtained, downloaded or separately retained while access was authorised.</p>
               <p className="mt-2">8.10 Employers must continue to handle information obtained through a connection lawfully and responsibly after the connection ends.</p>
             </section>
 
@@ -194,10 +193,10 @@ export default function TermsPage() {
 
             <section>
               <h2 className="text-lg font-bold text-[#f7ebcf]">10. Resumes and private information</h2>
-              <p className="mt-2">10.1 Talent may choose to upload a resume and other supported professional information or files.</p>
+              <p className="mt-2">10.1 Talent can choose to upload a resume and other supported professional information or files.</p>
               <p className="mt-2">10.2 A resume is not automatically made available merely because an Employer can discover or view a Talent profile.</p>
-              <p className="mt-2">10.3 Where a Talent accepts an introduction and an active connection is created, the Talent&apos;s resume, where uploaded, may become accessible to that connected Employer without a further approval step.</p>
-              <p className="mt-2">10.4 Employers may only use information obtained through a connection for genuine recruitment, hiring, employment or related professional purposes.</p>
+              <p className="mt-2">10.3 Where a Talent accepts an introduction and an active connection is created, the Talent&apos;s resume, where uploaded, will become accessible to that connected Employer without a further approval step.</p>
+              <p className="mt-2">10.4 Employers can only use information obtained through a connection for genuine recruitment, hiring, employment or related professional purposes.</p>
               <p className="mt-2">10.5 Employers must not sell, publish, misuse or disclose Talent information for unrelated purposes.</p>
               <p className="mt-2">10.6 If an Employer lawfully downloads or separately stores Talent information, that Employer is responsible for its handling of that copy in accordance with applicable privacy, employment and record-keeping laws.</p>
               <p className="mt-2">10.7 Talent should not upload unnecessary sensitive information such as tax file numbers, bank account details, complete identity documents, health records or unrelated personal information through general profile or resume fields.</p>
@@ -237,12 +236,12 @@ export default function TermsPage() {
               <p className="mt-2">12.4 Subscription fees are charged in Australian dollars unless otherwise stated.</p>
               <p className="mt-2">12.5 Unless expressly stated otherwise at checkout, displayed Australian prices include GST where GST is applicable.</p>
               <p className="mt-2">12.6 Paid subscriptions automatically renew for successive billing periods unless cancelled before the next renewal date.</p>
-              <p className="mt-2">12.7 You may cancel a subscription through the available account or billing controls.</p>
-              <p className="mt-2">12.8 Unless otherwise stated, cancellation takes effect at the end of the current paid billing period and you may retain paid access until that time.</p>
+              <p className="mt-2">12.7 You can cancel a subscription through the available account or billing controls.</p>
+              <p className="mt-2">12.8 Unless otherwise stated, cancellation takes effect at the end of the current paid billing period and you can retain paid access until that time.</p>
               <p className="mt-2">12.9 Fees already paid are generally non-refundable except where required by law or where FreeAgentStaff expressly agrees otherwise.</p>
               <p className="mt-2">12.10 We may offer free plans, promotional periods, discounts or trials. Applicable conditions will be disclosed where relevant.</p>
               <p className="mt-2">12.11 We may change subscription prices or paid-plan features. Where a price change affects an existing recurring subscriber, we will provide reasonable notice before the new price applies to a future renewal.</p>
-              <p className="mt-2">12.12 If you do not agree to a notified price change, you may cancel before the new price takes effect.</p>
+              <p className="mt-2">12.12 If you do not agree to a notified price change, you can cancel before the new price takes effect.</p>
               <p className="mt-2">12.13 Nothing in this section limits rights that cannot lawfully be excluded under the Australian Consumer Law.</p>
             </section>
 
@@ -436,7 +435,7 @@ export default function TermsPage() {
 
             <section>
               <h2 className="text-lg font-bold text-[#f7ebcf]">25. Termination and account closure</h2>
-              <p className="mt-2">25.1 You may stop using FreeAgentStaff and may close your account using available account controls or by contacting us.</p>
+              <p className="mt-2">25.1 You can stop using FreeAgentStaff and can close your account using available account controls or by contacting us.</p>
               <p className="mt-2">25.2 Cancellation of a paid subscription is governed by section 12.</p>
               <p className="mt-2">25.3 We may suspend, restrict or terminate access where:</p>
               <ul className="mt-2 list-disc space-y-1 pl-5">
@@ -458,7 +457,7 @@ export default function TermsPage() {
               <p className="mt-2">26.2 The current version will display its last updated date.</p>
               <p className="mt-2">26.3 If a change materially affects users, we may provide reasonable notice through FreeAgentStaff, by email or by another appropriate method.</p>
               <p className="mt-2">26.4 Where a change materially affects an existing paid subscription, we will provide any notice required by applicable law.</p>
-              <p className="mt-2">26.5 If you do not agree to updated Terms, you may stop using FreeAgentStaff and cancel an applicable subscription before a change takes effect.</p>
+              <p className="mt-2">26.5 If you do not agree to updated Terms, you can stop using FreeAgentStaff and cancel an applicable subscription before a change takes effect.</p>
             </section>
 
             <section>
@@ -484,7 +483,7 @@ export default function TermsPage() {
               <h2 className="text-lg font-bold text-[#f7ebcf]">29. General</h2>
               <p className="mt-2">29.1 These Terms, together with our Privacy Policy and any separate written agreement expressly entered into between you and FreeAgentStaff, form the agreement between you and FreeAgentStaff concerning use of the platform.</p>
               <p className="mt-2">29.2 We may assign or transfer our rights or obligations under these Terms as part of a restructure, financing, sale, merger or transfer of the FreeAgentStaff business.</p>
-              <p className="mt-2">29.3 You may not assign your rights under these Terms without our written consent.</p>
+              <p className="mt-2">29.3 You must not assign your rights under these Terms without our written consent.</p>
               <p className="mt-2">29.4 If any provision of these Terms is found to be invalid or unenforceable, the remaining provisions continue in effect.</p>
               <p className="mt-2">29.5 A failure or delay in enforcing a right under these Terms does not waive that right.</p>
               <p className="mt-2">29.6 We may provide notices through FreeAgentStaff or to the email address associated with your account.</p>

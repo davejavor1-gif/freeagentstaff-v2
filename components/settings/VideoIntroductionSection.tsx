@@ -427,7 +427,7 @@ export default function ProfileMediaSection({
             </span>
           </div>
           <p className="text-sm leading-7 text-[#27405f]">
-            Keep it short and let employers get to know the person behind the Passport. Answer each question in no more than 15 seconds.
+            Keep it short and let employers get to know the person behind the Passport.
           </p>
           <ul className="space-y-1.5 text-sm leading-6 text-[#27405f]">
             <li><strong>Tell us about yourself.</strong></li>

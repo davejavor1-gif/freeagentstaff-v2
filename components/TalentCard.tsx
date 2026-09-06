@@ -8,7 +8,7 @@ import FreeAgentProBadge from "@/components/FreeAgentProBadge";
 import type { EmployerVerificationStatus, FreeAgentProfile } from "@/types/freeagent";
 import { getSessionWithRetry } from "@/lib/supabase-client";
 import { resolveProfilePhotoUrl, resolveProfileVideoUrl } from "@/lib/profile-media";
-import { formatAvailabilityLabel } from "@/lib/talent-profile-options";
+import { availabilityStatusClasses, formatAvailabilityLabel, normalizeAvailability } from "@/lib/talent-profile-options";
 import { cn } from "@/lib/utils";
 
 interface TalentCardProps {
@@ -95,7 +95,9 @@ export default function TalentCard({
   const confidentialName = profile.name || "Confidential profile";
   const confidentialTitle = profile.title || "Professional profile";
   const confidentialLocation = profile.location || "General location available";
-  const confidentialAvailability = profile.availability || "Open to new projects";
+  const availability = normalizeAvailability(profile.availability, profile.opportunityStatus);
+  const confidentialAvailability = normalizeAvailability(profile.availability, profile.opportunityStatus);
+  const availabilityClasses = availabilityStatusClasses[availability];
 
   const initials = useMemo(() => buildInitials(confidential ? "Confidential Profile" : profile.name), [confidential, profile.name]);
   const hasProfilePhoto = Boolean((resolvedPhotoUrl ?? profile.photoUrl) && !/(logo|fullLogo|placeholder-avatar)/i.test((resolvedPhotoUrl ?? profile.photoUrl ?? "")));
@@ -429,7 +431,7 @@ export default function TalentCard({
                                   </div>
                                   <div className="pt-0.5">
                                     <span className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#dfe7ef]">
-                                      <span className="h-2.5 w-2.5 rounded-full bg-[#8be4c5]" />
+                                      <span className={`h-2.5 w-2.5 rounded-full ${availabilityClasses.dot}`} />
                                       {confidentialAvailability}
                                     </span>
                                   </div>
@@ -491,8 +493,8 @@ export default function TalentCard({
                                   </div>
                                   <div className="pt-0.5">
                                     <span className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#dfe7ef]">
-                                      <span className="h-2.5 w-2.5 rounded-full bg-[#8be4c5]" />
-                                      {formatAvailabilityLabel(confidential ? confidentialAvailability : profile.availability)}
+                                      <span className={`h-2.5 w-2.5 rounded-full ${availabilityClasses.dot}`} />
+                                      {formatAvailabilityLabel(confidential ? confidentialAvailability : availability)}
                                     </span>
                                   </div>
                                 </div>
@@ -615,8 +617,8 @@ export default function TalentCard({
                         {confidential ? confidentialLocation : profile.location}
                       </span>
                       <span className="inline-flex max-w-full self-end items-center justify-end gap-2 rounded-full border border-[#0f2744]/10 bg-[#0f2744] px-2 py-0.5 text-right text-[8.5px] font-semibold uppercase leading-tight tracking-[0.24em] text-[#f7ebcf]">
-                        <span className="h-1.75 w-1.75 rounded-full bg-[#8be4c5]" />
-                        {formatAvailabilityLabel(confidential ? confidentialAvailability : profile.availability)}
+                        <span className={`h-1.75 w-1.75 rounded-full ${availabilityClasses.dot}`} />
+                        {formatAvailabilityLabel(confidential ? confidentialAvailability : availability)}
                       </span>
                     </div>
                   </div>

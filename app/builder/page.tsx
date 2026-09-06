@@ -11,7 +11,7 @@ import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
 import VideoIntroductionSection from "@/components/settings/VideoIntroductionSection";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import { salaryExpectationOptions } from "@/lib/talent-profile-options";
+import { availabilityToOpportunityStatus, normalizeAvailability, salaryExpectationOptions } from "@/lib/talent-profile-options";
 import { hasTalentProAccess, normalizeTalentSubscriptionSnapshot } from "@/lib/talent-subscription";
 import type { AccountType, CareerPosition, EducationEntry, FreeAgentProfile, ProfileVisibility } from "@/types/freeagent";
 import type { Database, Json } from "@/types/supabase";
@@ -81,28 +81,6 @@ const normalizeVisibility = (value: ProfileVisibility | null | undefined): Exclu
   return "public";
 };
 
-const normalizeOpportunityStatus = (value: string | null | undefined): FreeAgentProfile["opportunityStatus"] => {
-  if (value === "actively_open" || value === "exploring" || value === "not_open") {
-    return value;
-  }
-
-  return "actively_open";
-};
-
-const normalizeAvailability = (value: string | null | undefined): FreeAgentProfile["availability"] => {
-  if (
-    value === "Available Now" ||
-    value === "Open to Opportunities" ||
-    value === "Open to new projects" ||
-    value === "Busy this month" ||
-    value === "Booked"
-  ) {
-    return value;
-  }
-
-  return "Available Now";
-};
-
 function toEducationEntries(value: Json | null | undefined): EducationEntry[] {
   if (Array.isArray(value)) {
     return value.flatMap((entry, index): EducationEntry[] => {
@@ -124,11 +102,11 @@ function hydrateBuilderProfile(profileResult: ProfileSelectResult, fallbackEmail
 
   loadedProfile.slug = profileResult.slug ?? loadedProfile.slug;
   loadedProfile.visibility = normalizeVisibility(profileResult.visibility ?? loadedProfile.visibility);
-  loadedProfile.opportunityStatus = normalizeOpportunityStatus(profileResult.opportunity_status ?? loadedProfile.opportunityStatus);
   loadedProfile.name = profileResult.name ?? loadedProfile.name ?? "";
   loadedProfile.title = profileResult.title ?? loadedProfile.title ?? "";
   loadedProfile.location = profileResult.location ?? loadedProfile.location ?? "";
-  loadedProfile.availability = normalizeAvailability(profileResult.availability ?? loadedProfile.availability);
+  loadedProfile.availability = normalizeAvailability(profileResult.availability ?? loadedProfile.availability, profileResult.opportunity_status ?? loadedProfile.opportunityStatus);
+  loadedProfile.opportunityStatus = availabilityToOpportunityStatus(loadedProfile.availability);
   loadedProfile.topStrength = profileResult.top_strength ?? loadedProfile.topStrength ?? "";
   loadedProfile.experienceYears = profileResult.experience_years ?? loadedProfile.experienceYears ?? 0;
   loadedProfile.focusArea = profileResult.focus_area ?? loadedProfile.focusArea ?? "";
@@ -403,14 +381,14 @@ export default function BuilderPage() {
       },
       body: JSON.stringify({
         visibility: profile.visibility,
-        opportunityStatus: profile.opportunityStatus,
+        opportunityStatus: profile.availability,
         isPublished: nextPublishedState,
       }),
     });
     const payload = (await response.json().catch(() => null)) as {
       ok?: boolean;
       message?: string;
-      settings?: { isPublished?: boolean; visibility?: ProfileVisibility; opportunityStatus?: FreeAgentProfile["opportunityStatus"] };
+      settings?: { isPublished?: boolean; visibility?: ProfileVisibility; opportunityStatus?: FreeAgentProfile["availability"] };
     } | null;
     setIsSaving(false);
 
@@ -423,7 +401,7 @@ export default function BuilderPage() {
     setProfile((current) => ({
       ...current,
       visibility: payload.settings?.visibility ?? current.visibility,
-      opportunityStatus: payload.settings?.opportunityStatus ?? current.opportunityStatus,
+      opportunityStatus: availabilityToOpportunityStatus(payload.settings?.opportunityStatus ?? current.availability),
     }));
     setSaveStatus(nextPublishedState ? "Profile published." : "Profile unpublished.");
   };
@@ -741,8 +719,8 @@ export default function BuilderPage() {
                 className="mt-3 w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] shadow-sm outline-none transition focus:border-[#0f2744]"
               >
                 <option value="Available Now">Available Now</option>
-                <option value="Open to new projects">Open to Opportunities</option>
-                <option value="Booked">Booked</option>
+                <option value="Open to Opportunities">Open to Opportunities</option>
+                <option value="Closed to Opportunities">Closed to Opportunities</option>
               </select>
             </div>
 
@@ -1203,7 +1181,7 @@ export default function BuilderPage() {
                 </div>
                 {profile.resumeOriginalFilename ? (
                   <div className="space-y-3 rounded-2xl border border-[#cda64d]/35 bg-white/80 p-3">
-                    <p className="whitespace-nowrap text-sm font-semibold uppercase tracking-[0.18em] text-[#4f9f4e]">Resume uploaded ✓</p>
+                    <p className="whitespace-nowrap text-sm font-semibold uppercase tracking-[0.18em] text-[#AFF546]">Resume uploaded ✓</p>
                     <div className="flex flex-wrap gap-2">
                       <label className="inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf]">
                         Replace resume

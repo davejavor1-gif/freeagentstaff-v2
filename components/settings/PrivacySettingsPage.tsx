@@ -7,11 +7,12 @@ import type { Session } from "@supabase/supabase-js";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { getSessionWithRetry } from "@/lib/supabase-client";
-import type { AccountType, OpportunityStatus, ProfileVisibility } from "@/types/freeagent";
+import type { AccountType, AvailabilityStatus, ProfileVisibility } from "@/types/freeagent";
+import { availabilityOptions, availabilityStatusClasses } from "@/lib/talent-profile-options";
 import type { TalentPrivacySettings } from "@/types/talent-privacy";
 
 type VisibilityOption = { value: Exclude<ProfileVisibility, "employer_network">; title: string; description: string };
-type OpportunityOption = { value: OpportunityStatus; title: string; description: string };
+type OpportunityOption = { value: AvailabilityStatus; title: string; description: string };
 
 const visibilityOptions: VisibilityOption[] = [
   {
@@ -20,34 +21,17 @@ const visibilityOptions: VisibilityOption[] = [
     description: "Visible to employers and searchable from the public talent experience.",
   },
   {
-    value: "verified_employer_network",
-    title: "Verified Employer Network",
-    description: "Shared only with verified employer accounts inside the FreeAgent network.",
-  },
-  {
     value: "confidential",
     title: "Confidential Mode",
     description: "Shows an anonymised Talent Card and hides personal identity details.",
   },
 ];
 
-const opportunityOptions: OpportunityOption[] = [
-  {
-    value: "actively_open",
-    title: "Actively Open",
-    description: "Ready for immediate opportunities and conversations.",
-  },
-  {
-    value: "exploring",
-    title: "Exploring",
-    description: "Open to selective conversations for the right fit.",
-  },
-  {
-    value: "not_open",
-    title: "Not Open",
-    description: "Not currently considering new opportunities.",
-  },
-];
+const opportunityOptions: OpportunityOption[] = availabilityOptions.map((option) => ({
+  value: option.value,
+  title: option.label,
+  description: option.description,
+}));
 
 const normalizeVisibility = (value: ProfileVisibility | undefined): Exclude<ProfileVisibility, "employer_network"> => {
   if (value === "employer_network") {
@@ -358,7 +342,8 @@ export default function PrivacySettingsPage() {
             <div className="mt-10 space-y-4">
               <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#08111F]">Opportunity status</p>
               {opportunityOptions.map((option) => {
-                const active = (settings?.opportunityStatus ?? "actively_open") === option.value;
+                const active = (settings?.opportunityStatus ?? "Available Now") === option.value;
+                const statusClasses = availabilityStatusClasses[option.value];
 
                 return (
                   <button
@@ -372,8 +357,8 @@ export default function PrivacySettingsPage() {
                     }
                     disabled={isSaving || !settings}
                     className={`w-full rounded-[24px] border p-5 text-left transition ${
-                      active
-                        ? "border-[#AFF546]/70 bg-[#0f2744]"
+                        active
+                          ? `${statusClasses.border} bg-[#0f2744]`
                         : "border-[#cda64d]/25 bg-[#0f2744] hover:bg-[#17355f]"
                     }`}
                   >
@@ -382,7 +367,7 @@ export default function PrivacySettingsPage() {
                           <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f7ebcf]">{option.title}</p>
                           <p className="mt-2 text-sm leading-7 text-[#f7ebcf]/80">{option.description}</p>
                       </div>
-                        <span className={`rounded-full border px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] ${active ? "border-[#AFF546]/70 bg-[#AFF546] text-[#08111F]" : "border-[#f7ebcf]/40 bg-[#f7ebcf] text-[#08111F]"}`}>
+                        <span className={`rounded-full border px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] ${active ? `${statusClasses.border} ${statusClasses.pill}` : "border-[#f7ebcf]/40 bg-[#f7ebcf] text-[#08111F]"}`}>
                         {active ? "Selected" : "Choose"}
                       </span>
                     </div>

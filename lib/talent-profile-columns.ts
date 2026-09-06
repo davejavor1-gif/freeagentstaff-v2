@@ -1,3 +1,4 @@
+import { availabilityToOpportunityStatus, normalizeAvailability } from "@/lib/talent-profile-options";
 import type { FreeAgentProfile } from "@/types/freeagent";
 import type { Json, ProfilesInsert } from "@/types/supabase";
 
@@ -41,28 +42,6 @@ function normalizeVisibility(value: FreeAgentProfile["visibility"]): ProfilesIns
   return "public";
 }
 
-function normalizeOpportunityStatus(value: FreeAgentProfile["opportunityStatus"]): ProfilesInsert["opportunity_status"] {
-  if (value === "actively_open" || value === "exploring" || value === "not_open") {
-    return value;
-  }
-
-  return "actively_open";
-}
-
-function normalizeAvailability(value: FreeAgentProfile["availability"]): string {
-  if (
-    value === "Available Now" ||
-    value === "Open to Opportunities" ||
-    value === "Open to new projects" ||
-    value === "Busy this month" ||
-    value === "Booked"
-  ) {
-    return value;
-  }
-
-  return "Available Now";
-}
-
 function normalizeString(value: string | null | undefined): string | null {
   const trimmed = value?.trim() ?? "";
   return trimmed.length > 0 ? trimmed : null;
@@ -103,7 +82,7 @@ export function buildCanonicalTalentColumns(
 
   return {
     visibility: normalizeVisibility(profile.visibility),
-    opportunity_status: normalizeOpportunityStatus(profile.opportunityStatus),
+    opportunity_status: availabilityToOpportunityStatus(profile.availability),
     name: normalizeString(profile.name),
     title: normalizeString(profile.title),
     location: normalizeString(profile.location),

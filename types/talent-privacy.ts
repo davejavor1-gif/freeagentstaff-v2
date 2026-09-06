@@ -1,4 +1,4 @@
-import type { OpportunityStatus, ProfileVisibility } from "@/types/freeagent";
+import type { AvailabilityStatus, ProfileVisibility } from "@/types/freeagent";
 
 export type TalentPrivacyErrorReason =
   | "not_signed_in"
@@ -14,7 +14,7 @@ export type TalentPrivacyErrorReason =
 export interface TalentPrivacySettings {
   slug: string | null;
   visibility: Exclude<ProfileVisibility, "employer_network">;
-  opportunityStatus: OpportunityStatus;
+  opportunityStatus: AvailabilityStatus;
   isPublished: boolean;
   blockedCompanies: string[];
 }

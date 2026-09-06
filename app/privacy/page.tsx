@@ -123,7 +123,7 @@ export default function PrivacyPage() {
                 Confidential Mode is intended to allow a Talent to participate in discovery while withholding or anonymising identifying information until the appropriate permission or connection exists.
               </p>
               <p className="mt-2">
-                FreeAgentStaff may also provide opportunity-status settings such as Actively Open, Exploring or Not Open.
+                FreeAgentStaff may also provide availability settings such as Available Now, Open to Opportunities or Closed to Opportunities.
               </p>
               <p className="mt-2">
                 The exact information visible under each setting is explained within the platform. Talent should review their Privacy &amp; Visibility settings whenever their preferences change.
