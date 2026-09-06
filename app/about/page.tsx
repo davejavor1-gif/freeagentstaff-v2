@@ -228,15 +228,15 @@ export default function AboutPage() {
             </p>
           </div>
           <div className="relative flex min-w-0 w-full items-center justify-center xl:justify-self-end">
-            <div className="grid w-full max-w-[720px] grid-cols-1 items-center gap-8 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] xl:gap-7">
-              <div className="relative z-10 min-w-0 w-full rotate-[-3deg]">
+            <div className="grid w-full max-w-[720px] grid-cols-1 items-center gap-8 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] xl:gap-7">
+              <div className="relative z-10 min-w-0 w-full rotate-0 xl:rotate-[3deg]">
                 <TalentCard
                   profile={sarah}
                   href="/talent/sarah-jones"
                   initiallyFlipped={false}
                 />
               </div>
-              <div className="relative z-20 mx-auto min-w-0 w-full max-w-[210px] sm:max-w-none">
+              <div className="relative z-20 mx-auto min-w-0 w-full max-w-[235px] scale-[0.93] sm:max-w-none">
                 <ClosedPassportCover />
               </div>
             </div>
@@ -341,7 +341,7 @@ export default function AboutPage() {
       <section className="bg-[#08111F]">
         <div className="mx-auto max-w-7xl px-6 py-20 sm:px-8 sm:py-28 lg:px-12">
           <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-[#2BD7EF]">
-            How it works — for talent
+            HOW IT WORKS
           </p>
           <div className="mt-12 grid gap-0 md:grid-cols-2 lg:grid-cols-6">
             {journey.map((step, index) => (

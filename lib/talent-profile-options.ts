@@ -37,16 +37,16 @@ export function normalizeAvailability(
   value: string | null | undefined,
   opportunityStatus?: string | null,
 ): AvailabilityStatus {
+  if (opportunityStatus && opportunityStatusMap[opportunityStatus as OpportunityStatus]) {
+    return opportunityStatusMap[opportunityStatus as OpportunityStatus];
+  }
+
   if (value && opportunityStatusMap[value as OpportunityStatus]) {
     return opportunityStatusMap[value as OpportunityStatus];
   }
 
   if (value && legacyAvailabilityMap[value]) {
     return legacyAvailabilityMap[value];
-  }
-
-  if (opportunityStatus && opportunityStatusMap[opportunityStatus as OpportunityStatus]) {
-    return opportunityStatusMap[opportunityStatus as OpportunityStatus];
   }
 
   return "Available Now";

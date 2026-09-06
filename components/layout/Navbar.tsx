@@ -21,11 +21,10 @@ const talentNavItems = (talentSlug: string | null) => [
   { label: "Dashboard", href: "/dashboard" },
   { label: "Talent Card", href: "/builder" },
   ...(talentSlug ? [{ label: "Talent Passport", href: `/talent/${talentSlug}` }] : []),
-  { label: "Notifications", href: "/notifications" },
-  { label: "Connections", href: "/connections" },
   { label: "Privacy & Visibility", href: "/settings/privacy" },
   { label: "Pricing", href: "/pricing" },
   { label: "About", href: "/about" },
+  { label: "Notifications", href: "/notifications" },
 ];
 
 export default function Navbar() {

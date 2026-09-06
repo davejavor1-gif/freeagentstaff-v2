@@ -66,6 +66,12 @@ export default function ConnectionsPage() {
 
       setAccountType(resolvedAccountType);
       setVerificationStatus(resolvedVerification);
+
+      if (resolvedAccountType === "talent") {
+        router.replace("/dashboard#connections");
+        return;
+      }
+
       setContactByConnectionId({});
 
       if (resolvedAccountType === "employer") {

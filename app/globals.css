@@ -200,6 +200,10 @@
     @apply text-[10px] font-semibold uppercase tracking-[0.24em] text-[#F7F4EC]/45;
   }
 
+  .dashboard-talent .dashboard-kicker {
+    @apply text-[#08111F]/70;
+  }
+
   .dashboard-panel {
     @apply rounded-[18px] border border-[#08111F]/15 bg-[#f7e8c6] text-[#08111F] shadow-[0_18px_45px_rgba(0,0,0,0.16)];
   }

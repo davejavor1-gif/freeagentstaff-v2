@@ -35,7 +35,7 @@ export function DashboardShell({
   const style = audienceStyles[audience];
 
   return (
-    <div className="min-h-screen bg-[#08111F]" style={{ "--dashboard-accent": style.accent, "--dashboard-glow": style.glow } as React.CSSProperties}>
+    <div className={`min-h-screen bg-[#08111F] ${audience === "talent" ? "dashboard-talent" : ""}`} style={{ "--dashboard-accent": style.accent, "--dashboard-glow": style.glow } as React.CSSProperties}>
       <Navbar />
       <main className="mx-auto max-w-[1280px] px-5 py-8 sm:px-8 sm:py-10 lg:py-12">{children}</main>
       <Footer />
@@ -43,7 +43,7 @@ export function DashboardShell({
   );
 }
 
-export function DashboardHeader({ audience, name, status, children }: { audience: Audience; name: string; status: string; children?: ReactNode }) {
+export function DashboardHeader({ audience, name, status, statusDotClassName = "bg-[var(--dashboard-accent)]", children }: { audience: Audience; name: string; status: string; statusDotClassName?: string; children?: ReactNode }) {
   return (
     <section className="dashboard-hero">
       <div>
@@ -52,7 +52,7 @@ export function DashboardHeader({ audience, name, status, children }: { audience
         <p className="mt-4 max-w-xl text-lg leading-8 text-[#08111F]/65">{audience === "employer" ? "Your next hire could already be here." : "Your career is live. Stay ready to be discovered."}</p>
       </div>
       <div className={`flex flex-wrap items-center gap-3 lg:justify-end ${audience === "employer" ? "lg:flex-nowrap lg:gap-2" : ""}`}>
-        <div className="dashboard-status"><span className="h-2 w-2 rounded-full bg-[var(--dashboard-accent)] shadow-[0_0_12px_var(--dashboard-glow)]" />{status}</div>
+        <div className="dashboard-status"><span className={`h-2 w-2 rounded-full ${statusDotClassName}`} />{status}</div>
         {children}
       </div>
     </section>
@@ -82,8 +82,8 @@ export function DashboardJourney({ title, stages, compact = false }: { title: st
   );
 }
 
-export function DashboardMetricCard({ href, label, value, detail, icon: Icon = Activity, compact = false, action, middle, inlineAction }: { href?: string; label: string; value: number | string; detail: string; icon?: typeof Activity; compact?: boolean; action?: ReactNode; middle?: ReactNode; inlineAction?: boolean }) {
-  const content = <div className={`dashboard-metric group ${compact ? "dashboard-metric-compact" : ""}`}><div className="flex items-start justify-between"><span className="dashboard-kicker text-[#08111F]/60">{label}</span><Icon className="h-5 w-5 text-[var(--dashboard-accent)]" /></div><div className={`${compact ? "mt-2 min-h-8" : "mt-4 min-h-10"} flex items-center ${inlineAction ? "w-full justify-between gap-2" : ""}`}>{middle ?? <p className={`${compact ? "text-3xl" : "text-4xl"} font-semibold tracking-tight text-[var(--dashboard-accent)]`}>{value}</p>}{inlineAction ? <span className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-[0.12em] text-[var(--dashboard-accent)] transition group-hover:gap-2">View <ArrowUpRight className="h-4 w-4" /></span> : null}</div><div className="mt-auto"><p className={`${compact ? "text-sm" : "text-base"} text-[#08111F]/70`}>{detail}</p>{action ? <div className={`${compact ? "mt-2" : "mt-4"}`}>{action}</div> : href && !inlineAction ? <span className={`${compact ? "mt-2 text-xs" : "mt-4 text-sm"} inline-flex items-center gap-1 font-bold uppercase tracking-[0.12em] text-[var(--dashboard-accent)] transition group-hover:gap-2`}>View <ArrowUpRight className="h-4 w-4" /></span> : null}</div></div>;
+export function DashboardMetricCard({ href, label, value, detail, icon: Icon = Activity, compact = false, action, middle, inlineAction, valueClassName = "text-[var(--dashboard-accent)]" }: { href?: string; label: string; value: number | string; detail: string; icon?: typeof Activity; compact?: boolean; action?: ReactNode; middle?: ReactNode; inlineAction?: boolean; valueClassName?: string }) {
+  const content = <div className={`dashboard-metric group ${compact ? "dashboard-metric-compact" : ""}`}><div className="flex items-start justify-between"><span className="dashboard-kicker text-[#08111F]">{label}</span><Icon className="h-5 w-5 text-[var(--dashboard-accent)]" /></div><div className={`${compact ? "mt-2 min-h-8" : "mt-4 min-h-10"} flex items-center ${inlineAction ? "w-full justify-between gap-2" : ""}`}>{middle ?? <p className={`${compact ? "text-3xl" : "text-4xl"} font-semibold tracking-tight ${valueClassName}`}>{value}</p>}{inlineAction ? <span className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-[0.12em] text-[var(--dashboard-accent)] transition group-hover:gap-2">View <ArrowUpRight className="h-4 w-4" /></span> : null}</div><div className="mt-auto"><p className={`${compact ? "text-sm" : "text-base"} text-[#08111F]/70`}>{detail}</p>{action ? <div className={`${compact ? "mt-2" : "mt-4"}`}>{action}</div> : href && !inlineAction ? <span className={`${compact ? "mt-2 text-xs" : "mt-4 text-sm"} inline-flex items-center gap-1 font-bold uppercase tracking-[0.12em] text-[var(--dashboard-accent)] transition group-hover:gap-2`}>View <ArrowUpRight className="h-4 w-4" /></span> : null}</div></div>;
   return href ? <Link href={href}>{content}</Link> : content;
 }
 

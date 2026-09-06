@@ -11,6 +11,7 @@ import FreeAgentProBadge from "@/components/FreeAgentProBadge";
 import DashboardView from "@/components/dashboard/DashboardView";
 import type { Session } from "@supabase/supabase-js";
 import { buildCanonicalTalentColumns } from "@/lib/talent-profile-columns";
+import { normalizeAvailability } from "@/lib/talent-profile-options";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
 import type {
   AccountType,
@@ -64,6 +65,7 @@ type ProfileRow = {
   education?: string | null;
   current_employer?: string | null;
   visibility?: FreeAgentProfile["visibility"] | null;
+  opportunity_status?: FreeAgentProfile["opportunityStatus"] | null;
   availability?: FreeAgentProfile["availability"] | null;
   top_strength?: string | null;
   experience_years?: number | null;
@@ -95,7 +97,8 @@ function buildDashboardTalentProfile(profile: ProfileRow | null | undefined, ses
     name: profileData.name ?? "",
     title: profileData.title ?? "",
     location: profileData.location ?? "",
-    availability: profileData.availability ?? "Available Now",
+    availability: normalizeAvailability(profileData.availability, profileData.opportunity_status),
+    opportunityStatus: profileData.opportunity_status ?? undefined,
     topStrength: profileData.top_strength ?? "",
     experienceYears: profileData.experience_years ?? 0,
     focusArea: profileData.focus_area ?? "",
@@ -302,7 +305,7 @@ export default function DashboardPage() {
 
       const { data: profileRow } = await supabase
         .from("profiles")
-        .select("name, title, location, availability, top_strength, experience_years, focus_area, summary, bio, skills, languages, passions, career_journey, education, current_employer, visibility, photo_url, photo_storage_path, intro_video_url, intro_video_storage_path, is_published, profile, slug, account_type, employer_company_name, employer_verification_status, verification_requested_at, verification_rejection_reason")
+        .select("name, title, location, availability, opportunity_status, top_strength, experience_years, focus_area, summary, bio, skills, languages, passions, career_journey, education, current_employer, visibility, photo_url, photo_storage_path, intro_video_url, intro_video_storage_path, is_published, profile, slug, account_type, employer_company_name, employer_verification_status, verification_requested_at, verification_rejection_reason")
         .eq("user_id", activeSession.user.id)
         .maybeSingle();
 

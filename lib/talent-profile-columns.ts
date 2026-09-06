@@ -112,3 +112,14 @@ export function buildCanonicalTalentColumns(
     profile: privateSafeProfile as unknown as Json,
   };
 }
+
+export function buildTalentProfileUpdateColumns(
+  profile: FreeAgentProfile,
+  authEmail?: string | null,
+): Omit<TalentRowCore, "visibility" | "opportunity_status" | "availability"> {
+  const editableColumns = { ...buildCanonicalTalentColumns(profile, authEmail) } as Partial<TalentRowCore>;
+  delete editableColumns.visibility;
+  delete editableColumns.opportunity_status;
+  delete editableColumns.availability;
+  return editableColumns as Omit<TalentRowCore, "visibility" | "opportunity_status" | "availability">;
+}

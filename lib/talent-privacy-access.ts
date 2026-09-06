@@ -2,7 +2,7 @@ import "server-only";
 
 import { createUserServerSupabaseClient } from "@/lib/server-supabase";
 import { availabilityToOpportunityStatus, normalizeAvailability } from "@/lib/talent-profile-options";
-import type { AvailabilityStatus, OpportunityStatus, ProfileVisibility } from "@/types/freeagent";
+import type { OpportunityStatus, ProfileVisibility } from "@/types/freeagent";
 import type {
   TalentBlockedCompanyMutationResponse,
   TalentPrivacyErrorReason,
@@ -160,25 +160,9 @@ export async function updateTalentPrivacySettings(
     };
   }
 
-  const canonicalAvailability: AvailabilityStatus = normalizeAvailability(opportunityStatus);
-  const { data: userData } = await userClient.auth.getUser();
-  const userId = userData.user?.id;
-  if (!userId) {
-    return { ok: false, reason: "not_signed_in", message: "Sign in required." };
-  }
-
-  const { error: availabilityError } = await userClient
-    .from("profiles")
-    .update({ availability: canonicalAvailability } as never)
-    .eq("user_id", userId);
-
-  if (availabilityError) {
-    return { ok: false, reason: "error", message: availabilityError.message };
-  }
-
   return {
     ok: true,
-    settings: mapSettings({ ...row, availability: canonicalAvailability }, currentSettings.settings.slug),
+    settings: mapSettings({ ...row, opportunity_status: row.opportunity_status }, currentSettings.settings.slug),
   };
 }
 

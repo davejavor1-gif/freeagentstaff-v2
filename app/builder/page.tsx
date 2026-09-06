@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Session } from "@supabase/supabase-js";
 import TalentCard from "@/components/TalentCard";
 import { freeAgentProfiles } from "@/data/freeagents";
-import { buildCanonicalTalentColumns } from "@/lib/talent-profile-columns";
+import { buildCanonicalTalentColumns, buildTalentProfileUpdateColumns } from "@/lib/talent-profile-columns";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
 import VideoIntroductionSection from "@/components/settings/VideoIntroductionSection";
 import Navbar from "@/components/layout/Navbar";
@@ -187,6 +187,7 @@ export default function BuilderPage() {
   const [skillInput, setSkillInput] = useState("");
   const [languageInput, setLanguageInput] = useState("");
   const [passionInput, setPassionInput] = useState("");
+  const lastSavedAvailabilityRef = useRef<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -218,7 +219,9 @@ export default function BuilderPage() {
 
       if (error) {
         setSaveError(error.message);
-        setProfile(createBlankProfile(supabaseSession.user.id, supabaseSession.user.email));
+        const blankProfile = createBlankProfile(supabaseSession.user.id, supabaseSession.user.email);
+        lastSavedAvailabilityRef.current = normalizeAvailability(blankProfile.availability);
+        setProfile(blankProfile);
         setProfileLoaded(true);
         setIsLoading(false);
         return;
@@ -232,7 +235,9 @@ export default function BuilderPage() {
           return;
         }
 
-        setProfile(hydrateBuilderProfile(profileResult, supabaseSession.user.email));
+        const hydratedProfile = hydrateBuilderProfile(profileResult, supabaseSession.user.email);
+        lastSavedAvailabilityRef.current = normalizeAvailability(hydratedProfile.availability, profileResult.opportunity_status);
+        setProfile(hydratedProfile);
         setIsPublished(profileResult.is_published === true);
         const subscription = normalizeTalentSubscriptionSnapshot({
           plan: profileResult.talent_plan,
@@ -258,6 +263,7 @@ export default function BuilderPage() {
         }
 
         const { data: insertedProfile } = await supabase.from("profiles").select("slug").eq("user_id", supabaseSession.user.id).maybeSingle<{ slug: string | null }>();
+        lastSavedAvailabilityRef.current = normalizeAvailability(blankProfile.availability, blankProfile.opportunityStatus);
         setProfile({ ...blankProfile, slug: insertedProfile?.slug ?? undefined });
         setHasProAccess(false);
       }
@@ -287,6 +293,45 @@ export default function BuilderPage() {
     };
   }, [router]);
 
+  const updateCanonicalAvailability = useCallback(async (nextProfile: FreeAgentProfile, nextPublishedState = isPublished): Promise<boolean> => {
+    if (!session?.access_token) {
+      return false;
+    }
+
+    const response = await fetch("/api/talent/privacy", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        visibility: nextProfile.visibility,
+        opportunityStatus: nextProfile.availability,
+        isPublished: nextPublishedState,
+      }),
+    });
+    const payload = (await response.json().catch(() => null)) as {
+      ok?: boolean;
+      message?: string;
+      settings?: { visibility?: ProfileVisibility; opportunityStatus?: FreeAgentProfile["availability"] };
+    } | null;
+
+    if (!response.ok || !payload?.ok || !payload.settings) {
+      setSaveError(payload?.message ?? "Unable to save availability.");
+      return false;
+    }
+
+    const savedAvailability = normalizeAvailability(payload.settings.opportunityStatus ?? nextProfile.availability);
+    lastSavedAvailabilityRef.current = savedAvailability;
+    setProfile((current) => ({
+      ...current,
+      availability: savedAvailability,
+      opportunityStatus: availabilityToOpportunityStatus(savedAvailability),
+      visibility: payload.settings?.visibility ?? current.visibility,
+    }));
+    return true;
+  }, [isPublished, session]);
+
   useEffect(() => {
     if (!profileLoaded || !session) {
       return;
@@ -300,7 +345,7 @@ export default function BuilderPage() {
       const upsertPayload: ProfileInsert = {
         user_id: session.user.id,
         account_type: "talent",
-        ...buildCanonicalTalentColumns(profile, session.user.email),
+        ...buildTalentProfileUpdateColumns(profile, session.user.email),
       };
 
       const { error } = await supabase.from("profiles").upsert([upsertPayload] as never, {
@@ -310,13 +355,19 @@ export default function BuilderPage() {
 
       if (error) {
         setSaveError(error.message);
+        return;
+      }
+
+      const nextAvailability = normalizeAvailability(profile.availability, profile.opportunityStatus);
+      if (nextAvailability !== lastSavedAvailabilityRef.current) {
+        await updateCanonicalAvailability({ ...profile, availability: nextAvailability });
       }
     }, 700);
 
     return () => {
       window.clearTimeout(debounce);
     };
-  }, [profile, profileLoaded, session]);
+  }, [profile, profileLoaded, session, updateCanonicalAvailability]);
 
   const saveProfile = async (): Promise<boolean> => {
     if (!session || !profileLoaded) {
@@ -338,7 +389,7 @@ export default function BuilderPage() {
         {
           user_id: session.user.id,
           account_type: "talent",
-          ...buildCanonicalTalentColumns(profile, session.user.email),
+          ...buildTalentProfileUpdateColumns(profile, session.user.email),
         },
       ] as never,
       {
@@ -347,15 +398,33 @@ export default function BuilderPage() {
       } as never,
     );
 
-    setIsSaving(false);
-
     if (error) {
+      setIsSaving(false);
       setSaveError(error.message);
       return false;
     }
 
-    const { data: savedProfile } = await supabase.from("profiles").select("slug").eq("user_id", session.user.id).maybeSingle<{ slug: string | null }>();
-    setProfile((current: FreeAgentProfile) => ({ ...current, slug: savedProfile?.slug ?? current.slug }));
+    const nextAvailability = normalizeAvailability(profile.availability, profile.opportunityStatus);
+    if (nextAvailability !== lastSavedAvailabilityRef.current) {
+      const availabilitySaved = await updateCanonicalAvailability({ ...profile, availability: nextAvailability });
+      if (!availabilitySaved) {
+        setIsSaving(false);
+        return false;
+      }
+    }
+
+    const { data: savedProfile } = await supabase.from("profiles").select("slug, availability, opportunity_status").eq("user_id", session.user.id).maybeSingle<{ slug: string | null; availability: string | null; opportunity_status: string | null }>();
+    if (savedProfile) {
+      const savedAvailability = normalizeAvailability(savedProfile.availability, savedProfile.opportunity_status);
+      lastSavedAvailabilityRef.current = savedAvailability;
+      setProfile((current: FreeAgentProfile) => ({
+        ...current,
+        slug: savedProfile.slug ?? current.slug,
+        availability: savedAvailability,
+        opportunityStatus: availabilityToOpportunityStatus(savedAvailability),
+      }));
+    }
+    setIsSaving(false);
     setSaveStatus("Profile saved successfully.");
     window.setTimeout(() => setSaveStatus(null), 3000);
     return true;
@@ -457,6 +526,15 @@ export default function BuilderPage() {
     field: "name" | "title" | "location" | "topStrength" | "availability" | "focusArea" | "salaryExpectation" | "contactEmail" | "bio",
     value: string,
   ) => {
+    if (field === "availability") {
+      setProfile((current) => ({
+        ...current,
+        availability: normalizeAvailability(value),
+        opportunityStatus: availabilityToOpportunityStatus(value),
+      }));
+      return;
+    }
+
     setProfile((current) => ({ ...current, [field]: value }));
   };
 
