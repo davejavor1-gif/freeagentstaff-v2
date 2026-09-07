@@ -1,5 +1,6 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { PwaRegister } from "../components/PwaRegister";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -18,9 +19,17 @@ const siteDescription =
   "Free Agent Staff connects employers with talent through professional FreeAgent Cards and Talent Passports. Build your profile, showcase your experience and get discovered.";
 const isPreviewDeployment = process.env.VERCEL_ENV === "preview";
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#08111F",
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  applicationName: "Free Agent Staff",
+  applicationName: "FreeAgentStaff",
+  manifest: "/manifest.webmanifest",
   title: {
     default: siteTitle,
     template: "%s | Free Agent Staff",
@@ -39,9 +48,16 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: "/favicon.ico" },
+      { url: "/favicon-192.png", type: "image/png", sizes: "192x192" },
       { url: "/favicon-v2.png", type: "image/png", sizes: "512x512" },
     ],
     apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+    shortcut: [{ url: "/favicon.ico" }],
+  },
+  other: {
+    "apple-mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "black-translucent",
+    "apple-mobile-web-app-title": "FreeAgentStaff",
   },
   openGraph: {
     type: "website",
@@ -76,7 +92,10 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {children}
+        <PwaRegister />
+      </body>
     </html>
   );
 }
