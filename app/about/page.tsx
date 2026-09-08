@@ -220,7 +220,9 @@ export default function AboutPage() {
               About FreeAgentStaff
             </p>
             <h1 className="mt-7 max-w-xl font-serif text-5xl font-bold uppercase leading-[0.92] tracking-[-0.03em] sm:text-7xl lg:text-[6.4rem]">
-              Careers shouldn&apos;t start with a résumé.
+              YOU&apos;RE MORE THAN
+              <br />
+              WHAT&apos;S ON PAPER.
             </h1>
             <p className="mt-8 max-w-xl text-base leading-8 text-[#27405f] sm:text-lg">
               FreeAgentStaff is built around a simple idea: let people show who

@@ -12,6 +12,7 @@ export type NotificationType =
 
 export type NotificationErrorReason =
   | "not_signed_in"
+  | "wrong_account_type"
   | "missing_notification_id"
   | "notification_not_found"
   | "error";
@@ -42,6 +43,7 @@ export interface NotificationMutationResponse {
   notificationId?: string;
   readAt?: string | null;
   updatedCount?: number;
+  deletedCount?: number;
 }
 
 export interface NotificationUnreadCountResponse {

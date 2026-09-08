@@ -32,6 +32,11 @@ type ReadAllRow = {
   updated_count: number;
 };
 
+type DeleteAllRow = {
+  success: boolean;
+  deleted_count: number;
+};
+
 type UnreadCountRow = {
   unread_count: number;
 };
@@ -46,6 +51,7 @@ function getUserClient(accessToken: string | null | undefined) {
 
 function mapReasonFromError(message: string): NotificationErrorReason {
   if (message.includes("not_signed_in")) return "not_signed_in";
+  if (message.includes("wrong_account_type")) return "wrong_account_type";
   if (message.includes("missing_notification_id")) return "missing_notification_id";
   if (message.includes("notification_not_found")) return "notification_not_found";
   return "error";
@@ -165,6 +171,56 @@ export async function markAllNotificationsRead(
   return {
     ok: true,
     updatedCount: row?.updated_count ?? 0,
+  };
+}
+
+export async function deleteAllTalentNotifications(
+  accessToken: string | null | undefined,
+): Promise<NotificationMutationResponse> {
+  const userClient = getUserClient(accessToken);
+
+  if (!userClient) {
+    return { ok: false, reason: "not_signed_in", message: "Sign in required." };
+  }
+
+  const { data, error } = await callRpc<DeleteAllRow[]>(userClient, "delete_my_talent_notifications");
+
+  if (error) {
+    return {
+      ok: false,
+      reason: mapReasonFromError(error.message),
+      message: error.message,
+    };
+  }
+
+  return {
+    ok: true,
+    deletedCount: data?.[0]?.deleted_count ?? 0,
+  };
+}
+
+export async function deleteAllEmployerNotifications(
+  accessToken: string | null | undefined,
+): Promise<NotificationMutationResponse> {
+  const userClient = getUserClient(accessToken);
+
+  if (!userClient) {
+    return { ok: false, reason: "not_signed_in", message: "Sign in required." };
+  }
+
+  const { data, error } = await callRpc<DeleteAllRow[]>(userClient, "delete_my_employer_notifications");
+
+  if (error) {
+    return {
+      ok: false,
+      reason: mapReasonFromError(error.message),
+      message: error.message,
+    };
+  }
+
+  return {
+    ok: true,
+    deletedCount: data?.[0]?.deleted_count ?? 0,
   };
 }
 

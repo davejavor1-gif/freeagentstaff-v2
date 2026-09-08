@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { CareerPosition, EmployerVerificationStatus, FreeAgentProfile, OpportunityStatus, ProfileVisibility } from "@/types/freeagent";
+import type { CareerPosition, EducationEntry, EmployerVerificationStatus, FreeAgentProfile, OpportunityStatus, ProfileVisibility } from "@/types/freeagent";
 import type {
   CreateShortlistResponse,
   DeleteShortlistResponse,
@@ -108,6 +108,25 @@ function toCareerJourney(value: Json | null | undefined): CareerPosition[] {
   });
 }
 
+function toEducationEntries(value: Json | null | undefined): EducationEntry[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.flatMap((entry, index): EducationEntry[] => {
+    if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
+      return [];
+    }
+
+    const candidate = entry as Record<string, Json>;
+    return [{
+      id: typeof candidate.id === "string" ? candidate.id : `education-${index + 1}`,
+      qualification: typeof candidate.qualification === "string" ? candidate.qualification : "",
+      institution: typeof candidate.institution === "string" ? candidate.institution : "",
+    }];
+  });
+}
+
 async function signMediaUrls(
   photoStoragePath: string | null,
   introVideoStoragePath: string | null,
@@ -182,6 +201,8 @@ function mapSavedItem(
         topStrength: row.top_strength ?? "",
         experienceYears: row.experience_years ?? 0,
         focusArea: row.focus_area ?? "",
+        education: row.education ?? undefined,
+        educationEntries: toEducationEntries(row.education_entries),
         summary: row.summary ?? "",
         skills: row.skills ?? [],
         languages: Array.isArray(row.languages) ? row.languages.filter((item): item is string => typeof item === "string") : [],

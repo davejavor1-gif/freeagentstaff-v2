@@ -2790,6 +2790,76 @@ as $$
     and n.read_at is null;
 $$;
 
+create or replace function public.delete_my_talent_notifications()
+returns table (
+  success boolean,
+  deleted_count bigint
+)
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_uid uuid := auth.uid();
+  v_deleted_count bigint := 0;
+begin
+  if v_uid is null then
+    raise exception 'not_signed_in' using errcode = '42501';
+  end if;
+
+  if not exists (
+    select 1
+    from public.profiles p
+    where p.user_id = v_uid
+      and p.account_type = 'talent'
+  ) then
+    raise exception 'wrong_account_type' using errcode = '42501';
+  end if;
+
+  delete from public.notifications n
+  where n.recipient_user_id = v_uid;
+
+  get diagnostics v_deleted_count = row_count;
+
+  return query select true, v_deleted_count;
+end
+$$;
+
+create or replace function public.delete_my_employer_notifications()
+returns table (
+  success boolean,
+  deleted_count bigint
+)
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_uid uuid := auth.uid();
+  v_deleted_count bigint := 0;
+begin
+  if v_uid is null then
+    raise exception 'not_signed_in' using errcode = '42501';
+  end if;
+
+  if not exists (
+    select 1
+    from public.profiles p
+    where p.user_id = v_uid
+      and p.account_type = 'employer'
+  ) then
+    raise exception 'wrong_account_type' using errcode = '42501';
+  end if;
+
+  delete from public.notifications n
+  where n.recipient_user_id = v_uid;
+
+  get diagnostics v_deleted_count = row_count;
+
+  return query select true, v_deleted_count;
+end
+$$;
+
 create or replace function public.create_employer_introduction_request(
   p_slug text,
   p_message text default null
@@ -3224,11 +3294,15 @@ revoke all on function public.list_my_notifications(integer, boolean) from publi
 revoke all on function public.mark_notification_read(uuid) from public, anon;
 revoke all on function public.mark_all_notifications_read() from public, anon;
 revoke all on function public.get_unread_notification_count() from public, anon;
+revoke all on function public.delete_my_talent_notifications() from public, anon;
+revoke all on function public.delete_my_employer_notifications() from public, anon;
 
 grant execute on function public.list_my_notifications(integer, boolean) to authenticated;
 grant execute on function public.mark_notification_read(uuid) to authenticated;
 grant execute on function public.mark_all_notifications_read() to authenticated;
 grant execute on function public.get_unread_notification_count() to authenticated;
+grant execute on function public.delete_my_talent_notifications() to authenticated;
+grant execute on function public.delete_my_employer_notifications() to authenticated;
 
 create or replace function public.normalize_blocked_company_identifier(
   p_identifier text
@@ -3591,7 +3665,9 @@ as $$
     );
 $$;
 
-create or replace function public.list_saved_talent_for_employer(
+drop function if exists public.list_saved_talent_for_employer(uuid);
+
+create function public.list_saved_talent_for_employer(
   p_shortlist_id uuid default null
 )
 returns table (
@@ -3605,8 +3681,12 @@ returns table (
   opportunity_status text,
   experience_years integer,
   focus_area text,
+  education text,
+  education_entries jsonb,
   top_strength text,
   skills text[],
+  languages text[],
+  passions text[],
   location text,
   name text,
   title text,
@@ -3668,6 +3748,8 @@ begin
     p.opportunity_status,
     p.experience_years,
     p.focus_area,
+    case when p.access_scope <> 'employer_confidential' then profile.education else null end,
+    case when p.access_scope <> 'employer_confidential' then profile.education_entries else null end,
     p.top_strength,
     p.skills,
     p.location,
@@ -3689,6 +3771,7 @@ begin
     ) as shortlist_ids
   from base b
   join lateral public.talent_passport_for_viewer(b.slug) p on true
+  join public.profiles profile on profile.slug = b.slug
   order by b.saved_at desc;
 end
 $$;

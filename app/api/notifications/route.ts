@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { listMyNotifications } from "@/lib/notification-access";
+import { deleteAllTalentNotifications, listMyNotifications } from "@/lib/notification-access";
 
 function getBearerToken(request: Request) {
   const authorization = request.headers.get("authorization");
@@ -26,6 +26,20 @@ export async function GET(request: Request) {
   const unreadOnly = url.searchParams.get("unreadOnly") === "true";
 
   const payload = await listMyNotifications(getBearerToken(request), limit, unreadOnly);
+
+  const status = payload.ok
+    ? 200
+    : payload.reason === "not_signed_in"
+      ? 401
+      : payload.reason === "error"
+        ? 500
+        : 403;
+
+  return NextResponse.json(payload, { status });
+}
+
+export async function DELETE(request: Request) {
+  const payload = await deleteAllTalentNotifications(getBearerToken(request));
 
   const status = payload.ok
     ? 200

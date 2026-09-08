@@ -44,6 +44,9 @@ export default function NotificationsPage() {
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [markingAll, setMarkingAll] = useState(false);
+  const [deletingAll, setDeletingAll] = useState(false);
+  const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
+  const [accountType, setAccountType] = useState<"talent" | "employer" | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -88,6 +91,15 @@ export default function NotificationsPage() {
       }
 
       setSession(activeSession);
+      const { data: profileRow } = await supabase
+        .from("profiles")
+        .select("account_type")
+        .eq("user_id", activeSession.user.id)
+        .maybeSingle();
+      if (mounted) {
+        const resolvedAccountType = (profileRow as { account_type?: string } | null)?.account_type;
+        setAccountType(resolvedAccountType === "employer" ? "employer" : resolvedAccountType === "talent" ? "talent" : null);
+      }
       await loadNotifications(activeSession);
       if (mounted) {
         setLoading(false);
@@ -194,6 +206,40 @@ export default function NotificationsPage() {
     }
   };
 
+  const deleteAllNotifications = async () => {
+    if (!session?.access_token || deletingAll) {
+      return;
+    }
+
+    setFeedback(null);
+    setError(null);
+    setDeletingAll(true);
+
+    try {
+      const response = await fetch(accountType === "employer" ? "/api/notifications/employer" : "/api/notifications", {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+      const payload = (await response.json().catch(() => null)) as { ok?: boolean; message?: string } | null;
+
+      if (!response.ok || !payload?.ok) {
+        setError(payload?.message ?? "Unable to delete notifications.");
+        return;
+      }
+
+      setItems([]);
+      setDeleteConfirmationOpen(false);
+      setFeedback("Notifications deleted.");
+      window.dispatchEvent(new Event("freeagent:notifications-changed"));
+    } catch {
+      setError("Unable to delete notifications.");
+    } finally {
+      setDeletingAll(false);
+    }
+  };
+
   if (loading) {
     return (
       <><Navbar /><main className="min-h-screen bg-[#08111F] text-[#f7ebcf]">
@@ -218,16 +264,26 @@ export default function NotificationsPage() {
                 Lifecycle updates for introductions, connections, and account verification appear here.
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => {
-                void markAllRead();
-              }}
-              disabled={markingAll || unreadCount === 0}
-              className="inline-flex min-h-[44px] items-center justify-center rounded-2xl bg-[#aff546] px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-[#071426] transition hover:bg-[#9fea37] disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {markingAll ? "Marking..." : `Mark all read (${unreadCount})`}
-            </button>
+            <div className="flex w-full flex-col items-end gap-3 sm:w-auto">
+              <button
+                type="button"
+                onClick={() => {
+                  void markAllRead();
+                }}
+                disabled={markingAll || unreadCount === 0}
+                className="inline-flex min-h-[44px] items-center justify-center rounded-2xl bg-[#aff546] px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-[#071426] transition hover:bg-[#9fea37] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {markingAll ? "Marking..." : `Mark all read (${unreadCount})`}
+              </button>
+              {accountType ? <button
+                type="button"
+                onClick={() => setDeleteConfirmationOpen(true)}
+                disabled={items.length === 0}
+                className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-[#d85a4f] px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-[#08111F] transition hover:bg-[#c64940] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                DELETE NOTIFICATIONS
+              </button> : null}
+            </div>
           </div>
         </section>
 
@@ -304,6 +360,16 @@ export default function NotificationsPage() {
         </section>
       </div>
     </main><Footer />
+    {deleteConfirmationOpen ? <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#08111F]/70 p-5" role="dialog" aria-modal="true" aria-labelledby="delete-notifications-title">
+      <div className="w-full max-w-lg rounded-2xl border border-[#cda64d]/45 bg-[#f7ebcf] p-6 text-[#08111F] shadow-2xl sm:p-8">
+        <h2 id="delete-notifications-title" className="font-serif text-2xl">DELETE NOTIFICATIONS?</h2>
+        <p className="mt-4 text-sm leading-7 text-[#27405f]">Are you sure you want to delete all your notifications? This cannot be undone.</p>
+        <div className="mt-6 flex flex-wrap justify-end gap-3">
+          <button type="button" onClick={() => setDeleteConfirmationOpen(false)} disabled={deletingAll} className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-[#0f2744]/20 bg-white px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-[#071426] transition hover:bg-[#fffaf0] disabled:opacity-50">CANCEL</button>
+          <button type="button" onClick={() => { void deleteAllNotifications(); }} disabled={deletingAll} className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-[#d85a4f] px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-[#08111F] transition hover:bg-[#c64940] disabled:cursor-not-allowed disabled:opacity-50">{deletingAll ? "DELETING..." : "DELETE NOTIFICATIONS"}</button>
+        </div>
+      </div>
+    </div> : null}
     </>
   );
 }

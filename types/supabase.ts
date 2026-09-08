@@ -828,6 +828,8 @@ export interface Database {
           opportunity_status: "actively_open" | "exploring" | "not_open" | null;
           experience_years: number | null;
           focus_area: string | null;
+          education: string | null;
+          education_entries: Json | null;
           top_strength: string | null;
           skills: string[] | null;
           languages: string[] | null;
@@ -926,6 +928,20 @@ export interface Database {
         Returns: Array<{
           success: boolean;
           updated_count: number;
+        }>;
+      };
+      delete_my_talent_notifications: {
+        Args: Record<string, never>;
+        Returns: Array<{
+          success: boolean;
+          deleted_count: number;
+        }>;
+      };
+      delete_my_employer_notifications: {
+        Args: Record<string, never>;
+        Returns: Array<{
+          success: boolean;
+          deleted_count: number;
         }>;
       };
       get_unread_notification_count: {

@@ -23,7 +23,6 @@ const talentNavItems = (talentSlug: string | null) => [
   ...(talentSlug ? [{ label: "Talent Passport", href: `/talent/${talentSlug}` }] : []),
   { label: "Privacy & Visibility", href: "/settings/privacy" },
   { label: "Pricing", href: "/pricing" },
-  { label: "About", href: "/about" },
   { label: "Notifications", href: "/notifications" },
 ];
 
@@ -118,9 +117,19 @@ export default function Navbar() {
       loadCurrentSession(currentSession);
     });
 
+    const refreshNotificationCount = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (mounted) {
+        await loadCurrentSession(data.session);
+      }
+    };
+
+    window.addEventListener("freeagent:notifications-changed", refreshNotificationCount);
+
     return () => {
       mounted = false;
       listener.subscription.unsubscribe();
+      window.removeEventListener("freeagent:notifications-changed", refreshNotificationCount);
     };
   }, []);
 
