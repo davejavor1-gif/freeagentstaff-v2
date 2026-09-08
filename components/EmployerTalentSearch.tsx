@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { Search } from "lucide-react";
 import { getSessionWithRetry } from "@/lib/supabase-client";
 import TalentCard from "@/components/TalentCard";
 import { availabilityOptions as canonicalAvailabilityOptions } from "@/lib/talent-profile-options";
@@ -275,14 +275,6 @@ export default function EmployerTalentSearch() {
     setSort("recommended");
   };
 
-  const hasActiveFilters =
-    searchTerm.trim().length > 0 ||
-    availability !== defaultAvailability ||
-    focusArea !== defaultFocusArea ||
-    location !== defaultLocation ||
-    experience !== "all" ||
-    skill !== defaultSkill;
-
   const filteredProfiles = useMemo(() => {
     const query = searchTerm.trim().toLowerCase();
 
@@ -372,7 +364,7 @@ export default function EmployerTalentSearch() {
   return (
     <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-10 lg:py-12">
       <div className="rounded-[36px] border border-[#08111F]/15 bg-[#f7e8c6] p-5 shadow-[0_18px_55px_rgba(6,16,33,0.12)] sm:p-7 lg:p-8">
-        <header className="grid gap-6 border-b border-[#cda64d]/30 pb-7 lg:grid-cols-[1.1fr_1fr] lg:items-end">
+        <header className="border-b border-[#cda64d]/30 pb-7">
           <div className="max-w-2xl">
             <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">PREMIUM TALENT</p>
             <h1 className="mt-3 text-4xl font-black uppercase tracking-[0.12em] text-[#0f2744] sm:text-5xl">FIND TALENT</h1>
@@ -380,14 +372,6 @@ export default function EmployerTalentSearch() {
             <p className="mt-3 max-w-2xl text-sm leading-7 text-[#27405f] sm:text-base">
               Discover experienced professionals open to their next move - including talent exploring opportunities discreetly.
             </p>
-          </div>
-          <div className="rounded-[24px] border border-[#cda64d]/35 bg-[#0f2744] p-4 text-[#f7ebcf] shadow-[0_12px_40px_rgba(6,16,33,0.14)]">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">{sortedProfiles.length} TALENT PROFILES</p>
-            <p className="mt-3 text-sm leading-7 text-[#dfe7ef]">People open to the right opportunity.</p>
-            <div className="mt-4 flex items-center gap-2 text-[10px] uppercase tracking-[0.24em] text-[#f2cc63]">
-              <SlidersHorizontal className="h-3.5 w-3.5" />
-              Sort: {sortOptions.find((option) => option.value === sort)?.label}
-            </div>
           </div>
         </header>
 
@@ -410,14 +394,13 @@ export default function EmployerTalentSearch() {
           <p className="mt-2 text-xs text-[#dfe7ef]">e.g. Venue Manager, events, operations, leadership</p>
         </div>
 
-        <div className="mt-5 rounded-[24px] border border-[#2bd7ef]/25 bg-[#17355f] p-3 shadow-[0_12px_32px_rgba(6,16,33,0.16)] sm:p-4">
+        <div className="mt-5 rounded-[24px] border border-[#2bd7ef]/25 bg-[#0f2744] p-3 shadow-[0_12px_32px_rgba(6,16,33,0.16)] sm:p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">Filters</p>
             <button
               type="button"
               onClick={clearFilters}
-              disabled={!hasActiveFilters}
-              className="inline-flex min-h-11 items-center rounded-full border border-[#f2cc63]/45 px-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition disabled:cursor-not-allowed disabled:opacity-45 hover:bg-[#f2cc63]/15"
+              className="inline-flex min-h-11 items-center rounded-full bg-[#f7e8c6] px-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#08111F] transition hover:bg-[#fff5db]"
             >
               Clear filters
             </button>
@@ -532,16 +515,15 @@ export default function EmployerTalentSearch() {
               </select>
             </div>
           </div>
-        </div>
-
-        {!isLoading && sortedProfiles.some((item) => isConfidentialProfile(item.profile)) ? (
-          <div className="rounded-[30px] border border-[#cda64d]/55 bg-[#0f2744] p-6 text-[#f7ebcf] shadow-[0_12px_40px_rgba(6,16,33,0.2)]">
+          {!isLoading && sortedProfiles.some((item) => isConfidentialProfile(item.profile)) ? (
+            <div className="mt-5 border-t border-[#f2cc63]/25 pt-5 text-[#f7ebcf]">
             <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">Confidential Mode</p>
             <p className="mt-3 text-sm leading-7 text-[#dfe7ef]">
               Confidential profiles remain anonymised by design and are surfaced only through employer-authorized information.
             </p>
           </div>
-        ) : null}
+          ) : null}
+        </div>
 
         <div className="mt-6 rounded-[30px] border border-[#2BD7EF]/25 bg-[#0f2744] p-4 shadow-[0_12px_40px_rgba(6,16,33,0.16)] sm:p-6">
 
