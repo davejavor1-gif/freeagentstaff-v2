@@ -17,14 +17,14 @@ export default function PrivacyPage() {
       titleColor="#AFF546"
       description="How Freeagentstaff collects, uses, and protects information across the platform."
     >
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#9a6d15]">Australia &middot; Effective: 3 September 2026</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#9a6d15]">Australia &middot; Effective: 11 September 2026</p>
           <div className="mt-8 space-y-7 text-sm leading-7 text-[#f7ebcf] sm:text-base">
             <section className="rounded-2xl border border-[#cda64d]/40 bg-[#f7ebcf]/[0.06] p-5 sm:p-6">
               <h2 className="text-lg font-bold text-[#f7ebcf]">Key points</h2>
               <ul className="mt-3 list-disc space-y-2 pl-5">
                 <li>FreeAgentStaff is designed to help professionals be discovered by employers rather than requiring them to repeatedly apply for jobs.</li>
                 <li>Talent choose what information they add to their FreeAgent Card and Talent Passport and can control how their profile appears through available Privacy &amp; Visibility settings.</li>
-                <li>Depending on the visibility setting selected by the Talent, profile information may be visible publicly, to verified employers within the FreeAgentStaff network, or in a confidential or anonymised form.</li>
+                <li>The three visibility settings are Public, Employer Network and Confidential. A published Public Talent Passport may be viewed without a FreeAgentStaff account through its public Passport URL.</li>
                 <li>Private contact details and private files are not automatically made available to employers simply because an employer can discover or view a Talent profile. Access may be provided when a Talent accepts an introduction, establishes a connection, or otherwise authorises access through FreeAgentStaff.</li>
                 <li>Employers must be verified before accessing employer discovery features where verification is required by FreeAgentStaff.</li>
                 <li>FreeAgentStaff does not sell personal information.</li>
@@ -70,7 +70,7 @@ export default function PrivacyPage() {
                 Talent may also upload a resume, video introduction or other files where those features are available.
               </p>
               <p className="mt-2">
-                We may collect information about the way a Talent profile is configured, including whether the Talent has selected Public, Verified Employer Network or Confidential visibility and the Talent&apos;s current opportunity status.
+                We may collect information about the way a Talent profile is configured, including whether the Talent has selected Public, Employer Network or Confidential visibility and the Talent&apos;s current opportunity status.
               </p>
               <p className="mt-2">
                 For Employers, we may collect business name, ABN or other business identifiers, contact details, contact-person information, role, employer verification information, subscription status and activity performed through employer tools.
@@ -95,13 +95,16 @@ export default function PrivacyPage() {
                 A Talent Passport provides additional professional information selected by the Talent.
               </p>
               <p className="mt-2">
-                The information shown to an employer depends on the information the Talent has chosen to provide, the Talent&apos;s Privacy &amp; Visibility settings, the employer&apos;s account status and the relationship between the Talent and employer.
+                The information shown to an employer or other viewer depends on the information the Talent has chosen to provide, the Talent&apos;s Privacy &amp; Visibility settings, the employer&apos;s account status, whether the Passport is published and the relationship between the Talent and viewer. Approved public-facing profile media may be included in a Public Talent Passport where applicable, but private media is not automatically made public.
               </p>
               <p className="mt-2">
                 Talent are responsible for deciding what professional information they include in their profile.
               </p>
               <p className="mt-2">
                 Talent should not include information in a discoverable profile that they do not want available to the audience permitted by their selected visibility settings.
+              </p>
+              <p className="mt-2">
+                Selecting Public does not make a Talent&apos;s entire FreeAgentStaff account public. Only information designated as part of the public Talent Passport may be displayed publicly. Account or login email, private contact information, resume files, billing or subscription information, blocked companies, internal identifiers, authentication information, private account settings, connection-gated information and other information designated as private remain subject to the applicable privacy and access controls.
               </p>
             </section>
 
@@ -111,22 +114,28 @@ export default function PrivacyPage() {
                 FreeAgentStaff provides privacy controls intended to give Talent meaningful control over how they are discovered.
               </p>
               <p className="mt-2">
-                Where available, these may include Public, Verified Employer Network and Confidential Mode.
+                Where available, these include Public, Employer Network and Confidential.
               </p>
               <p className="mt-2">
-                Public may allow the Talent profile to be visible and searchable through the public Talent experience.
+                If a Talent selects Public visibility and publishes their Talent Passport, information designated as part of that public Talent Passport may be viewed without signing into FreeAgentStaff. FreeAgentStaff may provide a public Passport URL such as https://freeagentstaff.com/talent/[slug]. The Talent may choose to share that URL outside FreeAgentStaff, including through a résumé or CV, cover letter, email signature, website, portfolio, professional communication or another appropriate channel.
               </p>
               <p className="mt-2">
-                Verified Employer Network may restrict discovery to eligible verified employer accounts within the FreeAgentStaff network.
+                Employer Network restricts Talent information to the eligible FreeAgentStaff employer network, subject to existing verification, subscription and access rules. It is not anonymously public.
               </p>
               <p className="mt-2">
-                Confidential Mode is intended to allow a Talent to participate in discovery while withholding or anonymising identifying information until the appropriate permission or connection exists.
+                Confidential is intended to allow a Talent to participate in discovery while withholding or anonymising identifying information until the appropriate permission or connection exists. Existing Confidential discovery and identity-reveal protections remain in place.
               </p>
               <p className="mt-2">
                 FreeAgentStaff may also provide availability settings such as Available Now, Open to Opportunities or Closed to Opportunities.
               </p>
               <p className="mt-2">
                 The exact information visible under each setting is explained within the platform. Talent should review their Privacy &amp; Visibility settings whenever their preferences change.
+              </p>
+              <p className="mt-2">
+                Anyone who receives or otherwise accesses a valid Public Passport URL may be able to view the designated public Passport information while the Passport remains Public and published. The viewer does not necessarily need a FreeAgentStaff account. FreeAgentStaff does not control what an external recipient does with information they legitimately viewed outside the platform.
+              </p>
+              <p className="mt-2">
+                Talent can change their visibility through the available Privacy &amp; Visibility controls. If Public visibility changes to Employer Network or Confidential, or the Passport is unpublished, anonymous public access through FreeAgentStaff should cease according to the platform&apos;s current functionality. This does not necessarily retrieve or delete information that third parties viewed, copied, downloaded, screenshotted, saved, cached, forwarded or otherwise retained while it was publicly available.
               </p>
             </section>
 
@@ -142,7 +151,7 @@ export default function PrivacyPage() {
                 If the Talent accepts an introduction request, an active connection is created immediately. Once a connection is active, FreeAgentStaff automatically makes additional information available to that employer, including the Talent&apos;s full identity details, contact email and, where uploaded, resume.
               </p>
               <p className="mt-2">
-                Where the Talent is using Confidential Mode, accepting an introduction also reveals information that was previously withheld or anonymised, including the Talent&apos;s name, profile photo, location, professional title, summary, current employer, career information and introduction video where available.
+                Where the Talent is using Confidential visibility, accepting an introduction also reveals information that was previously withheld or anonymised, including the Talent&apos;s name, profile photo, location, professional title, summary, current employer, career information and introduction video where available.
               </p>
               <p className="mt-2">
                 No further approval step is required after the Talent accepts the introduction.
@@ -215,7 +224,13 @@ export default function PrivacyPage() {
             <section>
               <h2 className="text-lg font-bold text-[#f7ebcf]">9. Who we disclose information to</h2>
               <p className="mt-2">
-                Information may be disclosed between Talent and Employers where reasonably necessary to operate FreeAgentStaff and according to the relevant Privacy &amp; Visibility, introduction and connection rules.
+                Information may be disclosed between Talent and Employers where reasonably necessary to operate FreeAgentStaff and according to the relevant Privacy &amp; Visibility, introduction and connection rules. Where a Talent has selected Public visibility and published their Talent Passport, information designated as part of that public Passport may also be disclosed to members of the public who access its public URL. This is a disclosure initiated through the Talent&apos;s visibility choice, not a sale of personal information.
+              </p>
+              <p className="mt-2">
+                Employer Network information remains restricted according to the applicable employer access rules, and Confidential information remains governed by the existing Confidential discovery, introduction, connection and identity-reveal model.
+              </p>
+              <p className="mt-2">
+                FreeAgentStaff may provide tools that help Talent copy their Passport URL, download a Passport logo or prepare or copy linked Passport content for supported applications. Compatibility with every browser, email client, résumé editor, document editor, website or other third-party application is not guaranteed. Third-party services are governed by their own functionality and terms.
               </p>
               <p className="mt-2">
                 We may also provide information to trusted service providers that help us operate the platform, including providers involved in hosting, databases, file storage, video delivery, website infrastructure, payment processing, email delivery, security, fraud prevention, analytics, customer support and professional services.
@@ -311,6 +326,9 @@ export default function PrivacyPage() {
               </p>
               <p className="mt-2">
                 Backups may temporarily retain deleted information until they are overwritten through normal backup processes.
+              </p>
+              <p className="mt-2">
+                Changing a Passport&apos;s visibility or unpublishing it affects access through FreeAgentStaff according to the platform&apos;s current functionality. It does not necessarily retrieve or delete copies of information that third parties legitimately obtained while the Passport was publicly available.
               </p>
               <p className="mt-2">
                 When information is no longer required, FreeAgentStaff will take reasonable steps to delete or de-identify it where required by applicable law.

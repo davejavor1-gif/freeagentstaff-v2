@@ -18,12 +18,17 @@ const visibilityOptions: VisibilityOption[] = [
   {
     value: "public",
     title: "Public",
-    description: "Visible to employers and searchable from the public talent experience.",
+    description: "Visible to everyone with your Passport link, including people outside FreeAgentStaff.",
+  },
+  {
+    value: "verified_employer_network",
+    title: "Employer Network",
+    description: "Visible only to verified employers on FreeAgentStaff.",
   },
   {
     value: "confidential",
-    title: "Confidential Mode",
-    description: "Shows an anonymised Talent Card and hides personal identity details.",
+    title: "Confidential",
+    description: "Keep your identity private while staying discoverable through Confidential Mode.",
   },
 ];
 

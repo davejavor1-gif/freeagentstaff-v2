@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { CareerPosition, EmployerVerificationStatus, FreeAgentProfile, OpportunityStatus, ProfileVisibility } from "@/types/freeagent";
+import type { CareerPosition, EducationEntry, EmployerVerificationStatus, FreeAgentProfile, OpportunityStatus, ProfileVisibility } from "@/types/freeagent";
 import type { DiscoveryApiResponse, DiscoveryProfileCard, TalentPassportApiResponse, TalentPassportAccessScope } from "@/types/discovery";
 import type { Database, Json, ProfilesRow } from "@/types/supabase";
 import { createServiceRoleSupabaseClient, createUserServerSupabaseClient } from "@/lib/server-supabase";
@@ -10,10 +10,29 @@ import { hasEmployerSubscriptionAccess, hasTalentProAccess, normalizeEmployerSub
 import { normalizeAvailability as normalizeCanonicalAvailability } from "@/lib/talent-profile-options";
 
 const SIGNED_URL_TTL_SECONDS = 60 * 60;
+function toEducationEntries(value: Json | null | undefined): EducationEntry[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.flatMap((entry): EducationEntry[] => {
+    if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
+      return [];
+    }
+
+    const candidate = entry as Record<string, Json>;
+    return [{
+      id: typeof candidate.id === "string" ? candidate.id : crypto.randomUUID(),
+      qualification: typeof candidate.qualification === "string" ? candidate.qualification : "",
+      institution: typeof candidate.institution === "string" ? candidate.institution : "",
+    }];
+  });
+}
 
 type ViewerRow = Pick<ProfilesRow, "account_type" | "employer_verification_status" | "employer_abn" | "employer_acn" | "employer_identifier_type" | "employer_company_name" | "employer_subscription_status" | "employer_subscription_current_period_ends_at" | "employer_subscription_cancel_at_period_end">;
 type DiscoveryRpcRow = Database["public"]["Functions"]["discovery_profiles_for_verified_employer_v2"]["Returns"][number];
 type PassportRpcRow = Database["public"]["Functions"]["talent_passport_for_viewer_v3"]["Returns"][number];
+type PublicPassportRpcRow = Database["public"]["Functions"]["talent_passport_public"]["Returns"][number];
 
 type ViewerContext = {
   userClient: ReturnType<typeof createUserServerSupabaseClient>;
@@ -504,6 +523,15 @@ export async function loadTalentPassport(accessToken: string | null | undefined,
   }
 
   const accessScope = row.access_scope as TalentPassportAccessScope;
+  let isPublished: boolean | undefined;
+  if (row.is_owner && viewer.viewerRow?.account_type === "talent") {
+    const { data: ownerProfile } = await viewer.userClient
+      .from("profiles")
+      .select("is_published")
+      .eq("user_id", viewer.viewerUserId)
+      .maybeSingle<{ is_published: boolean | null }>();
+    isPublished = ownerProfile?.is_published ?? false;
+  }
   const subscriptionMap = await loadTalentSubscriptionRowsBySlugs([row.slug]);
   const subscriptionRow = subscriptionMap.get(row.slug);
   const hasProVideoAccess = subscriptionRow
@@ -532,9 +560,99 @@ export async function loadTalentPassport(accessToken: string | null | undefined,
     allowed: true,
     accessScope,
     isOwner: row.is_owner,
+    isPublished,
     verificationStatus: normalizeVerificationStatus(row.verification_status),
     hasProAccess: accessScope === "employer_confidential" ? false : hasProVideoAccess,
     profile: buildPassportProfile(row, photoUrl, hasProVideoAccess ? videoUrl : null),
     privateAccess: (await loadPrivateAccess(accessToken, slug)).state,
+  };
+}
+
+function buildPublicPassportProfile(row: PublicPassportRpcRow, photoUrl: string | null, videoUrl: string | null): FreeAgentProfile {
+  return {
+    id: row.slug,
+    slug: row.slug,
+    visibility: "public",
+    opportunityStatus: normalizeOpportunityStatus(row.opportunity_status),
+    name: row.name ?? "",
+    title: row.title ?? "",
+    location: row.location ?? "",
+    availability: normalizeAvailability(row.availability, row.opportunity_status),
+    topStrength: row.top_strength ?? "",
+    experienceYears: row.experience_years ?? 0,
+    focusArea: row.focus_area ?? "",
+    education: row.education ?? undefined,
+    educationEntries: toEducationEntries(row.education_entries),
+    salaryExpectation: row.salary_expectation ?? null,
+    summary: row.summary ?? "",
+    bio: row.bio ?? undefined,
+    skills: row.skills ?? [],
+    languages: Array.isArray(row.languages) ? row.languages.filter((item): item is string => typeof item === "string") : [],
+    passions: Array.isArray(row.passions) ? row.passions.filter((item): item is string => typeof item === "string") : [],
+    careerJourney: toCareerJourney(row.career_journey),
+    photoUrl: photoUrl ?? undefined,
+    intro_video_url: videoUrl,
+    intro_video_thumbnail_url: photoUrl,
+    imageAlt: row.name ?? undefined,
+  };
+}
+
+const PUBLIC_PASSPORT_UNAVAILABLE = "This passport is unavailable.";
+
+export async function loadPublicTalentPassport(slug: string): Promise<TalentPassportApiResponse> {
+  const serviceClient = createServiceRoleSupabaseClient();
+
+  if (!serviceClient) {
+    return { allowed: false, reason: "not_available", message: PUBLIC_PASSPORT_UNAVAILABLE };
+  }
+
+  const { data, error } = await serviceClient.rpc("talent_passport_public", { p_slug: slug } as never);
+
+  if (error) {
+    return { allowed: false, reason: "not_available", message: PUBLIC_PASSPORT_UNAVAILABLE };
+  }
+
+  const row = ((data ?? []) as PublicPassportRpcRow[])[0];
+
+  if (!row) {
+    return { allowed: false, reason: "not_available", message: PUBLIC_PASSPORT_UNAVAILABLE };
+  }
+
+  const { data: media } = await serviceClient
+    .from("profiles")
+    .select("photo_url, photo_storage_path, intro_video_storage_path")
+    .eq("account_type", "talent")
+    .eq("slug", row.slug)
+    .eq("is_published", true)
+    .eq("visibility", "public")
+    .maybeSingle<Pick<ProfilesRow, "photo_url" | "photo_storage_path" | "intro_video_storage_path">>();
+
+  const subscriptionMap = await loadTalentSubscriptionRowsBySlugs([row.slug]);
+  const subscriptionRow = subscriptionMap.get(row.slug);
+  const hasProAccess = subscriptionRow
+    ? hasTalentProAccess(
+      normalizeTalentSubscriptionSnapshot({
+        plan: subscriptionRow.talent_plan,
+        status: subscriptionRow.talent_subscription_status,
+        currentPeriodEndsAt: subscriptionRow.talent_subscription_current_period_ends_at,
+      }),
+    )
+    : false;
+  const { photoUrl: signedPhotoUrl, videoUrl } = await signMediaUrls(
+    media?.photo_storage_path ?? null,
+    media?.intro_video_storage_path ?? null,
+    hasProAccess,
+  );
+
+  const publicProfile = buildPublicPassportProfile(row, signedPhotoUrl ?? media?.photo_url ?? null, hasProAccess ? videoUrl : null);
+  delete (publicProfile as Partial<FreeAgentProfile>).id;
+
+  return {
+    allowed: true,
+    accessScope: "public",
+    isOwner: false,
+    verificationStatus: "unverified",
+    hasProAccess,
+    profile: publicProfile,
   };
 }

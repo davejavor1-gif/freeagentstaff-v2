@@ -664,6 +664,29 @@ export interface Database {
           salary_expectation: ProfilesRow["salary_expectation"];
         }>;
       };
+      talent_passport_public: {
+        Args: { p_slug: string };
+        Returns: Array<{
+          slug: string;
+          availability: string | null;
+          opportunity_status: "actively_open" | "exploring" | "not_open" | null;
+          experience_years: number | null;
+          focus_area: string | null;
+          top_strength: string | null;
+          skills: string[] | null;
+          passions: string[] | null;
+          languages: string[] | null;
+          location: string | null;
+          name: string | null;
+          title: string | null;
+          summary: string | null;
+          bio: string | null;
+          career_journey: Json | null;
+          education: string | null;
+          education_entries: Json | null;
+          salary_expectation: ProfilesRow["salary_expectation"];
+        }>;
+      };
       employer_request_talent_private_access: {
         Args: { p_talent_slug: string };
         Returns: Array<{ request_id: string; request_status: string; requested_at: string }>;

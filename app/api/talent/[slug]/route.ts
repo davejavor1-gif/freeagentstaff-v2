@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { loadTalentPassport } from "@/lib/discovery-access";
+import { loadPublicTalentPassport, loadTalentPassport } from "@/lib/discovery-access";
 
 function getBearerToken(request: Request) {
   const authorization = request.headers.get("authorization");
@@ -16,8 +16,15 @@ export async function GET(
   context: { params: Promise<{ slug: string }> },
 ) {
   const { slug } = await context.params;
-  const payload = await loadTalentPassport(getBearerToken(request), slug);
-  const status = payload.allowed ? 200 : payload.reason === "error" ? 500 : 403;
+  const accessToken = getBearerToken(request);
+  const isAnonymous = !accessToken;
+  const payload = isAnonymous
+    ? await loadPublicTalentPassport(slug)
+    : await loadTalentPassport(accessToken, slug);
+  const status = payload.allowed ? 200 : isAnonymous ? 404 : payload.reason === "error" ? 500 : 403;
 
-  return NextResponse.json(payload, { status });
+  return NextResponse.json(payload, {
+    status,
+    headers: { "Cache-Control": "private, no-store" },
+  });
 }

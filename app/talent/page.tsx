@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
-import { Eye, IdCard, Lock, Send, ShieldCheck } from "lucide-react";
+import { ArrowRight, ArrowUpRight, BookOpen, Eye, IdCard, Lock, Search, Send, ShieldCheck, Sparkles } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import TalentCard from "@/components/TalentCard";
@@ -123,6 +124,74 @@ export default function TalentPage() {
           <div className="flex flex-wrap items-center gap-4 lg:col-span-2">
             <Link href="/login" className="inline-flex items-center rounded-full bg-[#aff546] px-6 py-3 text-sm font-semibold text-[#071321] transition hover:bg-[#9fea37]">Talent Sign In</Link>
             <Link href="/employers" className="text-sm font-semibold text-[#f7e8c6] underline decoration-[#2bd7ef] underline-offset-4">See the employer side</Link>
+          </div>
+        </div>
+      </section>
+      <section className="bg-[#f7e8c6] text-[#071321]">
+        <div className="mx-auto grid max-w-7xl gap-12 px-6 py-16 sm:px-8 sm:py-24 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:px-12">
+          <div className="min-w-0">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#9a6d15]">Public when you want to be</p>
+            <h2 className="mt-4 max-w-xl font-serif text-[2.8rem] font-semibold uppercase leading-[0.92] sm:text-[4.5rem]">Take your Passport with you.</h2>
+            <p className="mt-6 max-w-xl text-base leading-8 text-[#071321]/78 sm:text-lg">
+              Make your Talent Passport public and you&apos;ve got one link that tells employers the whole story. Add it to your résumé, email signature or portfolio and give people a better way to discover you.
+            </p>
+            <p className="mt-6 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#651D2A]">Public + published = your Passport link</p>
+          </div>
+          <div className="min-w-0 rounded-[28px] border border-[#651D2A]/20 bg-[#fffaf0] p-6 shadow-[0_20px_50px_rgba(7,19,33,0.14)] sm:p-10">
+            <div className="grid items-center gap-5 sm:grid-cols-[auto_1fr] sm:gap-7">
+              <Image src="/newpassportlogo.png" alt="Free Agent Staff Talent Passport" width={2000} height={2000} className="mx-auto h-32 w-32 object-contain sm:h-40 sm:w-40" />
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#651D2A]">Your personal link</p>
+                <p className="mt-3 break-all rounded-2xl border border-[#651D2A]/20 bg-[#f7e8c6] px-4 py-3 text-sm font-bold text-[#27405f]">freeagentstaff.com/talent/your-name</p>
+              </div>
+            </div>
+            <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center justify-center gap-3 text-[#651D2A] sm:justify-start">
+                <span className="text-[11px] font-bold uppercase tracking-[0.22em]">Passport</span>
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                <span className="text-[11px] font-bold uppercase tracking-[0.22em]">Your link</span>
+              </div>
+              <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#4c7f1d] sm:justify-end">
+                <span>Résumé</span><span>Email</span><span>Web</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section className="bg-[#08111F] text-[#f7e8c6]">
+        <div className="mx-auto max-w-[1450px] px-6 py-16 sm:px-8 sm:py-24 lg:px-12 lg:py-28">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#aff546]">One story, two impressions</p>
+          <div className="mt-10 grid gap-12 lg:grid-cols-2 lg:gap-0">
+            <article className="min-w-0 lg:border-r lg:border-[#f7e8c6]/20 lg:pr-12 xl:pr-16">
+              <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-[#aff546]">Talent Card</p>
+              <h2 className="mt-4 font-serif text-[2.6rem] font-semibold leading-[0.96] sm:text-[3.5rem]">Get <span className="text-[#aff546]">discovered</span><br />by employers.</h2>
+              <div className="mt-7 flex justify-center lg:h-[620px] lg:items-center lg:justify-start">
+                <TalentCard profile={sarahProfile} href="/profile/sarah-jones" verificationStatus="verified" hasProAccess className="w-full max-w-[430px]" />
+              </div>
+              <div className="mt-8 max-w-xl border-l-2 border-[#aff546]/70 pl-5">
+                <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-[#aff546]">A first impression.</p>
+                <p className="mt-3 text-sm leading-7 text-[#f7e8c6]/80">Your Talent Card gets you in front of the right employers. It highlights your key skills, experience and availability so you can be discovered.</p>
+              </div>
+            </article>
+            <article className="min-w-0 lg:pl-12 xl:pl-16">
+              <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-[#f2cc63]">Talent Passport</p>
+              <h2 className="mt-4 font-serif text-[2.6rem] font-semibold leading-[0.96] sm:text-[3.5rem]">Help employers<br /><span className="text-[#f2cc63]">get to know you.</span></h2>
+              <div className="mt-7 flex justify-center lg:h-[620px] lg:items-center lg:justify-start">
+                <div className="w-full max-w-[310px] drop-shadow-[16px_24px_20px_rgba(0,0,0,0.3)] lg:h-[600px] lg:w-auto lg:max-w-full">
+                  <Image src="/images/transparentpassportcover.png" alt="FreeAgentStaff Talent Passport" width={1024} height={1536} className="h-auto w-full lg:h-full lg:w-auto" />
+                </div>
+              </div>
+              <div className="mt-8 max-w-xl border-l-2 border-[#651D2A] pl-5">
+                <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-[#f2cc63]">A lasting impression.</p>
+                <p className="mt-3 text-sm leading-7 text-[#f7e8c6]/80">Your Talent Passport gives employers the fuller picture. It brings together your experience, personality and what makes you, you.</p>
+              </div>
+            </article>
+          </div>
+          <div className="mt-12 grid gap-6 border-t border-[#f7e8c6]/20 pt-7 sm:grid-cols-2 lg:mt-10 lg:grid-cols-4 lg:gap-0 lg:divide-x lg:divide-[#f7e8c6]/20">
+            <div className="lg:px-6 lg:first:pl-0"><Search className="h-5 w-5 text-[#aff546]" aria-hidden="true" /><p className="mt-3 text-[10px] font-bold uppercase tracking-[0.18em] text-[#f7e8c6]">Get discovered</p><p className="mt-2 text-xs leading-5 text-[#f7e8c6]/65">Appear in employer searches</p></div>
+            <div className="lg:px-6"><BookOpen className="h-5 w-5 text-[#f2cc63]" aria-hidden="true" /><p className="mt-3 text-[10px] font-bold uppercase tracking-[0.18em] text-[#f7e8c6]">Share your story</p><p className="mt-2 text-xs leading-5 text-[#f7e8c6]/65">Show more than a résumé</p></div>
+            <div className="lg:px-6"><Sparkles className="h-5 w-5 text-[#f2cc63]" aria-hidden="true" /><p className="mt-3 text-[10px] font-bold uppercase tracking-[0.18em] text-[#f7e8c6]">Show your personality</p><p className="mt-2 text-xs leading-5 text-[#f7e8c6]/65">Help employers understand you</p></div>
+            <div className="lg:px-6 lg:last:pr-0"><ArrowUpRight className="h-5 w-5 text-[#aff546]" aria-hidden="true" /><p className="mt-3 text-[10px] font-bold uppercase tracking-[0.18em] text-[#f7e8c6]">Take your career further</p><p className="mt-2 text-xs leading-5 text-[#f7e8c6]/65">Your Passport goes beyond the platform</p></div>
           </div>
         </div>
       </section>

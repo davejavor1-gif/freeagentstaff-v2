@@ -2,6 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import {
   BriefcaseBusiness,
@@ -17,6 +18,8 @@ import FreeAgentProBadge from "@/components/FreeAgentProBadge";
 import Navbar from "@/components/layout/Navbar";
 import PassportFold from "@/components/PassportFold";
 import PassportProfileMedia from "@/components/PassportProfileMedia";
+import { canSharePublicPassport, getPublicPassportUrl } from "@/lib/passport-share";
+import { copyLinkedPassportLogo } from "@/lib/passport-share-clipboard";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
 import { availabilityStatusClasses, formatAvailabilityLabel, normalizeAvailability, salaryExpectationOptions } from "@/lib/talent-profile-options";
 import type { TalentPassportApiResponse } from "@/types/discovery";
@@ -33,6 +36,63 @@ function accessLabel(status: PrivateAccessState["status"]) {
   if (status === "revoked") return "Access revoked";
   return "Private details locked";
 }
+
+type ShareInstructionTool = "word" | "canva" | "google-docs" | "other";
+
+const shareInstructionTools: Array<{ value: ShareInstructionTool; label: string }> = [
+  { value: "word", label: "Word" },
+  { value: "canva", label: "Canva" },
+  { value: "google-docs", label: "Google Docs" },
+  { value: "other", label: "Other" },
+];
+
+const shareInstructions: Record<ShareInstructionTool, { heading: string; subheading: string; steps: string[]; fallback?: string }> = {
+  word: {
+    heading: "Microsoft Word",
+    subheading: "Add a clickable Passport logo to your résumé.",
+    steps: [
+      "Add the Passport logo to your résumé.",
+      "Select the logo and choose Link or Hyperlink.",
+      "Paste your Passport link.",
+      "Confirm the link.",
+      "Save or export your résumé as a PDF.",
+    ],
+  },
+  canva: {
+    heading: "Canva",
+    subheading: "Add your Passport link to the logo in your résumé design.",
+    steps: [
+      "Upload the Passport logo to Canva and add it to your résumé.",
+      "Select the Passport logo.",
+      "Choose the Link option from Canva's available controls.",
+      "Paste your Passport link and apply it.",
+      "Download your finished résumé as a PDF.",
+    ],
+  },
+  "google-docs": {
+    heading: "Google Docs",
+    subheading: "Make your Passport logo clickable in your document.",
+    steps: [
+      "Add the Passport logo to your document.",
+      "Select the logo.",
+      "Choose Insert link or the available link control.",
+      "Paste your Passport link and apply it.",
+      "Download your finished résumé as a PDF.",
+    ],
+  },
+  other: {
+    heading: "Other résumé software",
+    subheading: "Most résumé builders and document editors support image links.",
+    steps: [
+      "Add the Passport logo to your résumé.",
+      "Select the logo or image.",
+      "Look for Link, Hyperlink or a similar option.",
+      "Paste your Passport URL.",
+      "Export your résumé as a PDF.",
+    ],
+    fallback: "If your software does not support links on images, add your Passport URL as text beside the logo instead.",
+  },
+};
 
 export default function TalentProfileExperience({
   slug,
@@ -76,6 +136,9 @@ export default function TalentProfileExperience({
   >("idle");
   const [introductionId, setIntroductionId] = useState<string | null>(null);
   const [introductionBusy, setIntroductionBusy] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
+  const [emailCopyStatus, setEmailCopyStatus] = useState<"idle" | "rich" | "plain" | "error">("idle");
+  const [shareInstructionTool, setShareInstructionTool] = useState<ShareInstructionTool>("word");
 
   async function loadPrivateState(sessionToken: string) {
     const response = await fetch(
@@ -321,8 +384,56 @@ export default function TalentProfileExperience({
     );
 
   const profile = payload.profile;
+  const isPublic = payload.accessScope === "public";
   const access = payload.privateAccess;
   const isOwner = payload.isOwner === true;
+  const ownerShareState = isOwner && !isDemo
+    ? {
+        slug: profile.slug ?? slug,
+        visibility: profile.visibility,
+        isPublished: payload.isPublished,
+      }
+    : null;
+  const publicPassportUrl = ownerShareState ? getPublicPassportUrl(ownerShareState.slug) : null;
+  const displayPublicPassportUrl = publicPassportUrl?.replace(/^https?:\/\//, "") ?? null;
+  const canShare = ownerShareState ? canSharePublicPassport(ownerShareState) : false;
+  const selectedShareInstructions = shareInstructions[shareInstructionTool];
+
+  const copyPassportLink = async () => {
+    if (!publicPassportUrl) return;
+
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(publicPassportUrl);
+      } else {
+        const input = document.createElement("textarea");
+        input.value = publicPassportUrl;
+        input.setAttribute("readonly", "");
+        input.style.position = "fixed";
+        input.style.opacity = "0";
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand("copy");
+        input.remove();
+      }
+      setLinkCopied(true);
+      window.setTimeout(() => setLinkCopied(false), 2200);
+    } catch {
+      setLinkCopied(false);
+    }
+  };
+
+  const copyEmailPassportLogo = async () => {
+    if (!ownerShareState || !canShare) return;
+
+    try {
+      const result = await copyLinkedPassportLogo(ownerShareState.slug);
+      setEmailCopyStatus(result);
+      window.setTimeout(() => setEmailCopyStatus("idle"), 2600);
+    } catch {
+      setEmailCopyStatus("error");
+    }
+  };
   const salaryLabel = profile.salaryExpectation
     ? salaryExpectationOptions.find(
         (option) => option.value === profile.salaryExpectation,
@@ -456,7 +567,70 @@ export default function TalentProfileExperience({
               </div>
             </section>
           </div>
-          <section className="mt-5 rounded-[28px] border border-[#f7ebcf]/80 bg-[#f7ebcf] p-6 shadow-[0_14px_32px_rgba(6,16,33,0.12)] sm:p-8">
+          {ownerShareState ? (
+            <section className="mt-5 rounded-[28px] border border-[#D4AF37]/35 bg-[#f7ebcf] p-6 shadow-[0_14px_32px_rgba(6,16,33,0.12)] sm:p-8 lg:p-10">
+              {canShare && publicPassportUrl ? (
+                <div className="grid gap-8 lg:grid-cols-[0.86fr_1.14fr_0.9fr] lg:divide-x lg:divide-[#651D2A]/20">
+                  <div className="min-w-0 lg:pr-8">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#651D2A]">Share your Passport</p>
+                    <h2 className="mt-2 text-2xl font-black uppercase tracking-[0.06em] text-[#0f2744]">Your Passport link</h2>
+                    <Link href={publicPassportUrl} target="_blank" rel="noopener noreferrer" aria-label="Open your public Talent Passport" className="mt-3 block rounded-[20px] border border-[#651D2A]/20 bg-[#fffaf0] p-2 text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#651D2A]">
+                      <Image src="/newpassportlogo.png" alt="Free Agent Staff Talent Passport" width={2000} height={2000} className="mx-auto h-28 w-28 object-contain sm:h-30 sm:w-30" />
+                    </Link>
+                    <p className="mt-3 overflow-x-auto break-all rounded-2xl border border-[#651D2A]/20 bg-[#fffaf0] px-4 py-3 text-sm font-semibold leading-5 text-[#27405f] lg:whitespace-nowrap lg:break-normal lg:px-3 lg:text-[13px]">{displayPublicPassportUrl}</p>
+                    <div className="mt-3 flex flex-col gap-3 sm:flex-row lg:flex-col">
+                      <button type="button" onClick={() => void copyPassportLink()} className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#651D2A] px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#f7ebcf] transition hover:bg-[#7a2433] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#651D2A]">{linkCopied ? "Copied ✓" : "Copy link"}</button>
+                      <a href="/newpassportlogo.png" download="FreeAgent-Talent-Passport.png" className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#651D2A]/40 bg-[#fffaf0] px-5 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#651D2A] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#651D2A]">Download Passport logo</a>
+                    </div>
+                    <p className="mt-3 text-[11px] leading-5 text-[#651D2A]/70">Add the logo to your résumé, email signature or website, then link it using your Passport link above.</p>
+                  </div>
+                  <div className="min-w-0 lg:px-8">
+                    <h3 className="text-xl font-black uppercase tracking-[0.05em] text-[#0f2744]">How to make your logo clickable</h3>
+                    <p className="mt-3 text-sm leading-6 text-[#27405f]">The steps depend on the software you&apos;re using to create your résumé. Select your tool below for step by step instructions.</p>
+                    <div className="mt-5 grid grid-cols-2 gap-2" role="tablist" aria-label="Résumé software instructions">
+                      {shareInstructionTools.map((tool) => {
+                        const selected = shareInstructionTool === tool.value;
+                        return <button key={tool.value} type="button" role="tab" aria-selected={selected} onClick={() => setShareInstructionTool(tool.value)} className={`min-h-10 rounded-xl border px-2 py-2 text-[10px] font-bold uppercase tracking-[0.12em] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#651D2A] ${selected ? "border-[#651D2A] bg-[#651D2A] text-[#f7ebcf]" : "border-[#651D2A]/25 bg-[#fffaf0] text-[#651D2A] hover:bg-white"}`}>{tool.label}</button>;
+                      })}
+                    </div>
+                    <div className="mt-6">
+                      <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#651D2A]">{selectedShareInstructions.heading}</p>
+                      <p className="mt-2 text-sm font-semibold text-[#0f2744]">{selectedShareInstructions.subheading}</p>
+                      <ol className="mt-4 space-y-3 text-sm leading-6 text-[#27405f]">
+                        {selectedShareInstructions.steps.map((step, index) => <li key={step} className="flex gap-3"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#651D2A] text-xs font-bold text-[#f7ebcf]">{index + 1}</span><span>{step}{shareInstructionTool === "word" && index === 2 ? <> <span className="break-all font-semibold text-[#651D2A]">{publicPassportUrl}</span></> : null}</span></li>)}
+                      </ol>
+                      {selectedShareInstructions.fallback ? <p className="mt-4 rounded-xl border border-[#651D2A]/20 bg-[#fffaf0] px-3 py-3 text-xs leading-5 text-[#27405f]">{selectedShareInstructions.fallback}</p> : null}
+                    </div>
+                    <div className="mt-6 rounded-2xl border border-[#651D2A]/30 bg-[#651D2A]/[0.08] p-4">
+                      <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#651D2A]">Test it before you send it</p>
+                      <p className="mt-2 text-sm leading-6 text-[#27405f]">Open your finished PDF and click the Passport logo to make sure it opens your Talent Passport.</p>
+                    </div>
+                  </div>
+                  <div className="min-w-0 lg:pl-8">
+                    <h3 className="text-xl font-black uppercase tracking-[0.05em] text-[#0f2744]">Copy linked logo for email</h3>
+                    <p className="mt-3 text-sm leading-6 text-[#27405f]">Paste into a supported email signature editor. Best supported in Chrome or Edge desktop.</p>
+                    <button type="button" onClick={() => void copyEmailPassportLogo()} className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-full border border-[#651D2A] bg-[#651D2A] px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-[#f7ebcf] transition hover:bg-[#7a2433] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#651D2A]">{emailCopyStatus === "rich" ? "Linked logo copied ✓" : emailCopyStatus === "plain" ? "Link copied ✓" : "Copy linked logo for email"}</button>
+                    {emailCopyStatus === "error" ? <p className="mt-3 text-xs leading-5 text-[#8b2635]">Copy was unavailable. Please use Copy link instead.</p> : null}
+                    <div className="mt-6 rounded-2xl border border-[#651D2A]/20 bg-[#fffaf0] p-5">
+                      <Image src="/newpassportlogo.png" alt="Free Agent Staff Talent Passport" width={2000} height={2000} className="mx-auto h-24 w-24 object-contain" />
+                      <p className="mt-3 text-center text-xs font-bold text-[#651D2A]">View my Talent Passport</p>
+                      <p className="mt-1 break-all text-center text-[11px] leading-5 text-[#27405f]">{displayPublicPassportUrl}</p>
+                    </div>
+                    <div className="mt-6">
+                      <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#651D2A]">Additional tips</p>
+                      <ul className="mt-3 space-y-2 text-xs leading-5 text-[#27405f]"><li className="flex gap-2"><Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#651D2A]" aria-hidden="true" /><span>Most résumé builders and design tools let you add links to images.</span></li><li className="flex gap-2"><Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#651D2A]" aria-hidden="true" /><span>If your software supports image links, select the Passport logo and add your Passport URL.</span></li><li className="flex gap-2"><Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#651D2A]" aria-hidden="true" /><span>After exporting to PDF, always test the logo before sending your résumé.</span></li></ul>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+                  <div><p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#651D2A]">Share your Passport</p><h2 className="mt-2 text-2xl font-black uppercase tracking-[0.06em] text-[#0f2744]">Your Passport link</h2><p className="mt-3 max-w-2xl text-sm leading-7 text-[#27405f]">Make your Passport public to share it. Public sharing requires your Passport to be published and Visibility to be set to Public.</p></div>
+                  <Link href="/settings/privacy" className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#651D2A]/40 bg-[#fffaf0] px-5 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#651D2A] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#651D2A]">Privacy &amp; Visibility</Link>
+                </div>
+              )}
+            </section>
+          ) : null}
+          {!isPublic ? <section className="mt-5 rounded-[28px] border border-[#f7ebcf]/80 bg-[#f7ebcf] p-6 shadow-[0_14px_32px_rgba(6,16,33,0.12)] sm:p-8">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
@@ -618,7 +792,7 @@ export default function TalentProfileExperience({
                 ))}
               </div>
             ) : null}
-          </section>
+          </section> : null}
             </div>
       </main>
       <Footer />

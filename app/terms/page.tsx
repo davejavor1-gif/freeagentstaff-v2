@@ -17,7 +17,7 @@ export default function TermsPage() {
       titleColor="#2BD7EF"
       description="The terms that guide access to and use of the Freeagentstaff platform."
     >
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#9a6d15]">Last updated: 3 September 2026</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#9a6d15]">Last updated: 11 September 2026</p>
           <div className="mt-8 space-y-7 text-sm leading-7 text-[#f7ebcf] sm:text-base">
             <section>
               <h2 className="text-lg font-bold text-[#f7ebcf]">1. Who we are and what we do</h2>
@@ -78,6 +78,7 @@ export default function TermsPage() {
               <p className="mt-2">3.3 Talent are responsible for the accuracy of the information they provide.</p>
               <p className="mt-2">3.4 Talent must not deliberately provide false, misleading, fraudulent or impersonated information.</p>
               <p className="mt-2">3.5 Unless FreeAgentStaff expressly states that information, a qualification or a document has been independently verified, information appearing on a Talent profile should be treated as information supplied by the Talent.</p>
+              <p className="mt-2">3.6 Talent are responsible for considering whether information they choose to include is appropriate for display to the audience permitted by their selected visibility setting.</p>
             </section>
 
             <section>
@@ -86,24 +87,28 @@ export default function TermsPage() {
               <p className="mt-2">4.2 The available visibility settings are:</p>
               <ul className="mt-2 list-disc space-y-1 pl-5">
                 <li>Public;</li>
-                <li>Confidential Mode.</li>
+                <li>Employer Network; and</li>
+                <li>Confidential.</li>
               </ul>
-              <p className="mt-2">4.3 Talent can indicate an opportunity status such as:</p>
+              <p className="mt-2">4.3 If a Talent selects Public visibility and publishes their Talent Passport, the public Talent Passport can be viewed without signing into FreeAgentStaff. FreeAgentStaff may provide a unique public Passport URL, such as <span className="break-all">https://freeagentstaff.com/talent/[slug]</span>, which the Talent may share outside FreeAgentStaff, including through a resume or CV, cover letter, email signature, website, portfolio, professional communication or another appropriate channel.</p>
+              <p className="mt-2">4.4 A public Talent Passport includes only information designated by FreeAgentStaff as part of the public Talent Passport. Public visibility does not automatically make account email, private contact information, resume files, internal identifiers, billing or subscription information, blocked-company information, private account settings, connection-gated information or other information designated as private publicly available.</p>
+              <p className="mt-2">4.5 Employer Network visibility is intended for visibility within the eligible or verified FreeAgentStaff employer network and remains subject to the platform&apos;s employer verification, subscription and access rules. It is not intended to provide anonymous public access to a Talent Passport.</p>
+              <p className="mt-2">4.6 Talent can indicate an opportunity status such as:</p>
               <ul className="mt-2 list-disc space-y-1 pl-5">
                 <li>Available Now;</li>
                 <li>Open to Opportunities; or</li>
                 <li>Closed to Opportunities.</li>
               </ul>
-              <p className="mt-2">4.4 Talent are responsible for selecting the visibility and opportunity settings appropriate to them.</p>
-              <p className="mt-2">4.5 Visibility and opportunity settings control how FreeAgentStaff presents a Talent through the platform but do not guarantee that the Talent will or will not be contacted, discovered, interviewed or hired.</p>
-              <p className="mt-2">4.6 Talent should review their settings whenever their circumstances or preferences change.</p>
+              <p className="mt-2">4.7 Talent are responsible for selecting the visibility and opportunity settings appropriate to them.</p>
+              <p className="mt-2">4.8 Visibility and opportunity settings control how FreeAgentStaff presents a Talent through the platform but do not guarantee that the Talent will or will not be contacted, discovered, interviewed or hired.</p>
+              <p className="mt-2">4.9 Talent should review their settings whenever their circumstances or preferences change. If a Talent changes from Public to Employer Network or Confidential, or unpublishes their Talent Passport, anonymous public access through FreeAgentStaff should cease according to the platform&apos;s current functionality. This cannot necessarily retract copies that were downloaded, copied, screenshotted, cached, saved, forwarded or otherwise retained by third parties while the Passport was publicly available.</p>
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-[#f7ebcf]">5. Confidential Mode</h2>
-              <p className="mt-2">5.1 Confidential Mode is intended to allow Talent to participate in professional discovery while withholding or anonymising certain identifying information before a connection is established.</p>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">5. Confidential</h2>
+              <p className="mt-2">5.1 Confidential visibility is intended to allow Talent to participate in professional discovery while withholding or anonymising certain identifying information before a connection is established.</p>
               <p className="mt-2">5.2 Information displayed before a connection can therefore differ from the information available to a connected Employer.</p>
-              <p className="mt-2">5.3 If a Talent using Confidential Mode accepts an Employer&apos;s introduction request, an active connection is created and information previously withheld or anonymised will become visible to that Employer in accordance with the platform&apos;s connection rules. The Talent Card and Talent Passport will be unveiled to that Employer, while other Employers remain subject to the Talent&apos;s Confidential Mode.</p>
+              <p className="mt-2">5.3 If a Talent using Confidential visibility accepts an Employer&apos;s introduction request, an active connection is created and information previously withheld or anonymised will become visible to that Employer in accordance with the platform&apos;s connection rules. The Talent Card and Talent Passport will be unveiled to that Employer, while other Employers remain subject to the Talent&apos;s Confidential visibility.</p>
               <p className="mt-2">5.4 This includes the Talent&apos;s name, profile photograph, location, professional title, summary, current employer, career information, introduction video, contact information and resume where available.</p>
               <p className="mt-2">5.5 No separate private-access approval is required after the Talent accepts the introduction where the information is made available as part of an active connection.</p>
               <p className="mt-2">5.6 Talent should therefore only accept an introduction where they are comfortable establishing a connection with that Employer.</p>
@@ -338,6 +343,7 @@ export default function TermsPage() {
               <p className="mt-2">18.3 Third-party services may operate under their own terms and privacy policies.</p>
               <p className="mt-2">18.4 FreeAgentStaff is not responsible for the availability, security, content or operation of an independent third-party service to the extent permitted by law.</p>
               <p className="mt-2">18.5 Links to third-party websites do not necessarily constitute endorsement of those websites or their products or services.</p>
+              <p className="mt-2">18.6 FreeAgentStaff may provide tools that help Talent copy a public Passport link, download a Passport logo or prepare linked content for supported applications. Compatibility with every third-party browser, document editor, email client, website or other platform is not guaranteed, and third-party services remain subject to their own functionality and terms.</p>
             </section>
 
             <section>
@@ -347,6 +353,7 @@ export default function TermsPage() {
               <p className="mt-2">19.3 We may modify, add, remove or replace features as FreeAgentStaff develops.</p>
               <p className="mt-2">19.4 We may change the features included in free plans.</p>
               <p className="mt-2">19.5 If we materially reduce the core functionality of a paid subscription during a period for which you have already paid, your rights under applicable consumer law are not affected.</p>
+              <p className="mt-2">19.6 A public Passport URL remains part of the FreeAgentStaff service. We do not promise that a particular URL, slug, Passport or feature will remain permanently available, uninterrupted or unchanged, subject to any rights that cannot lawfully be excluded.</p>
             </section>
 
             <section>

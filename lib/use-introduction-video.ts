@@ -42,12 +42,14 @@ export function useIntroductionVideo(
   }, [profile, confidential]);
 
   useEffect(() => {
-    if (!videoOpen || !videoRef.current) return;
+    if (!videoOpen) return;
 
-    const video = videoRef.current;
-    if (shouldAutoplay || isPlaying) {
+    const startPlayback = () => {
+      const video = videoRef.current;
+      if (!video || (!shouldAutoplay && !isPlaying)) return;
+
       if (shouldAutoplay) {
-        video.muted = false;
+        video.muted = true;
         video.currentTime = 0;
       }
       video.play().then(() => {
@@ -57,9 +59,19 @@ export function useIntroductionVideo(
         setIsPlaying(false);
         setShouldAutoplay(false);
       });
-    } else {
-      video.pause();
-    }
+
+      return;
+    };
+
+    const video = videoRef.current;
+    const retryTimer = window.setTimeout(startPlayback, 0);
+    video?.addEventListener("loadeddata", startPlayback);
+    startPlayback();
+
+    return () => {
+      window.clearTimeout(retryTimer);
+      video?.removeEventListener("loadeddata", startPlayback);
+    };
   }, [videoOpen, isPlaying, shouldAutoplay]);
 
   const resetVideoState = useCallback(() => {
@@ -78,9 +90,9 @@ export function useIntroductionVideo(
     if (!hasVideo || confidential) return;
 
     setVideoOpen(true);
-    setShowVideoControls(false);
-    setShouldAutoplay(true);
-    setIsMuted(false);
+    setShowVideoControls(true);
+    setShouldAutoplay(false);
+    setIsMuted(true);
   }, [confidential, hasVideo]);
 
   useEffect(() => {

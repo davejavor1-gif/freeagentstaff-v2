@@ -369,6 +369,51 @@ export default function AboutPage() {
         </div>
       </section>
 
+      <section className="bg-[#f7e8c6] text-[#08111F]">
+        <div className="mx-auto grid max-w-7xl gap-14 px-6 py-20 sm:px-8 sm:py-28 lg:grid-cols-[0.92fr_1.08fr] lg:items-center lg:gap-20 lg:px-12">
+          <div className="min-w-0">
+            <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-[#9a6d15]">Public Talent Passport</p>
+            <h2 className="mt-7 max-w-xl font-serif text-5xl font-bold uppercase leading-[0.9] sm:text-7xl">
+              YOUR PASSPORT.
+              <br />
+              YOUR LINK.
+              <br />
+              YOUR STORY.
+            </h2>
+            <p className="mt-8 max-w-xl text-base leading-8 text-[#27405f] sm:text-lg">
+              Your Talent Passport isn&apos;t limited to FreeAgentStaff. Make it public and share your personal Passport link wherever your career takes you, on your résumé, in your email signature, your portfolio or anywhere you want employers to discover more than what&apos;s on paper.
+            </p>
+            <p className="mt-6 text-[11px] font-bold uppercase tracking-[0.28em] text-[#651D2A]">You decide when it&apos;s public.</p>
+          </div>
+          <div className="relative min-w-0 px-2 sm:px-6 lg:px-0">
+            <div className="relative mx-auto min-h-[28rem] max-w-[560px] sm:min-h-[34rem]">
+              <div className="absolute left-1/2 top-0 w-[min(54vw,19rem)] -translate-x-[62%] rotate-[-4deg] drop-shadow-[16px_24px_20px_rgba(46,13,20,0.2)] sm:w-[min(30vw,22rem)] lg:left-[15%] lg:translate-x-0">
+                <Image src="/images/transparentpassportcover.png" alt="Free Agent Staff Talent Passport" width={1024} height={1536} className="h-auto w-full" />
+              </div>
+              <div className="absolute bottom-0 right-0 w-[min(76vw,22rem)] sm:right-[2%] sm:w-[min(48vw,28rem)] lg:bottom-3 lg:right-[-2%]">
+                <div className="relative rounded-[20px] border border-[#651D2A]/25 bg-[#fffaf0]/95 p-4 shadow-[0_18px_35px_rgba(46,13,20,0.14)] backdrop-blur-sm sm:p-5">
+                  <div className="flex items-center gap-3">
+                    <Image src="/newpassportlogo.png" alt="Passport identity mark" width={2000} height={2000} className="h-14 w-14 shrink-0 object-contain sm:h-16 sm:w-16" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-[#651D2A]">Personal Passport link</p>
+                      <p className="mt-2 break-all text-xs font-bold leading-5 text-[#27405f] sm:text-sm">freeagentstaff.com/talent/your-name</p>
+                    </div>
+                  </div>
+                  <div className="mt-4 flex items-center gap-2 text-[#651D2A]">
+                    <div className="h-px flex-1 bg-[#651D2A]/30" />
+                    <ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    <div className="h-px w-8 bg-[#651D2A]/30" />
+                  </div>
+                  <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-[10px] font-bold uppercase tracking-[0.18em] text-[#651D2A] sm:text-[11px]">
+                    <span>Résumé</span><span>Email</span><span>Portfolio</span><span>Web</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="grid md:grid-cols-2">
         <div className="relative overflow-hidden bg-[#163D2F] text-[#f7ebcf] [background-image:radial-gradient(circle_at_82%_28%,rgba(175,245,70,0.1),transparent_32%),linear-gradient(135deg,rgba(255,255,255,0.035),transparent_45%,rgba(0,0,0,0.12))]">
           <div className="relative z-10 grid min-h-[520px] items-center gap-10 px-6 py-20 sm:px-12 sm:py-24 lg:grid-cols-[minmax(0,1fr)_minmax(180px,0.52fr)] lg:gap-4 lg:px-14">

@@ -10,7 +10,7 @@ export type DiscoveryDeniedReason =
   | "not_available"
   | "error";
 
-export type TalentPassportAccessScope = "owner_full" | "employer_full" | "employer_confidential";
+export type TalentPassportAccessScope = "owner_full" | "employer_full" | "employer_confidential" | "public";
 
 export interface DiscoveryProfileCard {
   slug: string;
@@ -32,6 +32,7 @@ export interface TalentPassportApiResponse {
   message?: string;
   accessScope?: TalentPassportAccessScope;
   isOwner?: boolean;
+  isPublished?: boolean;
   verificationStatus?: EmployerVerificationStatus;
   hasProAccess?: boolean;
   profile?: FreeAgentProfile;

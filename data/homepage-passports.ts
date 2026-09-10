@@ -36,6 +36,7 @@ export const homepagePassportProfiles: Record<string, FreeAgentProfile> = {
     ],
     photoUrl: "/images/sarah-photo.jpeg",
     imageAlt: "Fictional professional portrait",
+    intro_video_url: "/videos/sarahs%20intro.mp4",
   },
   "maya-ellis": {
     id: "homepage-passport-maya-ellis",
