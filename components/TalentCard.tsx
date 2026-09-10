@@ -2,12 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, ChevronUp, Heart, Lock, MapPin, Pause, Play, RotateCw, Volume2, VolumeX, X } from "lucide-react";
 import FreeAgentProBadge from "@/components/FreeAgentProBadge";
 import type { EmployerVerificationStatus, FreeAgentProfile } from "@/types/freeagent";
 import { getSessionWithRetry } from "@/lib/supabase-client";
-import { resolveProfilePhotoUrl, resolveProfileVideoUrl } from "@/lib/profile-media";
+import { useIntroductionVideo } from "@/lib/use-introduction-video";
 import { availabilityStatusClasses, formatAvailabilityLabel, normalizeAvailability } from "@/lib/talent-profile-options";
 import { cn } from "@/lib/utils";
 
@@ -72,25 +72,37 @@ export default function TalentCard({
   const isEmployerPresentation = presentation === "employer";
   const [isFlipped, setIsFlipped] = useState(initiallyFlipped);
   const [settledFace, setSettledFace] = useState<"front" | "back">(initiallyFlipped ? "back" : "front");
-  const [videoOpen, setVideoOpen] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
-  const [shouldAutoplay, setShouldAutoplay] = useState(false);
-  const [showVideoControls, setShowVideoControls] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [showBackScrollFade, setShowBackScrollFade] = useState(false);
   const [backHasOverflow, setBackHasOverflow] = useState(false);
   const [backScrollAtBottom, setBackScrollAtBottom] = useState(false);
-  const [resolvedPhotoUrl, setResolvedPhotoUrl] = useState<string | null>(null);
-  const [resolvedVideoUrl, setResolvedVideoUrl] = useState<string | null>(null);
   const [optimisticSaved, setOptimisticSaved] = useState<boolean | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
   const backContentRef = useRef<HTMLDivElement | null>(null);
   const isSaved = optimisticSaved ?? initiallySaved;
 
-  const hasVideo = Boolean(resolvedVideoUrl ?? profile.intro_video_url) && !confidential;
+  const {
+    handleCloseVideo,
+    handleOpenVideo: openIntroductionVideo,
+    handlePlaybackToggle,
+    handleReplay,
+    handleVideoEnded,
+    hasVideo,
+    isMuted,
+    isPlaying,
+    resolvedPhotoUrl,
+    resolvedVideoUrl,
+    setShowVideoControls,
+    showVideoControls,
+    toggleMute,
+    videoOpen,
+    videoRef,
+  } = useIntroductionVideo(profile, confidential, playVideoRequest);
+  const handleOpenVideo = () => {
+    setIsFlipped(false);
+    void openIntroductionVideo();
+  };
   const mediaAlt = profile.imageAlt ?? profile.name;
   const confidentialName = profile.name || "Confidential profile";
   const confidentialTitle = profile.title || "Professional profile";
@@ -101,30 +113,6 @@ export default function TalentCard({
 
   const initials = useMemo(() => buildInitials(confidential ? "Confidential Profile" : profile.name), [confidential, profile.name]);
   const hasProfilePhoto = Boolean((resolvedPhotoUrl ?? profile.photoUrl) && !/(logo|fullLogo|placeholder-avatar)/i.test((resolvedPhotoUrl ?? profile.photoUrl ?? "")));
-
-  useEffect(() => {
-    let active = true;
-
-    const resolveMedia = async () => {
-      const [nextPhotoUrl, nextVideoUrl] = await Promise.all([
-        resolveProfilePhotoUrl(profile, { allowEmployerAccess: !confidential }),
-        resolveProfileVideoUrl(profile, { allowEmployerAccess: !confidential }),
-      ]);
-
-      if (!active) {
-        return;
-      }
-
-      setResolvedPhotoUrl(nextPhotoUrl);
-      setResolvedVideoUrl(nextVideoUrl);
-    };
-
-    void resolveMedia();
-
-    return () => {
-      active = false;
-    };
-  }, [profile, confidential]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -185,122 +173,6 @@ export default function TalentCard({
       window.clearTimeout(timer);
     };
   }, [isFlipped, reducedMotion]);
-
-  useEffect(() => {
-    if (!videoOpen || !videoRef.current) {
-      return;
-    }
-
-    const video = videoRef.current;
-
-    if (shouldAutoplay || isPlaying) {
-      if (shouldAutoplay) {
-        video.muted = false;
-        video.currentTime = 0;
-      }
-      video.play().then(() => {
-        setIsPlaying(true);
-        setShouldAutoplay(false);
-      }).catch(() => {
-        setIsPlaying(false);
-        setShouldAutoplay(false);
-      });
-    } else {
-      video.pause();
-    }
-  }, [videoOpen, isPlaying, shouldAutoplay]);
-
-  const resetVideoState = () => {
-    setIsPlaying(false);
-    setShouldAutoplay(false);
-    setShowVideoControls(false);
-    setIsMuted(false);
-    if (videoRef.current) {
-      videoRef.current.pause();
-      videoRef.current.currentTime = 0;
-      videoRef.current.muted = false;
-    }
-  };
-
-  const handleOpenVideo = useCallback(async () => {
-    if (!hasVideo || confidential) {
-      return;
-    }
-
-    setVideoOpen(true);
-    setIsFlipped(false);
-    setShowVideoControls(false);
-    setShouldAutoplay(true);
-
-    setIsMuted(false);
-  }, [confidential, hasVideo]);
-
-  useEffect(() => {
-    if (playVideoRequest <= 0) {
-      return;
-    }
-
-    const requestTimer = window.setTimeout(() => {
-      void handleOpenVideo();
-    }, 0);
-
-    return () => window.clearTimeout(requestTimer);
-  }, [handleOpenVideo, playVideoRequest]);
-
-  const handleCloseVideo = () => {
-    setVideoOpen(false);
-    resetVideoState();
-  };
-
-  const toggleMute = () => {
-    if (videoRef.current) {
-      videoRef.current.muted = !videoRef.current.muted;
-      setIsMuted(videoRef.current.muted);
-    }
-  };
-
-  const handlePlaybackToggle = async () => {
-    if (!videoRef.current) {
-      return;
-    }
-
-    if (isPlaying) {
-      videoRef.current.pause();
-      setIsPlaying(false);
-      return;
-    }
-
-    try {
-      await videoRef.current.play();
-      setIsPlaying(true);
-    } catch {
-      setIsPlaying(false);
-    }
-  };
-
-  const handleReplay = async () => {
-    if (!videoRef.current) {
-      return;
-    }
-
-    videoRef.current.currentTime = 0;
-    videoRef.current.muted = false;
-    setIsMuted(false);
-
-    try {
-      await videoRef.current.play();
-      setIsPlaying(true);
-    } catch {
-      setIsPlaying(false);
-    }
-  };
-
-  const handleVideoEnded = () => {
-    setIsPlaying(false);
-    setShowVideoControls(false);
-    setVideoOpen(false);
-    resetVideoState();
-  };
 
   const handleFlipToggle = () => {
     if (videoOpen) {
