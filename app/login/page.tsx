@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
+import OAuthButtons from "@/components/auth/OAuthButtons";
+import SignupBrandStory from "@/components/auth/SignupBrandStory";
 import { buildCanonicalTalentColumns } from "@/lib/talent-profile-columns";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
 import { getPublicAppUrl } from "@/lib/site-url";
@@ -30,15 +32,20 @@ const createBlankTalentProfile = (userId: string, email?: string | null): FreeAg
   email: email ?? "",
 });
 
-export default function LoginPage() {
-  const [authMode, setAuthMode] = useState<"sign-in" | "sign-up">("sign-in");
-  const [accountType, setAccountType] = useState<AccountType>("talent");
+function LoginPageContent() {
+  const searchParams = useSearchParams();
+  const authMode = searchParams.get("mode") === "signup" ? "sign-up" : "sign-in";
+  const [accountType] = useState<AccountType>("talent");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
+
+  const enterAuthMode = (mode: "sign-in" | "sign-up") => {
+    router.push(mode === "sign-up" ? "/login?mode=signup" : "/login");
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -168,17 +175,18 @@ export default function LoginPage() {
   return (
     <main className="min-h-screen bg-[#08111F] text-[#f7ebcf]">
       <Navbar />
-      <div className="mx-auto flex min-h-screen max-w-3xl flex-col justify-center px-6 py-16 sm:px-10">
-        <div className="rounded-3xl border border-[#cda64d]/55 bg-[#f7ebcf] p-10 text-[#0f2744] shadow-[0_18px_50px_rgba(6,16,33,0.22)]">
+      <div className={authMode === "sign-up" ? "mx-auto grid min-h-[calc(100vh-5rem)] w-[92vw] max-w-[1400px] items-start gap-8 px-0 py-8 sm:py-10 lg:grid-cols-[minmax(0,1.16fr)_minmax(34rem,0.84fr)] lg:gap-12 lg:py-12" : "mx-auto flex min-h-screen max-w-3xl flex-col justify-center px-6 py-16 sm:px-10"}>
+        {authMode === "sign-up" ? <SignupBrandStory accountType={accountType} /> : null}
+        <div className={`${authMode === "sign-up" ? "rounded-[28px] p-8 sm:p-10 lg:p-14" : "rounded-3xl p-8 sm:p-10"} border border-[#cda64d]/55 bg-[#f7ebcf] text-[#0f2744] shadow-[0_18px_50px_rgba(6,16,33,0.22)]`}>
           <div className="mb-10 space-y-3 text-center">
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">Secure access</p>
-            <h1 className="text-3xl font-black tracking-tight text-[#0f2744] sm:text-4xl">Sign in to your dashboard</h1>
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">{authMode === "sign-up" ? "Join Free Agent Staff" : "Secure access"}</p>
+            <h1 className="text-3xl font-black tracking-tight text-[#0f2744] sm:text-4xl lg:text-5xl">{authMode === "sign-up" ? "Create your account" : "Sign in to your dashboard"}</h1>
             <p className="text-sm leading-6 text-[#27405f]">
-              Use your email and password to access a protected dashboard experience.
+              {authMode === "sign-up" ? "Start building your professional identity." : "Use your email and password to access a protected dashboard experience."}
             </p>
           </div>
 
-          <div className="mb-6 flex items-center justify-center gap-3 text-sm text-[#27405f]">
+          <div className={`${authMode === "sign-up" ? "hidden" : ""} mb-6 flex items-center justify-center gap-3 text-sm text-[#27405f]`}>
             <button
               type="button"
               className={`rounded-full px-4 py-2 transition ${
@@ -186,7 +194,7 @@ export default function LoginPage() {
                   ? "bg-[#0f2744] text-[#f7ebcf]"
                   : "bg-[#efe0b9] text-[#27405f] hover:bg-[#e7d3a0]"
               }`}
-              onClick={() => setAuthMode("sign-in")}
+              onClick={() => enterAuthMode("sign-in")}
             >
               Sign in
             </button>
@@ -197,53 +205,13 @@ export default function LoginPage() {
                   ? "bg-[#0f2744] text-[#f7ebcf]"
                   : "bg-[#efe0b9] text-[#27405f] hover:bg-[#e7d3a0]"
               }`}
-              onClick={() => setAuthMode("sign-up")}
+              onClick={() => enterAuthMode("sign-up")}
             >
               Sign up
             </button>
           </div>
 
-          <p className="mb-6 text-center text-xs leading-5 text-[#27405f]">
-            When you choose Sign up, you agree to the <Link href="/terms" className="font-semibold text-[#0f2744] underline underline-offset-4">Terms of Use</Link> and acknowledge the <Link href="/privacy" className="font-semibold text-[#0f2744] underline underline-offset-4">Privacy Policy</Link>.
-          </p>
-
-          {authMode === "sign-up" ? (
-            <div className="mb-6 rounded-2xl border border-[#cda64d]/40 bg-[#fffaf0] p-4">
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#9a6d15]">Create account as</p>
-              <div className="mt-3 grid gap-3">
-                <button
-                  type="button"
-                  onClick={() => setAccountType("talent")}
-                  className={`rounded-2xl border px-4 py-4 text-left transition ${
-                    accountType === "talent"
-                      ? "border-[#0f2744] bg-[#0f2744] text-[#f7ebcf]"
-                      : "border-[#cda64d]/35 bg-white text-[#27405f] hover:bg-[#fffaf0]"
-                  }`}
-                >
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em]">I&apos;m looking for opportunities</p>
-                  <p className="mt-1 text-base font-black uppercase tracking-[0.08em]">Talent</p>
-                  <p className={`mt-2 text-sm ${accountType === "talent" ? "text-[#dfe7ef]" : "text-[#27405f]"}`}>
-                    Create your FreeAgent profile and be discovered by verified employers.
-                  </p>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAccountType("employer")}
-                  className={`rounded-2xl border px-4 py-4 text-left transition ${
-                    accountType === "employer"
-                      ? "border-[#0f2744] bg-[#0f2744] text-[#f7ebcf]"
-                      : "border-[#cda64d]/35 bg-white text-[#27405f] hover:bg-[#fffaf0]"
-                  }`}
-                >
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em]">I&apos;m looking for talent</p>
-                  <p className="mt-1 text-base font-black uppercase tracking-[0.08em]">Employer</p>
-                  <p className={`mt-2 text-sm ${accountType === "employer" ? "text-[#dfe7ef]" : "text-[#27405f]"}`}>
-                    Create an employer account and discover professionals open to their next move.
-                  </p>
-                </button>
-              </div>
-            </div>
-          ) : null}
+          <OAuthButtons accountType={accountType} />
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
@@ -304,9 +272,15 @@ export default function LoginPage() {
               disabled={isSubmitting || (authMode === "sign-up" && !agreedToTerms)}
               className="w-full rounded-2xl bg-[#aff546] px-4 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-[#071426] transition hover:bg-[#9fea37] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {isSubmitting ? "Processing..." : authMode === "sign-in" ? "Sign in" : "Create account"}
+              {isSubmitting ? "Processing..." : authMode === "sign-in" ? "Sign in" : "Create my account →"}
             </button>
           </form>
+
+          {authMode === "sign-up" ? (
+            <p className="mt-6 text-center text-sm text-[#27405f]">
+              Already have an account? <button type="button" onClick={() => enterAuthMode("sign-in")} className="font-semibold text-[#0f2744] underline underline-offset-4">Sign in</button>
+            </p>
+          ) : null}
 
           <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-sm text-[#27405f]">
             <Link href="/forgot-password" className="font-semibold text-[#0f2744] underline underline-offset-4">
@@ -322,5 +296,13 @@ export default function LoginPage() {
       </div>
       <Footer />
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<main className="min-h-screen bg-[#08111F]" />}>
+      <LoginPageContent />
+    </Suspense>
   );
 }

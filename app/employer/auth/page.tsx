@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { Building2, ShieldCheck, Sparkles } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import OAuthButtons from "@/components/auth/OAuthButtons";
+import SignupBrandStory from "@/components/auth/SignupBrandStory";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
 import { getPublicAppUrl } from "@/lib/site-url";
 import { PRIVACY_VERSION, TERMS_VERSION } from "@/lib/legal-versions";
@@ -209,7 +211,7 @@ export default function EmployerAuthPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#f7ebcf_0%,_#f4e4bf_38%,_#d9bf7d_100%)] text-[#071426]">
+    <main className="min-h-screen bg-[#08111F] text-[#071426]">
       <Navbar />
 
       <section className="relative overflow-hidden">
@@ -217,9 +219,9 @@ export default function EmployerAuthPage() {
         <div className="pointer-events-none absolute right-[-3rem] top-16 h-52 w-52 rounded-full border border-[#aff546]/18" />
         <div className="pointer-events-none absolute bottom-8 left-[45%] hidden h-28 w-28 rounded-full border border-[#071426]/8 lg:block" />
 
-        <div className="relative mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-10 lg:py-12">
-          <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-start xl:gap-12">
-            <div className="rounded-[36px] border border-[#cda64d]/55 bg-[#0f2744] p-7 text-[#f7ebcf] shadow-[0_20px_60px_rgba(6,16,33,0.16)] sm:p-8 lg:p-10">
+        <div className="relative mx-auto w-[92vw] max-w-[1400px] px-0 py-8 sm:py-10 lg:py-12">
+          <div className={`grid gap-8 lg:gap-12 ${authMode === "sign-up" ? "lg:grid-cols-[minmax(0,1.16fr)_minmax(34rem,0.84fr)] lg:items-start" : "lg:grid-cols-[1.05fr_0.95fr] lg:items-start"}`}>
+            <div className={authMode === "sign-up" ? "hidden" : "rounded-[36px] border border-[#cda64d]/55 bg-[#0f2744] p-7 text-[#f7ebcf] shadow-[0_20px_60px_rgba(6,16,33,0.16)] sm:p-8 lg:p-10"}>
               <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">Employer access</p>
               <h1 className="mt-4 max-w-[12ch] font-serif text-[2.55rem] font-semibold uppercase leading-[0.92] text-[#f7ebcf] sm:text-[3.1rem] lg:text-[3.35rem]">
                 <span className="block">HIRE SMARTER.</span>
@@ -249,20 +251,22 @@ export default function EmployerAuthPage() {
               </div>
             </div>
 
-            <div className="rounded-[36px] border border-[#cda64d]/55 bg-[#f7ebcf] p-6 text-[#071426] shadow-[0_20px_60px_rgba(6,16,33,0.14)] sm:p-8 lg:p-10">
+            {authMode === "sign-up" ? <SignupBrandStory accountType="employer" /> : null}
+
+            <div className={`${authMode === "sign-up" ? "rounded-[28px] p-8 sm:p-10 lg:p-14" : "rounded-[36px] p-6 sm:p-8 lg:p-10"} border border-[#cda64d]/55 bg-[#f7ebcf] text-[#071426] shadow-[0_20px_60px_rgba(6,16,33,0.14)]`}>
               <div className="space-y-3 text-center">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Employer authentication</p>
-                <h2 className="text-3xl font-black tracking-tight text-[#071426] sm:text-4xl">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">{authMode === "sign-up" ? "Employer access" : "Employer authentication"}</p>
+                <h2 className="text-3xl font-black tracking-tight text-[#071426] sm:text-4xl lg:text-5xl">
                   {authMode === "sign-up" ? "Create employer account" : "Sign in as employer"}
                 </h2>
                 <p className="text-sm leading-6 text-[#27405f]">
                   {authMode === "sign-up"
-                    ? "Create your employer account to continue into company setup."
+                    ? "Discover, connect and hire exceptional talent."
                     : "Use your employer credentials to resume verification or access the dashboard."}
                 </p>
               </div>
 
-              <div className="mt-6 flex items-center justify-center gap-3 text-sm text-[#27405f]">
+              <div className={`${authMode === "sign-up" ? "hidden" : ""} mt-6 flex items-center justify-center gap-3 text-sm text-[#27405f]`}>
                 <button
                   type="button"
                   className={`rounded-full px-4 py-2 transition ${
@@ -281,6 +285,10 @@ export default function EmployerAuthPage() {
                 >
                   Create account
                 </button>
+              </div>
+
+              <div className="mt-6">
+                <OAuthButtons accountType="employer" />
               </div>
 
               <form onSubmit={handleSubmit} className="mt-6 space-y-5">
@@ -336,11 +344,17 @@ export default function EmployerAuthPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting || (authMode === "sign-up" && !agreedToTerms)}
-                  className="w-full rounded-2xl bg-[#aff546] px-4 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-[#071426] transition hover:bg-[#9fea37] disabled:cursor-not-allowed disabled:opacity-60"
+                  className={`w-full rounded-2xl px-4 py-4 text-sm font-semibold uppercase tracking-[0.16em] text-[#071426] transition disabled:cursor-not-allowed disabled:opacity-60 ${authMode === "sign-up" ? "bg-[#2bd7ef] hover:bg-[#1fc5dd]" : "bg-[#aff546] hover:bg-[#9fea37]"}`}
                 >
-                  {isSubmitting ? "Processing..." : authMode === "sign-in" ? "Sign in" : "Create employer account"}
+                  {isSubmitting ? "Processing..." : authMode === "sign-in" ? "Sign in" : "Create employer account →"}
                 </button>
               </form>
+
+              {authMode === "sign-up" ? (
+                <p className="mt-6 text-center text-sm text-[#27405f]">
+                  Already have an account? <button type="button" onClick={() => setAuthMode("sign-in")} className="font-semibold text-[#0f2744] underline decoration-[#2bd7ef]/70 underline-offset-4">Sign in</button>
+                </p>
+              ) : null}
 
               <p className="mt-6 text-center text-xs leading-5 text-[#27405f]">
                 Talent accounts should use the main sign-in page.
