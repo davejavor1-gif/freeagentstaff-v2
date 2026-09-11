@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Building2, ShieldCheck, Sparkles } from "lucide-react";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import OAuthButtons from "@/components/auth/OAuthButtons";
@@ -34,14 +33,19 @@ const defaultEmployerProfile = {
 const resolveEmployerRoute = (status?: EmployerVerificationStatus | null) =>
   status === "pending" || status === "verified" ? "/dashboard" : "/onboarding/employer";
 
-export default function EmployerAuthPage() {
+function EmployerAuthContent() {
   const router = useRouter();
-  const [authMode, setAuthMode] = useState<"sign-in" | "sign-up">("sign-up");
+  const searchParams = useSearchParams();
+  const authMode = searchParams.get("mode") === "signup" ? "sign-up" : "sign-in";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const enterAuthMode = (mode: "sign-in" | "sign-up") => {
+    router.push(mode === "sign-up" ? "/employer/auth?mode=signup" : "/employer/auth");
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -220,70 +224,36 @@ export default function EmployerAuthPage() {
         <div className="pointer-events-none absolute bottom-8 left-[45%] hidden h-28 w-28 rounded-full border border-[#071426]/8 lg:block" />
 
         <div className="relative mx-auto w-[92vw] max-w-[1400px] px-0 py-8 sm:py-10 lg:py-12">
-          <div className={`grid gap-8 lg:gap-12 ${authMode === "sign-up" ? "lg:grid-cols-[minmax(0,1.16fr)_minmax(34rem,0.84fr)] lg:items-start" : "lg:grid-cols-[1.05fr_0.95fr] lg:items-start"}`}>
-            <div className={authMode === "sign-up" ? "hidden" : "rounded-[36px] border border-[#cda64d]/55 bg-[#0f2744] p-7 text-[#f7ebcf] shadow-[0_20px_60px_rgba(6,16,33,0.16)] sm:p-8 lg:p-10"}>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">Employer access</p>
-              <h1 className="mt-4 max-w-[12ch] font-serif text-[2.55rem] font-semibold uppercase leading-[0.92] text-[#f7ebcf] sm:text-[3.1rem] lg:text-[3.35rem]">
-                <span className="block">HIRE SMARTER.</span>
-                <span className="block">VERIFY ONCE.</span>
-                <span className="block">MOVE FASTER.</span>
-              </h1>
-              <p className="mt-5 max-w-xl text-[1rem] leading-7 text-[#dfe7ef] sm:text-[1.08rem] sm:leading-8">
-                Create an employer account or sign in to continue your verification journey and unlock talent search when ready.
-              </p>
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,1.16fr)_minmax(34rem,0.84fr)] lg:items-start lg:gap-12">
+            <SignupBrandStory accountType="employer" />
 
-              <div className="mt-8 grid gap-4 sm:grid-cols-3">
-                {[
-                  { icon: Building2, title: "Create account", text: "Set up your employer profile and company details." },
-                  { icon: ShieldCheck, title: "Verify access", text: "Submit verification before talent search unlocks." },
-                  { icon: Sparkles, title: "Find talent", text: "Browse people once your employer status is approved." },
-                ].map((card) => {
-                  const Icon = card.icon;
-
-                  return (
-                    <div key={card.title} className="rounded-[24px] border border-[#f2cc63]/20 bg-[#f7ebcf]/8 p-4">
-                      <Icon className="h-5 w-5 text-[#2bd7ef]" />
-                      <p className="mt-4 text-sm font-semibold uppercase tracking-[0.18em] text-[#f2cc63]">{card.title}</p>
-                      <p className="mt-2 text-sm leading-6 text-[#dfe7ef]">{card.text}</p>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {authMode === "sign-up" ? <SignupBrandStory accountType="employer" /> : null}
-
-            <div className={`${authMode === "sign-up" ? "rounded-[28px] p-8 sm:p-10 lg:p-14" : "rounded-[36px] p-6 sm:p-8 lg:p-10"} border border-[#cda64d]/55 bg-[#f7ebcf] text-[#071426] shadow-[0_20px_60px_rgba(6,16,33,0.14)]`}>
+            <div className="rounded-[28px] border border-[#cda64d]/55 bg-[#f7ebcf] p-8 text-[#071426] shadow-[0_20px_60px_rgba(6,16,33,0.14)] sm:p-10 lg:p-14">
               <div className="space-y-3 text-center">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">{authMode === "sign-up" ? "Employer access" : "Employer authentication"}</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Employer access</p>
                 <h2 className="text-3xl font-black tracking-tight text-[#071426] sm:text-4xl lg:text-5xl">
-                  {authMode === "sign-up" ? "Create employer account" : "Sign in as employer"}
+                  {authMode === "sign-up" ? "Create your employer account" : "Welcome back"}
                 </h2>
                 <p className="text-sm leading-6 text-[#27405f]">
                   {authMode === "sign-up"
                     ? "Discover, connect and hire exceptional talent."
-                    : "Use your employer credentials to resume verification or access the dashboard."}
+                    : "Sign in to your Employer account."}
                 </p>
               </div>
 
-              <div className={`${authMode === "sign-up" ? "hidden" : ""} mt-6 flex items-center justify-center gap-3 text-sm text-[#27405f]`}>
+              <div className="mt-8 grid grid-cols-2 rounded-2xl border border-[#cda64d]/35 bg-[#fffaf0] p-1 text-sm font-semibold text-[#27405f]">
                 <button
                   type="button"
-                  className={`rounded-full px-4 py-2 transition ${
-                    authMode === "sign-in" ? "bg-[#0f2744] text-white" : "bg-[#f7ebcf] text-[#27405f] hover:bg-[#efe0b9]"
-                  }`}
-                  onClick={() => setAuthMode("sign-in")}
+                  className={`rounded-xl px-4 py-3 transition ${authMode === "sign-in" ? "bg-[#0f2744] text-white" : "hover:bg-[#efe0b9]"}`}
+                  onClick={() => enterAuthMode("sign-in")}
                 >
                   Sign in
                 </button>
                 <button
                   type="button"
-                  className={`rounded-full px-4 py-2 transition ${
-                    authMode === "sign-up" ? "bg-[#0f2744] text-white" : "bg-[#f7ebcf] text-[#27405f] hover:bg-[#efe0b9]"
-                  }`}
-                  onClick={() => setAuthMode("sign-up")}
+                  className={`rounded-xl px-4 py-3 transition ${authMode === "sign-up" ? "bg-[#0f2744] text-white" : "hover:bg-[#efe0b9]"}`}
+                  onClick={() => enterAuthMode("sign-up")}
                 >
-                  Create account
+                  Sign up
                 </button>
               </div>
 
@@ -344,7 +314,7 @@ export default function EmployerAuthPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting || (authMode === "sign-up" && !agreedToTerms)}
-                  className={`w-full rounded-2xl px-4 py-4 text-sm font-semibold uppercase tracking-[0.16em] text-[#071426] transition disabled:cursor-not-allowed disabled:opacity-60 ${authMode === "sign-up" ? "bg-[#2bd7ef] hover:bg-[#1fc5dd]" : "bg-[#aff546] hover:bg-[#9fea37]"}`}
+                  className="w-full rounded-2xl bg-[#2bd7ef] px-4 py-4 text-sm font-semibold uppercase tracking-[0.16em] text-[#071426] transition hover:bg-[#1fc5dd] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isSubmitting ? "Processing..." : authMode === "sign-in" ? "Sign in" : "Create employer account →"}
                 </button>
@@ -352,9 +322,13 @@ export default function EmployerAuthPage() {
 
               {authMode === "sign-up" ? (
                 <p className="mt-6 text-center text-sm text-[#27405f]">
-                  Already have an account? <button type="button" onClick={() => setAuthMode("sign-in")} className="font-semibold text-[#0f2744] underline decoration-[#2bd7ef]/70 underline-offset-4">Sign in</button>
+                  Already have an account? <button type="button" onClick={() => enterAuthMode("sign-in")} className="font-semibold text-[#0f2744] underline decoration-[#2bd7ef]/70 underline-offset-4">Sign in</button>
                 </p>
-              ) : null}
+              ) : (
+                <p className="mt-6 text-center text-sm text-[#27405f]">
+                  Need an Employer account? <button type="button" onClick={() => enterAuthMode("sign-up")} className="font-semibold text-[#0f2744] underline decoration-[#2bd7ef]/70 underline-offset-4">Sign up</button>
+                </p>
+              )}
 
               <p className="mt-6 text-center text-xs leading-5 text-[#27405f]">
                 Talent accounts should use the main sign-in page.
@@ -379,5 +353,13 @@ export default function EmployerAuthPage() {
       </section>
       <Footer />
     </main>
+  );
+}
+
+export default function EmployerAuthPage() {
+  return (
+    <Suspense fallback={<main className="min-h-screen bg-[#08111F]" />}>
+      <EmployerAuthContent />
+    </Suspense>
   );
 }

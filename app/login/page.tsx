@@ -175,24 +175,24 @@ function LoginPageContent() {
   return (
     <main className="min-h-screen bg-[#08111F] text-[#f7ebcf]">
       <Navbar />
-      <div className={authMode === "sign-up" ? "mx-auto grid min-h-[calc(100vh-5rem)] w-[92vw] max-w-[1400px] items-start gap-8 px-0 py-8 sm:py-10 lg:grid-cols-[minmax(0,1.16fr)_minmax(34rem,0.84fr)] lg:gap-12 lg:py-12" : "mx-auto flex min-h-screen max-w-3xl flex-col justify-center px-6 py-16 sm:px-10"}>
-        {authMode === "sign-up" ? <SignupBrandStory accountType={accountType} /> : null}
-        <div className={`${authMode === "sign-up" ? "rounded-[28px] p-8 sm:p-10 lg:p-14" : "rounded-3xl p-8 sm:p-10"} border border-[#cda64d]/55 bg-[#f7ebcf] text-[#0f2744] shadow-[0_18px_50px_rgba(6,16,33,0.22)]`}>
+      <div className="mx-auto grid min-h-[calc(100vh-5rem)] w-[92vw] max-w-[1400px] items-start gap-8 px-0 py-8 sm:py-10 lg:grid-cols-[minmax(0,1.16fr)_minmax(34rem,0.84fr)] lg:gap-12 lg:py-12">
+        <SignupBrandStory accountType={accountType} />
+        <div className="rounded-[28px] border border-[#cda64d]/55 bg-[#f7ebcf] p-8 text-[#0f2744] shadow-[0_18px_50px_rgba(6,16,33,0.22)] sm:p-10 lg:p-14">
           <div className="mb-10 space-y-3 text-center">
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">{authMode === "sign-up" ? "Join Free Agent Staff" : "Secure access"}</p>
-            <h1 className="text-3xl font-black tracking-tight text-[#0f2744] sm:text-4xl lg:text-5xl">{authMode === "sign-up" ? "Create your account" : "Sign in to your dashboard"}</h1>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Talent access</p>
+            <h1 className="text-3xl font-black tracking-tight text-[#0f2744] sm:text-4xl lg:text-5xl">{authMode === "sign-up" ? "Create your account" : "Welcome back"}</h1>
             <p className="text-sm leading-6 text-[#27405f]">
-              {authMode === "sign-up" ? "Start building your professional identity." : "Use your email and password to access a protected dashboard experience."}
+              {authMode === "sign-up" ? "Start building your professional identity." : "Sign in to continue to your FreeAgent Staff account."}
             </p>
           </div>
 
-          <div className={`${authMode === "sign-up" ? "hidden" : ""} mb-6 flex items-center justify-center gap-3 text-sm text-[#27405f]`}>
+          <div className="mb-8 grid grid-cols-2 rounded-2xl border border-[#cda64d]/35 bg-[#fffaf0] p-1 text-sm font-semibold text-[#27405f]">
             <button
               type="button"
-              className={`rounded-full px-4 py-2 transition ${
+              className={`rounded-xl px-4 py-3 transition ${
                 authMode === "sign-in"
                   ? "bg-[#0f2744] text-[#f7ebcf]"
-                  : "bg-[#efe0b9] text-[#27405f] hover:bg-[#e7d3a0]"
+                  : "hover:bg-[#efe0b9]"
               }`}
               onClick={() => enterAuthMode("sign-in")}
             >
@@ -200,10 +200,10 @@ function LoginPageContent() {
             </button>
             <button
               type="button"
-              className={`rounded-full px-4 py-2 transition ${
+              className={`rounded-xl px-4 py-3 transition ${
                 authMode === "sign-up"
                   ? "bg-[#0f2744] text-[#f7ebcf]"
-                  : "bg-[#efe0b9] text-[#27405f] hover:bg-[#e7d3a0]"
+                  : "hover:bg-[#efe0b9]"
               }`}
               onClick={() => enterAuthMode("sign-up")}
             >
@@ -280,7 +280,11 @@ function LoginPageContent() {
             <p className="mt-6 text-center text-sm text-[#27405f]">
               Already have an account? <button type="button" onClick={() => enterAuthMode("sign-in")} className="font-semibold text-[#0f2744] underline underline-offset-4">Sign in</button>
             </p>
-          ) : null}
+          ) : (
+            <p className="mt-6 text-center text-sm text-[#27405f]">
+              New to FreeAgent Staff? <button type="button" onClick={() => enterAuthMode("sign-up")} className="font-semibold text-[#0f2744] underline underline-offset-4">Sign up</button>
+            </p>
+          )}
 
           <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-sm text-[#27405f]">
             <Link href="/forgot-password" className="font-semibold text-[#0f2744] underline underline-offset-4">

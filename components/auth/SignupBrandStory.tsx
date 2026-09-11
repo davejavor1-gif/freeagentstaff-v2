@@ -20,6 +20,13 @@ export default function SignupBrandStory({ accountType }: { accountType: Account
           </h1>
           <p className="mt-8 max-w-[38rem] text-lg leading-8 text-[#dfe7ef] sm:text-xl">Discover, connect and hire verified talent through rich professional profiles that showcase real skills, experience and personality.</p>
         </div>
+        <Image
+          src="/great-people-build-great-things.png"
+          alt="Great people build great things."
+          width={1236}
+          height={1273}
+          className="relative z-10 mt-8 h-auto w-[min(58vw,320px)] sm:mt-10 sm:w-[min(34vw,340px)]"
+        />
         <div className="relative z-10 mt-16 grid gap-8 border-t border-[#2BD7EF]/25 pt-8 sm:grid-cols-3">
           {[{ icon: Search, title: "Discover", text: "Search and filter talent with depth and clarity." }, { icon: Send, title: "Connect", text: "Engage directly with the right people." }, { icon: Zap, title: "Hire faster", text: "Save time and find the right fit, sooner." }].map(({ icon: Icon, title, text }) => (
             <div key={title} className="border-l-2 border-[#2BD7EF]/55 pl-4">

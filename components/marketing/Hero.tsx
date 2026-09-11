@@ -32,7 +32,7 @@ export default function Hero() {
 
           <div className="mt-10 flex flex-col gap-4 sm:flex-row">
             <Link
-              href="/builder"
+              href="/login?mode=signup"
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#c79e4f] px-7 py-4 font-bold text-[#07111f] transition hover:-translate-y-1 hover:bg-[#d8b568]"
             >
               Create your FreeAgent Card
