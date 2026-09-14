@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Session } from "@supabase/supabase-js";
-import TalentCard from "@/components/TalentCard";
 import { freeAgentProfiles } from "@/data/freeagents";
 import { buildCanonicalTalentColumns, buildTalentProfileUpdateColumns } from "@/lib/talent-profile-columns";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
@@ -19,6 +18,15 @@ import type { Database, Json } from "@/types/supabase";
 const initialProfile = freeAgentProfiles[0];
 
 function DestinationPill({ tone, label }: { tone: "card" | "passport"; label: string }) {
+  if (label.includes("Card + Passport")) {
+    return (
+      <span className="inline-flex shrink-0 items-center gap-1.5">
+        <span className="inline-flex items-center rounded-full bg-[#AFF546] px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.14em] text-[#08111F]">Card</span>
+        <span className="inline-flex items-center rounded-full bg-[#651D2A] px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.14em] text-[#f7ebcf]">Passport</span>
+      </span>
+    );
+  }
+
   const toneClasses =
     tone === "card" ? "bg-[#AFF546] text-[#08111F]" : "bg-[#651D2A] text-[#f7ebcf]";
 
@@ -30,6 +38,20 @@ function DestinationPill({ tone, label }: { tone: "card" | "passport"; label: st
     </span>
   );
 }
+
+type BuilderSectionId = "basic" | "availability" | "skills" | "experience" | "education" | "media" | "languages" | "details" | "privacy";
+
+const builderSections: Array<{ id: BuilderSectionId; label: string; shortLabel: string; eyebrow: "card" | "passport" | "both" }> = [
+  { id: "basic", label: "Basic Information", shortLabel: "Basic Info", eyebrow: "both" },
+  { id: "availability", label: "Availability", shortLabel: "Availability", eyebrow: "both" },
+  { id: "skills", label: "Skills", shortLabel: "Skills", eyebrow: "both" },
+  { id: "experience", label: "Experience", shortLabel: "Experience", eyebrow: "both" },
+  { id: "education", label: "Education", shortLabel: "Education", eyebrow: "both" },
+  { id: "media", label: "Media", shortLabel: "Media", eyebrow: "passport" },
+  { id: "languages", label: "Languages & Passions", shortLabel: "Languages & Passions", eyebrow: "passport" },
+  { id: "details", label: "Professional Details", shortLabel: "Professional Details", eyebrow: "passport" },
+  { id: "privacy", label: "Privacy & Visibility", shortLabel: "Privacy", eyebrow: "both" },
+];
 
 type ProfilesTable = Database["public"]["Tables"]["profiles"];
 type ProfileInsert = ProfilesTable["Insert"];
@@ -169,6 +191,7 @@ const createBlankProfile = (userId: string, email?: string | null): FreeAgentPro
 
 export default function BuilderPage() {
   const [session, setSession] = useState<Session | null>(null);
+  const [activeSection, setActiveSection] = useState<BuilderSectionId>("basic");
   const [profile, setProfile] = useState<FreeAgentProfile>({
     ...initialProfile,
     name: initialProfile.name,
@@ -400,7 +423,7 @@ export default function BuilderPage() {
 
     if (error) {
       setIsSaving(false);
-      setSaveError(error.message);
+      setSaveError("We couldn't save your profile. Please try again.");
       return false;
     }
 
@@ -686,21 +709,149 @@ export default function BuilderPage() {
     }));
   };
 
+  const sectionIsComplete = (sectionId: BuilderSectionId) => {
+    switch (sectionId) {
+      case "basic":
+        return Boolean(profile.name.trim() && profile.title.trim() && profile.location.trim());
+      case "availability":
+        return Boolean(profile.availability);
+      case "skills":
+        return profile.skills.length > 0;
+      case "experience":
+        return profile.careerJourney.some((position) => position.role.trim() && position.company.trim());
+      case "education":
+        return (profile.educationEntries ?? []).some((entry) => entry.qualification.trim() && entry.institution.trim());
+      case "media":
+        return Boolean(profile.photoUrl || profile.photo_storage_path || profile.intro_video_url || profile.intro_video_storage_path);
+      case "languages":
+        return (profile.languages ?? []).length > 0 || (profile.passions ?? []).length > 0;
+      case "details":
+        return Boolean(profile.focusArea.trim() || profile.salaryExpectation || profile.contactEmail?.trim() || profile.resumeOriginalFilename);
+      case "privacy":
+        return Boolean(profile.visibility && (isPublished || profile.visibility === "confidential"));
+    }
+  };
+
+  const completedSections = builderSections.filter((section) => sectionIsComplete(section.id)).length;
+  const activeSectionIndex = builderSections.findIndex((section) => section.id === activeSection);
+  const activeSectionMeta = builderSections[activeSectionIndex] ?? builderSections[0];
+  const journeyStatus = (sectionId: BuilderSectionId) => sectionId === activeSection ? "current" : sectionIsComplete(sectionId) ? "complete" : "incomplete";
+  const journeyTileClass = (sectionId: BuilderSectionId) => {
+    const status = journeyStatus(sectionId);
+    if (status === "current") return "border-[#08111F] bg-[#eef3f7] text-[#08111F]";
+    if (status === "complete") return "border-[#8fca45] bg-[#f1f8df] text-[#08111F]";
+    return "border-[#d8d1c2] bg-[#fffaf0] text-[#08111F]";
+  };
+  const journeyIconClass = (sectionId: BuilderSectionId) => {
+    const status = journeyStatus(sectionId);
+    if (status === "current") return "border-[#08111F] bg-[#eef3f7] text-[#08111F]";
+    if (status === "complete") return "border-[#8fca45] bg-[#AFF546] text-[#08111F]";
+    return "border-[#c9c3b7] bg-[#e7e2d8] text-[#52627a]";
+  };
+  const sectionClass = (sectionId: BuilderSectionId, className: string) => `${activeSection === sectionId ? "" : "hidden"} ${className}`;
+  const activeFormClassName = "mt-8 space-y-4";
+  const saveAndContinue = async () => {
+    const saved = await saveProfile();
+    if (!saved) return;
+    const nextSection = builderSections[activeSectionIndex + 1];
+    if (nextSection) setActiveSection(nextSection.id);
+  };
+
+  const contextCopy: Record<BuilderSectionId, { card: string; passport: string; tip: string }> = {
+    basic: {
+      card: "Name, title and location help employers understand your profile at a glance.",
+      passport: "Your bio adds the fuller professional story behind the first impression.",
+      tip: "Start with the clearest version of who you are and what you do.",
+    },
+    availability: {
+      card: "Your current availability is visible during Talent discovery.",
+      passport: "The same availability status keeps your Passport current.",
+      tip: "Update this whenever your search status changes.",
+    },
+    skills: {
+      card: "Your selected skills support quick employer discovery.",
+      passport: "Skills also contribute to the deeper professional record.",
+      tip: "Lead with the capabilities you want to be known for.",
+    },
+    experience: {
+      card: "Your two most recent career entries appear on your Talent Card.",
+      passport: "Your complete career journey appears on your Talent Passport.",
+      tip: "Keep the newest role at the top, then add the detail behind your impact.",
+    },
+    education: {
+      card: "Education is included in the concise discovery profile.",
+      passport: "The same education entries are part of your professional record.",
+      tip: "Use the qualification and institution fields to keep entries scannable.",
+    },
+    media: {
+      card: "Your profile photo helps employers recognise your Talent Card.",
+      passport: "Your video introduction gives the Passport more personality and context.",
+      tip: "Choose media that feels current, clear and professional.",
+    },
+    languages: {
+      card: "Languages and passions are reserved for the full professional story.",
+      passport: "Languages and passions help employers understand how you work and what motivates you.",
+      tip: "A short, considered list is more useful than an exhaustive one.",
+    },
+    details: {
+      card: "These details are not used as a discovery-card preview.",
+      passport: "Focus area, salary expectations, contact and resume details support connection-based Passport access.",
+      tip: "Private contact and resume details stay protected until permissions allow access.",
+    },
+    privacy: {
+      card: "Visibility settings control whether employers can discover your profile.",
+      passport: "Publish state controls whether your Passport is available under its existing access rules.",
+      tip: "Review privacy settings before publishing, especially blocked companies.",
+    },
+  };
+
   return (
-    <><Navbar /><main className="min-h-screen bg-[#08111F] px-4 py-8 text-[#0f2744] sm:px-6 lg:px-8">
-      <div className="mx-auto flex max-w-7xl flex-col gap-6 lg:flex-row lg:items-start">
-        <section className="box-border w-full rounded-[32px] border-[32px] border-[#f7ebcf] bg-[#0f2744] p-6 text-[#f7ebcf] shadow-[0_18px_55px_rgba(6,16,33,0.28)] lg:w-[62%] lg:p-8">
+    <><Navbar /><main className="min-h-screen bg-[#08111F] px-3 py-4 text-[#0f2744] sm:px-6 lg:px-8 lg:py-8">
+      <div className="mx-auto grid max-w-[1500px] gap-4 lg:grid-cols-[230px_minmax(0,1fr)_320px] lg:items-start lg:gap-x-6 lg:gap-y-0">
+        <aside className="rounded-[24px] border border-[#cda64d]/45 bg-[#f7ebcf] p-4 text-[#08111F] shadow-[0_18px_45px_rgba(6,16,33,0.2)] lg:row-span-3 lg:h-fit lg:self-start lg:sticky lg:top-24">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#AFF546]">Builder Studio</p>
+              <h1 className="mt-3 text-xl font-black uppercase leading-[0.95] tracking-[0.08em]">Build your<br />Talent Profile</h1>
+            </div>
+            <span className="mt-1 h-3 w-3 rounded-full bg-[#AFF546] shadow-[0_0_0_5px_rgba(175,245,70,0.12)]" />
+          </div>
+          <label htmlFor="builder-section-select" className="sr-only">Choose a Builder section</label>
+          <select id="builder-section-select" value={activeSection} onChange={(event) => setActiveSection(event.target.value as BuilderSectionId)} className="mt-5 w-full rounded-xl border border-[#0f2744]/20 bg-[#fffaf0] px-3 py-3 text-sm text-[#08111F] outline-none lg:hidden">
+            {builderSections.map((section) => <option key={section.id} value={section.id}>{section.label}</option>)}
+          </select>
+          <nav className="mt-6 hidden space-y-1 lg:block" aria-label="Builder sections">
+            {builderSections.map((section, index) => {
+              const isActive = section.id === activeSection;
+              const complete = sectionIsComplete(section.id);
+              return (
+                <button key={section.id} type="button" onClick={() => setActiveSection(section.id)} className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-xs font-semibold transition ${isActive ? "bg-[#AFF546] text-[#08111F]" : "text-[#08111F] hover:bg-[#fffaf0]"}`}>
+                  <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-[10px] ${complete ? "border-[#527c1b] bg-[#AFF546] text-[#08111F]" : isActive ? "border-[#08111F]/30" : "border-[#0f2744]/25"}`}>{complete ? "✓" : index + 1}</span>
+                  <span>{section.shortLabel}</span>
+                </button>
+              );
+            })}
+          </nav>
+          <div className="mt-7 border-t border-[#0f2744]/15 pt-5">
+            <div className="flex items-end justify-between gap-2">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#08111F]">Your progress</p>
+              <p className="text-sm font-bold text-[#527c1b]">{completedSections} / {builderSections.length}</p>
+            </div>
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#e7dec4]"><div className="h-full rounded-full bg-[#AFF546] transition-[width]" style={{ width: `${(completedSections / builderSections.length) * 100}%` }} /></div>
+            <p className="mt-2 text-[10px] leading-4 text-[#52627a]">Complete the sections that matter most to your next opportunity.</p>
+          </div>
+        </aside>
+
+        <div className="min-w-0 rounded-[24px] bg-[#fffaf0] shadow-[0_18px_55px_rgba(6,16,33,0.12)] lg:col-start-2 lg:row-span-3">
+        <section className={`box-border w-full rounded-t-[24px] rounded-b-none border border-[#cda64d]/45 bg-[#fffaf0] p-4 sm:p-6 lg:p-8 ${activeSection === "languages" || activeSection === "details" || activeSection === "privacy" ? "border-b-0" : ""}`}>
           <div className="inline-flex items-center rounded-full border border-[#AFF546]/40 bg-[#AFF546] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#08111F]">
-            Card Builder Studio
+            {activeSectionMeta.eyebrow === "passport" ? "Talent Passport" : "Talent Card"}
           </div>
 
           <div className="mt-5 rounded-2xl border border-[#651D2A]/20 bg-[#f7ebcf] p-5 sm:p-6">
-            <h1 className="font-serif text-4xl font-semibold uppercase leading-[0.95] text-[#08111F] sm:text-5xl">
-              Create Your FreeAgent Card
-            </h1>
-            <p className="mt-3 max-w-2xl text-lg leading-7 text-[#08111F]">
-              Edit your profile and build your Talent Card and Talent Passport.
-            </p>
+            <p className={`text-[11px] font-bold uppercase tracking-[0.24em] ${activeSectionMeta.eyebrow === "passport" ? "text-[#651D2A]" : "text-[#527c1b]"}`}>{activeSectionMeta.eyebrow === "passport" ? "Talent Passport" : "Talent Card + Passport"}</p>
+            <h2 className="mt-3 font-serif text-4xl font-semibold uppercase leading-[0.95] text-[#08111F] sm:text-5xl">{activeSectionMeta.label}</h2>
+            <p className="mt-3 max-w-2xl text-base leading-7 text-[#27405f]">{contextCopy[activeSection].card} {contextCopy[activeSection].passport}</p>
 
             <div className="mt-5 flex flex-wrap items-center gap-2.5">
               <button
@@ -763,13 +914,13 @@ export default function BuilderPage() {
           </div>
 
           <form
-            className="mt-8 space-y-4"
+            className={activeSection === "languages" || activeSection === "details" || activeSection === "privacy" ? "hidden" : activeFormClassName}
             onSubmit={(event) => {
               event.preventDefault();
               saveProfile();
             }}
           >
-          <div className="space-y-2 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#AFF546] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+          <div className={sectionClass("basic", "space-y-2 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#AFF546] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]")}>
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <label htmlFor="name" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
                   Name
@@ -785,7 +936,7 @@ export default function BuilderPage() {
               />
             </div>
 
-            <div className="rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#AFF546] bg-[#fffaf0] p-4 text-[#071426] shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+            <div className={sectionClass("availability", "rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#AFF546] bg-[#fffaf0] p-4 text-[#071426] shadow-[0_10px_24px_rgba(7,20,38,0.08)]")}>
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <label htmlFor="availability" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Availability</label>
                 <DestinationPill tone="card" label="Card + Passport" />
@@ -802,7 +953,7 @@ export default function BuilderPage() {
               </select>
             </div>
 
-            <div className="space-y-2 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#AFF546] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+            <div className={sectionClass("basic", "space-y-2 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#AFF546] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]")}>
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <label htmlFor="title" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
                   Professional Title
@@ -818,15 +969,17 @@ export default function BuilderPage() {
               />
             </div>
 
-            <VideoIntroductionSection
-              profile={profile}
-              onProfileChange={(nextProfile) => setProfile(nextProfile)}
-              isSaving={isSaving}
-              visibility={profile.visibility}
-              hasProAccess={hasProAccess}
-            />
+            <div className={sectionClass("media", "space-y-2")}>
+              <VideoIntroductionSection
+                profile={profile}
+                onProfileChange={(nextProfile) => setProfile(nextProfile)}
+                isSaving={isSaving}
+                visibility={profile.visibility}
+                hasProAccess={hasProAccess}
+              />
+            </div>
 
-            <div className="space-y-2 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#AFF546] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+            <div className={sectionClass("basic", "space-y-2 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#AFF546] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]")}>
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <label htmlFor="location" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
                   Location
@@ -842,7 +995,7 @@ export default function BuilderPage() {
               />
             </div>
 
-            <div className="space-y-2 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#AFF546] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+            <div className={sectionClass("basic", "space-y-2 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#AFF546] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]")}>
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <label htmlFor="topStrength" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
                   Top Strength
@@ -858,7 +1011,7 @@ export default function BuilderPage() {
               />
             </div>
 
-            <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#AFF546] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+            <div className={sectionClass("education", "space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#AFF546] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]")}>
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
                   Education <span className="font-normal normal-case tracking-normal text-[#6a7a91]">(optional)</span>
@@ -884,7 +1037,7 @@ export default function BuilderPage() {
               </div>
             </div>
 
-            <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#AFF546] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+            <div className={sectionClass("skills", "space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#AFF546] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]")}>
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
@@ -938,7 +1091,7 @@ export default function BuilderPage() {
               ) : null}
             </div>
 
-            <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#AFF546] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+            <div className={sectionClass("experience", "space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#AFF546] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]")}>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
@@ -1064,32 +1217,21 @@ export default function BuilderPage() {
               </div>
             </div>
 
-          </form>
-        </section>
-
-        <div className="flex w-full flex-col gap-6 lg:w-[38%]">
-          <section className="flex w-full items-center justify-center rounded-[32px] border border-[#f7ebcf]/80 bg-[#f7ebcf] p-4 shadow-[0_12px_32px_rgba(6,16,33,0.12)] lg:min-h-[700px] lg:p-5">
-            <div className="flex w-full max-w-[430px] flex-col">
-              <div className="flex justify-center">
-                <TalentCard
-                  profile={hasProAccess ? profile : { ...profile, intro_video_url: null, intro_video_storage_path: null }}
-                  href={profile.slug ? `/profile/${profile.slug}` : "#"}
-                  hasProAccess={hasProAccess}
-                  className="w-full max-w-[430px]"
-                />
+            <div className={`mt-6 flex flex-col gap-3 border-t border-[#0f2744]/10 pt-5 sm:flex-row sm:items-center sm:justify-between ${activeSection === "languages" || activeSection === "details" || activeSection === "privacy" ? "hidden" : ""}`}>
+              <button type="button" onClick={() => { const previousSection = builderSections[activeSectionIndex - 1]; if (previousSection) setActiveSection(previousSection.id); }} disabled={activeSectionIndex === 0} className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#0f2744]/20 px-5 py-2.5 text-xs font-bold uppercase tracking-[0.18em] text-[#0f2744] transition hover:bg-[#f7ebcf] disabled:cursor-not-allowed disabled:opacity-40">Back</button>
+              <button type="button" onClick={() => void saveAndContinue()} disabled={isSaving || !profileLoaded} className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#08111F] px-5 py-2.5 text-xs font-bold uppercase tracking-[0.18em] text-[#AFF546] transition hover:bg-[#17355f] disabled:cursor-not-allowed disabled:opacity-50">{activeSectionIndex === builderSections.length - 1 ? "Save profile" : "Save & continue →"}</button>
+            </div>
+            {activeSection !== "languages" && activeSection !== "details" && activeSection !== "privacy" ? (
+              <div className="mt-4 border-t border-[#0f2744]/10 pt-4">
+                <button type="button" onClick={() => void saveProfile()} disabled={isSaving || !profileLoaded} className="inline-flex min-h-[48px] w-full items-center justify-center rounded-full bg-[#AFF546] px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#08111F] transition hover:bg-[#9fea37] disabled:cursor-not-allowed disabled:opacity-60">
+                  {isSaving ? "Saving..." : "Save profile"}
+                </button>
               </div>
-            </div>
-          </section>
+            ) : null}
+          </form>
 
-          <section className="box-border rounded-[32px] border-[32px] border-[#f7ebcf] bg-[#0f2744] p-5 text-[#f7ebcf] shadow-[0_18px_55px_rgba(6,16,33,0.28)] sm:p-6">
-            <div className="inline-flex items-center rounded-full border border-[#651D2A]/40 bg-[#651D2A] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f7ebcf]">
-              Passport Builder Studio
-            </div>
-            <h2 className="mt-4 text-2xl font-black uppercase leading-tight tracking-[0.08em] text-[#f7ebcf]">Continue building your card</h2>
-            <p className="mt-3 text-sm leading-6 text-[#dfe7ef]">Build out the details that complete your Talent Passport.</p>
-
-            <div className="mt-5 space-y-4">
-              <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#651D2A] bg-[#fffaf0] p-4 text-[#071426] shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+          <div className={`${activeSection === "languages" || activeSection === "details" || activeSection === "privacy" ? "" : "hidden"} ${activeFormClassName}`}>
+              <div className={sectionClass("details", "space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#651D2A] bg-[#fffaf0] p-4 text-[#071426] shadow-[0_10px_24px_rgba(7,20,38,0.08)]")}>
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <label htmlFor="bio" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
                     Bio <span className="font-normal normal-case tracking-normal text-[#6a7a91]">(optional)</span>
@@ -1108,27 +1250,17 @@ export default function BuilderPage() {
                 <p className="text-right text-xs text-[#6a7a91]">{(profile.bio ?? "").length}/750</p>
               </div>
 
-              <div className="space-y-2 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#651D2A] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <label htmlFor="focusArea" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
-                    Focus Area
-                  </label>
+              <div className={sectionClass("details", "space-y-2 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#651D2A] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]")}>
+                <div className="flex items-center justify-between gap-2">
+                  <label htmlFor="focusArea" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Focus Area</label>
                   <DestinationPill tone="passport" label="Passport only" />
                 </div>
-                <input
-                  id="focusArea"
-                  value={profile.focusArea}
-                  onChange={(event) => updateTextField("focusArea", event.target.value)}
-                  className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] shadow-sm outline-none transition focus:border-[#0f2744]"
-                  placeholder="Enter your focus area"
-                />
+                <input id="focusArea" value={profile.focusArea} onChange={(event) => updateTextField("focusArea", event.target.value)} className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] shadow-sm outline-none transition focus:border-[#0f2744]" placeholder="Enter your focus area" />
               </div>
 
-              <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#651D2A] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+              <div className={sectionClass("languages", "space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#651D2A] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]")}>
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
-                    Passions
-                  </p>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Passions</p>
                   <DestinationPill tone="passport" label="Passport only" />
                 </div>
                 <div className="flex flex-wrap items-center justify-between gap-2">
@@ -1180,7 +1312,7 @@ export default function BuilderPage() {
                 ) : null}
               </div>
 
-              <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#651D2A] bg-[#fffaf0] p-4 text-[#071426] shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+              <div className={sectionClass("languages", "space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#651D2A] bg-[#fffaf0] p-4 text-[#071426] shadow-[0_10px_24px_rgba(7,20,38,0.08)]")}>
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Languages</p>
                   <DestinationPill tone="passport" label="Passport only" />
@@ -1211,7 +1343,7 @@ export default function BuilderPage() {
                 ) : null}
               </div>
 
-              <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#651D2A] bg-[#fffaf0] p-4 text-[#071426] shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+              <div className={sectionClass("details", "space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#651D2A] bg-[#fffaf0] p-4 text-[#071426] shadow-[0_10px_24px_rgba(7,20,38,0.08)]")}>
                 <div className="flex items-center justify-between gap-2">
                   <label htmlFor="salaryExpectation" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Salary expectations <span className="font-normal normal-case tracking-normal text-[#6a7a91]">(optional)</span></label>
                   <DestinationPill tone="passport" label="Passport only" />
@@ -1229,11 +1361,11 @@ export default function BuilderPage() {
                 </select>
               </div>
 
-              <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#651D2A] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+              <div className={sectionClass("details", "space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#651D2A] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]")}>
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div>
                     <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Contact details</p>
-                    <p className="mt-1 text-sm text-[#27405f]">This stays private until you choose to connect with an employer.</p>
+                    <p className="mt-1 text-sm text-[#27405f]">Your contact email is only shared with employers when your connection permissions allow access.</p>
                   </div>
                   <DestinationPill tone="passport" label="Passport · After connection" />
                 </div>
@@ -1249,7 +1381,7 @@ export default function BuilderPage() {
                 />
               </div>
 
-              <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#651D2A] bg-[#fffaf0] p-4 text-[#071426] shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+              <div className={sectionClass("details", "space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#651D2A] bg-[#fffaf0] p-4 text-[#071426] shadow-[0_10px_24px_rgba(7,20,38,0.08)]")}>
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div>
                     <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Resume</p>
@@ -1280,10 +1412,15 @@ export default function BuilderPage() {
                 {resumeError ? <p className="text-sm font-semibold text-rose-700">{resumeError}</p> : null}
               </div>
 
-              <div className="rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#2bd7ef] bg-[#fffaf0] p-4 text-sm leading-6 text-[#27405f] shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
+              <div className={sectionClass("privacy", "rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#2bd7ef] bg-[#fffaf0] p-4 text-sm leading-6 text-[#27405f] shadow-[0_10px_24px_rgba(7,20,38,0.08)]")}>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Privacy & visibility</p>
                 <p className="mt-2">Marketplace visibility and blocked companies are managed from Privacy & Visibility. Publish state is managed here in Builder Studio.</p>
                 <Link href="/settings/privacy" className="mt-3 inline-flex min-h-[44px] items-center justify-center rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f]">Open privacy settings</Link>
+              </div>
+
+              <div className="mt-6 flex flex-col gap-3 border-t border-[#0f2744]/10 pt-5 sm:flex-row sm:items-center sm:justify-between">
+                <button type="button" onClick={() => { const previousSection = builderSections[activeSectionIndex - 1]; if (previousSection) setActiveSection(previousSection.id); }} disabled={activeSectionIndex === 0} className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#0f2744]/20 px-5 py-2.5 text-xs font-bold uppercase tracking-[0.18em] text-[#0f2744] transition hover:bg-[#f7ebcf] disabled:cursor-not-allowed disabled:opacity-40">Back</button>
+                <button type="button" onClick={() => void saveAndContinue()} disabled={isSaving || !profileLoaded} className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#08111F] px-5 py-2.5 text-xs font-bold uppercase tracking-[0.18em] text-[#AFF546] transition hover:bg-[#17355f] disabled:cursor-not-allowed disabled:opacity-50">{activeSectionIndex === builderSections.length - 1 ? "Save profile" : "Save & continue →"}</button>
               </div>
 
               <div className="pt-2">
@@ -1296,9 +1433,61 @@ export default function BuilderPage() {
                   {isSaving ? "Saving..." : "Save profile"}
                 </button>
               </div>
+          </div>
+        </section>
+
+          <section className="order-2 w-full rounded-b-[24px] rounded-t-none border border-t-0 border-[#cda64d]/45 bg-[#fffaf0] p-5 text-[#0f2744] shadow-[0_18px_45px_rgba(6,16,33,0.1)] lg:order-none lg:col-start-2">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#9a6d15]">Builder Journey</p>
+                <h2 className="mt-2 text-2xl font-black tracking-tight text-[#08111F]">Your Progress</h2>
+                <p className="mt-1 text-sm leading-6 text-[#52627a]">Complete the sections that matter most to your next opportunity.</p>
+              </div>
+              <div className="min-w-[150px] sm:text-right">
+                <p className="text-2xl font-black text-[#08111F]">{completedSections} / {builderSections.length}</p>
+                <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#e7e2d8]"><div className="h-full rounded-full bg-[#AFF546]" style={{ width: `${(completedSections / builderSections.length) * 100}%` }} /></div>
+                <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#52627a]">Sections complete</p>
+              </div>
+            </div>
+            <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {builderSections.map((section, index) => {
+                const status = journeyStatus(section.id);
+                return <button key={section.id} type="button" onClick={() => setActiveSection(section.id)} className={`flex min-h-[72px] items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition ${journeyTileClass(section.id)}`}>
+                  <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-xs font-black ${journeyIconClass(section.id)}`}>{status === "complete" ? "✓" : index + 1}</span>
+                  <span><span className="block text-[10px] font-black uppercase tracking-[0.1em]">{section.shortLabel}</span><span className="mt-1 block text-[9px] font-bold uppercase tracking-[0.12em] opacity-60">{status === "complete" ? "Complete" : status === "current" ? "Current" : "Incomplete"}</span></span>
+                </button>;
+              })}
+            </div>
+            <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 border-t border-[#0f2744]/10 pt-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#52627a]">
+              <span><span className="mr-1.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-[#AFF546] text-[#08111F]">✓</span> Completed section</span>
+              <span><span className="mr-1.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-[#e7e2d8] text-[#52627a]">•</span> Incomplete section</span>
+              <span><span className="mr-1.5 inline-flex h-4 w-4 items-center justify-center rounded-full border border-[#08111F] text-[#08111F]">•</span> Current section</span>
             </div>
           </section>
         </div>
+
+        <section className="w-full rounded-[24px] border border-[#cda64d]/45 bg-[#fffaf0] p-5 shadow-[0_18px_45px_rgba(6,16,33,0.1)] lg:col-start-3 lg:row-start-1 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:sticky lg:top-24">
+          <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#9a6d15]">Where this information appears</p>
+          <div className="mt-4 rounded-2xl border border-[#AFF546]/60 bg-[#f3fbdc] p-4">
+            <div className="flex items-center gap-2"><span className="h-3 w-3 rounded-full bg-[#AFF546]" /><h2 className="text-sm font-black uppercase tracking-[0.12em] text-[#08111F]">Talent Card</h2></div>
+            <p className="mt-2 text-sm leading-6 text-[#27405f]">A snapshot for quick discovery by employers.</p>
+            <p className="mt-3 text-xs leading-5 text-[#527c1b]">Name, title, location, top strength, selected skills, availability, education and your two most recent career entries.</p>
+          </div>
+          <div className="mt-3 rounded-2xl border border-[#651D2A]/45 bg-[#f8ecef] p-4">
+            <div className="flex items-center gap-2"><span className="h-3 w-3 rounded-full bg-[#651D2A]" /><h2 className="text-sm font-black uppercase tracking-[0.12em] text-[#651D2A]">Talent Passport</h2></div>
+            <p className="mt-2 text-sm leading-6 text-[#4e2630]">Your complete professional story.</p>
+            <p className="mt-3 text-xs leading-5 text-[#651D2A]">Everything relevant from your Card, plus your full career journey, bio, passions, languages, salary expectations, video and protected contact or resume details.</p>
+          </div>
+          <div className="mt-5 border-t border-[#0f2744]/10 pt-4">
+            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#9a6d15]">Quick tip</p>
+            <p className="mt-2 text-sm italic leading-6 text-[#27405f]">{contextCopy[activeSection].tip}</p>
+          </div>
+          <div className="mt-5 rounded-2xl bg-[#08111F] p-4 text-[#f7ebcf]">
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#AFF546]">Current section</p>
+            <p className="mt-2 text-lg font-bold">{activeSectionMeta.label}</p>
+            <p className="mt-1 text-xs leading-5 text-[#c7d4df]">{completedSections} of {builderSections.length} sections complete.</p>
+          </div>
+        </section>
       </div>
     </main><Footer /></>
   );

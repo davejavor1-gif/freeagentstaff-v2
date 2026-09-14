@@ -16,19 +16,11 @@ function GoogleLogo() {
   );
 }
 
-function AppleLogo() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0 fill-current" aria-hidden="true">
-      <path d="M17.05 12.54c-.02-2.19 1.79-3.25 1.87-3.3a4.02 4.02 0 0 0-3.17-1.71c-1.33-.14-2.62.79-3.3.79-.69 0-1.73-.77-2.84-.75a4.18 4.18 0 0 0-3.52 2.15c-1.52 2.64-.39 6.53 1.07 8.66.73 1.04 1.58 2.2 2.7 2.16 1.08-.04 1.49-.69 2.8-.69 1.3 0 1.67.69 2.81.67 1.17-.02 1.91-1.05 2.63-2.1a8.6 8.6 0 0 0 1.2-2.42 3.74 3.74 0 0 1-2.25-3.46ZM14.88 6.11A3.85 3.85 0 0 0 15.76 3a3.9 3.9 0 0 0-2.84 1.47 3.63 3.63 0 0 0-.9 2.94 3.22 3.22 0 0 0 2.86-1.3Z" />
-    </svg>
-  );
-}
-
 export default function OAuthButtons({ accountType }: { accountType: AccountType }) {
-  const [loadingProvider, setLoadingProvider] = useState<"google" | "apple" | null>(null);
+  const [loadingProvider, setLoadingProvider] = useState<"google" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const startOAuth = async (provider: "google" | "apple") => {
+  const startOAuth = async (provider: "google") => {
     setError(null);
     setLoadingProvider(provider);
 
@@ -46,7 +38,7 @@ export default function OAuthButtons({ accountType }: { accountType: AccountType
 
   return (
     <div className="space-y-3">
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3">
         <button
           type="button"
           onClick={() => void startOAuth("google")}
@@ -56,16 +48,6 @@ export default function OAuthButtons({ accountType }: { accountType: AccountType
         >
           <GoogleLogo />
           {loadingProvider === "google" ? "Connecting..." : "Continue with Google"}
-        </button>
-        <button
-          type="button"
-          onClick={() => void startOAuth("apple")}
-          disabled={loadingProvider !== null}
-          aria-label="Continue with Apple"
-          className="inline-flex min-h-12 items-center justify-center gap-3 rounded-2xl border border-[#0f2744]/20 bg-[#0f2744] px-4 py-3 text-sm font-semibold text-[#f7ebcf] transition hover:bg-[#17355f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2bd7ef] disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          <AppleLogo />
-          {loadingProvider === "apple" ? "Connecting..." : "Continue with Apple"}
         </button>
       </div>
       {error ? <p className="rounded-2xl border border-[#b83b4b]/40 bg-[#fff0f1] px-4 py-3 text-sm text-[#8b2635]">{error}</p> : null}
