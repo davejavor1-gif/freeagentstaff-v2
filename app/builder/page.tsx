@@ -1009,10 +1009,10 @@ export default function BuilderPage() {
               </div>
               <div className="space-y-3">
                 {(profile.educationEntries ?? []).map((entry, index) => (
-                  <div key={entry.id} className="space-y-3 rounded-[20px] border border-[#cda64d]/35 bg-white/70 p-3">
+                  <div key={entry.id} className="space-y-3 rounded-[20px] border border-[#cda64d]/35 bg-[#f7ebcf] p-3">
                     <div className="flex items-center justify-between gap-2">
                       <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">Education {index + 1}</p>
-                      <button type="button" onClick={() => removeEducationEntry(entry.id)} className="rounded-full border border-rose-900/20 bg-white px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-900">Remove</button>
+                      <button type="button" onClick={() => removeEducationEntry(entry.id)} className="rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf] transition hover:bg-[#17355f]">Remove</button>
                     </div>
                     <div className="grid gap-3 sm:grid-cols-2">
                       <input value={entry.qualification} onChange={(event) => updateEducationEntry(entry.id, "qualification", event.target.value)} className="w-full rounded-2xl border border-[#cda64d]/50 bg-white px-3 py-2.5 text-sm text-[#071426] outline-none transition focus:border-[#0f2744]" placeholder="Qualification or course" />
