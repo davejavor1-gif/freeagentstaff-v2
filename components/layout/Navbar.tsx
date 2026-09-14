@@ -19,7 +19,7 @@ const guestNavItems = [
 
 const talentNavItems = (talentSlug: string | null) => [
   { label: "Dashboard", href: "/dashboard" },
-  { label: "Talent Card", href: "/builder" },
+  { label: "Talent Builder", href: "/builder" },
   ...(talentSlug ? [{ label: "Talent Passport", href: `/talent/${talentSlug}` }] : []),
   { label: "Privacy & Visibility", href: "/settings/privacy" },
   { label: "Pricing", href: "/pricing" },

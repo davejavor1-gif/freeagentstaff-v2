@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Session } from "@supabase/supabase-js";
+import TalentCard from "@/components/TalentCard";
 import { freeAgentProfiles } from "@/data/freeagents";
 import { buildCanonicalTalentColumns, buildTalentProfileUpdateColumns } from "@/lib/talent-profile-columns";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
@@ -39,7 +40,7 @@ function DestinationPill({ tone, label }: { tone: "card" | "passport"; label: st
   );
 }
 
-type BuilderSectionId = "basic" | "availability" | "skills" | "experience" | "education" | "media" | "languages" | "details" | "privacy";
+type BuilderSectionId = "basic" | "availability" | "skills" | "experience" | "education" | "media" | "languages" | "details" | "privacy" | "preview";
 
 const builderSections: Array<{ id: BuilderSectionId; label: string; shortLabel: string; eyebrow: "card" | "passport" | "both" }> = [
   { id: "basic", label: "Basic Information", shortLabel: "Basic Info", eyebrow: "both" },
@@ -51,7 +52,10 @@ const builderSections: Array<{ id: BuilderSectionId; label: string; shortLabel: 
   { id: "languages", label: "Languages & Passions", shortLabel: "Languages & Passions", eyebrow: "passport" },
   { id: "details", label: "Professional Details", shortLabel: "Professional Details", eyebrow: "passport" },
   { id: "privacy", label: "Privacy & Visibility", shortLabel: "Privacy", eyebrow: "both" },
+  { id: "preview", label: "Talent Card Preview", shortLabel: "Talent Card Preview", eyebrow: "card" },
 ];
+
+const meaningfulBuilderSections = builderSections.filter((section) => section.id !== "preview");
 
 type ProfilesTable = Database["public"]["Tables"]["profiles"];
 type ProfileInsert = ProfilesTable["Insert"];
@@ -729,33 +733,31 @@ export default function BuilderPage() {
         return Boolean(profile.focusArea.trim() || profile.salaryExpectation || profile.contactEmail?.trim() || profile.resumeOriginalFilename);
       case "privacy":
         return Boolean(profile.visibility && (isPublished || profile.visibility === "confidential"));
+      case "preview":
+        return false;
     }
   };
 
-  const completedSections = builderSections.filter((section) => sectionIsComplete(section.id)).length;
+  const completedMeaningfulSections = meaningfulBuilderSections.filter((section) => sectionIsComplete(section.id)).length;
   const activeSectionIndex = builderSections.findIndex((section) => section.id === activeSection);
   const activeSectionMeta = builderSections[activeSectionIndex] ?? builderSections[0];
-  const journeyStatus = (sectionId: BuilderSectionId) => sectionId === activeSection ? "current" : sectionIsComplete(sectionId) ? "complete" : "incomplete";
+  const journeyStatus = (sectionId: BuilderSectionId) => sectionId === "preview" ? (activeSection === "preview" ? "current" : "review") : sectionId === activeSection ? "current" : sectionIsComplete(sectionId) ? "complete" : "incomplete";
   const journeyTileClass = (sectionId: BuilderSectionId) => {
     const status = journeyStatus(sectionId);
-    if (status === "current") return "border-[#08111F] bg-[#eef3f7] text-[#08111F]";
+    if (status === "current") return "border-[#08111F] bg-[#08111F] text-[#f7ebcf]";
     if (status === "complete") return "border-[#8fca45] bg-[#f1f8df] text-[#08111F]";
-    return "border-[#d8d1c2] bg-[#fffaf0] text-[#08111F]";
+    if (status === "review") return "border-[#08111F]/30 bg-[#eefebf] text-[#08111F]";
+    return "border-[#d8d1c2] bg-[#f7ebcf] text-[#08111F]";
   };
   const journeyIconClass = (sectionId: BuilderSectionId) => {
     const status = journeyStatus(sectionId);
-    if (status === "current") return "border-[#08111F] bg-[#eef3f7] text-[#08111F]";
+    if (status === "current") return "border-[#AFF546] bg-[#AFF546] text-[#08111F]";
     if (status === "complete") return "border-[#8fca45] bg-[#AFF546] text-[#08111F]";
-    return "border-[#c9c3b7] bg-[#e7e2d8] text-[#52627a]";
+    if (status === "review") return "border-[#08111F]/40 bg-[#eef3f7] text-[#08111F]";
+    return "border-[#a9a49a] bg-transparent text-[#737b86]";
   };
   const sectionClass = (sectionId: BuilderSectionId, className: string) => `${activeSection === sectionId ? "" : "hidden"} ${className}`;
   const activeFormClassName = "mt-8 space-y-4";
-  const saveAndContinue = async () => {
-    const saved = await saveProfile();
-    if (!saved) return;
-    const nextSection = builderSections[activeSectionIndex + 1];
-    if (nextSection) setActiveSection(nextSection.id);
-  };
 
   const contextCopy: Record<BuilderSectionId, { card: string; passport: string; tip: string }> = {
     basic: {
@@ -803,6 +805,11 @@ export default function BuilderPage() {
       passport: "Publish state controls whether your Passport is available under its existing access rules.",
       tip: "Review privacy settings before publishing, especially blocked companies.",
     },
+    preview: {
+      card: "This is how employers discover you on FreeAgentStaff.",
+      passport: "Your Card brings together the key information you've added throughout your Talent Builder.",
+      tip: "Review your Card, then return to any section to make a change.",
+    },
   };
 
   return (
@@ -811,7 +818,7 @@ export default function BuilderPage() {
         <aside className="rounded-[24px] border border-[#cda64d]/45 bg-[#f7ebcf] p-4 text-[#08111F] shadow-[0_18px_45px_rgba(6,16,33,0.2)] lg:row-span-3 lg:h-fit lg:self-start lg:sticky lg:top-24">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#AFF546]">Builder Studio</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#AFF546]">Talent Builder</p>
               <h1 className="mt-3 text-xl font-black uppercase leading-[0.95] tracking-[0.08em]">Build your<br />Talent Profile</h1>
             </div>
             <span className="mt-1 h-3 w-3 rounded-full bg-[#AFF546] shadow-[0_0_0_5px_rgba(175,245,70,0.12)]" />
@@ -826,79 +833,42 @@ export default function BuilderPage() {
               const complete = sectionIsComplete(section.id);
               return (
                 <button key={section.id} type="button" onClick={() => setActiveSection(section.id)} className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-xs font-semibold transition ${isActive ? "bg-[#AFF546] text-[#08111F]" : "text-[#08111F] hover:bg-[#fffaf0]"}`}>
-                  <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-[10px] ${complete ? "border-[#527c1b] bg-[#AFF546] text-[#08111F]" : isActive ? "border-[#08111F]/30" : "border-[#0f2744]/25"}`}>{complete ? "✓" : index + 1}</span>
+                  {section.id === "preview" ? (
+                    <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-[10px] ${isPublished ? "border-[#527c1b] bg-[#AFF546] text-[#08111F]" : isActive ? "border-[#08111F]/50 text-[#52627a]" : "border-[#0f2744]/30 text-[#52627a]"}`}>✓</span>
+                  ) : <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-[10px] ${complete ? "border-[#527c1b] bg-[#AFF546] text-[#08111F]" : isActive ? "border-[#08111F]/30" : "border-[#0f2744]/25"}`}>{complete ? "✓" : index + 1}</span>}
                   <span>{section.shortLabel}</span>
                 </button>
               );
             })}
           </nav>
-          <div className="mt-7 border-t border-[#0f2744]/15 pt-5">
-            <div className="flex items-end justify-between gap-2">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#08111F]">Your progress</p>
-              <p className="text-sm font-bold text-[#527c1b]">{completedSections} / {builderSections.length}</p>
-            </div>
-            <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#e7dec4]"><div className="h-full rounded-full bg-[#AFF546] transition-[width]" style={{ width: `${(completedSections / builderSections.length) * 100}%` }} /></div>
-            <p className="mt-2 text-[10px] leading-4 text-[#52627a]">Complete the sections that matter most to your next opportunity.</p>
-          </div>
+          <button type="button" onClick={() => void saveProfile()} disabled={isSaving || !profileLoaded} className="mt-6 inline-flex min-h-[48px] w-full items-center justify-center rounded-full bg-[#AFF546] px-4 py-3 text-xs font-bold uppercase tracking-[0.18em] text-[#08111F] transition hover:bg-[#9fea37] disabled:cursor-not-allowed disabled:opacity-60">
+            {isSaving ? "Saving..." : "Save profile"}
+          </button>
         </aside>
 
         <div className="min-w-0 rounded-[24px] bg-[#fffaf0] shadow-[0_18px_55px_rgba(6,16,33,0.12)] lg:col-start-2 lg:row-span-3">
         <section className={`box-border w-full rounded-t-[24px] rounded-b-none border border-[#cda64d]/45 bg-[#fffaf0] p-4 sm:p-6 lg:p-8 ${activeSection === "languages" || activeSection === "details" || activeSection === "privacy" ? "border-b-0" : ""}`}>
-          <div className="inline-flex items-center rounded-full border border-[#AFF546]/40 bg-[#AFF546] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#08111F]">
-            {activeSectionMeta.eyebrow === "passport" ? "Talent Passport" : "Talent Card"}
-          </div>
-
           <div className="mt-5 rounded-2xl border border-[#651D2A]/20 bg-[#f7ebcf] p-5 sm:p-6">
-            <p className={`text-[11px] font-bold uppercase tracking-[0.24em] ${activeSectionMeta.eyebrow === "passport" ? "text-[#651D2A]" : "text-[#527c1b]"}`}>{activeSectionMeta.eyebrow === "passport" ? "Talent Passport" : "Talent Card + Passport"}</p>
+            <p className={`text-[11px] font-bold uppercase tracking-[0.24em] ${activeSection === "preview" ? "text-[#527c1b]" : activeSectionMeta.eyebrow === "passport" ? "text-[#651D2A]" : "text-[#527c1b]"}`}>{activeSection === "preview" ? "Talent Card Preview" : activeSectionMeta.eyebrow === "passport" ? "Talent Passport" : "Talent Card + Passport"}</p>
             <h2 className="mt-3 font-serif text-4xl font-semibold uppercase leading-[0.95] text-[#08111F] sm:text-5xl">{activeSectionMeta.label}</h2>
             <p className="mt-3 max-w-2xl text-base leading-7 text-[#27405f]">{contextCopy[activeSection].card} {contextCopy[activeSection].passport}</p>
 
-            <div className="mt-5 flex flex-wrap items-center gap-2.5">
-              <button
-                type="button"
-                onClick={() => void saveProfile()}
-                disabled={isSaving || !profileLoaded}
-                className="inline-flex items-center justify-center rounded-full bg-[#aff546] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-[#08111F] transition hover:bg-[#9fea37] disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isSaving ? "Saving..." : "Save profile"}
-              </button>
-              {profile.slug ? (
-                <Link
-                  href={`/talent/${profile.slug}`}
-                  className="inline-flex items-center justify-center rounded-full bg-[#651D2A] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-[#f7ebcf] transition hover:bg-[#7a2536]"
-                >
-                  Go to Passport
-                </Link>
-              ) : (
-                <span className="inline-flex cursor-not-allowed items-center justify-center rounded-full bg-[#651D2A]/40 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-[#f7ebcf]/70">
-                  Go to Passport
-                </span>
-              )}
-              {isPublished ? (
-                <button
-                  type="button"
-                  onClick={() => void publishProfile(false)}
-                  disabled={isSaving || !profileLoaded}
-                  className="inline-flex items-center justify-center rounded-full border border-[#2BD7EF]/60 bg-[#2BD7EF] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-[#08111F] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  Published ✓
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => void publishProfile(true)}
-                  disabled={isSaving || !profileLoaded}
-                  className="inline-flex items-center justify-center rounded-full border border-[#2BD7EF]/60 bg-[#2BD7EF] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-[#08111F] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  Publish profile
-                </button>
-              )}
-            </div>
-            <p className="mt-2.5 text-[11px] leading-5 text-[#08111F]/65">
-              {isPublished
-                ? "Save updates your published profile instantly. Select Published \u2713 to unpublish."
-                : "Save your changes, then publish to make your profile discoverable per your Privacy & Visibility settings."}
-            </p>
+            {activeSection !== "preview" ? (
+              <div className="mt-6 grid gap-4 border-t border-[#d8cfae] pt-5 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+                <div className="rounded-2xl border border-[#8fca45]/55 bg-[#f1f8df] p-4">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#527c1b]">Publish status</p>
+                  <p className="mt-2 text-sm font-semibold text-[#08111F]">Let employers discover you on FreeAgentStaff.</p>
+                  <button type="button" onClick={() => void publishProfile(!isPublished)} disabled={isSaving || !profileLoaded} className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-[#AFF546] px-4 py-2.5 text-xs font-bold uppercase tracking-[0.16em] text-[#08111F] transition hover:bg-[#9fea37] disabled:cursor-not-allowed disabled:opacity-60">
+                    {isPublished ? "Published ✓" : "Publish profile"}
+                  </button>
+                </div>
+                <div className="rounded-2xl border border-[#651D2A]/30 bg-[#f8ecef] p-4">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#651D2A]">View your Passport</p>
+                  <p className="mt-2 text-sm font-semibold text-[#4e2630]">See your full Passport information.</p>
+                  {profile.slug ? <Link href={`/talent/${profile.slug}`} className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-[#651D2A] px-4 py-2.5 text-xs font-bold uppercase tracking-[0.16em] text-[#f7ebcf] transition hover:bg-[#7a2536]">View your Passport →</Link> : <span className="mt-4 inline-flex min-h-11 w-full cursor-not-allowed items-center justify-center rounded-full bg-[#651D2A]/40 px-4 py-2.5 text-xs font-bold uppercase tracking-[0.16em] text-[#f7ebcf]/70">View your Passport →</span>}
+                </div>
+              </div>
+            ) : null}
             {saveStatus ? <p className="mt-1 text-xs font-semibold text-emerald-700">{saveStatus}</p> : null}
             {saveError ? <p className="mt-1 text-xs font-semibold text-rose-700">{saveError}</p> : null}
 
@@ -913,8 +883,24 @@ export default function BuilderPage() {
             </div>
           </div>
 
+          <div className={sectionClass("preview", "mt-8 space-y-6")}>
+            <div className="text-center">
+              <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#527c1b]">Talent Card Preview</p>
+              <h3 className="mt-2 text-3xl font-black tracking-tight text-[#08111F]">Your Talent Card</h3>
+              <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-[#52627a]">See how your Talent Card appears to employers when they discover you on FreeAgentStaff.</p>
+            </div>
+            <div className="flex justify-center rounded-2xl bg-[#f7ebcf] p-4 sm:p-8">
+              <TalentCard
+                profile={hasProAccess ? profile : { ...profile, intro_video_url: null, intro_video_storage_path: null }}
+                href={profile.slug ? `/profile/${profile.slug}` : "#"}
+                hasProAccess={hasProAccess}
+                className="w-full max-w-[430px]"
+              />
+            </div>
+          </div>
+
           <form
-            className={activeSection === "languages" || activeSection === "details" || activeSection === "privacy" ? "hidden" : activeFormClassName}
+            className={activeSection === "languages" || activeSection === "details" || activeSection === "privacy" || activeSection === "preview" ? "hidden" : activeFormClassName}
             onSubmit={(event) => {
               event.preventDefault();
               saveProfile();
@@ -1217,17 +1203,6 @@ export default function BuilderPage() {
               </div>
             </div>
 
-            <div className={`mt-6 flex flex-col gap-3 border-t border-[#0f2744]/10 pt-5 sm:flex-row sm:items-center sm:justify-between ${activeSection === "languages" || activeSection === "details" || activeSection === "privacy" ? "hidden" : ""}`}>
-              <button type="button" onClick={() => { const previousSection = builderSections[activeSectionIndex - 1]; if (previousSection) setActiveSection(previousSection.id); }} disabled={activeSectionIndex === 0} className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#0f2744]/20 px-5 py-2.5 text-xs font-bold uppercase tracking-[0.18em] text-[#0f2744] transition hover:bg-[#f7ebcf] disabled:cursor-not-allowed disabled:opacity-40">Back</button>
-              <button type="button" onClick={() => void saveAndContinue()} disabled={isSaving || !profileLoaded} className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#08111F] px-5 py-2.5 text-xs font-bold uppercase tracking-[0.18em] text-[#AFF546] transition hover:bg-[#17355f] disabled:cursor-not-allowed disabled:opacity-50">{activeSectionIndex === builderSections.length - 1 ? "Save profile" : "Save & continue →"}</button>
-            </div>
-            {activeSection !== "languages" && activeSection !== "details" && activeSection !== "privacy" ? (
-              <div className="mt-4 border-t border-[#0f2744]/10 pt-4">
-                <button type="button" onClick={() => void saveProfile()} disabled={isSaving || !profileLoaded} className="inline-flex min-h-[48px] w-full items-center justify-center rounded-full bg-[#AFF546] px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#08111F] transition hover:bg-[#9fea37] disabled:cursor-not-allowed disabled:opacity-60">
-                  {isSaving ? "Saving..." : "Save profile"}
-                </button>
-              </div>
-            ) : null}
           </form>
 
           <div className={`${activeSection === "languages" || activeSection === "details" || activeSection === "privacy" ? "" : "hidden"} ${activeFormClassName}`}>
@@ -1414,25 +1389,10 @@ export default function BuilderPage() {
 
               <div className={sectionClass("privacy", "rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#2bd7ef] bg-[#fffaf0] p-4 text-sm leading-6 text-[#27405f] shadow-[0_10px_24px_rgba(7,20,38,0.08)]")}>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Privacy & visibility</p>
-                <p className="mt-2">Marketplace visibility and blocked companies are managed from Privacy & Visibility. Publish state is managed here in Builder Studio.</p>
+                <p className="mt-2">Marketplace visibility and blocked companies are managed from Privacy & Visibility. Publish state is managed here in Talent Builder.</p>
                 <Link href="/settings/privacy" className="mt-3 inline-flex min-h-[44px] items-center justify-center rounded-full border border-[#0f2744]/20 bg-[#0f2744] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f7ebcf] transition hover:bg-[#17355f]">Open privacy settings</Link>
               </div>
 
-              <div className="mt-6 flex flex-col gap-3 border-t border-[#0f2744]/10 pt-5 sm:flex-row sm:items-center sm:justify-between">
-                <button type="button" onClick={() => { const previousSection = builderSections[activeSectionIndex - 1]; if (previousSection) setActiveSection(previousSection.id); }} disabled={activeSectionIndex === 0} className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#0f2744]/20 px-5 py-2.5 text-xs font-bold uppercase tracking-[0.18em] text-[#0f2744] transition hover:bg-[#f7ebcf] disabled:cursor-not-allowed disabled:opacity-40">Back</button>
-                <button type="button" onClick={() => void saveAndContinue()} disabled={isSaving || !profileLoaded} className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#08111F] px-5 py-2.5 text-xs font-bold uppercase tracking-[0.18em] text-[#AFF546] transition hover:bg-[#17355f] disabled:cursor-not-allowed disabled:opacity-50">{activeSectionIndex === builderSections.length - 1 ? "Save profile" : "Save & continue →"}</button>
-              </div>
-
-              <div className="pt-2">
-                <button
-                  type="button"
-                  onClick={() => void saveProfile()}
-                  disabled={isSaving || !profileLoaded}
-                  className="inline-flex min-h-[48px] w-full items-center justify-center rounded-full bg-[#AFF546] px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#08111F] transition hover:bg-[#9fea37] disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {isSaving ? "Saving..." : "Save profile"}
-                </button>
-              </div>
           </div>
         </section>
 
@@ -1444,29 +1404,40 @@ export default function BuilderPage() {
                 <p className="mt-1 text-sm leading-6 text-[#52627a]">Complete the sections that matter most to your next opportunity.</p>
               </div>
               <div className="min-w-[150px] sm:text-right">
-                <p className="text-2xl font-black text-[#08111F]">{completedSections} / {builderSections.length}</p>
-                <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#e7e2d8]"><div className="h-full rounded-full bg-[#AFF546]" style={{ width: `${(completedSections / builderSections.length) * 100}%` }} /></div>
+                <p className="text-2xl font-black text-[#08111F]">{completedMeaningfulSections} / {meaningfulBuilderSections.length}</p>
+                <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#e7e2d8]"><div className="h-full rounded-full bg-[#AFF546]" style={{ width: `${(completedMeaningfulSections / meaningfulBuilderSections.length) * 100}%` }} /></div>
                 <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#52627a]">Sections complete</p>
               </div>
             </div>
             <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {builderSections.map((section, index) => {
+              {meaningfulBuilderSections.map((section, index) => {
                 const status = journeyStatus(section.id);
                 return <button key={section.id} type="button" onClick={() => setActiveSection(section.id)} className={`flex min-h-[72px] items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition ${journeyTileClass(section.id)}`}>
-                  <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-xs font-black ${journeyIconClass(section.id)}`}>{status === "complete" ? "✓" : index + 1}</span>
-                  <span><span className="block text-[10px] font-black uppercase tracking-[0.1em]">{section.shortLabel}</span><span className="mt-1 block text-[9px] font-bold uppercase tracking-[0.12em] opacity-60">{status === "complete" ? "Complete" : status === "current" ? "Current" : "Incomplete"}</span></span>
+                  <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-xs font-black ${journeyIconClass(section.id)}`}>{status === "complete" ? "✓" : status === "review" ? "R" : index + 1}</span>
+                  <span><span className="block text-[10px] font-black uppercase tracking-[0.1em]">{section.shortLabel}</span><span className={`mt-1 block text-[9px] font-bold uppercase tracking-[0.12em] ${status === "current" ? "text-[#AFF546]" : "opacity-60"}`}>{status === "complete" ? "Complete" : status === "current" ? "Current" : status === "review" ? "Review" : "Incomplete"}</span></span>
                 </button>;
               })}
             </div>
             <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 border-t border-[#0f2744]/10 pt-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#52627a]">
               <span><span className="mr-1.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-[#AFF546] text-[#08111F]">✓</span> Completed section</span>
-              <span><span className="mr-1.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-[#e7e2d8] text-[#52627a]">•</span> Incomplete section</span>
-              <span><span className="mr-1.5 inline-flex h-4 w-4 items-center justify-center rounded-full border border-[#08111F] text-[#08111F]">•</span> Current section</span>
+              <span><span className="mr-1.5 inline-flex h-4 w-4 items-center justify-center rounded-full border border-[#a9a49a] text-[#737b86]">•</span> Incomplete section</span>
+              <span><span className="mr-1.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-[#08111F] text-[#AFF546]">•</span> Current section</span>
             </div>
           </section>
         </div>
 
         <section className="w-full rounded-[24px] border border-[#cda64d]/45 bg-[#fffaf0] p-5 shadow-[0_18px_45px_rgba(6,16,33,0.1)] lg:col-start-3 lg:row-start-1 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:sticky lg:top-24">
+          <div className={activeSection === "preview" ? "" : "hidden"}>
+            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#9a6d15]">Your Talent Card</p>
+            <h2 className="mt-3 text-2xl font-black uppercase tracking-[0.08em] text-[#08111F]">Card Content</h2>
+            <p className="mt-3 text-sm leading-6 text-[#27405f]">This is how employers discover you on FreeAgentStaff. Your Card brings together the key information you&apos;ve added throughout your Talent Builder.</p>
+            <ul className="mt-4 space-y-2 text-sm leading-6 text-[#52627a]"><li>Basic information</li><li>Availability</li><li>Top Strength and skills</li><li>Education</li><li>Recent career journey</li></ul>
+            <h2 className="mt-6 text-2xl font-black uppercase tracking-[0.08em] text-[#08111F]">Want to make a change?</h2>
+            <p className="mt-3 text-sm leading-6 text-[#27405f]">Return to any section in your Talent Builder to update your information.</p>
+            <button type="button" onClick={() => setActiveSection("basic")} className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-[#AFF546] px-4 py-2.5 text-xs font-bold uppercase tracking-[0.18em] text-[#08111F]">Edit Talent Builder</button>
+            {profile.slug ? <Link href={`/talent/${profile.slug}`} className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-[#651D2A] px-4 py-2.5 text-xs font-bold uppercase tracking-[0.18em] text-[#f7ebcf]">Go to Passport</Link> : null}
+          </div>
+          <div className={activeSection === "preview" ? "hidden" : ""}>
           <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#9a6d15]">Where this information appears</p>
           <div className="mt-4 rounded-2xl border border-[#AFF546]/60 bg-[#f3fbdc] p-4">
             <div className="flex items-center gap-2"><span className="h-3 w-3 rounded-full bg-[#AFF546]" /><h2 className="text-sm font-black uppercase tracking-[0.12em] text-[#08111F]">Talent Card</h2></div>
@@ -1478,14 +1449,6 @@ export default function BuilderPage() {
             <p className="mt-2 text-sm leading-6 text-[#4e2630]">Your complete professional story.</p>
             <p className="mt-3 text-xs leading-5 text-[#651D2A]">Everything relevant from your Card, plus your full career journey, bio, passions, languages, salary expectations, video and protected contact or resume details.</p>
           </div>
-          <div className="mt-5 border-t border-[#0f2744]/10 pt-4">
-            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#9a6d15]">Quick tip</p>
-            <p className="mt-2 text-sm italic leading-6 text-[#27405f]">{contextCopy[activeSection].tip}</p>
-          </div>
-          <div className="mt-5 rounded-2xl bg-[#08111F] p-4 text-[#f7ebcf]">
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#AFF546]">Current section</p>
-            <p className="mt-2 text-lg font-bold">{activeSectionMeta.label}</p>
-            <p className="mt-1 text-xs leading-5 text-[#c7d4df]">{completedSections} of {builderSections.length} sections complete.</p>
           </div>
         </section>
       </div>
