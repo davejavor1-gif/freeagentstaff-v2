@@ -1,18 +1,43 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Building2, LockKeyhole, ShieldCheck, Ban } from "lucide-react";
+import Image from "next/image";
 import type { Session } from "@supabase/supabase-js";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { getSessionWithRetry } from "@/lib/supabase-client";
 import type { AccountType, AvailabilityStatus, ProfileVisibility } from "@/types/freeagent";
-import { availabilityOptions, availabilityStatusClasses } from "@/lib/talent-profile-options";
+import { availabilityOptions, availabilityStatusColors } from "@/lib/talent-profile-options";
 import type { TalentPrivacySettings } from "@/types/talent-privacy";
 
 type VisibilityOption = { value: Exclude<ProfileVisibility, "employer_network">; title: string; description: string };
 type OpportunityOption = { value: AvailabilityStatus; title: string; description: string };
+
+const visibilityIcons = {
+  verified_employer_network: Building2,
+  confidential: LockKeyhole,
+};
+
+function EarthIcon({ active }: { active: boolean }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={`h-7 w-7 shrink-0 ${active ? "bg-[#AFF546]" : "bg-[#651D2A]"}`}
+      style={{
+        maskImage: "url('/images/earth.png')",
+        WebkitMaskImage: "url('/images/earth.png')",
+        maskPosition: "center",
+        WebkitMaskPosition: "center",
+        maskRepeat: "no-repeat",
+        WebkitMaskRepeat: "no-repeat",
+        maskSize: "contain",
+        WebkitMaskSize: "contain",
+      }}
+    />
+  );
+}
 
 const visibilityOptions: VisibilityOption[] = [
   {
@@ -56,7 +81,7 @@ export default function PrivacySettingsPage() {
   const [settings, setSettings] = useState<TalentPrivacySettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [, setSaveMessage] = useState<string | null>(null);
   const [blockInput, setBlockInput] = useState("");
   const router = useRouter();
 
@@ -259,34 +284,26 @@ export default function PrivacySettingsPage() {
   return (
     <main className="privacy-page flex min-h-screen flex-col bg-[#08111F] text-[#08111F]">
       <Navbar />
-      <div className="flex-1 mx-auto w-full max-w-5xl px-6 py-12 sm:px-8 lg:px-12">
-        <div className="privacy-panel rounded-[36px] border border-[#08111F]/15 bg-[#f7e8c6] p-8 text-[#08111F] shadow-[0_18px_55px_rgba(6,16,33,0.18)] sm:p-10">
-          <p className="text-sm font-semibold uppercase tracking-[0.32em] text-[#08111F]/60">
-            Settings / Privacy
-          </p>
-          <h1 className="mt-4 text-4xl font-black uppercase tracking-[0.12em] text-[#08111F] sm:text-5xl">
-            Privacy & Visibility
-          </h1>
-          {accountType === "talent" ? (
-            <div className="mt-6">
-              <Link
-                href="/builder"
-                className="inline-flex rounded-full bg-[#aff546] px-5 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#071426] transition hover:bg-[#9fea37] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#aff546] focus-visible:ring-offset-2"
-              >
-                Back to create your card
-              </Link>
+      <div className="flex-1 mx-auto w-full max-w-6xl px-4 py-8 sm:px-8 lg:px-12 lg:py-12">
+        <div className="privacy-panel rounded-[32px] border border-[#cda64d]/45 bg-[#f7e8c6] p-5 text-[#08111F] shadow-[0_18px_55px_rgba(6,16,33,0.18)] sm:p-8 lg:p-10">
+          <section className="relative overflow-hidden rounded-[28px] border border-[#cda64d]/35 bg-[#fffaf0] p-6 sm:p-8 lg:p-10">
+            <div className="relative z-10 max-w-2xl">
+              <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-[#9a6d15]">Settings</p>
+              <h1 className="mt-4 font-serif text-4xl font-semibold uppercase leading-[0.95] tracking-tight text-[#08111F] sm:text-6xl">Privacy &amp; Visibility</h1>
+              <p className="mt-5 max-w-lg text-base leading-8 text-[#27405f]">Choose who can see your profile, how it appears in the employer marketplace, and which parts of your information are visible. You can update these settings anytime.</p>
             </div>
-          ) : null}
+            <Image src="/images/control.png" alt="" width={640} height={440} className="pointer-events-none absolute right-2 top-0 hidden h-auto w-[32rem] max-w-[45%] object-contain lg:block" priority />
+          </section>
 
           {accountType === "employer" ? (
             <p className="mt-6 max-w-3xl text-base leading-8 text-[#08111F]/70">
               These settings apply to Talent Passports. Employer profile controls stay in Dashboard.
             </p>
           ) : (
-            <p className="mt-6 max-w-3xl text-base leading-8 text-[#08111F]/70">
-              Choose who can see your profile when it is published, how it appears in the employer marketplace, and which employer identities are blocked. Publishing is managed in Builder Studio.
-            </p>
+            <p className="sr-only">Choose who can see your profile when it is published, how it appears in the employer marketplace, and which employer identities are blocked. Publishing is managed in Talent Builder.</p>
           )}
+
+          {accountType === "talent" ? <div className="mt-5 flex items-start gap-3 rounded-2xl border border-[#8fca45]/45 bg-[#f1f8df] p-4 text-sm text-[#27405f]"><ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#527c1b]" /><div><p className="font-bold text-[#08111F]">Your information is safe with us.</p><p className="mt-1">We never share your data without your permission.</p></div></div> : null}
 
           {activeVisibility === "confidential" && accountType === "talent" ? (
             <div className="privacy-light-row mt-8 rounded-[24px] border border-[#08111F]/15 bg-[#08111F]/[0.03] p-6 text-sm leading-7 text-[#08111F]/70">
@@ -297,7 +314,7 @@ export default function PrivacySettingsPage() {
             </div>
           ) : null}
 
-          <div className="mt-10 space-y-4">
+          <div className="mt-8 space-y-8">
             {accountType === "employer" ? (
               <div className="privacy-light-row rounded-[24px] border border-[#08111F]/15 bg-[#08111F]/[0.03] p-6 text-sm leading-7 text-[#08111F]/70">
                 Employer account detected. Use Dashboard to manage verification details.
@@ -311,8 +328,14 @@ export default function PrivacySettingsPage() {
             ) : null}
 
             {accountType === "talent"
-              ? visibilityOptions.map((option) => {
+              ? <section className="rounded-[26px] border border-[#cda64d]/35 bg-[#fffaf0] p-5 sm:p-7">
+                  <div className="flex items-start gap-3">
+                    <div><p className="text-[11px] font-bold uppercase tracking-[0.26em] text-[#9a6d15]">Profile Visibility</p><p className="mt-2 text-sm leading-6 text-[#52627a]">Choose who can see your profile in the employer marketplace.</p></div>
+                  </div>
+                  <div className="mt-6 grid gap-3 lg:grid-cols-3">
+                  {visibilityOptions.map((option) => {
                   const active = activeVisibility === option.value;
+                  const Icon = option.value === "public" ? null : visibilityIcons[option.value];
 
                   return (
                     <button
@@ -322,33 +345,35 @@ export default function PrivacySettingsPage() {
                         savePrivacySettings({ visibility: option.value }, "Visibility setting saved.")
                       }
                       disabled={isSaving || !settings}
-                      className={`w-full rounded-[24px] border p-5 text-left transition ${
+                      aria-pressed={active}
+                      className={`w-full rounded-2xl border p-5 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#AFF546] focus-visible:ring-offset-2 ${
                         active
-                          ? "border-[#AFF546]/70 bg-[#0f2744]"
-                          : "border-[#cda64d]/25 bg-[#0f2744] hover:bg-[#17355f]"
+                          ? "border-[#AFF546] bg-[#0f2744] text-[#f7ebcf]"
+                          : "border-[#d8d1c2] bg-[#fffaf0] hover:border-[#9a6d15]"
                       }`}
                     >
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div>
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f7ebcf]">{option.title}</p>
-                          <p className="mt-2 text-sm leading-7 text-[#f7ebcf]/80">{option.description}</p>
-                        </div>
-                        <span className={`rounded-full border px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] ${active ? "border-[#AFF546]/70 bg-[#AFF546] text-[#08111F]" : "border-[#f7ebcf]/40 bg-[#f7ebcf] text-[#08111F]"}`}>
-                          {active ? "Selected" : "Choose"}
-                        </span>
+                      <div className="flex items-start justify-between gap-3">
+                        {option.value === "public" ? <EarthIcon active={active} /> : Icon ? <Icon className={`h-6 w-6 ${active ? "text-[#AFF546]" : "text-[#651D2A]"}`} /> : null}
+                        <span className={`rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ${active ? "border-[#AFF546] bg-[#AFF546] text-[#08111F]" : "border-[#d8d1c2] text-[#737b86]"}`}>{active ? "Selected" : "Choose"}</span>
                       </div>
+                      <div className="mt-5">
+                          <p className={`text-[11px] font-bold uppercase tracking-[0.2em] ${active ? "text-[#f7ebcf]" : "text-[#08111F]"}`}>{option.title}</p>
+                          <p className={`mt-2 text-sm leading-6 ${active ? "text-[#f7ebcf]/80" : "text-[#52627a]"}`}>{option.description}</p>
+                        </div>
                     </button>
                   );
-                })
+                })}
+                  </div>
+                </section>
               : null}
           </div>
 
           {accountType === "talent" && !isLoading ? (
-            <div className="mt-10 space-y-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#08111F]">Opportunity status</p>
-              {opportunityOptions.map((option) => {
+            <section className="rounded-[26px] border border-[#cda64d]/35 bg-[#fffaf0] p-5 sm:p-7">
+              <div><p className="text-[11px] font-bold uppercase tracking-[0.26em] text-[#9a6d15]">Opportunity Status</p><p className="mt-2 text-sm leading-6 text-[#52627a]">Let employers know what opportunities you&apos;re open to.</p></div>
+              <div className="mt-6 grid gap-3 lg:grid-cols-3">{opportunityOptions.map((option) => {
                 const active = (settings?.opportunityStatus ?? "Available Now") === option.value;
-                const statusClasses = availabilityStatusClasses[option.value];
+                const selectedColor = availabilityStatusColors[option.value];
 
                 return (
                   <button
@@ -361,31 +386,27 @@ export default function PrivacySettingsPage() {
                       )
                     }
                     disabled={isSaving || !settings}
-                    className={`w-full rounded-[24px] border p-5 text-left transition ${
+                    aria-pressed={active}
+                    style={active ? { borderColor: selectedColor } : undefined}
+                    className={`w-full rounded-2xl border p-5 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#AFF546] focus-visible:ring-offset-2 ${
                         active
-                          ? `${statusClasses.border} bg-[#0f2744]`
-                        : "border-[#cda64d]/25 bg-[#0f2744] hover:bg-[#17355f]"
+                          ? "bg-[#0f2744] text-[#f7ebcf]"
+                        : "border-[#d8d1c2] bg-[#fffaf0] hover:border-[#9a6d15]"
                     }`}
                   >
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <div>
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f7ebcf]">{option.title}</p>
-                          <p className="mt-2 text-sm leading-7 text-[#f7ebcf]/80">{option.description}</p>
+                    <div className="flex items-start justify-between gap-3"><div><p className={`text-[11px] font-bold uppercase tracking-[0.2em] ${active ? "text-[#f7ebcf]" : "text-[#08111F]"}`}>{option.title}</p><p className={`mt-2 text-sm leading-6 ${active ? "text-[#f7ebcf]/80" : "text-[#52627a]"}`}>{option.description}</p></div>
+                      <span style={active ? { borderColor: selectedColor, backgroundColor: selectedColor } : undefined} className={`rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ${active ? "text-[#08111F]" : "border-[#d8d1c2] text-[#737b86]"}`}>{active ? "Selected" : "Choose"}</span>
                       </div>
-                        <span className={`rounded-full border px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] ${active ? `${statusClasses.border} ${statusClasses.pill}` : "border-[#f7ebcf]/40 bg-[#f7ebcf] text-[#08111F]"}`}>
-                        {active ? "Selected" : "Choose"}
-                      </span>
-                    </div>
                   </button>
                 );
-              })}
-            </div>
+              })}</div>
+            </section>
           ) : null}
 
           {accountType === "talent" && !isLoading ? (
-            <div className="privacy-light-row mt-10 rounded-[24px] border border-[#cda64d]/25 bg-[#0f2744] p-6 text-sm leading-7 text-[#f7ebcf]/80">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f7ebcf]">Blocked companies</p>
-              <p className="mt-2">
+            <section className="rounded-[26px] border border-[#cda64d]/35 bg-[#fffaf0] p-5 text-[#08111F] sm:p-7">
+              <div className="flex items-start gap-3"><Ban className="mt-0.5 h-5 w-5 text-[#651D2A]" /><div><p className="text-[11px] font-bold uppercase tracking-[0.26em] text-[#9a6d15]">Blocked Companies</p><p className="mt-2 text-sm leading-6 text-[#52627a]">Block specific companies from viewing your profile.</p></div></div>
+              <p className="mt-5 text-sm leading-7 text-[#52627a]">
                 Block by company name, domain, ABN, or ACN. FreeAgent stores a canonical privacy key behind the scenes and hides blocked employers from discovery and contact access where current rules apply.
               </p>
               <div className="mt-4 flex flex-col gap-3 sm:flex-row">
@@ -407,7 +428,9 @@ export default function PrivacySettingsPage() {
                 </button>
               </div>
 
-              <div className="mt-4 space-y-3">
+              <div className="mt-5 rounded-2xl border border-[#d8d1c2] bg-[#f7e8c6]/55 p-4">
+                <p className="text-sm font-semibold text-[#08111F]">Blocked companies ({settings?.blockedCompanies.length ?? 0})</p>
+                <div className="mt-3 space-y-3">
                 {settings?.blockedCompanies.length ? settings.blockedCompanies.map((key) => (
                   <div key={key} className="flex flex-col gap-3 rounded-2xl border border-[#08111F]/15 bg-[#fffaf0] p-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
@@ -430,21 +453,11 @@ export default function PrivacySettingsPage() {
                     No blocked companies yet.
                   </div>
                 )}
+                </div>
               </div>
-            </div>
+            </section>
           ) : null}
 
-          {accountType === "talent" ? (
-            <div className="mt-8 text-xs text-[#08111F]/60">
-              Prefer a full profile edit? <Link href="/builder" className="font-semibold text-[#08111F] underline underline-offset-4">Return to your Talent Passport builder</Link>.
-            </div>
-          ) : null}
-
-          {saveMessage ? (
-            <div className="mt-6 rounded-[20px] border border-[#08111F]/15 bg-[#fffaf0] px-4 py-3 text-sm text-[#08111F]/70">
-              {saveMessage}
-            </div>
-          ) : null}
         </div>
       </div>
       <Footer />
