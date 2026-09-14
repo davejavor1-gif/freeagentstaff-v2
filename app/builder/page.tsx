@@ -1102,13 +1102,13 @@ export default function BuilderPage() {
               <div className="space-y-3">
                 {profile.careerJourney.map((position, index) => {
                   return (
-                    <div key={position.id} className="rounded-[24px] border border-[#f7ebcf]/15 bg-[#10233A] p-4 shadow-sm">
+                    <div key={position.id} className="rounded-[24px] border border-[#cda64d]/45 bg-[#f7ebcf] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
                             Position {index + 1}
                           </p>
-                          <p className="mt-1 text-sm font-semibold text-[#f7ebcf]">
+                          <p className="mt-1 text-sm font-semibold text-[#08111F]">
                             {position.role || "New position"}
                           </p>
                         </div>
@@ -1116,83 +1116,83 @@ export default function BuilderPage() {
                           <button
                             type="button"
                             onClick={() => moveCareerPosition(position.id, -1)}
-                            className="rounded-full border border-[#f7ebcf]/30 bg-[#f7ebcf] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#0f2744]"
+                            className="rounded-full border border-[#0f2744]/20 bg-[#10233A] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf]"
                           >
                             ↑
                           </button>
                           <button
                             type="button"
                             onClick={() => moveCareerPosition(position.id, 1)}
-                            className="rounded-full border border-[#f7ebcf]/30 bg-[#f7ebcf] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#0f2744]"
+                            className="rounded-full border border-[#0f2744]/20 bg-[#10233A] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf]"
                           >
                             ↓
                           </button>
                           <button
                             type="button"
                             onClick={() => removeCareerPosition(position.id)}
-                            className="rounded-full border border-[#f7ebcf]/30 bg-[#f7ebcf] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#0f2744]"
+                            className="rounded-full border border-[#0f2744]/20 bg-[#10233A] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf]"
                           >
                             Remove
                           </button>
                         </div>
                       </div>
 
-                      <div className="mt-4 grid gap-3 md:grid-cols-2">
+                      <div className="mt-4 grid gap-3 rounded-[20px] border border-[#cda64d]/30 bg-[#fffaf0] p-3 md:grid-cols-2">
                         <div className="space-y-2">
-                          <label className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">
+                          <label className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
                             Role
                           </label>
                           <input
                             value={position.role}
                             onChange={(event) => updateCareerPosition(position.id, "role", event.target.value)}
-                            className="w-full rounded-2xl border border-[#cda64d]/50 bg-white px-3 py-2.5 text-sm text-[#08111F] outline-none transition focus:border-[#0f2744]"
+                            className="w-full rounded-2xl border border-[#cda64d]/50 bg-[#fffaf0] px-3 py-2.5 text-sm text-[#08111F] outline-none transition focus:border-[#0f2744]"
                             placeholder="e.g. Lead Product Designer"
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">
+                          <label className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
                             Company
                           </label>
                           <input
                             value={position.company}
                             onChange={(event) => updateCareerPosition(position.id, "company", event.target.value)}
-                            className="w-full rounded-2xl border border-[#cda64d]/50 bg-white px-3 py-2.5 text-sm text-[#08111F] outline-none transition focus:border-[#0f2744]"
+                            className="w-full rounded-2xl border border-[#cda64d]/50 bg-[#fffaf0] px-3 py-2.5 text-sm text-[#08111F] outline-none transition focus:border-[#0f2744]"
                             placeholder="e.g. Northstar Labs"
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">
+                          <label className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
                             Period
                           </label>
                           <input
                             value={position.period}
                             onChange={(event) => updateCareerPosition(position.id, "period", event.target.value)}
-                            className="w-full rounded-2xl border border-[#cda64d]/50 bg-white px-3 py-2.5 text-sm text-[#08111F] outline-none transition focus:border-[#0f2744]"
+                            className="w-full rounded-2xl border border-[#cda64d]/50 bg-[#fffaf0] px-3 py-2.5 text-sm text-[#08111F] outline-none transition focus:border-[#0f2744]"
                             placeholder="e.g. 2022 — Present"
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">
+                          <label className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
                             Location
                           </label>
                           <input
                             value={position.location}
                             onChange={(event) => updateCareerPosition(position.id, "location", event.target.value)}
-                            className="w-full rounded-2xl border border-[#cda64d]/50 bg-white px-3 py-2.5 text-sm text-[#08111F] outline-none transition focus:border-[#0f2744]"
+                            className="w-full rounded-2xl border border-[#cda64d]/50 bg-[#fffaf0] px-3 py-2.5 text-sm text-[#08111F] outline-none transition focus:border-[#0f2744]"
                             placeholder="e.g. London, UK"
                           />
                         </div>
                       </div>
 
                       <div className="mt-4 space-y-2">
-                        <label className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">
+                        <label className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
                           Description
                         </label>
                         <textarea
                           value={position.description}
                           onChange={(event) => updateCareerPosition(position.id, "description", event.target.value)}
                           rows={4}
-                          className="min-h-[110px] w-full rounded-[20px] border border-[#cda64d]/50 bg-white px-3 py-2.5 text-sm text-[#08111F] outline-none transition focus:border-[#0f2744]"
+                          className="min-h-[110px] w-full rounded-[20px] border border-[#cda64d]/50 bg-[#fffaf0] px-3 py-2.5 text-sm text-[#08111F] outline-none transition focus:border-[#0f2744]"
                           placeholder="Describe the role, scope and impact in a professional way."
                         />
                       </div>
