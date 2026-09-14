@@ -103,7 +103,7 @@ export async function getTalentPrivacySettings(
     .maybeSingle<PrivacyRow>();
 
   if (error) {
-    return { ok: false, reason: "error", message: error.message };
+    return { ok: false, reason: "error", message: "Unable to load privacy settings right now." };
   }
 
   if (!data) {
@@ -147,7 +147,7 @@ export async function updateTalentPrivacySettings(
     return {
       ok: false,
       reason: mapReasonFromError(error.message),
-      message: error.message,
+      message: "Unable to update privacy settings right now.",
     };
   }
 

@@ -27,7 +27,6 @@ import type {
 
 const createBlankTalentProfile = (userId: string, email?: string | null): FreeAgentProfile => ({
   id: `freeagent-${userId.slice(0, 8)}`,
-  slug: `freeagent-${userId.slice(0, 8)}`,
   visibility: "public",
   name: "",
   title: "",
@@ -334,14 +333,14 @@ export default function DashboardPage() {
               }),
         };
 
-        const { error: insertError } = await supabase.from("profiles").insert([insertPayload] as never);
+        const { error: insertError } = await supabase.from("profiles").upsert([insertPayload] as never, { onConflict: "user_id" } as never);
 
         if (!mounted) {
           return;
         }
 
         if (insertError) {
-          setFeedback(insertError.message);
+          setFeedback("We couldn't create your profile right now. Please try again.");
         }
 
         setAccountType(fallbackAccountType);

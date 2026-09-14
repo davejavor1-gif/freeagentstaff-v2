@@ -218,7 +218,7 @@ export default function BuilderPage() {
       }
 
       if (error) {
-        setSaveError(error.message);
+        setSaveError("We couldn't load your profile right now. Please try again.");
         const blankProfile = createBlankProfile(supabaseSession.user.id, supabaseSession.user.email);
         lastSavedAvailabilityRef.current = normalizeAvailability(blankProfile.availability);
         setProfile(blankProfile);
@@ -252,14 +252,14 @@ export default function BuilderPage() {
           account_type: "talent",
           ...buildCanonicalTalentColumns(blankProfile, supabaseSession.user.email),
         };
-        const { error: insertError } = await supabase.from("profiles").insert([insertPayload] as never);
+        const { error: insertError } = await supabase.from("profiles").upsert([insertPayload] as never, { onConflict: "user_id" } as never);
 
         if (!mounted) {
           return;
         }
 
         if (insertError) {
-          setSaveError(insertError.message);
+          setSaveError("We couldn't create your profile right now. Please try again.");
         }
 
         const { data: insertedProfile } = await supabase.from("profiles").select("slug").eq("user_id", supabaseSession.user.id).maybeSingle<{ slug: string | null }>();
@@ -354,7 +354,7 @@ export default function BuilderPage() {
       } as never);
 
       if (error) {
-        setSaveError(error.message);
+        setSaveError("We couldn't save your profile. Please try again.");
         return;
       }
 

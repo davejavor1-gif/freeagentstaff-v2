@@ -394,7 +394,7 @@ export async function loadDiscoveryResults(accessToken: string | null | undefine
     return {
       allowed: false,
       reason: "error",
-      message: error.message,
+      message: "Unable to load Talent Search right now.",
       profiles: [],
     };
   }
@@ -508,7 +508,7 @@ export async function loadTalentPassport(accessToken: string | null | undefined,
     return {
       allowed: false,
       reason: "error",
-      message: error.message,
+      message: "Unable to load this passport right now.",
     };
   }
 

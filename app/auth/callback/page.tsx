@@ -22,7 +22,6 @@ type ProfileRow = {
 function createBlankTalentProfile(userId: string, email: string | null): FreeAgentProfile {
   return {
     id: `freeagent-${userId.slice(0, 8)}`,
-    slug: `freeagent-${userId.slice(0, 8)}`,
     visibility: "public",
     name: "",
     title: "",
@@ -90,7 +89,7 @@ function AuthCallbackContent() {
 
       if (!mounted) return;
       if (error) {
-        setStatus(error.message);
+        setStatus("We couldn't load your account right now. Please try again.");
         return;
       }
 
@@ -132,14 +131,14 @@ function AuthCallbackContent() {
       .eq("user_id", session.user.id);
 
     if (consentError) {
-      setStatus(consentError.message);
+      setStatus("We couldn't save your account setup. Please try again.");
       setIsSubmitting(false);
       return;
     }
 
     if (!existingProfile) {
       const talentProfile = accountType === "talent" ? createBlankTalentProfile(session.user.id, session.user.email ?? null) : null;
-      const { error: insertError } = await supabase.from("profiles").insert([
+      const { error: insertError } = await supabase.from("profiles").upsert([
         {
           user_id: session.user.id,
           account_type: accountType,
@@ -152,10 +151,10 @@ function AuthCallbackContent() {
             ? buildCanonicalTalentColumns(talentProfile, session.user.email)
             : { profile: {}, slug: null }),
         } as never,
-      ]);
+      ], { onConflict: "user_id" } as never);
 
       if (insertError) {
-        setStatus(insertError.message);
+        setStatus("We couldn't finish setting up your account. Please try again.");
         setIsSubmitting(false);
         return;
       }

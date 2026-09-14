@@ -15,7 +15,6 @@ import type { AccountType, EmployerVerificationStatus, FreeAgentProfile } from "
 
 const createBlankTalentProfile = (userId: string, email?: string | null): FreeAgentProfile => ({
   id: `freeagent-${userId.slice(0, 8)}`,
-  slug: `freeagent-${userId.slice(0, 8)}`,
   visibility: "public",
   name: "",
   title: "",
@@ -129,7 +128,6 @@ function LoginPageContent() {
         ? (blankTalentProfile as unknown as Record<string, unknown>)
         : {};
       const verificationStatus: EmployerVerificationStatus = "unverified";
-      const slug = accountType === "talent" ? `freeagent-${data.session.user.id.slice(0, 8)}` : null;
       const acceptedAt = new Date().toISOString();
 
       const { error: insertError } = await supabase.from("profiles").upsert(
@@ -152,7 +150,7 @@ function LoginPageContent() {
             ...(accountType === "talent"
               ? buildCanonicalTalentColumns(blankTalentProfile as FreeAgentProfile, data.session.user.email)
               : {
-                  slug,
+                  slug: null,
                   profile: profilePayload,
                 }),
           } as never,
@@ -161,7 +159,7 @@ function LoginPageContent() {
       );
 
       if (insertError) {
-        setStatus(insertError.message);
+        setStatus("We couldn't create your account profile. Please try again.");
         return;
       }
 
