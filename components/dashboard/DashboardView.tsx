@@ -6,6 +6,7 @@ import { Activity, BriefcaseBusiness, Link2, Sparkles, Users, Undo2 } from "luci
 import BillingButton from "@/components/BillingButton";
 import TalentConnectionsSection from "@/components/connections/TalentConnectionsSection";
 import TalentCard from "@/components/TalentCard";
+import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
 import { availabilityStatusClasses, formatAvailabilityLabel, normalizeAvailability } from "@/lib/talent-profile-options";
 import {
   DashboardAction,
@@ -126,6 +127,8 @@ function VerificationPanel(props: Props) {
 
 function TalentView(props: Props) {
   const [deleteAccountConfirmationOpen, setDeleteAccountConfirmationOpen] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
+  const [deleteAccountError, setDeleteAccountError] = useState<string | null>(null);
   const summary = props.talentSummary;
   const requestItems = summary?.requestPreview ?? [];
   const connectionItems = summary?.connectionPreview ?? [];
@@ -135,14 +138,54 @@ function TalentView(props: Props) {
 
   useEffect(() => {
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
+      if (event.key === "Escape" && !deletingAccount) {
         setDeleteAccountConfirmationOpen(false);
+        setDeleteAccountError(null);
       }
     };
 
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
-  }, []);
+  }, [deletingAccount]);
+
+  const closeDeleteAccountConfirmation = () => {
+    if (deletingAccount) return;
+    setDeleteAccountConfirmationOpen(false);
+    setDeleteAccountError(null);
+  };
+
+  const deleteAccount = async () => {
+    if (deletingAccount) return;
+    setDeletingAccount(true);
+    setDeleteAccountError(null);
+
+    try {
+      const session = await getSessionWithRetry();
+
+      if (!session?.access_token) {
+        setDeleteAccountError("Your session has expired. Sign in again to delete your account.");
+        return;
+      }
+
+      const response = await fetch("/api/account/delete", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      const result = (await response.json().catch(() => null)) as { ok?: boolean; message?: string } | null;
+
+      if (!response.ok || !result?.ok) {
+        setDeleteAccountError(result?.message ?? "We could not delete your account. Please try again.");
+        return;
+      }
+
+      await supabase.auth.signOut().catch(() => undefined);
+      window.location.assign("/");
+    } catch {
+      setDeleteAccountError("We could not delete your account. Please try again.");
+    } finally {
+      setDeletingAccount(false);
+    }
+  };
 
   return <>
     <DashboardHeader audience="talent" name={props.name} status={status} statusDotClassName={availabilityStatusClasses[availability].dot}>
@@ -159,9 +202,9 @@ function TalentView(props: Props) {
       ]} />
       <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]"><DashboardPanel title="Your FreeAgent Card" eyebrow="Professional identity" action={<div className="flex flex-wrap gap-3"><DashboardAction href="/builder">EDIT CARD</DashboardAction><DashboardAction href={props.talentPassportHref}>VIEW PASSPORT</DashboardAction></div>}><div className="mt-6 border-t border-[#08111F]/15 pt-5">{props.dashboardTalentProfile ? <TalentCard profile={props.dashboardTalentProfile} href={props.talentPassportHref} className="max-w-[310px]" /> : <p className="text-base text-[#08111F]/60">Build your profile to see your FreeAgent Card.</p>}</div></DashboardPanel><DashboardPanel title="Recent activity" eyebrow="Your network" action={<Link href="/dashboard#connections" className="text-xs font-semibold uppercase tracking-[0.14em] text-[#4b7f08]">View all</Link>}><DashboardActivity items={activity} empty="Your introduction and connection activity will appear here." /></DashboardPanel></div>
       <TalentConnectionsSection />
-      <div className="grid items-stretch gap-4 md:grid-cols-2 xl:grid-cols-4"><DashboardPanel className="flex h-full flex-col" title="Privacy & visibility" eyebrow="Control your profile"><p className="mt-4 text-sm text-[#08111F]/60">Control who can discover you and what employers can see.</p><div className="mt-auto flex justify-end pt-6"><DashboardAction href="/settings/privacy" variant="green">MANAGE PRIVACY</DashboardAction></div></DashboardPanel><DashboardPanel className="flex h-full flex-col" title="Free Agent Pro" eyebrow="Subscription">{props.isProTalent ? <><p className="mt-4 text-sm text-[#08111F]/60">Your Pro subscription is active.</p><div className="mt-auto flex justify-end pt-6"><BillingButton action="portal" className="dashboard-upgrade-pill">MANAGE SUBSCRIPTION <span aria-hidden="true">→</span></BillingButton></div></> : <><p className="mt-4 text-sm text-[#08111F]/60">Unlock additional visibility insights and Pro features.</p><div className="mt-auto flex justify-end pt-6"><BillingButton action="checkout" plan="free_agent_pro" className="dashboard-upgrade-pill">UPGRADE TO PRO <span aria-hidden="true">→</span></BillingButton></div></>}</DashboardPanel><DashboardPanel className="flex h-full flex-col" title="Delete account" eyebrow="Account"><p className="mt-4 text-sm text-[#08111F]/60">Permanently delete your account and your data.</p><div className="mt-auto flex justify-end pt-6"><button type="button" onClick={() => setDeleteAccountConfirmationOpen(true)} className="dashboard-talent-green-action">DELETE ACCOUNT <span aria-hidden="true">→</span></button></div></DashboardPanel><DashboardPanel className="flex h-full flex-col" title="Sign out" eyebrow="Account"><p className="mt-4 text-sm text-[#08111F]/60">Finished for now?</p><div className="mt-auto flex justify-end pt-6"><button type="button" onClick={props.signOut} className="dashboard-talent-green-action">SIGN OUT <span aria-hidden="true">→</span></button></div></DashboardPanel></div>
+      <div className="grid items-stretch gap-4 md:grid-cols-2 xl:grid-cols-4"><DashboardPanel className="flex h-full flex-col" title="Privacy & visibility" eyebrow="Control your profile"><p className="mt-4 text-sm text-[#08111F]/60">Control who can discover you and what employers can see.</p><div className="mt-auto flex justify-end pt-6"><DashboardAction href="/settings/privacy" variant="green">MANAGE PRIVACY</DashboardAction></div></DashboardPanel><DashboardPanel className="flex h-full flex-col" title="Free Agent Pro" eyebrow="Subscription">{props.isProTalent ? <><p className="mt-4 text-sm text-[#08111F]/60">Your Pro subscription is active.</p><div className="mt-auto flex justify-end pt-6"><BillingButton action="portal" className="dashboard-upgrade-pill">MANAGE SUBSCRIPTION <span aria-hidden="true">→</span></BillingButton></div></> : <><p className="mt-4 text-sm text-[#08111F]/60">Unlock additional visibility insights and Pro features.</p><div className="mt-auto flex justify-end pt-6"><BillingButton action="checkout" plan="free_agent_pro" className="dashboard-upgrade-pill">UPGRADE TO PRO <span aria-hidden="true">→</span></BillingButton></div></>}</DashboardPanel><DashboardPanel className="flex h-full flex-col" title="Delete account" eyebrow="Account"><p className="mt-4 text-sm text-[#08111F]/60">Permanently delete your account and your data.</p><div className="mt-auto flex justify-end pt-6"><button type="button" onClick={() => { setDeleteAccountError(null); setDeleteAccountConfirmationOpen(true); }} className="dashboard-talent-green-action">DELETE ACCOUNT <span aria-hidden="true">→</span></button></div></DashboardPanel><DashboardPanel className="flex h-full flex-col" title="Sign out" eyebrow="Account"><p className="mt-4 text-sm text-[#08111F]/60">Finished for now?</p><div className="mt-auto flex justify-end pt-6"><button type="button" onClick={props.signOut} className="dashboard-talent-green-action">SIGN OUT <span aria-hidden="true">→</span></button></div></DashboardPanel></div>
       {props.hasScheduledCancellation ? <p className="text-sm text-[#F7F4EC]/70">Your Pro access remains active until {props.scheduledCancellationDate}.</p> : null}
-      {deleteAccountConfirmationOpen ? <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#08111F]/70 p-5" role="dialog" aria-modal="true" aria-labelledby="delete-account-title" onClick={() => setDeleteAccountConfirmationOpen(false)}><div className="w-full max-w-lg rounded-2xl border border-[#cda64d]/45 bg-[#f7ebcf] p-6 text-[#08111F] shadow-2xl sm:p-8" onClick={(event) => event.stopPropagation()}><h2 id="delete-account-title" className="font-serif text-2xl">ARE YOU SURE?</h2><p className="mt-4 text-sm leading-7 text-[#27405f]">Are you sure you want to delete your account? This action cannot be undone.</p><div className="mt-6 flex flex-wrap justify-end gap-3"><button type="button" onClick={() => setDeleteAccountConfirmationOpen(false)} className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-[#0f2744]/20 bg-white px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-[#071426] transition hover:bg-[#fffaf0]">CANCEL</button><button type="button" disabled title="Account deletion is not yet available." className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-[#d85a4f] px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-[#08111F] opacity-50">DELETE ACCOUNT</button></div></div></div> : null}
+      {deleteAccountConfirmationOpen ? <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#08111F]/70 p-5" role="dialog" aria-modal="true" aria-labelledby="delete-account-title" onClick={closeDeleteAccountConfirmation}><div className="w-full max-w-lg rounded-2xl border border-[#cda64d]/45 bg-[#f7ebcf] p-6 text-[#08111F] shadow-2xl sm:p-8" onClick={(event) => event.stopPropagation()}><h2 id="delete-account-title" className="font-serif text-2xl">ARE YOU SURE?</h2><p className="mt-4 text-sm leading-7 text-[#27405f]">Are you sure you want to delete your account? This action cannot be undone.</p>{deleteAccountError ? <p role="alert" className="mt-4 text-sm font-semibold text-[#8f2018]">{deleteAccountError}</p> : null}<div className="mt-6 flex flex-wrap justify-end gap-3"><button type="button" onClick={closeDeleteAccountConfirmation} disabled={deletingAccount} className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-[#0f2744]/20 bg-white px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-[#071426] transition hover:bg-[#fffaf0] disabled:opacity-50">CANCEL</button><button type="button" onClick={deleteAccount} disabled={deletingAccount} className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-[#d85a4f] px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-[#08111F] disabled:opacity-50">{deletingAccount ? "DELETING..." : "DELETE ACCOUNT"}</button></div></div></div> : null}
     </div>
   </>;
 }

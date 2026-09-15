@@ -444,6 +444,10 @@ export interface Database {
         Args: Record<string, never>;
         Returns: string;
       };
+      delete_own_account: {
+        Args: Record<string, never>;
+        Returns: undefined;
+      };
       admin_dashboard_summary: {
         Args: Record<string, never>;
         Returns: Array<{

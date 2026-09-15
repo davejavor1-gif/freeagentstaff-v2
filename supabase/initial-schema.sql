@@ -4274,3 +4274,36 @@ begin
   if v_talent is null or not exists (select 1 from public.employer_talent_connections c where c.employer_user_id = v_uid and c.talent_user_id = v_talent and c.status = 'active') or not public.employer_can_access_talent(v_uid, p_talent_slug) then raise exception 'contact_unavailable' using errcode = '42501'; end if;
   return query select p_talent_slug, v_email;
 end $$;
+
+-- Self-service account deletion. The target account is resolved from auth.uid() only;
+-- the function takes no arguments so a caller can never target another account.
+create or replace function public.delete_own_account()
+returns void
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_uid uuid := auth.uid();
+begin
+  if v_uid is null then
+    raise exception 'not_authenticated' using errcode = '42501';
+  end if;
+
+  delete from public.talent_pro_analytics_events
+  where talent_user_id = v_uid
+     or viewer_user_id = v_uid;
+
+  delete from public.system_admins
+  where user_id = v_uid;
+
+  delete from public.profiles
+  where user_id = v_uid;
+end;
+$$;
+
+revoke all on function public.delete_own_account() from public;
+revoke all on function public.delete_own_account() from anon;
+revoke all on function public.delete_own_account() from authenticated;
+revoke all on function public.delete_own_account() from service_role;
+grant execute on function public.delete_own_account() to authenticated;

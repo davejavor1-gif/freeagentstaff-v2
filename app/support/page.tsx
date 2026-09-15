@@ -27,7 +27,7 @@ export default function SupportPage() {
             <section>
               <h2 className="text-lg font-bold text-[#f7ebcf]">Support scope</h2>
               <p className="mt-2 text-sm leading-7 text-[#f7ebcf]">
-                Support currently covers general product questions, account access problems, employer verification questions, privacy and correction requests, contact-access issues, and manual account deletion or deactivation requests.
+                Support currently covers general product questions, account access problems, employer verification questions, privacy and correction requests, contact-access issues, and employer account deletion or deactivation requests.
               </p>
             </section>
 
@@ -41,7 +41,7 @@ export default function SupportPage() {
             <section className="border-t border-[#cda64d]/50 pt-5 md:border-l md:border-t-0 md:pl-5 md:pt-0">
               <h2 className="text-lg font-bold text-[#f7ebcf]">Account deletion and deactivation</h2>
               <p className="mt-2 text-sm leading-7 text-[#f7ebcf]">
-                Self-serve account deletion is not part of V1. Users should contact support to request account deactivation or deletion review.
+                Talent can permanently delete their own account from the dashboard. Select Delete account, confirm, and we cancel any active Free Agent Pro subscription, remove your uploaded files, delete your profile and related records, and remove your sign-in. This cannot be undone. Employer accounts are closed by contacting support.
               </p>
             </section>
           </div>

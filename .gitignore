@@ -12,6 +12,10 @@
 
 # testing
 /coverage
+.env.test.local
+supabase/.temp/
+supabase/.branches/
+supabase/migrations/00000000000000_local_profiles_baseline.sql
 
 # next.js
 /.next/
