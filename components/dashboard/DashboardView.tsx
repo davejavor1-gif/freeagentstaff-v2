@@ -6,13 +6,16 @@ import { useEffect, useState } from "react";
 import {
   Activity,
   ArrowUpRight,
+  Bookmark,
   BriefcaseBusiness,
   Check,
   Bell,
+  ClipboardList,
+  Eye,
+  Handshake,
+  History,
+  House,
   IdCard,
-  LayoutDashboard,
-  Link2,
-  Sparkles,
   Users,
   Undo2,
 } from "lucide-react";
@@ -121,7 +124,7 @@ export default function DashboardView(props: Props) {
 
 type EmployerDashboardSection = "overview" | "activity" | "notifications" | "introductions" | "connections" | "account";
 
-function EmployerMenuButton({ section, activeSection, icon: Icon, children, onSelect }: { section: EmployerDashboardSection; activeSection: EmployerDashboardSection; icon: typeof LayoutDashboard; children: React.ReactNode; onSelect: (section: EmployerDashboardSection) => void }) {
+function EmployerMenuButton({ section, activeSection, icon: Icon, children, onSelect }: { section: EmployerDashboardSection; activeSection: EmployerDashboardSection; icon: typeof House; children: React.ReactNode; onSelect: (section: EmployerDashboardSection) => void }) {
   const active = activeSection === section;
 
   return (
@@ -147,10 +150,10 @@ function EmployerView(props: Props) {
     <aside className="rounded-[24px] border border-[#cda64d]/45 bg-[#f7e8c6] p-5 text-[#08111F] shadow-[0_18px_45px_rgba(6,16,33,0.2)] lg:sticky lg:top-24 lg:h-fit">
       <div className="flex items-start justify-between gap-4"><div><p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#08798a]">Employer Dashboard</p><h1 className="mt-3 font-serif text-4xl leading-[0.95] tracking-tight">Hello,<br />{firstName(props.name)}</h1></div><span className="mt-1 h-3 w-3 rounded-full bg-[#2BD7EF] shadow-[0_0_0_6px_rgba(43,215,239,0.14)]" /></div>
       <nav className="mt-7 space-y-1.5" aria-label="Employer dashboard sections">
-        <EmployerMenuButton section="overview" activeSection={activeSection} icon={LayoutDashboard} onSelect={setActiveSection}>Dashboard</EmployerMenuButton>
-        <EmployerMenuButton section="activity" activeSection={activeSection} icon={Activity} onSelect={setActiveSection}>Recent Activity</EmployerMenuButton>
+        <EmployerMenuButton section="overview" activeSection={activeSection} icon={House} onSelect={setActiveSection}>Dashboard</EmployerMenuButton>
+        <EmployerMenuButton section="activity" activeSection={activeSection} icon={History} onSelect={setActiveSection}>Recent Activity</EmployerMenuButton>
         <EmployerMenuButton section="notifications" activeSection={activeSection} icon={Bell} onSelect={setActiveSection}>Notifications</EmployerMenuButton>
-        <EmployerMenuButton section="introductions" activeSection={activeSection} icon={Link2} onSelect={setActiveSection}>Introductions</EmployerMenuButton>
+        <EmployerMenuButton section="introductions" activeSection={activeSection} icon={Handshake} onSelect={setActiveSection}>Introductions</EmployerMenuButton>
         <EmployerMenuButton section="connections" activeSection={activeSection} icon={Users} onSelect={setActiveSection}>Connections</EmployerMenuButton>
         <EmployerMenuButton section="account" activeSection={activeSection} icon={BriefcaseBusiness} onSelect={setActiveSection}>Employer Account</EmployerMenuButton>
       </nav>
@@ -163,14 +166,14 @@ function EmployerView(props: Props) {
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#08798a]">Welcome</p>
               <h2 className="mt-5 font-serif text-5xl leading-[0.95] tracking-tight sm:text-6xl">Hello, {firstName(props.name)}</h2>
-              <p className="mt-5 max-w-2xl text-base leading-8 text-[#08111F]/66">{props.isVerifiedEmployer ? "Your employer account is ready to discover and connect with exceptional talent." : "Complete employer verification to begin discovering eligible talent."}</p>
+              <p className="mt-5 max-w-2xl text-base leading-8 text-[#08111F]/66">{props.isVerifiedEmployer ? "Your employer account is ready for you to connect with exceptional talent." : "Complete employer verification to begin discovering eligible talent."}</p>
               <div className="mt-6 flex flex-wrap gap-3">{canWork ? <><DashboardAction href="/find-talent" variant="accent">FIND TALENT</DashboardAction><BillingButton action="portal" className="dashboard-employer-blue-action">MANAGE SUBSCRIPTION</BillingButton></> : <DashboardAction href="/onboarding/employer" variant="accent">OPEN EMPLOYER ACCOUNT</DashboardAction>}</div>
             </div>
             <div className="flex min-h-[180px] items-center justify-center px-2 sm:min-h-[210px] lg:min-h-[250px] lg:px-4"><Image src="/images/discover.png" alt="Discover people and applications" width={1536} height={1024} className="h-full max-h-[250px] w-full max-w-[360px] object-contain" priority /></div>
           </div>
         </section>
 
-        {canWork ? <section className="rounded-[24px] border border-[#cda64d]/45 bg-[#f7e8c6] p-6 text-[#08111F] shadow-[0_18px_45px_rgba(6,16,33,0.16)] sm:p-7"><p className="text-[10px] font-black uppercase tracking-[0.22em] text-[#08798a]">Employer metrics</p><div className="mt-6 grid divide-y divide-[#08111F]/12 border-t border-[#08111F]/12 pt-2 sm:grid-cols-2 sm:divide-x sm:divide-y-0 xl:grid-cols-4"><EmployerMetric label="Saved talent" value={summary?.savedTalentCount ?? 0} detail="People you bookmarked" icon={Users} /><EmployerMetric label="Introductions" value={summary?.pendingIntroductionRequests ?? 0} detail="Waiting for a response" icon={Link2} /><EmployerMetric label="Connections" value={summary?.activeConnections ?? 0} detail="Talent you can contact" icon={Link2} /><EmployerMetric label="Shortlists" value={summary?.activeShortlists ?? 0} detail="Candidates you are considering" icon={BriefcaseBusiness} /></div></section> : null}
+        {canWork ? <section className="rounded-[24px] border border-[#cda64d]/45 bg-[#f7e8c6] p-6 text-[#08111F] shadow-[0_18px_45px_rgba(6,16,33,0.16)] sm:p-7"><p className="text-[10px] font-black uppercase tracking-[0.22em] text-[#08798a]">Employer metrics</p><div className="mt-6 grid divide-y divide-[#08111F]/12 border-t border-[#08111F]/12 pt-2 sm:grid-cols-2 sm:divide-x sm:divide-y-0 xl:grid-cols-4"><EmployerMetric label="Saved talent" value={summary?.savedTalentCount ?? 0} detail="People you bookmarked" icon={Bookmark} /><EmployerMetric label="Introductions" value={summary?.pendingIntroductionRequests ?? 0} detail="Waiting for a response" icon={Handshake} /><EmployerMetric label="Connections" value={summary?.activeConnections ?? 0} detail="Talent you can contact" icon={Users} /><EmployerMetric label="Shortlists" value={summary?.activeShortlists ?? 0} detail="Candidates you are considering" icon={ClipboardList} /></div></section> : null}
 
         <section className="rounded-[24px] border border-[#cda64d]/45 bg-[#f7e8c6] p-6 text-[#08111F] shadow-[0_18px_45px_rgba(6,16,33,0.16)] sm:p-7"><p className="text-[10px] font-black uppercase tracking-[0.22em] text-[#08798a]">Account & employer actions</p><div className="mt-6 divide-y divide-[#08111F]/12 border-t border-[#08111F]/12">{!props.isVerifiedEmployer ? <div className="flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between"><div><h3 className="font-serif text-2xl">{props.verificationLabel}</h3><p className="mt-1 text-sm leading-6 text-[#08111F]/60">{props.verificationRejectionReason ?? "Submit your organisation details for review."}</p></div><DashboardAction href="/onboarding/employer" variant="accent">OPEN EMPLOYER ACCOUNT</DashboardAction></div> : null}{props.isVerifiedEmployer && !canWork ? <div className="flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between"><div><h3 className="font-serif text-2xl">Employer access is ready</h3><p className="mt-1 text-sm leading-6 text-[#08111F]/60">Activate Employer Access to begin discovering eligible talent.</p></div><BillingButton action="checkout" plan="employer" className="dashboard-employer-blue-action">CHOOSE PLAN</BillingButton></div> : null}<div className="flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between"><div><h3 className="font-serif text-2xl">Find talent</h3><p className="mt-1 text-sm leading-6 text-[#08111F]/60">Search eligible professional profiles.</p></div><DashboardAction href="/find-talent" variant="accent">OPEN TALENT SEARCH</DashboardAction></div><div className="flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between"><div><h3 className="font-serif text-2xl">Saved talent</h3><p className="mt-1 text-sm leading-6 text-[#08111F]/60">Review candidates you have saved.</p></div><DashboardAction href="/saved-talent" variant="accent">OPEN SAVED TALENT</DashboardAction></div><div className="flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between"><div><h3 className="font-serif text-2xl">Sign out</h3><p className="mt-1 text-sm leading-6 text-[#08111F]/60">Finished for now?</p></div><button type="button" onClick={props.signOut} className="dashboard-employer-blue-action">SIGN OUT <span aria-hidden="true">→</span></button></div></div></section>
       </> : null}
@@ -200,7 +203,7 @@ function VerificationPanel(props: Props) {
   return <DashboardPanel title={item.title} eyebrow="Verification required" action={<DashboardAction href="/onboarding/employer">{item.action}</DashboardAction>}><p className="mt-5 max-w-2xl text-sm leading-7 text-[#08111F]/60">{item.body}</p></DashboardPanel>;
 }
 
-function DashboardMenuButton({ section, activeSection, icon: Icon, children, onSelect }: { section: TalentDashboardSection; activeSection: TalentDashboardSection; icon: typeof LayoutDashboard; children: React.ReactNode; onSelect: (section: TalentDashboardSection) => void }) {
+function DashboardMenuButton({ section, activeSection, icon: Icon, children, onSelect }: { section: TalentDashboardSection; activeSection: TalentDashboardSection; icon: typeof House; children: React.ReactNode; onSelect: (section: TalentDashboardSection) => void }) {
   const active = activeSection === section;
 
   return (
@@ -327,10 +330,10 @@ function TalentView(props: Props) {
         </div>
 
         <nav className="mt-7 space-y-1.5" aria-label="Dashboard sections">
-          <DashboardMenuButton section="overview" activeSection={activeSection} icon={LayoutDashboard} onSelect={setActiveSection}>Dashboard</DashboardMenuButton>
-          <DashboardMenuButton section="activity" activeSection={activeSection} icon={Activity} onSelect={setActiveSection}>Recent Activity</DashboardMenuButton>
+          <DashboardMenuButton section="overview" activeSection={activeSection} icon={House} onSelect={setActiveSection}>Dashboard</DashboardMenuButton>
+          <DashboardMenuButton section="activity" activeSection={activeSection} icon={History} onSelect={setActiveSection}>Recent Activity</DashboardMenuButton>
           <DashboardMenuButton section="notifications" activeSection={activeSection} icon={Bell} onSelect={setActiveSection}>Notifications</DashboardMenuButton>
-          <DashboardMenuButton section="introductions" activeSection={activeSection} icon={Link2} onSelect={setActiveSection}>Introductions</DashboardMenuButton>
+          <DashboardMenuButton section="introductions" activeSection={activeSection} icon={Handshake} onSelect={setActiveSection}>Introductions</DashboardMenuButton>
           <DashboardMenuButton section="connections" activeSection={activeSection} icon={Users} onSelect={setActiveSection}>Connections</DashboardMenuButton>
           <DashboardMenuButton section="identity" activeSection={activeSection} icon={IdCard} onSelect={setActiveSection}>Professional Identity</DashboardMenuButton>
           <DashboardMenuButton section="journey" activeSection={activeSection} icon={Check} onSelect={setActiveSection}>Builder Journey</DashboardMenuButton>
@@ -362,10 +365,10 @@ function TalentView(props: Props) {
           <section className="rounded-[24px] border border-[#cda64d]/45 bg-[#f7e8c6] p-6 text-[#08111F] shadow-[0_18px_45px_rgba(6,16,33,0.16)] sm:p-7">
             <p className="text-[10px] font-black uppercase tracking-[0.22em] text-[#4b7f08]">Engagement</p>
             <div className="mt-6 grid divide-y divide-[#08111F]/12 border-t border-[#08111F]/12 pt-2 sm:grid-cols-2 sm:divide-x sm:divide-y-0 xl:grid-cols-4">
-              <TalentMetric label="Profile views" value={props.isProTalent && summary?.proAnalytics ? summary.proAnalytics.profileViews : "Pro"} detail={props.isProTalent ? "Verified employer engagement" : "Upgrade to unlock profile views"} icon={Activity} />
-              <TalentMetric label="Employer saves" value={props.isProTalent && summary?.proAnalytics ? summary.proAnalytics.employerSaves : "Pro"} detail={props.isProTalent ? "Saved by employers" : "Upgrade to unlock employer saves"} icon={Sparkles} />
+              <TalentMetric label="Profile views" value={props.isProTalent && summary?.proAnalytics ? summary.proAnalytics.profileViews : "Pro"} detail={props.isProTalent ? "Verified employer engagement" : "Upgrade to unlock profile views"} icon={Eye} />
+              <TalentMetric label="Employer saves" value={props.isProTalent && summary?.proAnalytics ? summary.proAnalytics.employerSaves : "Pro"} detail={props.isProTalent ? "Saved by employers" : "Upgrade to unlock employer saves"} icon={Bookmark} />
               <TalentMetric label="Connections" value={summary?.activeConnections ?? 0} detail="Active employer connections" icon={Users} />
-              <TalentMetric label="Introductions" value={summary?.pendingIntroductionRequests ?? 0} detail="Pending requests you can review" icon={Link2} />
+              <TalentMetric label="Introductions" value={summary?.pendingIntroductionRequests ?? 0} detail="Pending requests you can review" icon={Handshake} />
             </div>
           </section>
 

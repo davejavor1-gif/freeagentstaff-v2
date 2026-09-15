@@ -169,22 +169,23 @@ export default function Navbar() {
 
   return (
     <header className="border-b border-[#e8d9b6] bg-[#f7e8c6] text-[#071321]">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-1">
         <Link href="/" className="inline-flex items-center">
           <Image
             src="/FullLogo-clean-v2.png"
             alt="FreeAgent Staff"
             width={960}
             height={768}
-            className="h-auto w-[136px] object-contain"
+            className="h-auto w-[112px] object-contain"
             priority
           />
         </Link>
 
-        <nav className="hidden items-center gap-8 text-sm md:flex">
+        <nav className="hidden items-center gap-8 text-[1rem] font-semibold md:flex">
           {visibleNavItems.map((item) => {
             const isActiveLink = pathname === item.href;
             const isTalentActive = isTalentSession && isActiveLink;
+            const isEmployerActive = isEmployerSession && isActiveLink;
 
             return (
               <Link
@@ -197,7 +198,9 @@ export default function Navbar() {
                       ? "rounded-full bg-[#2bd7ef] px-4 py-2 text-sm font-semibold text-[#071321] hover:bg-[#1fcce7]"
                       : "hover:text-[#2bd7ef]"
                 } ${
-                  isTalentActive
+                  isEmployerActive
+                    ? "font-semibold text-[#2bd7ef]"
+                    : isTalentActive
                     ? "font-semibold text-[#aff546]"
                     : pathname === item.href && item.href === "/talent"
                       ? "font-semibold text-[#8fdc3a]"
