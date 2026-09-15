@@ -33,11 +33,12 @@ export function DashboardShell({
   children: ReactNode;
 }) {
   const style = audienceStyles[audience];
+  const maxWidthClassName = audience === "talent" ? "max-w-[1500px]" : "max-w-[1280px]";
 
   return (
     <div className={`min-h-screen bg-[#08111F] ${audience === "talent" ? "dashboard-talent" : ""}`} style={{ "--dashboard-accent": style.accent, "--dashboard-glow": style.glow } as React.CSSProperties}>
       <Navbar />
-      <main className="mx-auto max-w-[1280px] px-5 py-8 sm:px-8 sm:py-10 lg:py-12">{children}</main>
+      <main className={`mx-auto ${maxWidthClassName} px-5 py-8 sm:px-8 sm:py-10 lg:py-12`}>{children}</main>
       <Footer />
     </div>
   );

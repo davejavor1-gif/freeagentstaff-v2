@@ -23,7 +23,7 @@ function formatDate(value: string | null | undefined) {
   return Number.isNaN(date.getTime()) ? "Not available" : date.toLocaleString();
 }
 
-export default function TalentConnectionsSection() {
+export default function TalentConnectionsSection({ view = "connections" }: { view?: "connections" | "introductions" }) {
   const [connections, setConnections] = useState<TalentConnectionItem[]>([]);
   const [requests, setRequests] = useState<TalentIntroductionRequestItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -152,18 +152,16 @@ export default function TalentConnectionsSection() {
   const revokedCount = connections.length - activeCount;
 
   return (
-    <section id="connections" className="dashboard-panel p-6 sm:p-7">
+    <section id={view === "introductions" ? "introductions" : "connections"} className="dashboard-panel p-6 sm:p-7">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="dashboard-kicker">Your network</p>
-          <h2 className="mt-2 font-serif text-2xl tracking-tight text-[#08111F]">Connections</h2>
+          <p className="dashboard-kicker">{view === "introductions" ? "Introduction requests" : "Your network"}</p>
+          <h2 className="mt-2 font-serif text-2xl tracking-tight text-[#08111F]">{view === "introductions" ? "Introductions" : "Connections"}</h2>
           <p className="mt-2 max-w-2xl text-sm leading-7 text-[#08111F]/60">
-            Manage employers who currently have access to your contact details and private files.
+            {view === "introductions" ? "Review employers who have requested an introduction." : "Manage employers who currently have access to your contact details and private files."}
           </p>
         </div>
-        <div className="rounded-full bg-[#0f2744] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[#f7ebcf]">
-          {connections.length} total / {activeCount} active / {revokedCount} revoked
-        </div>
+        {view === "connections" ? <div className="rounded-full bg-[#0f2744] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[#f7ebcf]">{connections.length} total / {activeCount} active / {revokedCount} revoked</div> : null}
       </div>
 
       {feedback ? <div className="mt-5 rounded-xl border border-[#cda64d]/30 bg-[#fff7e3] px-4 py-3 text-sm text-[#27405f]">{feedback}</div> : null}
@@ -190,7 +188,7 @@ export default function TalentConnectionsSection() {
           )}
         </div>
 
-        <div className="pt-1">
+        {view === "connections" ? <div className="pt-1">
           <p className="dashboard-kicker">Connection history</p>
           <p className="mt-2 rounded-xl border border-[#cda64d]/30 bg-[#fff7e3] px-4 py-3 text-sm leading-5 text-[#27405f]">Ending a connection removes that employer&apos;s access to your contact details. It does not delete historical introduction request records.</p>
           {loading ? <p className="mt-3 text-sm text-[#08111F]/60">Loading connections...</p> : connections.length === 0 ? <p className="mt-3 text-sm text-[#08111F]/60">No employer connections yet.</p> : (
@@ -198,7 +196,7 @@ export default function TalentConnectionsSection() {
               {connections.map((connection) => <article key={connection.connectionId} className="rounded-xl border border-[#08111F]/15 bg-[#08111F]/[0.04] p-4"><div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"><div><div className="flex flex-wrap items-center gap-2"><p className="text-lg font-semibold text-[#08111F]">{connection.employerCompanyName ?? "Verified employer"}</p><span className="rounded-full bg-[#AFF546] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#08111F]">{connection.status}</span></div>{connection.employerContactName ? <p className="mt-1 text-sm leading-5 text-[#27405f]">Contact: {connection.employerContactName}{connection.employerContactRole ? ` · ${connection.employerContactRole}` : ""}</p> : null}<p className="text-sm leading-5 text-[#27405f]">Connected {formatDate(connection.connectedAt)}</p>{connection.revokedAt ? <p className="text-sm leading-5 text-[#27405f]">Revoked {formatDate(connection.revokedAt)}</p> : null}</div>{connection.status === "active" ? <button type="button" onClick={() => void revokeConnection(connection.connectionId)} disabled={busyId === connection.connectionId} className="inline-flex min-h-11 items-center rounded-full border border-[#9f3a2b]/25 bg-[#9f3a2b] px-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf] transition hover:bg-[#8d3326] disabled:opacity-60">{busyId === connection.connectionId ? "Ending connection" : "End connection"}</button> : null}</div></article>)}
             </div>
           )}
-        </div>
+        </div> : null}
       </div>
 
       {acceptingRequest ? <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#08111F]/70 p-5" role="dialog" aria-modal="true" aria-labelledby="confidential-acceptance-title"><div className="w-full max-w-lg rounded-2xl border border-[#cda64d]/45 bg-[#f7ebcf] p-6 text-[#08111F] shadow-2xl sm:p-8"><p className="dashboard-kicker">Confidential Mode</p><h3 id="confidential-acceptance-title" className="mt-3 font-serif text-2xl">Reveal your profile to this employer?</h3><p className="mt-4 text-sm leading-7">By accepting this connection, your Talent Card and Talent Passport will be unveiled to this employer, including the details you keep hidden in Confidential Mode. Your information will only be visible to this connection.</p><div className="mt-6 flex flex-wrap justify-end gap-3"><button type="button" onClick={() => setAcceptingRequest(null)} className="dashboard-action dashboard-action-outline">Cancel</button><button type="button" disabled={busyId === acceptingRequest.requestId} onClick={() => void respondToRequest(acceptingRequest, "accept")} className="dashboard-talent-green-action">Accept connection</button></div></div></div> : null}

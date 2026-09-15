@@ -38,7 +38,7 @@ function formatRelativeTime(value: string) {
   return `${deltaDays}d ago`;
 }
 
-export default function NotificationsPage() {
+export default function NotificationsPage({ embedded = false }: { embedded?: boolean }) {
   const [session, setSession] = useState<Session | null>(null);
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -242,20 +242,20 @@ export default function NotificationsPage() {
 
   if (loading) {
     return (
-      <><Navbar /><main className="min-h-screen bg-[#08111F] text-[#f7ebcf]">
-        <div className="mx-auto flex min-h-screen max-w-4xl items-center justify-center px-6 py-16">
+      <>{embedded ? null : <Navbar />}<main className={embedded ? "" : "min-h-screen bg-[#08111F] text-[#f7ebcf]"}>
+        <div className={embedded ? "dashboard-panel p-6 sm:p-7" : "mx-auto flex min-h-screen max-w-4xl items-center justify-center px-6 py-16"}>
           <div className="rounded-3xl border border-[#cda64d]/55 bg-[#f7ebcf] px-8 py-10 text-[#0f2744] shadow-[0_16px_40px_rgba(6,16,33,0.2)]">
             <p className="text-center text-sm font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">Loading notifications</p>
           </div>
         </div>
-      </main><Footer /></>
+      </main>{embedded ? null : <Footer />}</>
     );
   }
 
   return (
-    <><Navbar /><main className="min-h-screen bg-[#08111F] text-[#f7ebcf]">
-      <div className="mx-auto max-w-4xl px-4 py-8 sm:px-8 sm:py-12 lg:py-14">
-        <section className="rounded-3xl border border-[#cda64d]/55 bg-[#f7ebcf] p-6 text-[#0f2744] shadow-[0_16px_40px_rgba(6,16,33,0.18)] sm:p-8">
+    <>{embedded ? null : <Navbar />}<main className={embedded ? "" : "min-h-screen bg-[#08111F] text-[#f7ebcf]"}>
+      <div className={embedded ? "dashboard-panel p-6 sm:p-7" : "mx-auto max-w-4xl px-4 py-8 sm:px-8 sm:py-12 lg:py-14"}>
+        <section className={embedded ? "border-b border-[#08111F]/15 pb-6" : "rounded-3xl border border-[#cda64d]/55 bg-[#f7ebcf] p-6 text-[#0f2744] shadow-[0_16px_40px_rgba(6,16,33,0.18)] sm:p-8"}>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">Notification center</p>
@@ -299,7 +299,7 @@ export default function NotificationsPage() {
           </div>
         ) : null}
 
-        <section className="mt-6 rounded-3xl border border-[#cda64d]/55 bg-[#f7ebcf] p-6 text-[#0f2744] shadow-[0_16px_40px_rgba(6,16,33,0.18)] sm:p-8">
+        <section className={embedded ? "mt-6" : "mt-6 rounded-3xl border border-[#cda64d]/55 bg-[#f7ebcf] p-6 text-[#0f2744] shadow-[0_16px_40px_rgba(6,16,33,0.18)] sm:p-8"}>
           {items.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-[#cda64d]/50 bg-[#fffaf0] p-6 text-sm leading-7 text-[#27405f]">
               No notifications yet. New workflow events will appear here.
@@ -359,7 +359,7 @@ export default function NotificationsPage() {
           )}
         </section>
       </div>
-    </main><Footer />
+    </main>{embedded ? null : <Footer />}
     {deleteConfirmationOpen ? <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#08111F]/70 p-5" role="dialog" aria-modal="true" aria-labelledby="delete-notifications-title">
       <div className="w-full max-w-lg rounded-2xl border border-[#cda64d]/45 bg-[#f7ebcf] p-6 text-[#08111F] shadow-2xl sm:p-8">
         <h2 id="delete-notifications-title" className="font-serif text-2xl">DELETE NOTIFICATIONS?</h2>

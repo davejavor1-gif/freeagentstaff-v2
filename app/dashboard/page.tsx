@@ -450,7 +450,8 @@ export default function DashboardPage() {
     () => resolveSignedInDisplayName(session, profileName),
     [profileName, session],
   );
-  const dashboardWelcomeName = accountType === "talent" ? talentDisplayName : session?.user.email ?? "Free Agent";
+  const employerDisplayName = talentDisplayName.includes("@") ? "Employer" : talentDisplayName;
+  const dashboardWelcomeName = accountType === "talent" ? talentDisplayName : employerDisplayName;
   const hasCompletedTalentCard = Boolean(profileName.trim()) || isPublished;
   const talentPassportHref = talentSlug ? `/talent/${talentSlug}` : "/builder";
 

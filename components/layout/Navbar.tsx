@@ -23,7 +23,6 @@ const talentNavItems = (talentSlug: string | null) => [
   ...(talentSlug ? [{ label: "Talent Passport", href: `/talent/${talentSlug}` }] : []),
   { label: "Privacy & Visibility", href: "/settings/privacy" },
   { label: "Pricing", href: "/pricing" },
-  { label: "Notifications", href: "/notifications" },
 ];
 
 export default function Navbar() {
@@ -141,8 +140,6 @@ export default function Navbar() {
       { label: "Dashboard", href: "/dashboard" },
         { label: "Find talent", href: "/find-talent" },
         { label: "Saved talent", href: "/saved-talent" },
-      { label: "Notifications", href: "/notifications" },
-        { label: "Connections", href: "/connections" },
         { label: "Employer account", href: "/onboarding/employer" },
       ]
     : isAdminSession
