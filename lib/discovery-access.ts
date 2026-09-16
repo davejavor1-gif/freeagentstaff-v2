@@ -6,7 +6,8 @@ import type { Database, Json, ProfilesRow } from "@/types/supabase";
 import { createServiceRoleSupabaseClient, createUserServerSupabaseClient } from "@/lib/server-supabase";
 import { loadPrivateAccess } from "@/lib/private-access";
 import { loadTalentSubscriptionRowsBySlugs, trackTalentAnalyticsEvents } from "@/lib/talent-pro-analytics";
-import { hasEmployerSubscriptionAccess, hasTalentProAccess, normalizeEmployerSubscriptionSnapshot, normalizeTalentSubscriptionSnapshot } from "@/lib/talent-subscription";
+import { hasTalentProAccess, normalizeEmployerSubscriptionSnapshot, normalizeTalentSubscriptionSnapshot } from "@/lib/talent-subscription";
+import { hasEmployerPaidAccess } from "@/lib/employer-entitlement";
 import { normalizeAvailability as normalizeCanonicalAvailability } from "@/lib/talent-profile-options";
 
 const SIGNED_URL_TTL_SECONDS = 60 * 60;
@@ -379,7 +380,7 @@ export async function loadDiscoveryResults(accessToken: string | null | undefine
     cancelAtPeriodEnd: viewer.viewerRow.employer_subscription_cancel_at_period_end,
   });
 
-  if (!hasEmployerSubscriptionAccess(employerSubscription)) {
+  if (!await hasEmployerPaidAccess(accessToken, employerSubscription)) {
     return {
       allowed: false,
       reason: "inactive_employer_subscription",
@@ -486,7 +487,7 @@ export async function loadTalentPassport(accessToken: string | null | undefined,
       cancelAtPeriodEnd: viewer.viewerRow.employer_subscription_cancel_at_period_end,
     });
 
-    if (!hasEmployerSubscriptionAccess(employerSubscription)) {
+    if (!await hasEmployerPaidAccess(accessToken, employerSubscription)) {
       return {
         allowed: false,
         reason: "inactive_employer_subscription",

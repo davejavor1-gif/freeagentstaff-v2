@@ -3,7 +3,8 @@ import { listEmployerConnections } from "@/lib/connection-access";
 import { listEmployerIntroductionRequests } from "@/lib/introduction-request-access";
 import { getEmployerSavedTalentAndShortlistCounts } from "@/lib/saved-talent-access";
 import { createUserServerSupabaseClient } from "@/lib/server-supabase";
-import { hasEmployerSubscriptionAccess, normalizeEmployerSubscriptionSnapshot } from "@/lib/talent-subscription";
+import { normalizeEmployerSubscriptionSnapshot } from "@/lib/talent-subscription";
+import { hasEmployerPaidAccess } from "@/lib/employer-entitlement";
 import type {
   DashboardSummaryReason,
   EmployerDashboardConnectionPreview,
@@ -100,7 +101,7 @@ export async function GET(request: Request) {
     currentPeriodEndsAt: profileRow.employer_subscription_current_period_ends_at,
     cancelAtPeriodEnd: profileRow.employer_subscription_cancel_at_period_end,
   });
-  const hasAccess = profileRow.employer_verification_status === "verified" && hasEmployerSubscriptionAccess(subscription);
+  const hasAccess = profileRow.employer_verification_status === "verified" && await hasEmployerPaidAccess(accessToken, subscription);
 
   if (!hasAccess) {
     const payload: EmployerSummaryResponse = {

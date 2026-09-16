@@ -1030,9 +1030,11 @@ declare
   v_abn text;
   v_subscription_status text;
   v_period_end timestamptz;
+  v_is_system_admin boolean;
 begin
-  select p.employer_verification_status, p.employer_abn, p.employer_subscription_status, p.employer_subscription_current_period_ends_at
-  into v_status, v_abn, v_subscription_status, v_period_end
+  select p.employer_verification_status, p.employer_abn, p.employer_subscription_status, p.employer_subscription_current_period_ends_at,
+    exists (select 1 from public.system_admins sa where sa.user_id = p.user_id)
+  into v_status, v_abn, v_subscription_status, v_period_end, v_is_system_admin
   from public.profiles p
   where p.user_id = v_uid;
 
@@ -1044,7 +1046,7 @@ begin
     raise exception 'invalid_abn' using errcode = '23514';
   end if;
 
-  if v_subscription_status not in ('active', 'trialing') or (v_period_end is not null and v_period_end < now()) then
+  if not v_is_system_admin and (v_subscription_status not in ('active', 'trialing') or (v_period_end is not null and v_period_end < now())) then
     raise exception 'inactive_employer_subscription' using errcode = '42501';
   end if;
 
