@@ -1,4 +1,6 @@
 import { ImageResponse } from "next/og";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 import { loadPublicTalentPassport } from "@/lib/discovery-access";
 
 export const alt = "FreeAgentStaff Talent Passport";
@@ -34,45 +36,19 @@ function fontSizeFor(value: string | null, sizes: { short: number; medium: numbe
   return sizes.short;
 }
 
-function PassportMark() {
+function CompanyLogo({ src }: { src: string }) {
   return (
     <div
       style={{
-        width: 132,
-        height: 172,
-        borderRadius: 18,
-        border: `2px solid ${colors.gold}`,
-        background: colors.burgundy,
+        width: 760,
+        height: 312,
         display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-        padding: 16,
-        boxShadow: "0 22px 50px rgba(0,0,0,0.34)",
+        alignItems: "center",
+        justifyContent: "center",
+        transform: "translateX(24px)",
       }}
     >
-      <div style={{ display: "flex", gap: 6 }}>
-        <div style={{ width: 18, height: 18, borderRadius: 999, background: colors.lime }} />
-        <div style={{ width: 18, height: 18, borderRadius: 999, border: `2px solid ${colors.cream}` }} />
-      </div>
-      <div
-        style={{
-          height: 68,
-          borderRadius: 999,
-          border: `2px solid ${colors.gold}`,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: colors.cream,
-          fontSize: 36,
-          fontWeight: 800,
-        }}
-      >
-        FA
-      </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-        <div style={{ height: 4, width: 78, background: colors.gold, borderRadius: 999 }} />
-        <div style={{ height: 4, width: 54, background: colors.cream, borderRadius: 999, opacity: 0.75 }} />
-      </div>
+      <img src={src} alt="FreeAgent Staff" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
     </div>
   );
 }
@@ -127,7 +103,7 @@ function Frame({ children }: { children: React.ReactNode }) {
   );
 }
 
-function GenericCard() {
+function GenericCard({ logoSrc }: { logoSrc: string }) {
   return (
     <Frame>
       <div style={{ display: "flex", width: "100%", justifyContent: "space-between", alignItems: "center", gap: 58 }}>
@@ -136,13 +112,13 @@ function GenericCard() {
           <div style={{ fontSize: 82, fontWeight: 850, lineHeight: 0.96 }}>Talent Passport</div>
           <div style={{ color: colors.mutedCream, fontSize: 30, lineHeight: 1.3 }}>Professional identity, experience and discovery.</div>
         </div>
-        <PassportMark />
+        <CompanyLogo src={logoSrc} />
       </div>
     </Frame>
   );
 }
 
-function TalentCard({ name, title, location }: { name: string; title: string | null; location: string | null }) {
+function TalentCard({ name, title, location, logoSrc }: { name: string; title: string | null; location: string | null; logoSrc: string }) {
   const displayName = clampText(name, 58) ?? "Talent";
   const displayTitle = clampText(title, 70);
   const displayLocation = clampText(location, 46);
@@ -157,12 +133,11 @@ function TalentCard({ name, title, location }: { name: string; title: string | n
             <div style={{ color: colors.lime, fontSize: 24, fontWeight: 900, letterSpacing: 3 }}>FREEAGENTSTAFF</div>
             <div style={{ color: colors.mutedCream, fontSize: 24, fontWeight: 700, letterSpacing: 2 }}>TALENT PASSPORT</div>
           </div>
-          <PassportMark />
+          <CompanyLogo src={logoSrc} />
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 20, maxWidth: 870 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <div style={{ width: 74, height: 6, borderRadius: 999, background: colors.lime }} />
+          <div style={{ display: "flex", alignItems: "center" }}>
             <div style={{ color: colors.gold, fontSize: 20, fontWeight: 800, letterSpacing: 4 }}>PUBLIC PASSPORT</div>
           </div>
           <div style={{ fontSize: nameSize, fontWeight: 900, lineHeight: 0.96, letterSpacing: -1 }}>{displayName}</div>
@@ -182,9 +157,11 @@ function TalentCard({ name, title, location }: { name: string; title: string | n
 export default async function Image({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const payload = await loadPublicTalentPassport(slug);
+  const logo = await readFile(path.join(process.cwd(), "public", "FullLogo-clean-v2.png"));
+  const logoSrc = `data:image/png;base64,${logo.toString("base64")}`;
 
   if (!payload.allowed || !payload.profile?.slug) {
-    return new ImageResponse(<GenericCard />, size);
+    return new ImageResponse(<GenericCard logoSrc={logoSrc} />, size);
   }
 
   const profile = payload.profile;
@@ -192,5 +169,5 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   const title = cleanText(profile.title);
   const location = cleanText(profile.location);
 
-  return new ImageResponse(<TalentCard name={name} title={title} location={location} />, size);
+  return new ImageResponse(<TalentCard name={name} title={title} location={location} logoSrc={logoSrc} />, size);
 }
