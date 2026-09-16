@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { Bookmark, Building2, Search, Send, ShieldCheck } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -122,9 +123,22 @@ export default function EmployersPage() {
             <h2 className="mt-3 font-serif text-[2.6rem] font-semibold uppercase leading-[0.94] sm:text-[3.6rem]">The right person may not be applying.</h2>
             <p className="mt-5 max-w-2xl text-base leading-8 text-[#071321]/78">Join Free Agent Staff to discover professionals who are open to opportunity, while respecting the privacy controls and permissions that keep the connection thoughtful.</p>
           </div>
-          <div className="mt-8 flex flex-wrap items-center gap-4">
-            <Link href="/employer/auth" className="inline-flex items-center rounded-full bg-[#2bd7ef] px-6 py-3 text-sm font-semibold text-[#071321] transition hover:bg-[#1fcce7]">Employer Sign In</Link>
-            <Link href="/pricing" className="text-sm font-semibold text-[#071321] underline decoration-[#1bc8e4] underline-offset-4">View Employer Plans</Link>
+        </div>
+      </section>
+      <section className="bg-[#08111F] text-[#f7ebcf]">
+        <div className="mx-auto grid max-w-7xl items-center gap-10 px-6 py-16 sm:px-8 sm:py-20 lg:grid-cols-[minmax(0,1fr)_minmax(300px,0.8fr)] lg:gap-16 lg:px-12 lg:py-24">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#2BD7EF]">THE FIRST MOVE IS YOURS</p>
+            <h2 className="mt-5 max-w-4xl font-serif text-[2.6rem] font-semibold uppercase leading-[0.94] sm:text-[3.6rem]">STOP WAITING FOR APPLICATIONS.<br />START DISCOVERING.</h2>
+            <p className="mt-6 max-w-2xl text-base leading-8 text-[#dfe7ef] sm:text-lg">The people you need might not be looking for you yet. Find them on FreeAgentStaff, see their story, and make the first move.</p>
+            <p className="mt-7 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f2cc63]">TALENT CARDS · VIDEO INTRODUCTIONS · TALENT PASSPORTS</p>
+            <div className="mt-8 flex flex-wrap items-center gap-4">
+              <Link href="/employer/auth" className="inline-flex items-center rounded-full bg-[#2bd7ef] px-6 py-3 text-sm font-semibold text-[#071321] transition hover:bg-[#1fcce7]">Employer Sign In</Link>
+              <Link href="/pricing" className="text-sm font-semibold text-[#f7ebcf] underline decoration-[#2bd7ef] underline-offset-4">View Employer Plans</Link>
+            </div>
+          </div>
+          <div className="flex items-center justify-center lg:justify-end">
+            <Image src="/great-people-build-great-things.png" alt="Great people build great things" width={1200} height={1200} className="h-auto w-full max-w-[341px] object-contain" />
           </div>
         </div>
       </section>

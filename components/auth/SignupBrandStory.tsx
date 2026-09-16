@@ -51,8 +51,8 @@ export default function SignupBrandStory({ accountType }: { accountType: Account
         </h1>
         <p className="mt-8 max-w-[38rem] text-lg leading-8 text-[#dfe7ef] sm:text-xl">Create your FreeAgent Card. Build your Talent Passport. Get discovered for more than what&apos;s on paper.</p>
       </div>
-      <div className="relative z-10 mt-14 flex min-h-[16.5rem] items-center justify-center sm:min-h-[28rem] lg:min-h-[33.5rem]">
-        <div className="absolute left-[4%] top-2 w-[min(50vw,13rem)] rotate-[-4deg] drop-shadow-[12px_18px_18px_rgba(0,0,0,0.3)] sm:left-[10%] sm:w-[min(36vw,27rem)]">
+      <div className="relative z-10 mt-14 flex min-h-[21rem] items-center justify-center sm:min-h-[28rem] lg:min-h-[33.5rem]">
+        <div className="absolute left-[1%] top-2 w-[min(64vw,16.5rem)] rotate-[-4deg] drop-shadow-[12px_18px_18px_rgba(0,0,0,0.3)] sm:left-[10%] sm:w-[min(36vw,27rem)]">
           <TalentCard profile={sarah} href="/talent/sarah-jones" verificationStatus="verified" hasProAccess className="w-full" />
         </div>
         <div className="absolute right-[4%] bottom-[-1rem] w-[min(28vw,9rem)] rotate-[5deg] drop-shadow-[12px_18px_18px_rgba(0,0,0,0.32)] sm:right-[8%] sm:w-[min(24vw,19rem)]">

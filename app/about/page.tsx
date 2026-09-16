@@ -213,13 +213,33 @@ export default function AboutPage() {
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#08111F] text-[#f7ebcf]">
       <Navbar />
+      <section className="bg-[#08111F]">
+        <div className="mx-auto grid max-w-7xl gap-10 px-6 py-16 sm:px-8 sm:py-20 lg:grid-cols-[minmax(0,1fr)_minmax(240px,0.45fr)] lg:items-center lg:gap-12 lg:px-12 lg:py-24">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-[#AFF546]">
+              ABOUT FREEAGENTSTAFF
+            </p>
+            <h1 className="mt-6 max-w-4xl font-serif text-5xl font-bold uppercase leading-[0.92] tracking-[-0.03em] text-[#f7ebcf] sm:text-7xl">
+              WHERE TALENT
+              <br />
+              GETS DISCOVERED.
+            </h1>
+            <p className="mt-7 max-w-3xl text-base leading-8 text-[#dfe7ef] sm:text-lg">
+              FreeAgentStaff flips traditional recruitment around. Build your professional story, introduce yourself through video, and let verified employers discover you and make the first move.
+            </p>
+          </div>
+          <div className="flex items-center justify-center lg:justify-end">
+            <Image src="/images/don%27t%20apply.png" alt="Don't apply, get discovered" width={1200} height={1200} className="h-auto w-full max-w-[260px] object-contain lg:max-w-[320px]" />
+          </div>
+        </div>
+      </section>
       <section className="bg-[#f7e8c6] text-[#08111F]">
-        <div className="mx-auto grid max-w-7xl gap-12 px-6 py-16 sm:px-8 sm:py-24 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] xl:items-center xl:gap-16 xl:px-12 xl:py-28">
+        <div className="mx-auto grid max-w-7xl gap-12 px-6 py-16 sm:px-8 sm:py-24 xl:grid-cols-[minmax(0,0.72fr)_minmax(0,1.28fr)] xl:items-center xl:gap-12 xl:px-12 xl:py-28">
           <div className="min-w-0">
             <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-[#9a6d15]">
               About FreeAgentStaff
             </p>
-            <h1 className="mt-7 max-w-xl font-serif text-5xl font-bold uppercase leading-[0.92] tracking-[-0.03em] sm:text-7xl lg:text-[6.4rem]">
+            <h1 className="mt-7 max-w-xl font-serif text-5xl font-bold uppercase leading-[0.92] tracking-[-0.03em] sm:text-7xl">
               YOU&apos;RE MORE THAN
               <br />
               WHAT&apos;S ON PAPER.
@@ -230,7 +250,7 @@ export default function AboutPage() {
             </p>
           </div>
           <div className="relative flex min-w-0 w-full items-center justify-center xl:justify-self-end">
-            <div className="grid w-full max-w-[720px] grid-cols-1 items-center gap-8 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] xl:gap-7">
+            <div className="grid w-full max-w-[1040px] grid-cols-1 items-center gap-8 xl:grid-cols-[minmax(0,1.25fr)_minmax(300px,0.9fr)] xl:gap-8">
               <div className="relative z-10 min-w-0 w-full rotate-0 xl:rotate-[3deg]">
                 <TalentCard
                   profile={sarah}
@@ -238,7 +258,7 @@ export default function AboutPage() {
                   initiallyFlipped={false}
                 />
               </div>
-              <div className="relative z-20 mx-auto min-w-0 w-full max-w-[235px] scale-[0.93] sm:max-w-none">
+              <div className="relative z-20 mx-auto min-w-0 w-full max-w-[235px] scale-[0.93] sm:max-w-none xl:max-w-[320px] xl:scale-100">
                 <ClosedPassportCover />
               </div>
             </div>
