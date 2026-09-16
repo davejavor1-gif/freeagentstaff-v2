@@ -133,6 +133,7 @@ export default function EmployerTalentSearch() {
   const [experience, setExperience] = useState<ExperienceFilter>("all");
   const [skill, setSkill] = useState<string>(defaultSkill);
   const [sort, setSort] = useState<SortOption>("recommended");
+  const [page, setPage] = useState(1);
   const [error, setError] = useState(false);
   const backgroundFailuresRef = useRef(0);
 
@@ -266,6 +267,7 @@ export default function EmployerTalentSearch() {
   );
 
   const clearFilters = () => {
+    setPage(1);
     setSearchTerm("");
     setAvailability(defaultAvailability);
     setFocusArea(defaultFocusArea);
@@ -327,6 +329,10 @@ export default function EmployerTalentSearch() {
     return rows;
   }, [filteredProfiles, sort]);
 
+  const totalPages = Math.max(1, Math.ceil(sortedProfiles.length / 9));
+  const visiblePage = Math.min(page, totalPages);
+  const visibleProfiles = sortedProfiles.slice((visiblePage - 1) * 9, visiblePage * 9);
+
   if (!isLoading && !canAccessSearch) {
     const gateContent = getAccessGateContent(accessReason);
     return (
@@ -386,15 +392,13 @@ export default function EmployerTalentSearch() {
             <input
               id="talent-search"
               value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
+              onChange={(event) => { setPage(1); setSearchTerm(event.target.value); }}
               placeholder="Search by role, skill or keyword"
               className="h-12 w-full rounded-[16px] border border-[#f2cc63]/35 bg-[#f7e8c6] px-10 text-sm font-semibold text-[#08111F] outline-none transition placeholder:text-[#08111F]/60 focus:border-[#8be4c5]"
             />
           </div>
           <p className="mt-2 text-xs text-[#dfe7ef]">e.g. Venue Manager, events, operations, leadership</p>
-        </div>
-
-        <div className="mt-5 rounded-[24px] border border-[#2bd7ef]/25 bg-[#0f2744] p-3 shadow-[0_12px_32px_rgba(6,16,33,0.16)] sm:p-4">
+          <div className="mt-4 pt-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">Filters</p>
             <button
@@ -414,7 +418,7 @@ export default function EmployerTalentSearch() {
               <select
                 id="filter-location"
                 value={location}
-                onChange={(event) => setLocation(event.target.value)}
+                onChange={(event) => { setPage(1); setLocation(event.target.value); }}
                 className="h-11 w-full rounded-[14px] border border-[#f2cc63]/35 bg-[#f7e8c6] px-3 text-sm text-[#08111F] outline-none focus:border-[#8be4c5]"
               >
                 {locations.map((option) => (
@@ -432,7 +436,7 @@ export default function EmployerTalentSearch() {
                 <select
                   id="filter-experience"
                   value={experience}
-                  onChange={(event) => setExperience(event.target.value as ExperienceFilter)}
+                  onChange={(event) => { setPage(1); setExperience(event.target.value as ExperienceFilter); }}
                   className="h-11 w-full rounded-[14px] border border-[#f2cc63]/35 bg-[#f7e8c6] px-3 text-sm text-[#08111F] outline-none focus:border-[#8be4c5]"
                 >
                   {experienceOptions.map((option) => (
@@ -450,7 +454,7 @@ export default function EmployerTalentSearch() {
                 <select
                   id="filter-availability"
                   value={availability}
-                  onChange={(event) => setAvailability(event.target.value)}
+                  onChange={(event) => { setPage(1); setAvailability(event.target.value); }}
                   className="h-11 w-full rounded-[14px] border border-[#f2cc63]/35 bg-[#f7e8c6] px-3 text-sm text-[#08111F] outline-none focus:border-[#8be4c5]"
                 >
                   {availabilityOptions.map((option) => (
@@ -468,7 +472,7 @@ export default function EmployerTalentSearch() {
                 <select
                   id="filter-skills"
                   value={skill}
-                  onChange={(event) => setSkill(event.target.value)}
+                  onChange={(event) => { setPage(1); setSkill(event.target.value); }}
                   className="h-11 w-full rounded-[14px] border border-[#f2cc63]/35 bg-[#f7e8c6] px-3 text-sm text-[#08111F] outline-none focus:border-[#8be4c5]"
                 >
                   {skills.map((option) => (
@@ -486,7 +490,7 @@ export default function EmployerTalentSearch() {
                 <select
                   id="filter-focus"
                   value={focusArea}
-                  onChange={(event) => setFocusArea(event.target.value)}
+                  onChange={(event) => { setPage(1); setFocusArea(event.target.value); }}
                   className="h-11 w-full rounded-[14px] border border-[#f2cc63]/35 bg-[#f7e8c6] px-3 text-sm text-[#08111F] outline-none focus:border-[#8be4c5]"
                 >
                   {focusAreas.map((option) => (
@@ -504,7 +508,7 @@ export default function EmployerTalentSearch() {
               <select
                 id="sort-results"
                 value={sort}
-                onChange={(event) => setSort(event.target.value as SortOption)}
+                onChange={(event) => { setPage(1); setSort(event.target.value as SortOption); }}
                 className="h-11 w-full rounded-[14px] border border-[#f2cc63]/35 bg-[#f7e8c6] px-3 text-sm text-[#08111F] outline-none focus:border-[#8be4c5]"
               >
                 {sortOptions.map((option) => (
@@ -516,13 +520,14 @@ export default function EmployerTalentSearch() {
             </div>
           </div>
           {!isLoading && sortedProfiles.some((item) => isConfidentialProfile(item.profile)) ? (
-            <div className="mt-5 border-t border-[#f2cc63]/25 pt-5 text-[#f7ebcf]">
+            <div className="mt-5 pt-5 text-[#f7ebcf]">
             <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">Confidential Mode</p>
             <p className="mt-3 text-sm leading-7 text-[#dfe7ef]">
               Confidential profiles remain anonymised by design and are surfaced only through employer-authorized information.
             </p>
           </div>
           ) : null}
+          </div>
         </div>
 
         <div className="mt-6 rounded-[30px] border border-[#2BD7EF]/25 bg-[#0f2744] p-4 shadow-[0_12px_40px_rgba(6,16,33,0.16)] sm:p-6">
@@ -574,7 +579,7 @@ export default function EmployerTalentSearch() {
           </div>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {sortedProfiles.map((item) => (
+            {visibleProfiles.map((item) => (
               <TalentCard
                 key={item.slug}
                 profile={item.profile}
@@ -598,6 +603,12 @@ export default function EmployerTalentSearch() {
                 className="w-full"
               />
             ))}
+            {totalPages > 1 ? (
+              <div className="col-span-full flex flex-wrap items-center justify-center gap-3 pt-2">
+                {page > 1 ? <button type="button" onClick={() => setPage((currentPage) => currentPage - 1)} className="inline-flex min-h-11 items-center rounded-full border border-[#2BD7EF]/60 bg-transparent px-5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#08798a] transition hover:bg-[#effcff]">← Previous page</button> : null}
+                {page < totalPages ? <button type="button" onClick={() => setPage((currentPage) => currentPage + 1)} className="inline-flex min-h-11 items-center rounded-full border border-[#2BD7EF]/60 bg-[#2BD7EF] px-5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#08111F] transition hover:brightness-105">Next page →</button> : null}
+              </div>
+            ) : null}
           </div>
         )}
         </div>

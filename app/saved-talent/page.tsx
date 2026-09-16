@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
 import TalentCard from "@/components/TalentCard";
 import { getSessionWithRetry } from "@/lib/supabase-client";
 import type { EmployerIntroductionRequestItem } from "@/types/introduction-requests";
@@ -41,6 +42,7 @@ export default function SavedTalentPage() {
   const [feedback, setFeedback] = useState<string | null>(null);
   const [requestBySlug, setRequestBySlug] = useState<Record<string, EmployerIntroductionRequestItem | undefined>>({});
   const [requestBusySlug, setRequestBusySlug] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
   const renameInputRef = useRef<HTMLInputElement | null>(null);
 
   const getAuthHeaders = useCallback(async () => {
@@ -173,6 +175,9 @@ export default function SavedTalentPage() {
     () => shortlists.find((shortlist) => shortlist.id === selectedShortlistId) ?? null,
     [shortlists, selectedShortlistId],
   );
+  const totalPages = Math.max(1, Math.ceil(items.length / 9));
+  const visiblePage = Math.min(page, totalPages);
+  const visibleItems = items.slice((visiblePage - 1) * 9, visiblePage * 9);
 
   const refreshAll = async () => {
     await Promise.all([loadShortlists(), loadSavedTalent(), loadSentRequests()]);
@@ -426,7 +431,7 @@ export default function SavedTalentPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#08111F] text-[#071426]">
+    <main className="flex min-h-screen flex-col bg-[#08111F] text-[#071426]">
       <Navbar />
       <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-10 lg:py-12">
         <div className="rounded-[36px] border border-[#08111F]/15 bg-[#f7e8c6] p-5 shadow-[0_18px_55px_rgba(6,16,33,0.12)] sm:p-7 lg:p-8">
@@ -442,16 +447,16 @@ export default function SavedTalentPage() {
             </div>
           </header>
 
-          <div className="mt-5 grid gap-4 rounded-[24px] border border-[#cda64d]/30 bg-white/90 p-4 shadow-sm lg:grid-cols-[1.2fr_1fr_1fr]">
+          <div className="mt-5 grid gap-4 rounded-[24px] border border-[#2BD7EF]/30 bg-[#0f2744] p-4 text-[#f7ebcf] shadow-sm lg:grid-cols-[1.2fr_1fr_1fr]">
             <div>
-              <label htmlFor="shortlist-filter" className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6a7a91]">
+              <label htmlFor="shortlist-filter" className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f2cc63]">
                 Shortlist view
               </label>
               <select
                 id="shortlist-filter"
                 value={selectedShortlistId}
-                onChange={(event) => setSelectedShortlistId(event.target.value)}
-                className="h-11 w-full rounded-[14px] border border-[#cda64d]/35 bg-[#fffdf7] px-3 text-sm text-[#0f2744] outline-none focus:border-[#0f2744]"
+                onChange={(event) => { setPage(1); setSelectedShortlistId(event.target.value); }}
+                className="h-11 w-full rounded-[14px] border border-[#cda64d]/35 bg-[#fffdf7] px-3 text-sm text-[#0f2744] outline-none focus:border-[#2BD7EF]"
               >
                 <option value={allSavedOption}>All Saved Talent</option>
                 {shortlists.map((shortlist) => (
@@ -463,7 +468,7 @@ export default function SavedTalentPage() {
             </div>
 
             <div>
-              <label htmlFor="new-shortlist" className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6a7a91]">
+              <label htmlFor="new-shortlist" className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f2cc63]">
                 Create shortlist
               </label>
               <div className="flex gap-2">
@@ -472,7 +477,7 @@ export default function SavedTalentPage() {
                   value={newShortlistName}
                   onChange={(event) => setNewShortlistName(event.target.value)}
                   placeholder="e.g. Sydney Ops Lead"
-                  className="h-11 w-full rounded-[14px] border border-[#cda64d]/35 bg-[#fffdf7] px-3 text-sm text-[#0f2744] outline-none focus:border-[#0f2744]"
+                  className="h-11 w-full rounded-[14px] border border-[#cda64d]/35 bg-[#fffdf7] px-3 text-sm text-[#0f2744] outline-none focus:border-[#2BD7EF]"
                 />
                 <button
                   type="button"
@@ -488,7 +493,7 @@ export default function SavedTalentPage() {
             </div>
 
             <div>
-              <p className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6a7a91]">Manage selected shortlist</p>
+              <p className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f2cc63]">Manage selected shortlist</p>
               <div className="flex gap-2">
                 <input
                   key={selectedShortlist?.id ?? "none"}
@@ -551,7 +556,7 @@ export default function SavedTalentPage() {
               </div>
             ) : (
               <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                {items.map((item) => (
+                {visibleItems.map((item) => (
                   <div key={item.savedTalentId} className="space-y-3">
                     <TalentCard
                       profile={item.profile}
@@ -668,11 +673,18 @@ export default function SavedTalentPage() {
                     </div>
                   </div>
                 ))}
+                {totalPages > 1 ? (
+                  <div className="col-span-full flex flex-wrap items-center justify-center gap-3 pt-2">
+                    {page > 1 ? <button type="button" onClick={() => setPage((currentPage) => currentPage - 1)} className="inline-flex min-h-11 items-center rounded-full border border-[#2BD7EF]/60 bg-transparent px-5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#08798a] transition hover:bg-[#effcff]">← Previous page</button> : null}
+                    {page < totalPages ? <button type="button" onClick={() => setPage((currentPage) => currentPage + 1)} className="inline-flex min-h-11 items-center rounded-full border border-[#2BD7EF]/60 bg-[#2BD7EF] px-5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#08111F] transition hover:brightness-105">Next page →</button> : null}
+                  </div>
+                ) : null}
               </div>
             )}
           </div>
         </div>
       </section>
+      <Footer />
     </main>
   );
 }

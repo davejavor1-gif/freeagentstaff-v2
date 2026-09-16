@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
 import type { AccountType, EmployerVerificationStatus } from "@/types/freeagent";
 
@@ -440,13 +441,14 @@ export default function EmployerOnboardingPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#08111F] text-[#071426]">
+      <main className="flex min-h-screen flex-col bg-[#08111F] text-[#071426]">
         <Navbar />
         <div className="mx-auto max-w-5xl px-5 py-12 sm:px-8 lg:px-10">
           <div className="rounded-[32px] border border-[#cda64d]/55 bg-[#0f2744] p-8 text-[#f7ebcf] shadow-[0_20px_60px_rgba(6,16,33,0.16)]">
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#f2cc63]">Loading employer setup...</p>
           </div>
         </div>
+        <Footer />
       </main>
     );
   }
@@ -456,47 +458,24 @@ export default function EmployerOnboardingPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#08111F] text-[#071426]">
+    <main className="flex min-h-screen flex-col bg-[#08111F] text-[#071426]">
       <Navbar />
-      <div className="mx-auto max-w-5xl px-5 py-10 sm:px-8 lg:px-10">
-        <section className="rounded-[36px] border border-[#08111F]/15 bg-[#f7e8c6] p-6 text-[#08111F] shadow-[0_20px_60px_rgba(6,16,33,0.16)] sm:p-8 lg:p-10">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#08111F]/60">Employer setup</p>
-          <h1 className="mt-4 text-3xl font-black uppercase tracking-[0.12em] text-[#08111F] sm:text-4xl">
-            {verificationStatus === "pending"
-              ? "We're verifying your business"
-              : verificationStatus === "more_info_required"
-                ? "We need a little more information"
-                : verificationStatus === "rejected"
-                  ? "We couldn't verify this Employer account"
-                  : verificationStatus === "verified"
-                    ? "Your business is verified"
-                    : "Verify your business"}
-          </h1>
-          <p className="mt-4 max-w-3xl text-sm leading-7 text-[#08111F]/70 sm:text-base sm:leading-8">
-            {verificationStatus === "pending"
-              ? "Your details have been submitted to Free Agent Staff for review. We'll let you know once your business has been verified."
-              : verificationStatus === "more_info_required"
-                ? "We need some additional information before we can complete your business verification."
-                : verificationStatus === "rejected"
-                  ? "We weren't able to verify your organisation or your connection to it."
-                  : verificationStatus === "verified"
-                    ? "Your organisation has been approved to join the Free Agent Staff Employer network. Activate Employer Access from your dashboard to start discovering Talent."
-                    : "Free Agent Staff verifies employers before providing access to the Talent network."}
-          </p>
-
-          <div className="mt-8 flex flex-wrap items-center gap-3">
-            <span className="rounded-full border border-[#2BD7EF]/60 bg-[#2BD7EF] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#08111F]">
-              Status: {verificationStatus === "pending" ? "Under Review" : verificationStatus === "more_info_required" ? "More Information Required" : verificationStatus === "rejected" ? "Unable to Verify" : verificationStatus === "verified" ? "Verified" : "Unverified"}
-            </span>
-            {verificationStatus === "verified" ? (
-              <span className="rounded-full border border-[#2BD7EF]/60 bg-[#2BD7EF] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#08111F]">
-                Verification complete
-              </span>
-            ) : (
-              <span className="rounded-full border border-[#08111F]/15 bg-[#fffaf0] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#08111F]/70">
-                Find Talent locked until verified
-              </span>
-            )}
+      <div className="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-10">
+        <section className="rounded-[36px] border border-[#cda64d]/45 bg-[#f7e8c6] p-6 text-[#08111F] shadow-[0_20px_60px_rgba(6,16,33,0.16)] sm:p-8 lg:p-10">
+          <div className="grid gap-8 pb-2 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.48fr)] lg:items-start">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#08798a]">EMPLOYER ACCOUNT</p>
+              <h1 className="mt-4 font-serif text-4xl leading-[0.95] tracking-tight sm:text-5xl">Your Employer Account</h1>
+              <p className="mt-5 max-w-2xl text-base leading-8 text-[#08111F]/70">Keep your company information up to date so great talent can find you.</p>
+            </div>
+            <div className="lg:flex lg:flex-col lg:items-start">
+            <div className="rounded-[24px] border border-[#2BD7EF]/45 bg-[#0f2744] p-5 text-[#f7ebcf] shadow-[0_12px_40px_rgba(6,16,33,0.14)]">
+              <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#2BD7EF]">{verificationStatus === "verified" ? "✓ VERIFIED EMPLOYER" : verificationStatus.replaceAll("_", " ")}</p>
+              <p className="mt-3 text-lg font-serif text-[#f7ebcf]">{verificationStatus === "verified" ? "Your business is verified" : "Verification in progress"}</p>
+              <p className="mt-2 text-sm leading-7 text-[#dfe7ef]">{verificationStatus === "verified" ? "Your organisation has been approved to join the Free Agent Staff Employer network." : "Your employer verification status is shown here."}</p>
+            </div>
+            <Link href="/pricing" className="mt-4 inline-flex min-h-[44px] w-full items-center justify-center rounded-full border border-[#2BD7EF]/60 bg-[#2BD7EF] px-5 py-2.5 text-center text-[11px] font-black uppercase tracking-[0.24em] text-[#08111F] transition hover:brightness-105">Choose your employer plan <span className="ml-2">→</span></Link>
+            </div>
           </div>
 
           {verificationStatus === "pending" ? (
@@ -515,19 +494,6 @@ export default function EmployerOnboardingPage() {
               <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#08111F]">More Information Required</p>
               <p className="mt-2">We need some additional information before we can complete your business verification.</p>
               {rejectionReason ? <p className="mt-2 text-[#08111F]/60">Reviewer message: {rejectionReason}</p> : null}
-            </div>
-          ) : null}
-
-          {verificationStatus === "verified" ? (
-            <div className="mt-6 rounded-[24px] border border-[#2BD7EF]/35 bg-[#0f2744] p-5 text-sm leading-7 text-[#f7e8c6]">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f7e8c6]">Your business is verified</p>
-              <p className="mt-2">Your organisation has been approved to join the Free Agent Staff Employer network. Activate Employer Access to start discovering Talent.</p>
-              <Link
-                href="/dashboard"
-                className="mt-4 inline-flex min-h-[44px] items-center justify-center rounded-full border border-[#2BD7EF]/60 bg-[#2BD7EF] px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.24em] text-[#08111F] transition hover:brightness-105"
-              >
-                Choose Employer Plan
-              </Link>
             </div>
           ) : null}
 
@@ -559,13 +525,12 @@ export default function EmployerOnboardingPage() {
               {formError}
             </p>
           ) : null}
-        </section>
-
-        <section className="mt-8 rounded-[30px] border border-[#08111F]/15 bg-[#f7e8c6] p-6 shadow-[0_12px_40px_rgba(6,16,33,0.12)] sm:p-8">
+        <div className="mt-2">
           <form className="space-y-7" onSubmit={(event) => event.preventDefault()}>
             <fieldset className="space-y-4">
               <legend className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Your details</legend>
 
+              <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <label htmlFor="contactName" className="text-sm font-semibold text-[#0f2744]">Contact name</label>
                 <input
@@ -593,12 +558,14 @@ export default function EmployerOnboardingPage() {
                 />
                 {touchedSubmit && !form.contactRole.trim() ? <p className="mt-2 text-sm text-[#a2472f]">Your role is required.</p> : null}
               </div>
+              </div>
             </fieldset>
 
             <fieldset className="space-y-4">
               <legend className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Business details</legend>
 
-              <div>
+              <div className="grid gap-4 md:grid-cols-2">
+              <div className="md:col-span-2">
                 <label htmlFor="companyName" className="text-sm font-semibold text-[#0f2744]">Company name</label>
                 <input
                   id="companyName"
@@ -635,17 +602,18 @@ export default function EmployerOnboardingPage() {
                   </button>
                 </div>
               </div>
+              </div>
 
               {form.identifierType === "abn" ? (
                 <div>
-                  <label htmlFor="abn" className="text-sm font-semibold text-[#0f2744]">ABN</label>
+                  <label htmlFor="abn" className="mt-2 block text-sm font-semibold text-[#0f2744]">ABN</label>
                   <input
                     id="abn"
                     name="abn"
                     value={form.abn}
                     onChange={(event) => setForm((current) => ({ ...current, abn: formatAbnInput(event.target.value) }))}
                     readOnly={isPendingReadOnly}
-                    className="mt-2 min-h-[44px] w-full rounded-2xl border border-[#08111F]/20 bg-[#fffaf0] px-4 py-3 text-sm text-[#08111F] outline-none transition focus:border-[#2BD7EF] focus:ring-2 focus:ring-[#2BD7EF]/25"
+                    className="mt-2 min-h-[44px] w-full max-w-xs rounded-2xl border border-[#08111F]/20 bg-[#fffaf0] px-4 py-3 text-sm text-[#08111F] outline-none transition focus:border-[#2BD7EF] focus:ring-2 focus:ring-[#2BD7EF]/25 md:max-w-sm"
                     aria-required="true"
                     aria-describedby="abn-help"
                     inputMode="numeric"
@@ -658,14 +626,14 @@ export default function EmployerOnboardingPage() {
                 </div>
               ) : (
                 <div>
-                  <label htmlFor="acn" className="text-sm font-semibold text-[#0f2744]">ACN</label>
+                  <label htmlFor="acn" className="mt-2 block text-sm font-semibold text-[#0f2744]">ACN</label>
                   <input
                     id="acn"
                     name="acn"
                     value={form.acn}
                     onChange={(event) => setForm((current) => ({ ...current, acn: formatAcnInput(event.target.value) }))}
                     readOnly={isPendingReadOnly}
-                    className="mt-2 min-h-[44px] w-full rounded-2xl border border-[#08111F]/20 bg-[#fffaf0] px-4 py-3 text-sm text-[#08111F] outline-none transition focus:border-[#2BD7EF] focus:ring-2 focus:ring-[#2BD7EF]/25"
+                    className="mt-2 min-h-[44px] w-full max-w-xs rounded-2xl border border-[#08111F]/20 bg-[#fffaf0] px-4 py-3 text-sm text-[#08111F] outline-none transition focus:border-[#2BD7EF] focus:ring-2 focus:ring-[#2BD7EF]/25 md:max-w-sm"
                     aria-required="true"
                     aria-describedby="acn-help"
                     inputMode="numeric"
@@ -762,16 +730,15 @@ export default function EmployerOnboardingPage() {
                 </>
               )}
 
-              <Link
-                href="/dashboard"
-                className="min-h-[44px] rounded-full border border-[#2BD7EF]/60 bg-[#2BD7EF] px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#08111F] transition hover:brightness-105"
-              >
-                Back to dashboard
-              </Link>
+              <span className="inline-flex min-h-[44px] items-center rounded-full border border-[#2BD7EF]/60 bg-[#2BD7EF] px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.24em] text-[#08111F]">
+                {verificationStatus === "verified" ? "✓ Verified" : "Verify →"}
+              </span>
             </div>
           </form>
+        </div>
         </section>
       </div>
+      <Footer />
     </main>
   );
 }
