@@ -13,6 +13,7 @@ import type {
 import { createUserServerSupabaseClient } from "@/lib/server-supabase";
 import { hasEmployerPaidAccess, resolveEmployerDiscoveryScope } from "@/lib/employer-entitlement";
 import { normalizeEmployerSubscriptionSnapshot } from "@/lib/talent-subscription";
+import { sendNewIntroductionRequestEmail } from "@/lib/send-introduction-email";
 
 type CreateRequestRow = {
   success: boolean;
@@ -184,6 +185,12 @@ export async function createIntroductionRequest(
   }
 
   const row = data?.[0];
+
+  // Only notify on a genuinely new request, never on duplicates/already-existing ones.
+  if (row?.success && row.already_exists === false && row.request_id) {
+    await sendNewIntroductionRequestEmail(slug);
+  }
+
   return {
     ok: true,
     alreadyExists: row?.already_exists ?? false,

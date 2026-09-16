@@ -18,6 +18,27 @@ import type { Database, Json } from "@/types/supabase";
 
 const initialProfile = freeAgentProfiles[0];
 
+function RockstarStarIcon({ checked }: { checked: boolean }) {
+  const fill = checked ? "#AFF546" : "#f7ebcf";
+  const stroke = checked ? "#1F3D0A" : "#4C8C15";
+
+  return (
+    <svg viewBox="0 0 32 32" aria-hidden="true" className="h-10 w-10 shrink-0">
+      <g stroke={stroke} strokeWidth="1.4" strokeLinecap="round" className={checked ? "opacity-100" : "opacity-0"}>
+        <line x1="6" y1="6" x2="7.7" y2="7.7" />
+        <line x1="26" y1="6" x2="24.3" y2="7.7" />
+      </g>
+      <path
+        d="M16 5l3.09 6.26 6.91.99-5 4.87 1.18 6.88L16 20.9l-6.18 3.1L11 17.12l-5-4.87 6.91-.99L16 5z"
+        fill={fill}
+        stroke={stroke}
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 function DestinationPill({ tone, label }: { tone: "card" | "passport"; label: string }) {
   if (label.includes("Card + Passport")) {
     return (
@@ -942,16 +963,19 @@ export default function BuilderPage() {
                 <option value="Open to Opportunities">Open to Opportunities</option>
                 <option value="Closed to Opportunities">Closed to Opportunities</option>
               </select>
-              <label className="mt-3 flex items-start gap-3 rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] shadow-sm">
+              <label className="mt-3 flex w-fit max-w-full items-center gap-3 rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-1.5 text-sm text-[#071426] shadow-sm cursor-pointer lg:w-[55%]">
                 <input
                   type="checkbox"
                   checked={profile.rockstarAvailable === true}
                   onChange={(event) => setProfile((current) => ({ ...current, rockstarAvailable: event.target.checked }))}
-                  className="mt-0.5 h-4 w-4 shrink-0 rounded border-[#cda64d]/50 text-[#0f2744] focus:ring-[#0f2744]"
+                  className="peer sr-only"
                 />
-                <span>
-                  <span className="block font-semibold">Rockstar — Available for one-off shifts</span>
-                  <span className="mt-1 block text-xs text-[#0f2744]/70">
+                <span className="rounded-full peer-focus-visible:ring-2 peer-focus-visible:ring-[#0f2744] peer-focus-visible:ring-offset-2">
+                  <RockstarStarIcon checked={profile.rockstarAvailable === true} />
+                </span>
+                <span className="text-left">
+                  <span className="block text-sm text-[#071426]">Rockstar Available for one-off shifts</span>
+                  <span className="mt-0.5 block text-xs text-[#0f2744]/70">
                     Let employers looking for short-term cover find you for one-off shifts.
                   </span>
                 </span>
