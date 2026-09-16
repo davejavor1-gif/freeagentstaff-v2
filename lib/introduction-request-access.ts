@@ -11,6 +11,8 @@ import type {
   TalentIntroductionRequestsResponse,
 } from "@/types/introduction-requests";
 import { createUserServerSupabaseClient } from "@/lib/server-supabase";
+import { hasEmployerPaidAccess, resolveEmployerDiscoveryScope } from "@/lib/employer-entitlement";
+import { normalizeEmployerSubscriptionSnapshot } from "@/lib/talent-subscription";
 
 type CreateRequestRow = {
   success: boolean;
@@ -141,7 +143,34 @@ export async function createIntroductionRequest(
     return { ok: false, reason: "not_signed_in", message: "Sign in required." };
   }
 
-  const { data, error } = await callRpc<CreateRequestRow[]>(userClient, "create_employer_introduction_request", {
+  const { data: employerRow } = await userClient
+    .from("profiles")
+    .select("account_type, employer_subscription_status, employer_subscription_current_period_ends_at, employer_subscription_cancel_at_period_end, short_stay_access_expires_at")
+    .maybeSingle<{
+      account_type: "talent" | "employer";
+      employer_subscription_status: "inactive" | "active" | "trialing" | "past_due" | "canceled";
+      employer_subscription_current_period_ends_at: string | null;
+      employer_subscription_cancel_at_period_end: boolean;
+      short_stay_access_expires_at: string | null;
+    }>();
+
+  let rpcName = "create_employer_introduction_request";
+
+  if (employerRow?.account_type === "employer") {
+    const subscription = normalizeEmployerSubscriptionSnapshot({
+      status: employerRow.employer_subscription_status,
+      currentPeriodEndsAt: employerRow.employer_subscription_current_period_ends_at,
+      cancelAtPeriodEnd: employerRow.employer_subscription_cancel_at_period_end,
+    });
+    const hasFullAccess = await hasEmployerPaidAccess(accessToken, subscription);
+    const scope = resolveEmployerDiscoveryScope(hasFullAccess, employerRow.short_stay_access_expires_at);
+
+    if (scope === "rockstar_only") {
+      rpcName = "create_rockstar_employer_introduction_request";
+    }
+  }
+
+  const { data, error } = await callRpc<CreateRequestRow[]>(userClient, rpcName, {
     p_slug: slug,
     p_message: message ?? null,
   });

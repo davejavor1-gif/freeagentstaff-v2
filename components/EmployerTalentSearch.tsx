@@ -101,7 +101,7 @@ const getAccessGateContent = (reason?: DiscoveryApiResponse["reason"]) => {
     return {
       header: "ACTIVATE EMPLOYER ACCESS",
       title: "START DISCOVERING TALENT",
-      copy: "Your business is verified. Choose an Employer plan to start discovering Talent.",
+      copy: "Your business is verified. Choose an Employer plan, or get 3 days of temporary access to Talent available for one-off shifts, to start discovering Talent.",
       ctaLabel: "Choose Employer Plan",
       ctaHref: "/pricing",
       showCtaForUnauthenticated: false,

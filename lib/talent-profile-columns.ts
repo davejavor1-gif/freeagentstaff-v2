@@ -9,6 +9,7 @@ type TalentRowCore = Pick<ProfilesInsert,
   | "title"
   | "location"
   | "availability"
+  | "rockstar_available"
   | "top_strength"
   | "focus_area"
   | "summary"
@@ -88,6 +89,7 @@ export function buildCanonicalTalentColumns(
     title: normalizeString(profile.title),
     location: normalizeString(profile.location),
     availability: normalizeAvailability(profile.availability),
+    rockstar_available: profile.rockstarAvailable === true,
     top_strength: normalizeString(profile.topStrength),
     focus_area: normalizeString(profile.focusArea),
     education: normalizeString(educationText || profile.education),

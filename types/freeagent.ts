@@ -58,6 +58,7 @@ export interface FreeAgentProfile {
   title: string;
   location: string;
   availability: AvailabilityStatus;
+  rockstarAvailable?: boolean;
   topStrength: string;
   experienceYears: number;
   focusArea: string;

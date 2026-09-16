@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createServiceRoleSupabaseClient } from "@/lib/server-supabase";
 import {
+  SHORT_STAY_ACCESS_DURATION_MS,
   getStripeClient,
+  isShortStayPriceId,
   mapStripeSubscriptionStatus,
   planForPriceId,
   subscriptionCancelAt,
@@ -108,6 +110,52 @@ async function applySubscription(subscription: Stripe.Subscription) {
   }
 }
 
+// One-time Short Stay Employer payment: never trusts session metadata alone for entitlement,
+// re-validates the actual Stripe Price against STRIPE_SHORT_STAY_PRICE_ID.
+async function applyShortStayPayment(session: Stripe.Checkout.Session) {
+  const serviceClient = createServiceRoleSupabaseClient();
+  if (!serviceClient) throw new Error("Service role Supabase client is not configured.");
+
+  if (session.payment_status !== "paid") return;
+
+  const userId = session.metadata?.freeagentstaff_user_id ?? null;
+  if (!userId) return;
+
+  const fullSession = await getStripeClient().checkout.sessions.retrieve(session.id, {
+    expand: ["line_items.data.price"],
+  });
+  const priceId = fullSession.line_items?.data[0]?.price?.id ?? null;
+
+  if (!isShortStayPriceId(priceId)) return; // unknown/mismatched price: never grant access
+
+  const { data: profile } = await serviceClient
+    .from("profiles")
+    .select("user_id, account_type, stripe_short_stay_checkout_session_id")
+    .eq("user_id", userId)
+    .maybeSingle<{
+      user_id: string;
+      account_type: "talent" | "employer";
+      stripe_short_stay_checkout_session_id: string | null;
+    }>();
+
+  if (!profile || profile.account_type !== "employer") return;
+
+  // Idempotency guard in addition to the stripe_processed_events ledger.
+  if (profile.stripe_short_stay_checkout_session_id === session.id) return;
+
+  const paymentIntentId = typeof session.payment_intent === "string"
+    ? session.payment_intent
+    : session.payment_intent?.id ?? null;
+  const expiresAt = new Date(Date.now() + SHORT_STAY_ACCESS_DURATION_MS).toISOString();
+
+  await serviceClient.from("profiles").update({
+    stripe_customer_id: String(session.customer),
+    short_stay_access_expires_at: expiresAt,
+    stripe_short_stay_payment_intent_id: paymentIntentId,
+    stripe_short_stay_checkout_session_id: session.id,
+  } as never).eq("user_id", profile.user_id);
+}
+
 export async function POST(request: Request) {
   const signature = request.headers.get("stripe-signature");
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -144,7 +192,9 @@ export async function POST(request: Request) {
   try {
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
-      if (typeof session.subscription === "string") {
+      if (session.mode === "payment" && session.metadata?.plan === "short_stay_employer") {
+        await applyShortStayPayment(session);
+      } else if (typeof session.subscription === "string") {
         await applySubscription(await getStripeClient().subscriptions.retrieve(session.subscription));
       }
     } else if (

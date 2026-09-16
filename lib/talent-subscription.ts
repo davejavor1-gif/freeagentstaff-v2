@@ -58,7 +58,7 @@ export const CANONICAL_PRICING_PLANS: CanonicalPricingPlan[] = [
   {
     code: "employer",
     name: "EMPLOYER",
-    priceLabel: "$265 AUD",
+    priceLabel: "$150 AUD",
     cadenceLabel: "per month",
     audience: "employer",
     description: "Verified employer access to talent discovery, saved talent workflows, and introductions.",

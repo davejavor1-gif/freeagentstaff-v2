@@ -3,10 +3,12 @@ import { createUserServerSupabaseClient } from "@/lib/server-supabase";
 import { getPublicAppOrigin } from "@/lib/site-url";
 import {
   findOrCreateStripeCustomer,
+  getShortStayPriceId,
   getStripeClient,
   getStripePriceId,
   planForAccount,
 } from "@/lib/stripe-billing";
+import { hasActiveShortStayAccess } from "@/lib/employer-entitlement";
 
 function normalizeAbn(value: string | null | undefined) {
   const digits = (value ?? "").replace(/\D/g, "");
@@ -76,14 +78,14 @@ export async function POST(request: Request) {
   }
 
   const body = (await request.json().catch(() => null)) as { plan?: unknown } | null;
-  const requestedPlan = body?.plan === "free_agent_pro" || body?.plan === "employer" ? body.plan : null;
+  const requestedPlan = body?.plan === "free_agent_pro" || body?.plan === "employer" || body?.plan === "short_stay_employer" ? body.plan : null;
   if (!requestedPlan) {
     return NextResponse.json({ ok: false, message: "A valid subscription plan is required." }, { status: 400 });
   }
 
   const { data: profile, error: profileError } = await userClient
     .from("profiles")
-    .select("account_type, email, name, employer_company_name, employer_abn, employer_acn, employer_identifier_type, employer_verification_status, stripe_talent_subscription_id, talent_subscription_status, stripe_employer_subscription_id, employer_subscription_status")
+    .select("account_type, email, name, employer_company_name, employer_abn, employer_acn, employer_identifier_type, employer_verification_status, stripe_talent_subscription_id, talent_subscription_status, stripe_employer_subscription_id, employer_subscription_status, short_stay_access_expires_at")
     .eq("user_id", userData.user.id)
     .maybeSingle<{
       account_type: "talent" | "employer";
@@ -98,10 +100,55 @@ export async function POST(request: Request) {
       talent_subscription_status: string | null;
       stripe_employer_subscription_id: string | null;
       employer_subscription_status: string | null;
+      short_stay_access_expires_at: string | null;
     }>();
 
   if (profileError || !profile) {
     return NextResponse.json({ ok: false, message: "Your profile could not be loaded." }, { status: 400 });
+  }
+
+  if (requestedPlan === "short_stay_employer") {
+    if (profile.account_type !== "employer") {
+      return NextResponse.json({ ok: false, message: "Short Stay Employer access is only available for employer accounts." }, { status: 403 });
+    }
+
+    if (profile.employer_verification_status !== "verified" || !hasValidEmployerIdentifier(profile)) {
+      return NextResponse.json({ ok: false, message: "Employer verification must be completed before checkout." }, { status: 403 });
+    }
+
+    if (hasActiveShortStayAccess(profile.short_stay_access_expires_at)) {
+      return NextResponse.json({ ok: false, message: "You already have active Short Stay access. You can purchase another pass once it expires." }, { status: 409 });
+    }
+
+    try {
+      const stripe = getStripeClient();
+      const customer = await findOrCreateStripeCustomer({
+        userId: userData.user.id,
+        email: userData.user.email ?? profile.email,
+        name: profile.employer_company_name,
+      });
+      const origin = getPublicAppOrigin({ forStripe: true });
+
+      const session = await stripe.checkout.sessions.create({
+        mode: "payment",
+        customer: customer.id,
+        line_items: [{ price: getShortStayPriceId(), quantity: 1 }],
+        success_url: `${origin}/find-talent?checkout=success`,
+        cancel_url: `${origin}/find-talent?checkout=cancelled`,
+        metadata: {
+          freeagentstaff_user_id: userData.user.id,
+          account_type: profile.account_type,
+          plan: "short_stay_employer",
+        },
+      });
+
+      return NextResponse.json({ ok: true, url: session.url });
+    } catch (error) {
+      return NextResponse.json({
+        ok: false,
+        message: error instanceof Error ? error.message : "Unable to start checkout.",
+      }, { status: 500 });
+    }
   }
 
   const plan = planForAccount(profile.account_type, requestedPlan);

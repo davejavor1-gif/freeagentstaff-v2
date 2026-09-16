@@ -6,7 +6,6 @@ import BillingButton from "@/components/BillingButton";
 import EmployerPricingButton from "@/components/EmployerPricingButton";
 import FreeAgentProBadge from "@/components/FreeAgentProBadge";
 import { CANONICAL_PRICING_PLANS } from "@/lib/talent-subscription";
-
 export const metadata: Metadata = {
   title: "Pricing",
   description: "Explore Free Agent Staff plans for professionals creating Talent Passports and employers discovering talent.",
@@ -112,6 +111,24 @@ export default function PricingPage() {
               <p className="mt-6 text-sm leading-7 text-[#27405f]">{employerPlan.description}</p>
               <ul className="mt-6 space-y-2 text-sm text-[#27405f]">{employerPlan.bullets.map((feature) => <li key={feature} className="flex items-start gap-3"><span className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-[#cda64d]" /><span className="leading-[1.08]">{feature === "Verified employer discovery" ? "Employer Talent discovery" : feature}</span></li>)}</ul>
               <EmployerPricingButton className="mt-8 inline-flex w-full items-center justify-center rounded-full bg-[#2BD7EF] px-5 py-3 text-sm font-semibold uppercase tracking-[0.24em] text-[#08111F] transition hover:brightness-105" />
+            </div>
+            <div className="rounded-[36px] border border-[#cda64d]/40 bg-[#f7ebcf] p-8 text-[#071426] shadow-[0_18px_55px_rgba(6,16,33,0.12)]">
+              <p className={`${PLAN_PILL_BASE} bg-[#2BD7EF]`}>SHORT STAY</p>
+              <p className="mt-2 text-4xl font-black tracking-[0.1em] text-[#08111F]">$20 AUD</p>
+              <p className="mt-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#27405f]">3 days access</p>
+              <p className="mt-6 text-sm leading-7 text-[#27405f]">
+                A one-off pass for employers who need short-term cover. Get 3 days of Talent Search access to a pool of Talent available for one-off shifts, no subscription required.
+              </p>
+              <ul className="mt-6 space-y-2 text-sm text-[#27405f]">
+                {[
+                  "3 days of Talent Search access",
+                  "One-time payment, no subscription",
+                  "Request introductions using the same trusted workflow",
+                ].map((feature) => (
+                  <li key={feature} className="flex items-start gap-3"><span className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-[#cda64d]" /><span className="leading-[1.08]">{feature}</span></li>
+                ))}
+              </ul>
+              <BillingButton action="checkout" plan="short_stay_employer" className="mt-8 inline-flex w-full items-center justify-center rounded-full bg-[#2BD7EF] px-5 py-3 text-sm font-semibold uppercase tracking-[0.24em] text-[#08111F] transition hover:brightness-105">Get Short Stay access</BillingButton>
             </div>
           </div>
         </section>

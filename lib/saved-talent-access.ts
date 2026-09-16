@@ -17,7 +17,8 @@ import type {
 import type { Database, Json } from "@/types/supabase";
 import { createServiceRoleSupabaseClient, createUserServerSupabaseClient } from "@/lib/server-supabase";
 import { loadTalentSubscriptionRowsBySlugs } from "@/lib/talent-pro-analytics";
-import { hasTalentProAccess, normalizeTalentSubscriptionSnapshot } from "@/lib/talent-subscription";
+import { hasTalentProAccess, normalizeEmployerSubscriptionSnapshot, normalizeTalentSubscriptionSnapshot } from "@/lib/talent-subscription";
+import { hasEmployerPaidAccess, resolveEmployerDiscoveryScope } from "@/lib/employer-entitlement";
 import { normalizeAvailability as normalizeCanonicalAvailability } from "@/lib/talent-profile-options";
 
 const SIGNED_URL_TTL_SECONDS = 60 * 60;
@@ -255,6 +256,34 @@ async function callRpc<TData>(
   }).rpc(fn, args);
 }
 
+async function resolveActorDiscoveryScope(
+  userClient: NonNullable<ReturnType<typeof getUserClient>>,
+  accessToken: string | null | undefined,
+) {
+  const { data: employerRow } = await userClient
+    .from("profiles")
+    .select("account_type, employer_subscription_status, employer_subscription_current_period_ends_at, employer_subscription_cancel_at_period_end, short_stay_access_expires_at")
+    .maybeSingle<{
+      account_type: "talent" | "employer";
+      employer_subscription_status: "inactive" | "active" | "trialing" | "past_due" | "canceled";
+      employer_subscription_current_period_ends_at: string | null;
+      employer_subscription_cancel_at_period_end: boolean;
+      short_stay_access_expires_at: string | null;
+    }>();
+
+  if (employerRow?.account_type !== "employer") {
+    return "full" as const; // non-employer callers rely on the RPC's own actor checks to reject them
+  }
+
+  const subscription = normalizeEmployerSubscriptionSnapshot({
+    status: employerRow.employer_subscription_status,
+    currentPeriodEndsAt: employerRow.employer_subscription_current_period_ends_at,
+    cancelAtPeriodEnd: employerRow.employer_subscription_cancel_at_period_end,
+  });
+  const hasFullAccess = await hasEmployerPaidAccess(accessToken, subscription);
+  return resolveEmployerDiscoveryScope(hasFullAccess, employerRow.short_stay_access_expires_at);
+}
+
 export async function listSavedTalent(accessToken: string | null | undefined, shortlistId?: string | null): Promise<SavedTalentListResponse> {
   const userClient = getUserClient(accessToken);
 
@@ -262,7 +291,9 @@ export async function listSavedTalent(accessToken: string | null | undefined, sh
     return { ok: false, reason: "not_signed_in", message: "Sign in required.", items: [] };
   }
 
-  const { data, error } = await callRpc<ListSavedRow[]>(userClient, "list_saved_talent_for_employer", {
+  const scope = await resolveActorDiscoveryScope(userClient, accessToken);
+  const rpcName = scope === "rockstar_only" ? "list_saved_talent_for_rockstar_employer" : "list_saved_talent_for_employer";
+  const { data, error } = await callRpc<ListSavedRow[]>(userClient, rpcName, {
     p_shortlist_id: shortlistId ?? null,
   });
 
@@ -312,9 +343,11 @@ export async function saveTalent(accessToken: string | null | undefined, slug: s
     return { ok: false, reason: "not_signed_in", message: "Sign in required." };
   }
 
+  const scope = await resolveActorDiscoveryScope(userClient, accessToken);
+  const rpcName = scope === "rockstar_only" ? "save_rockstar_talent_for_employer" : "save_talent_for_employer";
   const { data, error } = await callRpc<Database["public"]["Functions"]["save_talent_for_employer"]["Returns"]>(
     userClient,
-    "save_talent_for_employer",
+    rpcName,
     {
     p_slug: slug,
     p_shortlist_ids: shortlistIds && shortlistIds.length > 0 ? shortlistIds : null,
@@ -374,7 +407,9 @@ export async function listShortlists(accessToken: string | null | undefined): Pr
     return { ok: false, reason: "not_signed_in", message: "Sign in required.", shortlists: [] };
   }
 
-  const { data, error } = await callRpc<ListShortlistRow[]>(userClient, "list_employer_shortlists");
+  const scope = await resolveActorDiscoveryScope(userClient, accessToken);
+  const rpcName = scope === "rockstar_only" ? "list_employer_shortlists_for_rockstar_employer" : "list_employer_shortlists";
+  const { data, error } = await callRpc<ListShortlistRow[]>(userClient, rpcName);
 
   if (error) {
     return {
@@ -516,9 +551,11 @@ export async function addSavedTalentToShortlist(accessToken: string | null | und
     return { ok: false, reason: "not_signed_in", message: "Sign in required." };
   }
 
+  const scope = await resolveActorDiscoveryScope(userClient, accessToken);
+  const rpcName = scope === "rockstar_only" ? "add_rockstar_saved_talent_to_shortlist" : "add_saved_talent_to_shortlist";
   const { error } = await callRpc<Database["public"]["Functions"]["add_saved_talent_to_shortlist"]["Returns"]>(
     userClient,
-    "add_saved_talent_to_shortlist",
+    rpcName,
     {
     p_shortlist_id: shortlistId,
     p_slug: slug,

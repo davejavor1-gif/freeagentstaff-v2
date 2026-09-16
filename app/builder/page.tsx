@@ -70,6 +70,7 @@ type ProfileSelectResult = {
   title?: string | null;
   location?: string | null;
   availability?: string | null;
+  rockstar_available?: boolean | null;
   top_strength?: string | null;
   experience_years?: number | null;
   focus_area?: string | null;
@@ -134,6 +135,7 @@ function hydrateBuilderProfile(profileResult: ProfileSelectResult, fallbackEmail
   loadedProfile.location = profileResult.location ?? loadedProfile.location ?? "";
   loadedProfile.availability = normalizeAvailability(profileResult.availability ?? loadedProfile.availability, profileResult.opportunity_status ?? loadedProfile.opportunityStatus);
   loadedProfile.opportunityStatus = availabilityToOpportunityStatus(loadedProfile.availability);
+  loadedProfile.rockstarAvailable = profileResult.rockstar_available ?? loadedProfile.rockstarAvailable ?? false;
   loadedProfile.topStrength = profileResult.top_strength ?? loadedProfile.topStrength ?? "";
   loadedProfile.experienceYears = profileResult.experience_years ?? loadedProfile.experienceYears ?? 0;
   loadedProfile.focusArea = profileResult.focus_area ?? loadedProfile.focusArea ?? "";
@@ -171,6 +173,7 @@ const createBlankProfile = (userId: string, email?: string | null): FreeAgentPro
   title: "",
   location: "",
   availability: "Available Now",
+  rockstarAvailable: false,
   topStrength: "",
   experienceYears: 0,
   focusArea: "",
@@ -238,7 +241,7 @@ export default function BuilderPage() {
 
       const { data, error } = await supabase
         .from("profiles")
-        .select("slug, profile, account_type, visibility, opportunity_status, is_published, name, title, location, availability, top_strength, experience_years, focus_area, education, education_entries, salary_expectation, contact_email, mobile_number, resume_storage_path, resume_original_filename, resume_uploaded_at, summary, bio, skills, languages, passions, career_journey, email, image_alt, current_employer, intro_video_url, photo_url, photo_storage_path, intro_video_storage_path, talent_plan, talent_subscription_status, talent_subscription_current_period_ends_at")
+        .select("slug, profile, account_type, visibility, opportunity_status, is_published, name, title, location, availability, rockstar_available, top_strength, experience_years, focus_area, education, education_entries, salary_expectation, contact_email, mobile_number, resume_storage_path, resume_original_filename, resume_uploaded_at, summary, bio, skills, languages, passions, career_journey, email, image_alt, current_employer, intro_video_url, photo_url, photo_storage_path, intro_video_storage_path, talent_plan, talent_subscription_status, talent_subscription_current_period_ends_at")
         .eq("user_id", supabaseSession.user.id)
         .maybeSingle();
 
@@ -939,6 +942,20 @@ export default function BuilderPage() {
                 <option value="Open to Opportunities">Open to Opportunities</option>
                 <option value="Closed to Opportunities">Closed to Opportunities</option>
               </select>
+              <label className="mt-3 flex items-start gap-3 rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] shadow-sm">
+                <input
+                  type="checkbox"
+                  checked={profile.rockstarAvailable === true}
+                  onChange={(event) => setProfile((current) => ({ ...current, rockstarAvailable: event.target.checked }))}
+                  className="mt-0.5 h-4 w-4 shrink-0 rounded border-[#cda64d]/50 text-[#0f2744] focus:ring-[#0f2744]"
+                />
+                <span>
+                  <span className="block font-semibold">Rockstar — Available for one-off shifts</span>
+                  <span className="mt-1 block text-xs text-[#0f2744]/70">
+                    Let employers looking for short-term cover find you for one-off shifts.
+                  </span>
+                </span>
+              </label>
             </div>
 
             <div className={sectionClass("basic", "space-y-2 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#AFF546] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]")}>

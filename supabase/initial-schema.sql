@@ -28,6 +28,7 @@ create table if not exists profiles (
   title text,
   location text,
   availability text,
+  rockstar_available boolean not null default false,
   top_strength text,
   experience_years integer not null default 0 check (experience_years >= 0),
   focus_area text,
@@ -65,6 +66,9 @@ create table if not exists profiles (
   employer_subscription_cancel_at_period_end boolean not null default false,
   stripe_employer_subscription_id text unique,
   stripe_employer_price_id text,
+  short_stay_access_expires_at timestamptz,
+  stripe_short_stay_payment_intent_id text,
+  stripe_short_stay_checkout_session_id text,
   terms_accepted_at timestamptz,
   terms_version text,
   privacy_acknowledged_at timestamptz,
@@ -1337,7 +1341,7 @@ security definer
 set search_path = public, pg_temp
 as $$
 declare
-  v_uid uuid := public.require_verified_employer_actor();
+  v_uid uuid := public.require_employer_actor_with_discovery_access();
   v_name text := btrim(coalesce(p_name, ''));
 begin
   if v_name = '' then
@@ -1367,7 +1371,7 @@ security definer
 set search_path = public, pg_temp
 as $$
 declare
-  v_uid uuid := public.require_verified_employer_actor();
+  v_uid uuid := public.require_employer_actor_with_discovery_access();
   v_name text := btrim(coalesce(p_name, ''));
 begin
   if v_name = '' then
@@ -4307,3 +4311,732 @@ revoke all on function public.delete_own_account() from anon;
 revoke all on function public.delete_own_account() from authenticated;
 revoke all on function public.delete_own_account() from service_role;
 grant execute on function public.delete_own_account() to authenticated;
+
+-- Discovery entitlement scope for the current employer actor: 'full' | 'rockstar_only' | 'none'.
+-- Mirrors require_verified_employer_actor()'s verification/ABN checks and system-admin bypass,
+-- but additionally recognises an unexpired Short Stay pass as a narrower ('rockstar_only') scope.
+create or replace function public.employer_discovery_scope()
+returns text
+language plpgsql
+security definer
+stable
+set search_path = public, pg_temp
+as $$
+declare
+  v_uid uuid := public.require_employer_actor();
+  v_status text;
+  v_abn text;
+  v_subscription_status text;
+  v_period_end timestamptz;
+  v_short_stay_expires_at timestamptz;
+  v_is_system_admin boolean;
+begin
+  select p.employer_verification_status, p.employer_abn, p.employer_subscription_status,
+    p.employer_subscription_current_period_ends_at, p.short_stay_access_expires_at,
+    exists (select 1 from public.system_admins sa where sa.user_id = p.user_id)
+  into v_status, v_abn, v_subscription_status, v_period_end, v_short_stay_expires_at, v_is_system_admin
+  from public.profiles p
+  where p.user_id = v_uid;
+
+  if v_status <> 'verified' then
+    raise exception 'unverified_employer' using errcode = '42501';
+  end if;
+
+  if public.normalized_abn(v_abn) is null then
+    raise exception 'invalid_abn' using errcode = '23514';
+  end if;
+
+  if v_is_system_admin then
+    return 'full';
+  end if;
+
+  if v_subscription_status in ('active', 'trialing') and (v_period_end is null or v_period_end >= now()) then
+    return 'full';
+  end if;
+
+  if v_short_stay_expires_at is not null and v_short_stay_expires_at > now() then
+    return 'rockstar_only';
+  end if;
+
+  return 'none';
+end
+$$;
+
+revoke all on function public.employer_discovery_scope() from public, anon, authenticated, service_role;
+grant execute on function public.employer_discovery_scope() to authenticated;
+
+-- Rockstar-only Talent Search for Short Stay employers. Self-contained (does not call
+-- current_viewer_profile_context()/require_verified_employer_actor(), which require a full
+-- subscription) but reproduces the same confidential/connection redaction rules and blocked
+-- company filtering as discovery_profiles_for_verified_employer()/_v2(), scoped server-side to
+-- talent.rockstar_available = true so the restriction cannot be bypassed by any caller.
+create or replace function public.discovery_profiles_for_rockstar_employer()
+returns table (
+  slug text, visibility text, verification_status text, availability text, opportunity_status text,
+  experience_years integer, focus_area text, top_strength text, skills text[], languages text[], passions text[],
+  location text, name text, title text, summary text, current_employer text, photo_storage_path text,
+  intro_video_storage_path text, career_journey jsonb, can_view_identifying_info boolean, can_view_media boolean,
+  education text, salary_expectation text
+)
+language plpgsql
+security definer
+stable
+set search_path = public, pg_temp
+as $$
+declare
+  v_scope text := public.employer_discovery_scope();
+begin
+  if v_scope = 'none' then
+    raise exception 'inactive_employer_subscription' using errcode = '42501';
+  end if;
+
+  return query
+  with viewer as (
+    select public.company_identity_keys(p.employer_abn, p.employer_website, p.employer_company_name) as viewer_company_keys
+    from public.profiles p
+    where p.user_id = auth.uid()
+  ),
+  connected as (
+    select c.talent_user_id
+    from public.employer_talent_connections c
+    where c.employer_user_id = auth.uid()
+      and c.status = 'active'
+  ),
+  base as (
+    select
+      talent.slug,
+      public.normalize_profile_visibility(talent.visibility) as visibility,
+      talent.verification_status,
+      talent.availability,
+      talent.opportunity_status,
+      talent.experience_years,
+      talent.focus_area,
+      talent.top_strength,
+      talent.skills,
+      talent.languages,
+      talent.passions,
+      case when public.normalize_profile_visibility(talent.visibility) = 'confidential' and connected.talent_user_id is null then 'General location available' else talent.location end as location,
+      case when public.normalize_profile_visibility(talent.visibility) = 'confidential' and connected.talent_user_id is null then null else talent.name end as name,
+      case when public.normalize_profile_visibility(talent.visibility) = 'confidential' and connected.talent_user_id is null then null else talent.title end as title,
+      case when public.normalize_profile_visibility(talent.visibility) = 'confidential' and connected.talent_user_id is null then null else talent.summary end as summary,
+      case when public.normalize_profile_visibility(talent.visibility) = 'confidential' and connected.talent_user_id is null then null else talent.current_employer end as current_employer,
+      case when public.normalize_profile_visibility(talent.visibility) = 'confidential' and connected.talent_user_id is null then null else talent.photo_storage_path end as photo_storage_path,
+      case when public.normalize_profile_visibility(talent.visibility) = 'confidential' and connected.talent_user_id is null then null else talent.intro_video_storage_path end as intro_video_storage_path,
+      (public.normalize_profile_visibility(talent.visibility) <> 'confidential' or connected.talent_user_id is not null) as can_view_identifying_info,
+      (public.normalize_profile_visibility(talent.visibility) <> 'confidential' or connected.talent_user_id is not null) as can_view_media
+    from public.profiles talent
+    join viewer on true
+    left join connected on connected.talent_user_id = talent.user_id
+    where talent.account_type = 'talent'
+      and talent.slug is not null
+      and talent.is_published = true
+      and talent.rockstar_available = true
+      and public.normalize_profile_visibility(talent.visibility) in ('public', 'verified_employer_network', 'confidential')
+      and not (
+        coalesce(talent.blocked_companies, '{}'::text[])
+        && coalesce(viewer.viewer_company_keys, '{}'::text[])
+      )
+  )
+  select
+    base.slug, base.visibility, base.verification_status, base.availability, base.opportunity_status,
+    base.experience_years, base.focus_area, base.top_strength, base.skills, base.languages, base.passions,
+    base.location, base.name, base.title, base.summary, base.current_employer, base.photo_storage_path,
+    base.intro_video_storage_path,
+    case when base.can_view_identifying_info then profile.career_journey else '[]'::jsonb end,
+    base.can_view_identifying_info, base.can_view_media,
+    case when base.can_view_identifying_info then profile.education else null end,
+    case when base.can_view_identifying_info then profile.salary_expectation else null end
+  from base
+  join public.profiles profile on profile.slug = base.slug;
+end
+$$;
+
+revoke all on function public.discovery_profiles_for_rockstar_employer() from public, anon, authenticated, service_role;
+grant execute on function public.discovery_profiles_for_rockstar_employer() to authenticated;
+
+-- Single-talent passport lookup for Short Stay employers, mirroring talent_passport_for_viewer_v3's
+-- shape and redaction rules but restricted server-side to rockstar_available talent. Returns no rows
+-- (not-found) for any non-Rockstar slug, closing the direct-URL/API bypass path.
+create or replace function public.talent_passport_for_rockstar_employer(p_slug text)
+returns table (
+  slug text, visibility text, is_owner boolean, access_scope text, verification_status text,
+  availability text, opportunity_status text, experience_years integer, focus_area text, top_strength text,
+  skills text[], languages text[], passions text[], location text, name text, title text, summary text,
+  bio text, current_employer text, email text, career_journey jsonb, photo_storage_path text,
+  intro_video_storage_path text, education text, salary_expectation text
+)
+language plpgsql
+security definer
+stable
+set search_path = public, pg_temp
+as $$
+declare
+  v_scope text := public.employer_discovery_scope();
+begin
+  if v_scope = 'none' then
+    raise exception 'inactive_employer_subscription' using errcode = '42501';
+  end if;
+
+  return query
+  with target as (
+    select t.user_id, t.slug, t.visibility, t.is_published, t.blocked_companies, t.verification_status,
+      t.availability, t.opportunity_status, t.experience_years, t.focus_area, t.top_strength, t.skills,
+      t.languages, t.passions, t.location, t.name, t.title, t.summary, t.current_employer, t.career_journey,
+      t.photo_storage_path, t.intro_video_storage_path
+    from public.profiles t
+    where t.account_type = 'talent'
+      and t.slug = p_slug
+      and t.rockstar_available = true
+    limit 1
+  ),
+  viewer as (
+    select public.company_identity_keys(p.employer_abn, p.employer_website, p.employer_company_name) as viewer_company_keys
+    from public.profiles p
+    where p.user_id = auth.uid()
+  ),
+  connected as (
+    select c.talent_user_id
+    from public.employer_talent_connections c
+    where c.employer_user_id = auth.uid()
+      and c.status = 'active'
+  ),
+  decision as (
+    select target.*, public.normalize_profile_visibility(target.visibility) as normalized_visibility,
+      connected.talent_user_id is not null as viewer_has_active_connection
+    from target
+    left join connected on connected.talent_user_id = target.user_id
+  )
+  select
+    d.slug, d.normalized_visibility as visibility, false as is_owner,
+    case when d.normalized_visibility = 'confidential' and d.viewer_has_active_connection then 'employer_full'
+      when d.normalized_visibility = 'confidential' then 'employer_confidential'
+      else 'employer_full' end as access_scope,
+    d.verification_status, d.availability, d.opportunity_status, d.experience_years, d.focus_area, d.top_strength,
+    d.skills, d.languages, d.passions,
+    case when d.normalized_visibility <> 'confidential' or d.viewer_has_active_connection then d.location else 'General location available' end as location,
+    case when d.normalized_visibility <> 'confidential' or d.viewer_has_active_connection then d.name else null end as name,
+    case when d.normalized_visibility <> 'confidential' or d.viewer_has_active_connection then d.title else null end as title,
+    case when d.normalized_visibility <> 'confidential' or d.viewer_has_active_connection then d.summary else null end as summary,
+    null::text as bio,
+    case when d.normalized_visibility <> 'confidential' or d.viewer_has_active_connection then d.current_employer else null end as current_employer,
+    null::text as email,
+    case when d.normalized_visibility <> 'confidential' or d.viewer_has_active_connection then d.career_journey else '[]'::jsonb end as career_journey,
+    case when d.normalized_visibility <> 'confidential' or d.viewer_has_active_connection then d.photo_storage_path else null end as photo_storage_path,
+    case when d.normalized_visibility <> 'confidential' or d.viewer_has_active_connection then d.intro_video_storage_path else null end as intro_video_storage_path,
+    case when d.normalized_visibility <> 'confidential' then profile.education else null end as education,
+    profile.salary_expectation as salary_expectation
+  from decision d
+  join viewer on true
+  join public.profiles profile on profile.slug = d.slug
+  where d.normalized_visibility is not null
+    and d.is_published = true
+    and d.normalized_visibility in ('public', 'verified_employer_network', 'confidential')
+    and not (
+      coalesce(d.blocked_companies, '{}'::text[])
+      && coalesce(viewer.viewer_company_keys, '{}'::text[])
+    );
+end
+$$;
+
+revoke all on function public.talent_passport_for_rockstar_employer(text) from public, anon, authenticated, service_role;
+grant execute on function public.talent_passport_for_rockstar_employer(text) to authenticated;
+
+-- Introduction request creation for Short Stay employers. Reuses the SAME
+-- employer_introduction_requests table and accept/decline/connection machinery as
+-- create_employer_introduction_request() (no parallel introduction system) but is gated by
+-- employer_discovery_scope() instead of require_verified_employer_actor(), and is restricted
+-- to rockstar_available talent (checked directly, since it cannot rely on
+-- talent_passport_for_viewer(), which itself requires a full subscription).
+create or replace function public.create_rockstar_employer_introduction_request(
+  p_slug text,
+  p_message text default null
+)
+returns table (
+  success boolean,
+  already_exists boolean,
+  request_id uuid,
+  status text,
+  created_at timestamptz
+)
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_scope text := public.employer_discovery_scope();
+  v_uid uuid := auth.uid();
+  v_slug text := btrim(coalesce(p_slug, ''));
+  v_message text := nullif(btrim(coalesce(p_message, '')), '');
+  v_talent record;
+  v_viewer_company_keys text[];
+  v_talent_user_id uuid;
+  v_request_id uuid;
+  v_status text;
+  v_created_at timestamptz;
+  v_already_exists boolean := false;
+begin
+  if v_scope = 'none' then
+    raise exception 'inactive_employer_subscription' using errcode = '42501';
+  end if;
+
+  if v_slug = '' then
+    raise exception 'missing_slug' using errcode = '23502';
+  end if;
+
+  select p.user_id, p.visibility, p.is_published, p.blocked_companies, p.rockstar_available
+  into v_talent
+  from public.profiles p
+  where p.account_type = 'talent'
+    and p.slug = v_slug
+  limit 1;
+
+  if v_talent.user_id is null or v_talent.is_published is not true
+    or public.normalize_profile_visibility(v_talent.visibility) not in ('public', 'verified_employer_network', 'confidential')
+    or coalesce(v_talent.rockstar_available, false) is not true
+  then
+    raise exception 'not_authorized_for_candidate' using errcode = '42501';
+  end if;
+
+  select public.company_identity_keys(p.employer_abn, p.employer_website, p.employer_company_name)
+  into v_viewer_company_keys
+  from public.profiles p
+  where p.user_id = v_uid;
+
+  if coalesce(v_talent.blocked_companies, '{}'::text[]) && coalesce(v_viewer_company_keys, '{}'::text[]) then
+    raise exception 'not_authorized_for_candidate' using errcode = '42501';
+  end if;
+
+  v_talent_user_id := v_talent.user_id;
+
+  with ins as (
+    insert into public.employer_introduction_requests (employer_user_id, talent_user_id, status, message)
+    values (v_uid, v_talent_user_id, 'pending', v_message)
+    on conflict (employer_user_id, talent_user_id)
+      where (public.employer_introduction_requests.status = 'pending')
+      do nothing
+    returning id, public.employer_introduction_requests.status, public.employer_introduction_requests.created_at
+  )
+  select i.id, i.status, i.created_at
+  into v_request_id, v_status, v_created_at
+  from ins i;
+
+  if v_request_id is null then
+    select r.id, r.status, r.created_at
+    into v_request_id, v_status, v_created_at
+    from public.employer_introduction_requests r
+    where r.employer_user_id = v_uid
+      and r.talent_user_id = v_talent_user_id
+      and r.status = 'pending'
+    order by r.created_at desc
+    limit 1;
+
+    if v_request_id is null then
+      raise exception 'request_insert_failed' using errcode = 'P0001';
+    end if;
+
+    v_already_exists := true;
+  else
+    perform public.create_notification_event(
+      v_talent_user_id,
+      v_uid,
+      'intro_request_received',
+      'You received an introduction request.',
+      'Review and respond from your dashboard.',
+      'introduction_request',
+      v_request_id,
+      format('intro_request:%s:created', v_request_id::text)
+    );
+  end if;
+
+  return query
+  select true, v_already_exists, v_request_id, v_status, v_created_at;
+end
+$$;
+
+revoke all on function public.create_rockstar_employer_introduction_request(text, text) from public, anon, authenticated, service_role;
+grant execute on function public.create_rockstar_employer_introduction_request(text, text) to authenticated;
+
+-- Shared gate for the two shortlist-container CRUD functions that carry no talent-data exposure
+-- risk (naming/renaming a container the employer already owns). Widens the caller set to include
+-- an unexpired Short Stay pass, on top of the same verification/ABN/system-admin checks as
+-- require_verified_employer_actor(). Does not affect require_verified_employer_actor() itself or
+-- any function that still calls it directly.
+create or replace function public.require_employer_actor_with_discovery_access()
+returns uuid
+language plpgsql
+security definer
+stable
+set search_path = public, pg_temp
+as $$
+declare
+  v_scope text := public.employer_discovery_scope();
+begin
+  if v_scope = 'none' then
+    raise exception 'inactive_employer_subscription' using errcode = '42501';
+  end if;
+
+  return auth.uid();
+end
+$$;
+
+revoke all on function public.require_employer_actor_with_discovery_access() from public, anon, authenticated, service_role;
+grant execute on function public.require_employer_actor_with_discovery_access() to authenticated;
+
+-- Rockstar-only equivalent of save_talent_for_employer(). Does not call
+-- talent_passport_for_viewer() (which requires a full subscription); validates the target
+-- talent directly and always requires rockstar_available = true, so this function only ever
+-- saves Rockstar Talent regardless of caller scope. Writes to the SAME employer_saved_talent /
+-- employer_shortlist_members tables as the full-employer RPC.
+create or replace function public.save_rockstar_talent_for_employer(
+  p_slug text,
+  p_shortlist_ids uuid[] default null
+)
+returns table (
+  success boolean,
+  already_saved boolean,
+  saved_talent_id uuid,
+  saved_at timestamptz
+)
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_scope text := public.employer_discovery_scope();
+  v_uid uuid := auth.uid();
+  v_slug text := btrim(coalesce(p_slug, ''));
+  v_talent record;
+  v_viewer_company_keys text[];
+  v_talent_user_id uuid;
+  v_row_id uuid;
+  v_row_created_at timestamptz;
+  v_was_already_saved boolean := false;
+begin
+  if v_scope = 'none' then
+    raise exception 'inactive_employer_subscription' using errcode = '42501';
+  end if;
+
+  if v_slug = '' then
+    raise exception 'missing_slug' using errcode = '23502';
+  end if;
+
+  select p.user_id, p.visibility, p.is_published, p.blocked_companies, p.rockstar_available
+  into v_talent
+  from public.profiles p
+  where p.account_type = 'talent'
+    and p.slug = v_slug
+  limit 1;
+
+  if v_talent.user_id is null or v_talent.is_published is not true
+    or public.normalize_profile_visibility(v_talent.visibility) not in ('public', 'verified_employer_network', 'confidential')
+    or coalesce(v_talent.rockstar_available, false) is not true
+  then
+    raise exception 'not_authorized_for_candidate' using errcode = '42501';
+  end if;
+
+  if v_talent.user_id = v_uid then
+    raise exception 'cannot_save_self' using errcode = '42501';
+  end if;
+
+  select public.company_identity_keys(p.employer_abn, p.employer_website, p.employer_company_name)
+  into v_viewer_company_keys
+  from public.profiles p
+  where p.user_id = v_uid;
+
+  if coalesce(v_talent.blocked_companies, '{}'::text[]) && coalesce(v_viewer_company_keys, '{}'::text[]) then
+    raise exception 'not_authorized_for_candidate' using errcode = '42501';
+  end if;
+
+  v_talent_user_id := v_talent.user_id;
+
+  select s.id, s.created_at
+  into v_row_id, v_row_created_at
+  from public.employer_saved_talent s
+  where s.employer_user_id = v_uid
+    and s.talent_user_id = v_talent_user_id;
+
+  if found then
+    v_was_already_saved := true;
+  else
+    begin
+      insert into public.employer_saved_talent (employer_user_id, talent_user_id)
+      values (v_uid, v_talent_user_id)
+      returning id, created_at
+      into v_row_id, v_row_created_at;
+      v_was_already_saved := false;
+    exception
+      when unique_violation then
+        select s.id, s.created_at
+        into v_row_id, v_row_created_at
+        from public.employer_saved_talent s
+        where s.employer_user_id = v_uid
+          and s.talent_user_id = v_talent_user_id
+        limit 1;
+
+        if not found then
+          raise;
+        end if;
+
+        v_was_already_saved := true;
+    end;
+  end if;
+
+  if p_shortlist_ids is not null and coalesce(array_length(p_shortlist_ids, 1), 0) > 0 then
+    if exists (
+      select 1
+      from unnest(p_shortlist_ids) x(shortlist_id)
+      left join public.employer_shortlists s
+        on s.id = x.shortlist_id
+       and s.employer_user_id = v_uid
+      where s.id is null
+    ) then
+      raise exception 'invalid_shortlist_ids' using errcode = '23514';
+    end if;
+
+    insert into public.employer_shortlist_members (shortlist_id, employer_user_id, talent_user_id)
+    select distinct s.id, v_uid, v_talent_user_id
+    from public.employer_shortlists s
+    where s.employer_user_id = v_uid
+      and s.id = any(p_shortlist_ids)
+    on conflict do nothing;
+  end if;
+
+  return query
+  select true, v_was_already_saved, v_row_id, v_row_created_at;
+end
+$$;
+
+revoke all on function public.save_rockstar_talent_for_employer(text, uuid[]) from public, anon, authenticated, service_role;
+grant execute on function public.save_rockstar_talent_for_employer(text, uuid[]) to authenticated;
+
+-- Rockstar-only equivalent of add_saved_talent_to_shortlist(); calls
+-- save_rockstar_talent_for_employer() instead of save_talent_for_employer().
+create or replace function public.add_rockstar_saved_talent_to_shortlist(
+  p_slug text,
+  p_shortlist_id uuid
+)
+returns table (
+  success boolean
+)
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_scope text := public.employer_discovery_scope();
+  v_uid uuid := auth.uid();
+  v_slug text := btrim(coalesce(p_slug, ''));
+  v_talent_user_id uuid;
+begin
+  if v_scope = 'none' then
+    raise exception 'inactive_employer_subscription' using errcode = '42501';
+  end if;
+
+  if not exists (
+    select 1
+    from public.employer_shortlists s
+    where s.id = p_shortlist_id
+      and s.employer_user_id = v_uid
+  ) then
+    raise exception 'shortlist_not_found' using errcode = 'P0002';
+  end if;
+
+  perform * from public.save_rockstar_talent_for_employer(v_slug, null);
+
+  select p.user_id into v_talent_user_id
+  from public.profiles p
+  where p.account_type = 'talent'
+    and p.slug = v_slug
+  limit 1;
+
+  if v_talent_user_id is null then
+    raise exception 'candidate_not_found' using errcode = 'P0002';
+  end if;
+
+  insert into public.employer_shortlist_members (shortlist_id, employer_user_id, talent_user_id)
+  values (p_shortlist_id, v_uid, v_talent_user_id)
+  on conflict do nothing;
+
+  return query select true;
+end
+$$;
+
+revoke all on function public.add_rockstar_saved_talent_to_shortlist(text, uuid) from public, anon, authenticated, service_role;
+grant execute on function public.add_rockstar_saved_talent_to_shortlist(text, uuid) to authenticated;
+
+-- Rockstar-only equivalent of list_saved_talent_for_employer(). Hydrates rows via
+-- talent_passport_for_rockstar_employer(), which already filters to rockstar_available = true,
+-- so previously-saved non-Rockstar talent (saved while on a full plan) never appear here, and
+-- previously-saved Rockstar talent reappear automatically on a new Short Stay pass.
+create or replace function public.list_saved_talent_for_rockstar_employer(
+  p_shortlist_id uuid default null
+)
+returns table (
+  saved_talent_id uuid,
+  saved_at timestamptz,
+  slug text,
+  access_scope text,
+  visibility text,
+  verification_status text,
+  availability text,
+  opportunity_status text,
+  experience_years integer,
+  focus_area text,
+  education text,
+  salary_expectation text,
+  top_strength text,
+  skills text[],
+  location text,
+  name text,
+  title text,
+  summary text,
+  current_employer text,
+  email text,
+  career_journey jsonb,
+  photo_storage_path text,
+  intro_video_storage_path text,
+  shortlist_ids uuid[]
+)
+language plpgsql
+security definer
+stable
+set search_path = public, pg_temp
+as $$
+declare
+  v_scope text := public.employer_discovery_scope();
+  v_uid uuid := auth.uid();
+begin
+  if v_scope = 'none' then
+    raise exception 'inactive_employer_subscription' using errcode = '42501';
+  end if;
+
+  if p_shortlist_id is not null and not exists (
+    select 1
+    from public.employer_shortlists s
+    where s.id = p_shortlist_id
+      and s.employer_user_id = v_uid
+  ) then
+    raise exception 'shortlist_not_found' using errcode = 'P0002';
+  end if;
+
+  return query
+  with base as (
+    select
+      st.id as saved_talent_id,
+      st.created_at as saved_at,
+      t.slug,
+      st.talent_user_id
+    from public.employer_saved_talent st
+    join public.profiles t
+      on t.user_id = st.talent_user_id
+     and t.account_type = 'talent'
+     and t.rockstar_available = true
+    where st.employer_user_id = v_uid
+      and (
+        p_shortlist_id is null
+        or exists (
+          select 1
+          from public.employer_shortlist_members m
+          where m.shortlist_id = p_shortlist_id
+            and m.employer_user_id = st.employer_user_id
+            and m.talent_user_id = st.talent_user_id
+        )
+      )
+  )
+  select
+    b.saved_talent_id,
+    b.saved_at,
+    p.slug,
+    p.access_scope,
+    p.visibility,
+    p.verification_status,
+    p.availability,
+    p.opportunity_status,
+    p.experience_years,
+    p.focus_area,
+    p.education,
+    p.salary_expectation,
+    p.top_strength,
+    p.skills,
+    p.location,
+    p.name,
+    p.title,
+    p.summary,
+    p.current_employer,
+    p.email,
+    p.career_journey,
+    p.photo_storage_path,
+    p.intro_video_storage_path,
+    coalesce(
+      (
+        select array_agg(m.shortlist_id order by m.shortlist_id)
+        from public.employer_shortlist_members m
+        where m.employer_user_id = v_uid
+          and m.talent_user_id = b.talent_user_id
+      ),
+      '{}'::uuid[]
+    ) as shortlist_ids
+  from base b
+  join lateral public.talent_passport_for_rockstar_employer(b.slug) p on true
+  order by b.saved_at desc;
+end
+$$;
+
+revoke all on function public.list_saved_talent_for_rockstar_employer(uuid) from public, anon, authenticated, service_role;
+grant execute on function public.list_saved_talent_for_rockstar_employer(uuid) to authenticated;
+
+-- Rockstar-only equivalent of list_employer_shortlists(); member counts only include Rockstar
+-- talent still accessible under this scope.
+create or replace function public.list_employer_shortlists_for_rockstar_employer()
+returns table (
+  id uuid,
+  name text,
+  created_at timestamptz,
+  updated_at timestamptz,
+  member_count bigint
+)
+language plpgsql
+security definer
+stable
+set search_path = public, pg_temp
+as $$
+declare
+  v_scope text := public.employer_discovery_scope();
+  v_uid uuid := auth.uid();
+begin
+  if v_scope = 'none' then
+    raise exception 'inactive_employer_subscription' using errcode = '42501';
+  end if;
+
+  return query
+  with accessible_members as (
+    select
+      m.shortlist_id,
+      count(*)::bigint as accessible_count
+    from public.employer_shortlist_members m
+    join public.profiles t
+      on t.user_id = m.talent_user_id
+     and t.account_type = 'talent'
+     and t.rockstar_available = true
+    join lateral public.talent_passport_for_rockstar_employer(t.slug) p on true
+    where m.employer_user_id = v_uid
+    group by m.shortlist_id
+  )
+  select
+    s.id,
+    s.name,
+    s.created_at,
+    s.updated_at,
+    coalesce(am.accessible_count, 0)::bigint as member_count
+  from public.employer_shortlists s
+  left join accessible_members am
+    on am.shortlist_id = s.id
+  where s.employer_user_id = v_uid
+  order by s.updated_at desc, s.created_at desc;
+end
+$$;
+
+revoke all on function public.list_employer_shortlists_for_rockstar_employer() from public, anon, authenticated, service_role;
+grant execute on function public.list_employer_shortlists_for_rockstar_employer() to authenticated;
+
+

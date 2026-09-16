@@ -23,3 +23,35 @@ export async function hasEmployerPaidAccess(
 ) {
   return (await isSystemAdminEmployer(accessToken)) || hasEmployerSubscriptionAccess(snapshot);
 }
+
+export type EmployerDiscoveryScope = "full" | "rockstar_only" | "none";
+
+// Short Stay access is intentionally excluded from hasEmployerPaidAccess(): it is a narrower,
+// Rockstar-only discovery entitlement, never full employer access.
+export function hasActiveShortStayAccess(
+  shortStayAccessExpiresAt: string | null | undefined,
+  now = new Date(),
+): boolean {
+  if (!shortStayAccessExpiresAt) {
+    return false;
+  }
+
+  const expiresAt = new Date(shortStayAccessExpiresAt);
+  return !Number.isNaN(expiresAt.getTime()) && expiresAt.getTime() > now.getTime();
+}
+
+export function resolveEmployerDiscoveryScope(
+  hasFullAccess: boolean,
+  shortStayAccessExpiresAt: string | null | undefined,
+  now = new Date(),
+): EmployerDiscoveryScope {
+  if (hasFullAccess) {
+    return "full";
+  }
+
+  if (hasActiveShortStayAccess(shortStayAccessExpiresAt, now)) {
+    return "rockstar_only";
+  }
+
+  return "none";
+}

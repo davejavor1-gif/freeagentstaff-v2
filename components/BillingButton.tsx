@@ -10,7 +10,7 @@ export default function BillingButton({
   className,
 }: {
   action: "checkout" | "portal";
-  plan?: "free_agent_pro" | "employer";
+  plan?: "free_agent_pro" | "employer" | "short_stay_employer";
   children: React.ReactNode;
   className: string;
 }) {

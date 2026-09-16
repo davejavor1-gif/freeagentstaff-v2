@@ -31,6 +31,18 @@ export function getStripePriceId(plan: "free_agent_pro" | "employer") {
   return priceId;
 }
 
+export const SHORT_STAY_ACCESS_DURATION_MS = 72 * 60 * 60 * 1000;
+
+export function getShortStayPriceId() {
+  const priceId = process.env.STRIPE_SHORT_STAY_PRICE_ID;
+
+  if (!priceId) {
+    throw new Error("STRIPE_SHORT_STAY_PRICE_ID is not configured.");
+  }
+
+  return priceId;
+}
+
 export type BillingPlan = "free_agent_pro" | "employer";
 
 // Resolves the plan strictly from the subscription's actual Stripe Price ID so webhook
@@ -40,6 +52,11 @@ export function planForPriceId(priceId: string | null | undefined): BillingPlan 
   if (priceId === process.env.STRIPE_TALENT_PRO_PRICE_ID) return "free_agent_pro";
   if (priceId === process.env.STRIPE_EMPLOYER_PRICE_ID) return "employer";
   return null;
+}
+
+// Same never-trust-metadata principle as planForPriceId(), for the one-time Short Stay price.
+export function isShortStayPriceId(priceId: string | null | undefined): boolean {
+  return Boolean(priceId) && priceId === process.env.STRIPE_SHORT_STAY_PRICE_ID;
 }
 
 export function planForAccount(accountType: "talent" | "employer", requestedPlan: BillingPlan) {

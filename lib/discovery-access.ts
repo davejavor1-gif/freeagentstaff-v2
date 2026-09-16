@@ -7,7 +7,7 @@ import { createServiceRoleSupabaseClient, createUserServerSupabaseClient } from 
 import { loadPrivateAccess } from "@/lib/private-access";
 import { loadTalentSubscriptionRowsBySlugs, trackTalentAnalyticsEvents } from "@/lib/talent-pro-analytics";
 import { hasTalentProAccess, normalizeEmployerSubscriptionSnapshot, normalizeTalentSubscriptionSnapshot } from "@/lib/talent-subscription";
-import { hasEmployerPaidAccess } from "@/lib/employer-entitlement";
+import { hasEmployerPaidAccess, resolveEmployerDiscoveryScope } from "@/lib/employer-entitlement";
 import { normalizeAvailability as normalizeCanonicalAvailability } from "@/lib/talent-profile-options";
 
 const SIGNED_URL_TTL_SECONDS = 60 * 60;
@@ -30,7 +30,7 @@ function toEducationEntries(value: Json | null | undefined): EducationEntry[] {
   });
 }
 
-type ViewerRow = Pick<ProfilesRow, "account_type" | "employer_verification_status" | "employer_abn" | "employer_acn" | "employer_identifier_type" | "employer_company_name" | "employer_subscription_status" | "employer_subscription_current_period_ends_at" | "employer_subscription_cancel_at_period_end">;
+type ViewerRow = Pick<ProfilesRow, "account_type" | "employer_verification_status" | "employer_abn" | "employer_acn" | "employer_identifier_type" | "employer_company_name" | "employer_subscription_status" | "employer_subscription_current_period_ends_at" | "employer_subscription_cancel_at_period_end" | "short_stay_access_expires_at">;
 type DiscoveryRpcRow = Database["public"]["Functions"]["discovery_profiles_for_verified_employer_v2"]["Returns"][number];
 type PassportRpcRow = Database["public"]["Functions"]["talent_passport_for_viewer_v3"]["Returns"][number];
 type PublicPassportRpcRow = Database["public"]["Functions"]["talent_passport_public"]["Returns"][number];
@@ -189,7 +189,7 @@ async function getViewerContext(accessToken: string): Promise<ViewerContext | nu
 
   const { data: viewerRow } = await userClient
     .from("profiles")
-    .select("account_type, employer_verification_status, employer_abn, employer_acn, employer_identifier_type, employer_subscription_status, employer_subscription_current_period_ends_at, employer_subscription_cancel_at_period_end")
+    .select("account_type, employer_verification_status, employer_abn, employer_acn, employer_identifier_type, employer_subscription_status, employer_subscription_current_period_ends_at, employer_subscription_cancel_at_period_end, short_stay_access_expires_at")
     .eq("user_id", data.user.id)
     .maybeSingle();
 
@@ -380,7 +380,10 @@ export async function loadDiscoveryResults(accessToken: string | null | undefine
     cancelAtPeriodEnd: viewer.viewerRow.employer_subscription_cancel_at_period_end,
   });
 
-  if (!await hasEmployerPaidAccess(accessToken, employerSubscription)) {
+  const hasFullAccess = await hasEmployerPaidAccess(accessToken, employerSubscription);
+  const discoveryScope = resolveEmployerDiscoveryScope(hasFullAccess, viewer.viewerRow.short_stay_access_expires_at);
+
+  if (discoveryScope === "none") {
     return {
       allowed: false,
       reason: "inactive_employer_subscription",
@@ -389,7 +392,9 @@ export async function loadDiscoveryResults(accessToken: string | null | undefine
     };
   }
 
-  const { data, error } = await viewer.userClient.rpc("discovery_profiles_for_verified_employer_v2");
+  const { data, error } = discoveryScope === "full"
+    ? await viewer.userClient.rpc("discovery_profiles_for_verified_employer_v2")
+    : await viewer.userClient.rpc("discovery_profiles_for_rockstar_employer");
 
   if (error) {
     return {
@@ -464,6 +469,8 @@ export async function loadTalentPassport(accessToken: string | null | undefined,
     };
   }
 
+  let employerDiscoveryScope: ReturnType<typeof resolveEmployerDiscoveryScope> | null = null;
+
   if (viewer.viewerRow?.account_type === "employer") {
     if (viewer.viewerRow.employer_verification_status !== "verified") {
       return {
@@ -487,7 +494,10 @@ export async function loadTalentPassport(accessToken: string | null | undefined,
       cancelAtPeriodEnd: viewer.viewerRow.employer_subscription_cancel_at_period_end,
     });
 
-    if (!await hasEmployerPaidAccess(accessToken, employerSubscription)) {
+    const hasFullAccess = await hasEmployerPaidAccess(accessToken, employerSubscription);
+    employerDiscoveryScope = resolveEmployerDiscoveryScope(hasFullAccess, viewer.viewerRow.short_stay_access_expires_at);
+
+    if (employerDiscoveryScope === "none") {
       return {
         allowed: false,
         reason: "inactive_employer_subscription",
@@ -503,7 +513,10 @@ export async function loadTalentPassport(accessToken: string | null | undefined,
   }
 
   const passportArgs: TalentPassportRpcArgs = { p_slug: slug };
-  const { data, error } = await viewer.userClient.rpc("talent_passport_for_viewer_v3", passportArgs as never);
+  const passportRpcName: "talent_passport_for_viewer_v3" | "talent_passport_for_rockstar_employer" = employerDiscoveryScope === "rockstar_only"
+    ? "talent_passport_for_rockstar_employer"
+    : "talent_passport_for_viewer_v3";
+  const { data, error } = await viewer.userClient.rpc(passportRpcName, passportArgs as never);
 
   if (error) {
     return {

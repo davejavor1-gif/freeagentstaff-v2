@@ -28,6 +28,7 @@ export interface ProfilesRow {
   title: string | null;
   location: string | null;
   availability: string | null;
+  rockstar_available: boolean;
   top_strength: string | null;
   experience_years: number;
   focus_area: string | null;
@@ -65,6 +66,9 @@ export interface ProfilesRow {
   employer_subscription_cancel_at_period_end: boolean;
   stripe_employer_subscription_id: string | null;
   stripe_employer_price_id: string | null;
+  short_stay_access_expires_at: string | null;
+  stripe_short_stay_payment_intent_id: string | null;
+  stripe_short_stay_checkout_session_id: string | null;
   terms_accepted_at: string | null;
   terms_version: string | null;
   privacy_acknowledged_at: string | null;
@@ -77,6 +81,7 @@ export interface ProfilesRow {
 export interface ProfilesInsert {
   user_id: string;
   account_type?: "talent" | "employer";
+  rockstar_available?: boolean;
   slug?: string | null;
   visibility?: "public" | "verified_employer_network" | "confidential" | "employer_network";
   opportunity_status?: "actively_open" | "exploring" | "not_open";
@@ -138,6 +143,9 @@ export interface ProfilesInsert {
   employer_subscription_cancel_at_period_end?: boolean;
   stripe_employer_subscription_id?: string | null;
   stripe_employer_price_id?: string | null;
+  short_stay_access_expires_at?: string | null;
+  stripe_short_stay_payment_intent_id?: string | null;
+  stripe_short_stay_checkout_session_id?: string | null;
   terms_accepted_at?: string | null;
   terms_version?: string | null;
   privacy_acknowledged_at?: string | null;
@@ -147,6 +155,7 @@ export interface ProfilesInsert {
 
 export interface ProfilesUpdate {
   account_type?: "talent" | "employer";
+  rockstar_available?: boolean;
   slug?: string | null;
   visibility?: "public" | "verified_employer_network" | "confidential" | "employer_network";
   opportunity_status?: "actively_open" | "exploring" | "not_open";
@@ -208,6 +217,9 @@ export interface ProfilesUpdate {
   employer_subscription_cancel_at_period_end?: boolean;
   stripe_employer_subscription_id?: string | null;
   stripe_employer_price_id?: string | null;
+  short_stay_access_expires_at?: string | null;
+  stripe_short_stay_payment_intent_id?: string | null;
+  stripe_short_stay_checkout_session_id?: string | null;
   terms_accepted_at?: string | null;
   terms_version?: string | null;
   privacy_acknowledged_at?: string | null;
@@ -584,6 +596,34 @@ export interface Database {
           can_view_media: boolean | null;
         }>;
       };
+      discovery_profiles_for_rockstar_employer: {
+        Args: Record<string, never>;
+        Returns: Array<{
+          slug: string;
+          visibility: "public" | "verified_employer_network" | "confidential" | null;
+          verification_status: "unverified" | "pending" | "verified" | "rejected" | null;
+          availability: string | null;
+          opportunity_status: "actively_open" | "exploring" | "not_open" | null;
+          experience_years: number | null;
+          focus_area: string | null;
+          education: string | null;
+          salary_expectation: ProfilesRow["salary_expectation"];
+          top_strength: string | null;
+          skills: string[] | null;
+          languages: string[] | null;
+          passions: string[] | null;
+          location: string | null;
+          name: string | null;
+          title: string | null;
+          summary: string | null;
+          current_employer: string | null;
+          career_journey: Json | null;
+          photo_storage_path: string | null;
+          intro_video_storage_path: string | null;
+          can_view_identifying_info: boolean | null;
+          can_view_media: boolean | null;
+        }>;
+      };
       talent_passport_for_viewer: {
         Args: { p_slug: string };
         Returns: Array<{
@@ -642,6 +682,36 @@ export interface Database {
         }>;
       };
       talent_passport_for_viewer_v3: {
+        Args: { p_slug: string };
+        Returns: Array<{
+          slug: string;
+          visibility: "public" | "verified_employer_network" | "confidential" | null;
+          is_owner: boolean;
+          access_scope: "owner_full" | "employer_full" | "employer_confidential" | null;
+          verification_status: "unverified" | "pending" | "verified" | "rejected" | null;
+          availability: string | null;
+          opportunity_status: "actively_open" | "exploring" | "not_open" | null;
+          experience_years: number | null;
+          focus_area: string | null;
+          top_strength: string | null;
+          skills: string[] | null;
+          languages: string[] | null;
+          passions: string[] | null;
+          location: string | null;
+          name: string | null;
+          title: string | null;
+          summary: string | null;
+          bio: string | null;
+          current_employer: string | null;
+          email: string | null;
+          career_journey: Json | null;
+          photo_storage_path: string | null;
+          intro_video_storage_path: string | null;
+          education: string | null;
+          salary_expectation: ProfilesRow["salary_expectation"];
+        }>;
+      };
+      talent_passport_for_rockstar_employer: {
         Args: { p_slug: string };
         Returns: Array<{
           slug: string;
