@@ -17,7 +17,7 @@ export default function PrivacyPage() {
       titleColor="#AFF546"
       description="How Freeagentstaff collects, uses, and protects information across the platform."
     >
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#9a6d15]">Australia &middot; Effective: 11 September 2026</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#9a6d15]">Australia &middot; Effective: 17 September 2026</p>
           <div className="mt-8 space-y-7 text-sm leading-7 text-[#f7ebcf] sm:text-base">
             <section className="rounded-2xl border border-[#cda64d]/40 bg-[#f7ebcf]/[0.06] p-5 sm:p-6">
               <h2 className="text-lg font-bold text-[#f7ebcf]">Key points</h2>
@@ -70,7 +70,7 @@ export default function PrivacyPage() {
                 Talent may also upload a resume, video introduction or other files where those features are available.
               </p>
               <p className="mt-2">
-                We may collect information about the way a Talent profile is configured, including whether the Talent has selected Public, Employer Network or Confidential visibility and the Talent&apos;s current opportunity status.
+                We may collect information about the way a Talent profile is configured, including whether the Talent has selected Public, Employer Network or Confidential visibility, the Talent&apos;s current opportunity status and whether the Talent has enabled Rockstar availability for one-off shifts.
               </p>
               <p className="mt-2">
                 For Employers, we may collect business name, ABN or other business identifiers, contact details, contact-person information, role, employer verification information, subscription status and activity performed through employer tools.
@@ -127,6 +127,9 @@ export default function PrivacyPage() {
               </p>
               <p className="mt-2">
                 FreeAgentStaff may also provide availability settings such as Available Now, Open to Opportunities or Closed to Opportunities.
+              </p>
+              <p className="mt-2">
+                Talent may also optionally enable Rockstar availability to indicate they are available for one-off or short-term shifts. Enabling Rockstar availability is optional and controlled by the Talent and may make the Talent discoverable to Employers searching specifically for Rockstar-available Talent, including Employers accessing FreeAgentStaff through a Short Stay access period. Enabling Rockstar availability does not change the Talent&apos;s selected Privacy &amp; Visibility setting and does not make confidential or otherwise private information available to Employers. The information an Employer, including a Short Stay Employer, can view about a Talent remains governed by the Talent&apos;s Privacy &amp; Visibility setting and the introduction and connection rules described in this Policy.
               </p>
               <p className="mt-2">
                 The exact information visible under each setting is explained within the platform. Talent should review their Privacy &amp; Visibility settings whenever their preferences change.
@@ -206,6 +209,9 @@ export default function PrivacyPage() {
               <p className="mt-2">
                 Talent should continue to exercise appropriate judgement when communicating with prospective employers.
               </p>
+              <p className="mt-2">
+                Where FreeAgentStaff offers a one-time Short Stay access option for Employers, the same employer verification requirements described in this section apply before Short Stay access is granted.
+              </p>
             </section>
 
             <section>
@@ -228,6 +234,9 @@ export default function PrivacyPage() {
               </p>
               <p className="mt-2">
                 Employer Network information remains restricted according to the applicable employer access rules, and Confidential information remains governed by the existing Confidential discovery, introduction, connection and identity-reveal model.
+              </p>
+              <p className="mt-2">
+                Where an Employer accesses FreeAgentStaff through a Short Stay access period, that Employer&apos;s ability to view Talent information is limited to Talent who have enabled Rockstar availability and remains subject to the same Privacy &amp; Visibility, introduction and connection rules that apply to other Employers.
               </p>
               <p className="mt-2">
                 FreeAgentStaff may provide tools that help Talent copy their Passport URL, download a Passport logo or prepare or copy linked Passport content for supported applications. Compatibility with every browser, email client, résumé editor, document editor, website or other third-party application is not guaranteed. Third-party services are governed by their own functionality and terms.

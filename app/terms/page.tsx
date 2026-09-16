@@ -17,7 +17,7 @@ export default function TermsPage() {
       titleColor="#2BD7EF"
       description="The terms that guide access to and use of the Freeagentstaff platform."
     >
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#9a6d15]">Last updated: 11 September 2026</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#9a6d15]">Last updated: 17 September 2026</p>
           <div className="mt-8 space-y-7 text-sm leading-7 text-[#f7ebcf] sm:text-base">
             <section>
               <h2 className="text-lg font-bold text-[#f7ebcf]">1. Who we are and what we do</h2>
@@ -102,6 +102,10 @@ export default function TermsPage() {
               <p className="mt-2">4.7 Talent are responsible for selecting the visibility and opportunity settings appropriate to them.</p>
               <p className="mt-2">4.8 Visibility and opportunity settings control how FreeAgentStaff presents a Talent through the platform but do not guarantee that the Talent will or will not be contacted, discovered, interviewed or hired.</p>
               <p className="mt-2">4.9 Talent should review their settings whenever their circumstances or preferences change. If a Talent changes from Public to Employer Network or Confidential, or unpublishes their Talent Passport, anonymous public access through FreeAgentStaff should cease according to the platform&apos;s current functionality. This cannot necessarily retract copies that were downloaded, copied, screenshotted, cached, saved, forwarded or otherwise retained by third parties while the Passport was publicly available.</p>
+              <p className="mt-2">4.10 Talent can also optionally indicate that they are &quot;Rockstar Available for one-off shifts&quot; (&quot;Rockstar&quot;). Rockstar is a separate, optional availability indicator to the opportunity status described in section 4.6 and is controlled entirely by the Talent.</p>
+              <p className="mt-2">4.11 Enabling Rockstar can make a Talent discoverable to Employers who are specifically searching for Talent available for one-off or short-term shifts, including Employers accessing FreeAgentStaff through a Short Stay access period described in section 7.</p>
+              <p className="mt-2">4.12 Talent can change or disable their Rockstar availability at any time through their account. Enabling or disabling Rockstar does not itself change a Talent&apos;s selected Privacy &amp; Visibility setting, opportunity status or any other profile control.</p>
+              <p className="mt-2">4.13 Rockstar status does not guarantee that a Talent will be discovered, contacted, introduced, engaged or offered work, and FreeAgentStaff does not guarantee the accuracy or continued availability of a Talent merely because Rockstar is enabled.</p>
             </section>
 
             <section>
@@ -157,6 +161,10 @@ export default function TermsPage() {
               <p className="mt-2">7.3 Employers are responsible for conducting their own assessment and due diligence before interviewing, engaging or employing a Talent.</p>
               <p className="mt-2">7.4 FreeAgentStaff does not guarantee the identity, qualifications, experience, suitability, availability or right to work of any Talent unless a particular item is expressly stated to have been verified by FreeAgentStaff or an approved verification provider.</p>
               <p className="mt-2">7.5 Employers remain responsible for any checks required by law or reasonably appropriate for a role.</p>
+              <p className="mt-2">7.6 FreeAgentStaff may offer a Short Stay access option that provides a verified Employer, subject to the Employer verification and ABN or ACN requirements in section 6, with a one-time, time-limited access period to search Talent who have enabled Rockstar availability as described in section 4.</p>
+              <p className="mt-2">7.7 Short Stay access is limited to Talent who have enabled Rockstar availability and does not provide access to the full Talent discovery pool available under a standard Employer subscription.</p>
+              <p className="mt-2">7.8 Within its permitted scope, Short Stay access allows an eligible Employer to search Rockstar Talent, view permitted Rockstar Talent profiles, save or shortlist Talent and request introductions using the existing process described in section 8. Short Stay access does not override or bypass a Talent&apos;s Privacy &amp; Visibility settings or the introduction and connection controls described in these Terms.</p>
+              <p className="mt-2">7.9 Employers remain responsible for confirming a Talent&apos;s actual availability, suitability and engagement terms directly with the Talent, regardless of whether that Talent has enabled Rockstar availability.</p>
             </section>
 
             <section>
@@ -248,6 +256,10 @@ export default function TermsPage() {
               <p className="mt-2">12.11 We may change subscription prices or paid-plan features. Where a price change affects an existing recurring subscriber, we will provide reasonable notice before the new price applies to a future renewal.</p>
               <p className="mt-2">12.12 If you do not agree to a notified price change, you can cancel before the new price takes effect.</p>
               <p className="mt-2">12.13 Nothing in this section limits rights that cannot lawfully be excluded under the Australian Consumer Law.</p>
+              <p className="mt-2">12.14 Short Stay is a one-time Employer access product rather than a recurring subscription. At the date of these Terms, a Short Stay access period provides 3 days of access as described in section 7.</p>
+              <p className="mt-2">12.15 Short Stay access does not automatically renew. A new Short Stay access period may be purchased after the current period expires, subject to FreeAgentStaff&apos;s then-current availability, pricing and terms.</p>
+              <p className="mt-2">12.16 Applicable fees for Short Stay access are displayed on our <Link className="font-semibold text-[#f2cc63] underline underline-offset-4" href="/pricing">Pricing page</Link> or otherwise communicated before purchase, consistent with section 12.2.</p>
+              <p className="mt-2">12.17 When a Short Stay access period expires, the Employer&apos;s access to Rockstar Talent discovery under that period ends. Expiry of Short Stay access does not automatically terminate an existing accepted or active connection between that Employer and a Talent.</p>
             </section>
 
             <section>
