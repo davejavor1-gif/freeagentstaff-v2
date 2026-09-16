@@ -29,6 +29,7 @@ type TalentRowCore = Pick<ProfilesInsert,
   | "education_entries"
   | "salary_expectation"
   | "contact_email"
+  | "mobile_number"
   | "resume_storage_path"
   | "resume_original_filename"
   | "resume_uploaded_at"
@@ -93,6 +94,7 @@ export function buildCanonicalTalentColumns(
     education_entries: educationEntries as unknown as Json,
     salary_expectation: profile.salaryExpectation ?? null,
     contact_email: contactEmail,
+    mobile_number: normalizeString(profile.mobileNumber),
     resume_storage_path: normalizeString(profile.resumeStoragePath),
     resume_original_filename: normalizeString(profile.resumeOriginalFilename),
     resume_uploaded_at: profile.resumeUploadedAt ?? null,

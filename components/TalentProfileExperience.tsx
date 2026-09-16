@@ -10,6 +10,7 @@ import {
   Download,
   Lock,
   Mail,
+  Phone,
   RotateCcw,
   X,
 } from "lucide-react";
@@ -119,6 +120,7 @@ export default function TalentProfileExperience({
             status: "none",
             requestedAt: null,
             contactEmail: null,
+            mobileNumber: null,
             resumeOriginalFilename: null,
             resumeUploadedAt: null,
             resumeAvailable: false,
@@ -712,6 +714,7 @@ export default function TalentProfileExperience({
                     {access.contactEmail ?? "Not available"}
                   </p>
                 </div>
+                {access.mobileNumber ? <div className="rounded-[20px] border border-[#cda64d]/35 bg-[#fffaf0] p-4"><p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#9a6d15]"><Phone className="h-4 w-4" /> Mobile number</p><p className="mt-2 font-semibold text-[#0f2744]">{access.mobileNumber}</p></div> : null}
                 <div className="rounded-[20px] border border-[#cda64d]/35 bg-[#fffaf0] p-4">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">
                     Resume

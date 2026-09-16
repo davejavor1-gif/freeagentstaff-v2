@@ -35,6 +35,7 @@ export interface ProfilesRow {
   education_entries: Json;
   salary_expectation: "under_60k" | "60k_80k" | "80k_100k" | "100k_120k" | "120k_150k" | "150k_200k" | "200k_plus" | "prefer_not_to_say" | null;
   contact_email: string | null;
+  mobile_number: string | null;
   resume_storage_path: string | null;
   resume_original_filename: string | null;
   resume_uploaded_at: string | null;
@@ -107,6 +108,7 @@ export interface ProfilesInsert {
   education_entries?: Json;
   salary_expectation?: ProfilesRow["salary_expectation"];
   contact_email?: string | null;
+  mobile_number?: string | null;
   resume_storage_path?: string | null;
   resume_original_filename?: string | null;
   resume_uploaded_at?: string | null;
@@ -176,6 +178,7 @@ export interface ProfilesUpdate {
   education_entries?: Json;
   salary_expectation?: ProfilesRow["salary_expectation"];
   contact_email?: string | null;
+  mobile_number?: string | null;
   resume_storage_path?: string | null;
   resume_original_filename?: string | null;
   resume_uploaded_at?: string | null;
@@ -725,6 +728,7 @@ export interface Database {
           request_status: string;
           requested_at: string | null;
           contact_email: string | null;
+          mobile_number: string | null;
           resume_original_filename: string | null;
           resume_uploaded_at: string | null;
           resume_available: boolean;
@@ -734,6 +738,7 @@ export interface Database {
         Args: { p_talent_slug: string };
         Returns: Array<{
           contact_email: string | null;
+          mobile_number: string | null;
           resume_original_filename: string | null;
           resume_uploaded_at: string | null;
           resume_storage_path: string | null;

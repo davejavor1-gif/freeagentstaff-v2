@@ -90,6 +90,7 @@ type ProfileSelectResult = {
   education_entries?: Json;
   salary_expectation?: FreeAgentProfile["salaryExpectation"];
   contact_email?: string | null;
+  mobile_number?: string | null;
   resume_storage_path?: string | null;
   resume_original_filename?: string | null;
   resume_uploaded_at?: string | null;
@@ -140,6 +141,7 @@ function hydrateBuilderProfile(profileResult: ProfileSelectResult, fallbackEmail
   loadedProfile.educationEntries = toEducationEntries(profileResult.education_entries);
   loadedProfile.salaryExpectation = profileResult.salary_expectation ?? loadedProfile.salaryExpectation ?? null;
   loadedProfile.contactEmail = profileResult.contact_email ?? loadedProfile.contactEmail ?? fallbackEmail ?? "";
+  loadedProfile.mobileNumber = profileResult.mobile_number ?? loadedProfile.mobileNumber ?? "";
   loadedProfile.resumeStoragePath = profileResult.resume_storage_path ?? loadedProfile.resumeStoragePath ?? null;
   loadedProfile.resumeOriginalFilename = profileResult.resume_original_filename ?? loadedProfile.resumeOriginalFilename ?? null;
   loadedProfile.resumeUploadedAt = profileResult.resume_uploaded_at ?? loadedProfile.resumeUploadedAt ?? null;
@@ -236,7 +238,7 @@ export default function BuilderPage() {
 
       const { data, error } = await supabase
         .from("profiles")
-        .select("slug, profile, account_type, visibility, opportunity_status, is_published, name, title, location, availability, top_strength, experience_years, focus_area, education, education_entries, salary_expectation, contact_email, resume_storage_path, resume_original_filename, resume_uploaded_at, summary, bio, skills, languages, passions, career_journey, email, image_alt, current_employer, intro_video_url, photo_url, photo_storage_path, intro_video_storage_path, talent_plan, talent_subscription_status, talent_subscription_current_period_ends_at")
+        .select("slug, profile, account_type, visibility, opportunity_status, is_published, name, title, location, availability, top_strength, experience_years, focus_area, education, education_entries, salary_expectation, contact_email, mobile_number, resume_storage_path, resume_original_filename, resume_uploaded_at, summary, bio, skills, languages, passions, career_journey, email, image_alt, current_employer, intro_video_url, photo_url, photo_storage_path, intro_video_storage_path, talent_plan, talent_subscription_status, talent_subscription_current_period_ends_at")
         .eq("user_id", supabaseSession.user.id)
         .maybeSingle();
 
@@ -550,7 +552,7 @@ export default function BuilderPage() {
   }
 
   const updateTextField = (
-    field: "name" | "title" | "location" | "topStrength" | "availability" | "focusArea" | "salaryExpectation" | "contactEmail" | "bio",
+    field: "name" | "title" | "location" | "topStrength" | "availability" | "focusArea" | "salaryExpectation" | "contactEmail" | "mobileNumber" | "bio",
     value: string,
   ) => {
     if (field === "availability") {
@@ -1353,6 +1355,16 @@ export default function BuilderPage() {
                   className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] outline-none transition focus:border-[#0f2744]"
                   placeholder="you@example.com"
                   autoComplete="email"
+                />
+                <label htmlFor="mobileNumber" className="mt-4 block text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Mobile number <span className="font-normal normal-case tracking-normal text-[#6a7a91]">(optional)</span></label>
+                <input
+                  id="mobileNumber"
+                  type="tel"
+                  value={profile.mobileNumber ?? ""}
+                  onChange={(event) => updateTextField("mobileNumber", event.target.value)}
+                  className="w-full rounded-2xl border border-[#cda64d]/50 bg-white/80 px-4 py-3 text-sm text-[#071426] outline-none transition focus:border-[#0f2744]"
+                  placeholder="04XX XXX XXX"
+                  autoComplete="tel"
                 />
               </div>
 

@@ -25,6 +25,7 @@ type StateRow = {
   request_status: PrivateAccessState["status"];
   requested_at: string | null;
   contact_email: string | null;
+  mobile_number: string | null;
   resume_original_filename: string | null;
   resume_uploaded_at: string | null;
   resume_available: boolean;
@@ -68,6 +69,7 @@ export async function loadPrivateAccess(accessToken: string | null | undefined, 
     status: row.request_status,
     requestedAt: row.requested_at,
     contactEmail: row.contact_email,
+    mobileNumber: row.mobile_number,
     resumeOriginalFilename: row.resume_original_filename,
     resumeUploadedAt: row.resume_uploaded_at,
     resumeAvailable: row.resume_available,
@@ -85,14 +87,14 @@ export async function respondPrivateAccess(accessToken: string | null | undefine
   const { data, error } = await rpc<Array<{ request_id: string; request_status: PrivateAccessState["status"]; responded_at: string }>>(accessToken, "talent_set_private_access_request_status", { p_request_id: requestId, p_status: status });
   if (error) return { ok: false, message: mapError(error) };
   const row = data?.[0];
-  return row ? { ok: true, state: { requestId: row.request_id, isOwner: true, status: row.request_status, requestedAt: null, contactEmail: null, resumeOriginalFilename: null, resumeUploadedAt: null, resumeAvailable: false } } : { ok: false, message: "Unable to update access request." };
+  return row ? { ok: true, state: { requestId: row.request_id, isOwner: true, status: row.request_status, requestedAt: null, contactEmail: null, mobileNumber: null, resumeOriginalFilename: null, resumeUploadedAt: null, resumeAvailable: false } } : { ok: false, message: "Unable to update access request." };
 }
 
 export async function revokePrivateAccess(accessToken: string | null | undefined, requestId: string): Promise<PrivateAccessResponse> {
   const { data, error } = await rpc<Array<{ request_id: string; request_status: PrivateAccessState["status"]; revoked_at: string }>>(accessToken, "talent_revoke_private_access", { p_request_id: requestId });
   if (error) return { ok: false, message: mapError(error) };
   const row = data?.[0];
-  return row ? { ok: true, state: { requestId: row.request_id, isOwner: true, status: row.request_status, requestedAt: null, contactEmail: null, resumeOriginalFilename: null, resumeUploadedAt: null, resumeAvailable: false } } : { ok: false, message: "Unable to revoke access." };
+  return row ? { ok: true, state: { requestId: row.request_id, isOwner: true, status: row.request_status, requestedAt: null, contactEmail: null, mobileNumber: null, resumeOriginalFilename: null, resumeUploadedAt: null, resumeAvailable: false } } : { ok: false, message: "Unable to revoke access." };
 }
 
 export async function getPrivateResumeUrl(accessToken: string | null | undefined, slug: string) {

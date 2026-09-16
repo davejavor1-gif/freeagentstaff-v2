@@ -18,6 +18,7 @@ export interface PrivateAccessState {
   status: PrivateAccessStatus;
   requestedAt: string | null;
   contactEmail: string | null;
+  mobileNumber: string | null;
   resumeOriginalFilename: string | null;
   resumeUploadedAt: string | null;
   resumeAvailable: boolean;

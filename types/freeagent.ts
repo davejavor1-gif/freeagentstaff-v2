@@ -71,6 +71,7 @@ export interface FreeAgentProfile {
   educationEntries?: EducationEntry[];
   salaryExpectation?: SalaryExpectation | null;
   contactEmail?: string;
+  mobileNumber?: string;
   resumeStoragePath?: string | null;
   resumeOriginalFilename?: string | null;
   resumeUploadedAt?: string | null;

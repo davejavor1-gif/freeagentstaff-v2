@@ -35,6 +35,7 @@ create table if not exists profiles (
   education_entries jsonb not null default '[]'::jsonb,
   salary_expectation text check (salary_expectation in ('under_60k', '60k_80k', '80k_100k', '100k_120k', '120k_150k', '150k_200k', '200k_plus', 'prefer_not_to_say')),
   contact_email text check (contact_email is null or contact_email ~* '^[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+$'),
+  mobile_number text,
   resume_storage_path text,
   resume_original_filename text,
   resume_uploaded_at timestamptz,
@@ -323,12 +324,9 @@ create index if not exists talent_pro_analytics_events_talent_day_idx
 create index if not exists talent_pro_analytics_events_viewer_idx
   on talent_pro_analytics_events (viewer_user_id, event_day desc);
 
--- Security invariant:
--- The freeagent.transition GUC context is an internal DB transition mechanism only.
--- No user-callable RPC may expose arbitrary set_config keys/values, dynamic SQL,
--- or any mechanism that allows caller-controlled transition-context mutation.
 
 create or replace function public.submit_employer_verification()
+begin select user_id into v_talent from public.profiles where account_type = 'talent' and slug = p_talent_slug; if v_talent is null or not public.employer_can_access_talent(v_uid, p_talent_slug) or not exists (select 1 from public.employer_talent_connections c where c.talent_user_id = v_talent and c.employer_user_id = v_uid and c.status = 'active') then raise exception 'private_access_unavailable' using errcode = '42501'; end if; return query select p.contact_email, p.mobile_number, p.resume_original_filename, p.resume_uploaded_at, p.resume_storage_path from public.profiles p where p.user_id = v_talent; end $$;
 returns table (
   success boolean,
   employer_verification_status text,
@@ -4172,22 +4170,22 @@ declare v_talent uuid := public.require_talent_actor(); v_request public.talent_
 begin update public.talent_private_access_requests set status = 'revoked', revoked_at = now(), updated_at = now() where id = p_request_id and talent_user_id = v_talent and status = 'accepted' returning * into v_request; if v_request.id is null then raise exception 'private_access_request_not_found' using errcode = '42501'; end if; perform public.create_notification_event(v_request.employer_user_id, v_talent, 'private_access_request_revoked', 'Private access revoked', 'The talent revoked private resume and contact access.', 'talent_private_access_request', v_request.id, 'private-access-revoked:' || v_request.id::text || ':' || to_char(v_request.revoked_at, 'YYYYMMDDHH24MISSMS')); return query select v_request.id, v_request.status, v_request.revoked_at; end $$;
 
 create or replace function public.talent_private_access_for_viewer(p_talent_slug text)
-returns table (request_id uuid, is_owner boolean, request_status text, requested_at timestamptz, contact_email text, resume_original_filename text, resume_uploaded_at timestamptz, resume_available boolean)
+returns table (request_id uuid, is_owner boolean, request_status text, requested_at timestamptz, contact_email text, mobile_number text, resume_original_filename text, resume_uploaded_at timestamptz, resume_available boolean)
 language plpgsql security definer stable set search_path = public, pg_temp as $$
 declare v_uid uuid := auth.uid(); v_talent uuid; v_request public.talent_private_access_requests;
 begin
   if v_uid is null then raise exception 'not_signed_in' using errcode = '42501'; end if;
   select user_id into v_talent from public.profiles where account_type = 'talent' and slug = p_talent_slug;
   if v_talent is null then raise exception 'private_access_unavailable' using errcode = '42501'; end if;
-  if v_uid = v_talent then return query select null::uuid, true, 'owner_full'::text, now(), p.contact_email, p.resume_original_filename, p.resume_uploaded_at, p.resume_storage_path is not null from public.profiles p where p.user_id = v_talent; return; end if;
+  if v_uid = v_talent then return query select null::uuid, true, 'owner_full'::text, now(), p.contact_email, p.mobile_number, p.resume_original_filename, p.resume_uploaded_at, p.resume_storage_path is not null from public.profiles p where p.user_id = v_talent; return; end if;
   perform public.require_verified_employer_actor();
   if not public.employer_can_access_talent(v_uid, p_talent_slug) then raise exception 'private_access_unavailable' using errcode = '42501'; end if;
   select * into v_request from public.talent_private_access_requests where talent_user_id = v_talent and employer_user_id = v_uid;
-  return query select v_request.id, false, coalesce(v_request.status, 'none'), v_request.requested_at, case when v_request.status = 'accepted' then p.contact_email else null end, case when v_request.status = 'accepted' then p.resume_original_filename else null end, case when v_request.status = 'accepted' then p.resume_uploaded_at else null end, case when v_request.status = 'accepted' then p.resume_storage_path is not null else false end from public.profiles p where p.user_id = v_talent;
+  return query select v_request.id, false, coalesce(v_request.status, 'none'), v_request.requested_at, case when v_request.status = 'accepted' then p.contact_email else null end, case when v_request.status = 'accepted' then p.mobile_number else null end, case when v_request.status = 'accepted' then p.resume_original_filename else null end, case when v_request.status = 'accepted' then p.resume_uploaded_at else null end, case when v_request.status = 'accepted' then p.resume_storage_path is not null else false end from public.profiles p where p.user_id = v_talent;
 end $$;
 
 create or replace function public.talent_private_details_for_authorized_employer(p_talent_slug text)
-returns table (contact_email text, resume_original_filename text, resume_uploaded_at timestamptz, resume_storage_path text)
+returns table (contact_email text, mobile_number text, resume_original_filename text, resume_uploaded_at timestamptz, resume_storage_path text)
 language plpgsql security definer stable set search_path = public, pg_temp as $$
 declare v_uid uuid := public.require_verified_employer_actor(); v_talent uuid;
 begin select user_id into v_talent from public.profiles where account_type = 'talent' and slug = p_talent_slug; if v_talent is null or not public.employer_can_access_talent(v_uid, p_talent_slug) or not exists (select 1 from public.talent_private_access_requests r where r.talent_user_id = v_talent and r.employer_user_id = v_uid and r.status = 'accepted') then raise exception 'private_access_unavailable' using errcode = '42501'; end if; return query select p.contact_email, p.resume_original_filename, p.resume_uploaded_at, p.resume_storage_path from public.profiles p where p.user_id = v_talent; end $$;
@@ -4252,17 +4250,17 @@ begin
   if not public.employer_can_access_talent(v_uid, p_talent_slug) then raise exception 'private_access_unavailable' using errcode = '42501'; end if;
   select * into v_intro from public.employer_introduction_requests where talent_user_id = v_talent and employer_user_id = v_uid order by created_at desc limit 1;
   select * into v_connection from public.employer_talent_connections where talent_user_id = v_talent and employer_user_id = v_uid;
-  return query select v_intro.id, false, case when v_intro.status = 'pending' then 'pending' when v_connection.status = 'active' then 'accepted' when v_connection.status = 'revoked' then 'revoked' else coalesce(v_intro.status, 'none') end, v_intro.created_at, case when v_connection.status = 'active' and v_intro.status = 'accepted' then p.contact_email else null end, case when v_connection.status = 'active' and v_intro.status = 'accepted' then p.resume_original_filename else null end, case when v_connection.status = 'active' and v_intro.status = 'accepted' then p.resume_uploaded_at else null end, case when v_connection.status = 'active' and v_intro.status = 'accepted' then p.resume_storage_path is not null else false end from public.profiles p where p.user_id = v_talent;
+  return query select v_intro.id, false, case when v_intro.status = 'pending' then 'pending' when v_connection.status = 'active' then 'accepted' when v_connection.status = 'revoked' then 'revoked' else coalesce(v_intro.status, 'none') end, v_intro.created_at, case when v_connection.status = 'active' and v_intro.status = 'accepted' then p.contact_email else null end, case when v_connection.status = 'active' and v_intro.status = 'accepted' then p.mobile_number else null end, case when v_connection.status = 'active' and v_intro.status = 'accepted' then p.resume_original_filename else null end, case when v_connection.status = 'active' and v_intro.status = 'accepted' then p.resume_uploaded_at else null end, case when v_connection.status = 'active' and v_intro.status = 'accepted' then p.resume_storage_path is not null else false end from public.profiles p where p.user_id = v_talent;
 end $$;
 
 create or replace function public.talent_private_details_for_authorized_employer(p_talent_slug text)
-returns table (contact_email text, resume_original_filename text, resume_uploaded_at timestamptz, resume_storage_path text)
+returns table (contact_email text, mobile_number text, resume_original_filename text, resume_uploaded_at timestamptz, resume_storage_path text)
 language plpgsql security definer stable set search_path = public, pg_temp as $$
 declare v_uid uuid := public.require_verified_employer_actor(); v_talent uuid;
 begin
   select user_id into v_talent from public.profiles where account_type = 'talent' and slug = p_talent_slug;
   if v_talent is null or not public.employer_can_access_talent(v_uid, p_talent_slug) or not exists (select 1 from public.employer_talent_connections c where c.talent_user_id = v_talent and c.employer_user_id = v_uid and c.status = 'active') then raise exception 'private_access_unavailable' using errcode = '42501'; end if;
-  return query select p.contact_email, p.resume_original_filename, p.resume_uploaded_at, p.resume_storage_path from public.profiles p where p.user_id = v_talent;
+  return query select p.contact_email, p.mobile_number, p.resume_original_filename, p.resume_uploaded_at, p.resume_storage_path from public.profiles p where p.user_id = v_talent;
 end $$;
 
 create or replace function public.talent_contact_for_connected_employer(p_talent_slug text)
