@@ -25,6 +25,12 @@ const sarahProfile = {
   intro_video_url: "/videos/sarahs%20intro.mp4",
 };
 
+const peachTerracottaStyle = {
+  backgroundColor: "#C97F62",
+  backgroundImage:
+    "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
+} as const;
+
 const talentSteps = [
   {
     icon: IdCard,
@@ -237,19 +243,19 @@ export default function TalentPage() {
         </div>
       </section>
 
-      <section id="rockstar" className="scroll-mt-24 bg-[#f7e8c6] text-[#071321]">
+      <section id="rockstar" className="scroll-mt-24 text-[#08111F]" style={peachTerracottaStyle}>
         <div className="mx-auto max-w-7xl px-6 py-14 sm:px-8 lg:px-12 lg:py-16">
           <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.55fr] lg:gap-16">
             <div>
-              <span className="inline-flex items-center rounded-full border border-[#4c7f1d]/40 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.28em] text-[#4c7f1d]">
+              <span className="inline-flex items-center rounded-full border border-[#AFF546]/40 bg-[#AFF546]/10 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.28em] text-[#AFF546]">
                 Rockstar Explained
               </span>
               <h2 className="mt-5 font-serif text-4xl font-bold uppercase leading-[0.95] sm:text-5xl">
                 <span className="text-[#08111F]">More opportunities</span>
                 <br />
-                <span className="text-[#4c7f1d]">on your terms.</span>
+                <span className="text-[#AFF546]">on your terms.</span>
               </h2>
-              <p className="mt-5 max-w-xl text-base leading-8 text-[#071321]/78 sm:text-lg">
+              <p className="mt-5 max-w-xl text-base leading-8 text-[#08111F]/78 sm:text-lg">
                 Rockstar helps you get discovered for one-off shifts by verified employers. It&apos;s a simple way to show you&apos;re open to short-term work, while staying in control.
               </p>
             </div>
@@ -257,34 +263,33 @@ export default function TalentPage() {
               <RockstarStarIcon className="h-28 w-28 sm:h-36 sm:w-36" />
             </div>
           </div>
-        </div>
-      </section>
-      <section className="bg-[#08111F] text-[#f7ebcf]">
-        <div className="mx-auto max-w-7xl px-6 py-12 sm:px-8 lg:px-12 lg:py-16">
-          <h3 className="text-center text-[11px] font-bold uppercase tracking-[0.32em] text-[#AFF546]">How Rockstar works</h3>
-          <div className="mt-10 grid gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-0 lg:divide-x lg:divide-[#f7ebcf]/15">
-            {rockstarTalentSteps.map((step, index) => {
-              const Icon = step.icon;
-              return (
-                <div key={step.title} className="lg:px-6 lg:first:pl-0 lg:last:pr-0">
-                  <span className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#AFF546]/50 text-[#AFF546]">
-                    <Icon className="h-5 w-5" aria-hidden="true" />
-                  </span>
-                  <h4 className="mt-4 text-sm font-bold uppercase tracking-[0.16em] text-[#f7ebcf]">{index + 1}. {step.title}</h4>
-                  <p className="mt-3 text-sm leading-6 text-[#f7ebcf]/70">{step.text}</p>
-                  <div className="mt-6 h-px bg-[#f7ebcf]/15" />
-                </div>
-              );
-            })}
-          </div>
-          <div className="mt-10 flex flex-col items-center text-center">
-            <Link
-              href="/login?mode=signup"
-              className="inline-flex h-11 items-center gap-3 rounded-full bg-[#AFF546] px-6 py-3 text-[11px] font-black uppercase tracking-[0.22em] text-[#08111F]"
-            >
-              Get started as talent <ArrowRight className="h-4 w-4" />
-            </Link>
-            <p className="mt-4 text-xs text-[#f7ebcf]/60">It only takes a few minutes to set up.</p>
+
+          <div className="mt-8 pt-6">
+            <h3 className="text-center text-[11px] font-bold uppercase tracking-[0.32em] text-[#AFF546]">How Rockstar works</h3>
+            <div className="mt-10 grid gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-0 lg:divide-x lg:divide-[#08111F]/15">
+              {rockstarTalentSteps.map((step, index) => {
+                const Icon = step.icon;
+                return (
+                  <div key={step.title} className="lg:px-6 lg:first:pl-0 lg:last:pr-0">
+                    <span className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#AFF546]/50 text-[#AFF546]">
+                      <Icon className="h-5 w-5" aria-hidden="true" />
+                    </span>
+                    <h4 className="mt-4 text-sm font-bold uppercase tracking-[0.16em] text-[#08111F]">{index + 1}. {step.title}</h4>
+                    <p className="mt-3 text-sm leading-6 text-[#08111F]/70">{step.text}</p>
+                    <div className="mt-6 h-px bg-[#08111F]/15" />
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-10 flex flex-col items-center text-center">
+              <Link
+                href="/login?mode=signup"
+                className="inline-flex h-11 items-center gap-3 rounded-full bg-[#AFF546] px-6 py-3 text-[11px] font-black uppercase tracking-[0.22em] text-[#08111F]"
+              >
+                Get started as talent <ArrowRight className="h-4 w-4" />
+              </Link>
+              <p className="mt-4 text-xs text-[#08111F]/60">It only takes a few minutes to set up.</p>
+            </div>
           </div>
         </div>
       </section>
