@@ -243,14 +243,14 @@ export default function PricingPage() {
               <BillingButton action="checkout" plan="short_stay_employer" className="mt-8 inline-flex w-full items-center justify-center rounded-full bg-[#2BD7EF] px-5 py-3 text-sm font-semibold uppercase tracking-[0.24em] text-[#08111F] transition hover:brightness-105">Get Short Stay access</BillingButton>
             </div>
 
-            <div className="hidden xl:flex xl:w-[10rem] xl:shrink-0 xl:items-center xl:justify-center">
+            <div className="hidden xl:flex xl:w-[7.75rem] xl:shrink-0 xl:items-center xl:justify-center">
               <Image
                 src="/images/perfect.png"
                 alt=""
                 aria-hidden="true"
                 width={440}
                 height={440}
-                className="h-auto w-full max-w-[10rem] object-contain"
+                className="h-auto w-full max-w-[7.75rem] object-contain"
               />
             </div>
           </div>

@@ -28,6 +28,25 @@ export const metadata: Metadata = {
 
 const sarah = homepagePassportProfiles["sarah-jones"];
 
+function RockstarStarIcon({ className, fill = "#AFF546", stroke = "#1F3D0A" }: { className?: string; fill?: string; stroke?: string }) {
+  return (
+    <svg viewBox="0 0 32 32" aria-hidden="true" className={className}>
+      <g stroke={stroke} strokeWidth="1.4" strokeLinecap="round">
+        <line x1="6" y1="6" x2="7.7" y2="7.7" />
+        <line x1="26" y1="6" x2="24.3" y2="7.7" />
+      </g>
+      <path
+        d="M16 5l3.09 6.26 6.91.99-5 4.87 1.18 6.88L16 20.9l-6.18 3.1L11 17.12l-5-4.87 6.91-.99L16 5z"
+        fill={fill}
+        stroke={stroke}
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+
 const talentFeatures = [
   "Professional photo",
   "Role title and professional headline",
@@ -429,6 +448,65 @@ export default function AboutPage() {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-[#08111F] text-[#f7ebcf]">
+        <div className="mx-auto max-w-7xl px-6 py-16 sm:px-8 sm:py-20 lg:px-12">
+          <div className="flex flex-col items-center text-center">
+            <RockstarStarIcon className="h-24 w-24 drop-shadow-[0_0_22px_rgba(175,245,70,0.4)] sm:h-[7.5rem] sm:w-[7.5rem]" />
+            <h2 className="mt-8 font-serif text-5xl font-bold uppercase leading-[0.95] sm:text-7xl">
+              <span className="text-[#f7ebcf]">Rockstar</span> <span className="text-[#AFF546]">Shifts</span>
+            </h2>
+            <p className="mt-4 text-base text-[#f7ebcf]/70 sm:text-lg">One-off shifts. Real opportunities.</p>
+          </div>
+
+          <div className="mt-14 grid gap-12 divide-y divide-[#f7ebcf]/15 sm:mt-16 lg:grid-cols-2 lg:gap-0 lg:divide-y-0 lg:divide-x">
+            <div className="lg:pr-14">
+              <span className="inline-flex items-center rounded-full border border-[#AFF546]/40 bg-[#AFF546]/10 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.28em] text-[#AFF546]">
+                For Talent
+              </span>
+              <h3 className="mt-5 max-w-md font-serif text-2xl font-bold text-[#f7ebcf] sm:text-3xl">
+                Show you&apos;re available for <span className="text-[#AFF546]">one-off shifts.</span>
+              </h3>
+              <div className="mt-5 flex items-start gap-5">
+                <RockstarStarIcon className="mt-1 h-12 w-12 shrink-0" />
+                <p className="max-w-sm text-sm leading-7 text-[#f7ebcf]/75 sm:text-base">
+                  Turn on Rockstar to let verified employers know you&apos;re open to short-term and one-off opportunities. You&apos;re always in control and can switch it on or off anytime.
+                </p>
+              </div>
+              <Link
+                href="/talent#rockstar"
+                className="mt-8 inline-flex h-11 items-center gap-3 rounded-full bg-[#AFF546] px-5 py-3 text-[11px] font-black uppercase tracking-[0.22em] text-[#08111F]"
+              >
+                Learn more <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+
+            <div className="pt-12 lg:pl-14 lg:pt-0">
+              <span className="inline-flex items-center rounded-full border border-[#2BD7EF]/40 bg-[#2BD7EF]/10 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.28em] text-[#2BD7EF]">
+                For Employers
+              </span>
+              <h3 className="mt-5 max-w-md font-serif text-2xl font-bold text-[#f7ebcf] sm:text-3xl">
+                Find reliable Talent for <span className="text-[#2BD7EF]">short-term work.</span>
+              </h3>
+              <div className="mt-5 flex items-start gap-5">
+                <div className="relative mt-1 h-12 w-12 shrink-0">
+                  <RockstarStarIcon className="relative z-0 h-12 w-12" />
+                  <Search className="absolute -bottom-[10%] -right-[10%] z-10 h-7 w-7 text-[#2BD7EF]" strokeWidth={2.5} aria-hidden="true" />
+                </div>
+                <p className="max-w-sm text-sm leading-7 text-[#f7ebcf]/75 sm:text-base">
+                  Access Rockstar Talent who are available for one-off shifts through our Short Stay option. A simple, time-limited way to find great people, fast.
+                </p>
+              </div>
+              <Link
+                href="/employers#short-stay"
+                className="mt-8 inline-flex h-11 items-center gap-3 rounded-full bg-[#2BD7EF] px-5 py-3 text-[11px] font-black uppercase tracking-[0.22em] text-[#08111F]"
+              >
+                Learn more <ArrowRight className="h-4 w-4" />
+              </Link>
             </div>
           </div>
         </div>

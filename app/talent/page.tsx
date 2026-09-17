@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, BookOpen, Eye, IdCard, Lock, Search, Send, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, ArrowUpRight, BookOpen, CalendarCheck, Eye, IdCard, Lock, Search, Send, Settings2, ShieldCheck, Sparkles, ToggleRight, UserRound } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import TalentCard from "@/components/TalentCard";
@@ -40,6 +40,47 @@ const talentSteps = [
     icon: ShieldCheck,
     title: "Be discovered on your terms",
     text: "Verified employers can discover Talent based on skills and experience, without reducing you to a traditional resume.",
+  },
+];
+
+function RockstarStarIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 32 32" aria-hidden="true" className={className}>
+      <g stroke="#1F3D0A" strokeWidth="1.4" strokeLinecap="round">
+        <line x1="6" y1="6" x2="7.7" y2="7.7" />
+        <line x1="26" y1="6" x2="24.3" y2="7.7" />
+      </g>
+      <path
+        d="M16 5l3.09 6.26 6.91.99-5 4.87 1.18 6.88L16 20.9l-6.18 3.1L11 17.12l-5-4.87 6.91-.99L16 5z"
+        fill="#AFF546"
+        stroke="#1F3D0A"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+const rockstarTalentSteps = [
+  {
+    icon: ToggleRight,
+    title: "Turn it on",
+    text: "Switch on Rockstar in your settings whenever you're open to one-off shifts.",
+  },
+  {
+    icon: UserRound,
+    title: "Get discovered",
+    text: "Verified employers can see you're available for short-term opportunities.",
+  },
+  {
+    icon: CalendarCheck,
+    title: "Receive opportunities",
+    text: "Employers may reach out with shift opportunities that match your skills.",
+  },
+  {
+    icon: Settings2,
+    title: "Stay in control",
+    text: "You can switch it off anytime. Your existing privacy and visibility settings still apply.",
   },
 ];
 
@@ -192,6 +233,58 @@ export default function TalentPage() {
             <div className="lg:px-6"><BookOpen className="h-5 w-5 text-[#f2cc63]" aria-hidden="true" /><p className="mt-3 text-[10px] font-bold uppercase tracking-[0.18em] text-[#f7e8c6]">Share your story</p><p className="mt-2 text-xs leading-5 text-[#f7e8c6]/65">Show more than a résumé</p></div>
             <div className="lg:px-6"><Sparkles className="h-5 w-5 text-[#f2cc63]" aria-hidden="true" /><p className="mt-3 text-[10px] font-bold uppercase tracking-[0.18em] text-[#f7e8c6]">Show your personality</p><p className="mt-2 text-xs leading-5 text-[#f7e8c6]/65">Help employers understand you</p></div>
             <div className="lg:px-6 lg:last:pr-0"><ArrowUpRight className="h-5 w-5 text-[#aff546]" aria-hidden="true" /><p className="mt-3 text-[10px] font-bold uppercase tracking-[0.18em] text-[#f7e8c6]">Take your career further</p><p className="mt-2 text-xs leading-5 text-[#f7e8c6]/65">Your Passport goes beyond the platform</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="rockstar" className="scroll-mt-24 bg-[#f7e8c6] text-[#071321]">
+        <div className="mx-auto max-w-7xl px-6 py-14 sm:px-8 lg:px-12 lg:py-16">
+          <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.55fr] lg:gap-16">
+            <div>
+              <span className="inline-flex items-center rounded-full border border-[#4c7f1d]/40 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.28em] text-[#4c7f1d]">
+                Rockstar Explained
+              </span>
+              <h2 className="mt-5 font-serif text-4xl font-bold uppercase leading-[0.95] sm:text-5xl">
+                <span className="text-[#08111F]">More opportunities</span>
+                <br />
+                <span className="text-[#4c7f1d]">on your terms.</span>
+              </h2>
+              <p className="mt-5 max-w-xl text-base leading-8 text-[#071321]/78 sm:text-lg">
+                Rockstar helps you get discovered for one-off shifts by verified employers. It&apos;s a simple way to show you&apos;re open to short-term work, while staying in control.
+              </p>
+            </div>
+            <div className="flex justify-center lg:justify-end">
+              <RockstarStarIcon className="h-28 w-28 sm:h-36 sm:w-36" />
+            </div>
+          </div>
+        </div>
+      </section>
+      <section className="bg-[#08111F] text-[#f7ebcf]">
+        <div className="mx-auto max-w-7xl px-6 py-12 sm:px-8 lg:px-12 lg:py-16">
+          <h3 className="text-center text-[11px] font-bold uppercase tracking-[0.32em] text-[#AFF546]">How Rockstar works</h3>
+          <div className="mt-10 grid gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-0 lg:divide-x lg:divide-[#f7ebcf]/15">
+            {rockstarTalentSteps.map((step, index) => {
+              const Icon = step.icon;
+              return (
+                <div key={step.title} className="lg:px-6 lg:first:pl-0 lg:last:pr-0">
+                  <span className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#AFF546]/50 text-[#AFF546]">
+                    <Icon className="h-5 w-5" aria-hidden="true" />
+                  </span>
+                  <h4 className="mt-4 text-sm font-bold uppercase tracking-[0.16em] text-[#f7ebcf]">{index + 1}. {step.title}</h4>
+                  <p className="mt-3 text-sm leading-6 text-[#f7ebcf]/70">{step.text}</p>
+                  <div className="mt-6 h-px bg-[#f7ebcf]/15" />
+                </div>
+              );
+            })}
+          </div>
+          <div className="mt-10 flex flex-col items-center text-center">
+            <Link
+              href="/login?mode=signup"
+              className="inline-flex h-11 items-center gap-3 rounded-full bg-[#AFF546] px-6 py-3 text-[11px] font-black uppercase tracking-[0.22em] text-[#08111F]"
+            >
+              Get started as talent <ArrowRight className="h-4 w-4" />
+            </Link>
+            <p className="mt-4 text-xs text-[#f7ebcf]/60">It only takes a few minutes to set up.</p>
           </div>
         </div>
       </section>
