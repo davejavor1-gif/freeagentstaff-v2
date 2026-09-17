@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { revokeTalentConnection } from "@/lib/connection-access";
+import { revokeConnectionForViewer } from "@/lib/connection-access";
 
 function getBearerToken(request: Request) {
   const authorization = request.headers.get("authorization");
@@ -16,7 +16,7 @@ export async function POST(
   context: { params: Promise<{ id: string }> },
 ) {
   const { id } = await context.params;
-  const payload = await revokeTalentConnection(getBearerToken(request), id);
+  const payload = await revokeConnectionForViewer(getBearerToken(request), id);
 
   const status = payload.ok
     ? 200

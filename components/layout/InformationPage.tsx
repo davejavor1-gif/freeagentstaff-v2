@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import Footer from "@/components/layout/Footer";
-import Navbar from "@/components/layout/Navbar";
 
 type InformationPageProps = {
   eyebrow?: string;
@@ -19,7 +18,6 @@ export default function InformationPage({
 }: InformationPageProps) {
   return (
     <main className="flex min-h-screen flex-col bg-[#08111F] text-[#f7ebcf]">
-      <Navbar />
       <section className="relative overflow-hidden bg-[#08111F] px-6 pt-14 pb-6 sm:px-8 sm:pt-18 sm:pb-8 lg:px-12">
         <div className="relative mx-auto max-w-5xl rounded-[28px] border border-[#cda64d]/45 bg-[#f7e8c6] p-6 shadow-[0_8px_24px_rgba(6,16,33,0.12)] sm:p-10">
           {eyebrow ? (

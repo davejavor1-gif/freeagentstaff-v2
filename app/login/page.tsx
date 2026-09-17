@@ -4,7 +4,6 @@ import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Footer from "@/components/layout/Footer";
-import Navbar from "@/components/layout/Navbar";
 import OAuthButtons from "@/components/auth/OAuthButtons";
 import SignupBrandStory from "@/components/auth/SignupBrandStory";
 import { buildCanonicalTalentColumns } from "@/lib/talent-profile-columns";
@@ -31,9 +30,17 @@ const createBlankTalentProfile = (userId: string, email?: string | null): FreeAg
   email: email ?? "",
 });
 
+function safeDashboardNext(next: string | null) {
+  if (next === "/dashboard#introductions" || next === "/dashboard#connections") {
+    return next;
+  }
+  return "/dashboard";
+}
+
 function LoginPageContent() {
   const searchParams = useSearchParams();
   const authMode = searchParams.get("mode") === "signup" ? "sign-up" : "sign-in";
+  const postLoginPath = safeDashboardNext(searchParams.get("next"));
   const [accountType] = useState<AccountType>("talent");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -57,7 +64,7 @@ function LoginPageContent() {
       }
 
       if (session) {
-        router.replace("/dashboard");
+        router.replace(postLoginPath);
       }
     };
 
@@ -66,7 +73,7 @@ function LoginPageContent() {
     return () => {
       mounted = false;
     };
-  }, [router]);
+  }, [postLoginPath, router]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -97,7 +104,7 @@ function LoginPageContent() {
       const session = data.session ?? (await getSessionWithRetry());
 
       if (session) {
-        router.replace("/dashboard");
+        router.replace(postLoginPath);
         return;
       }
 
@@ -172,7 +179,6 @@ function LoginPageContent() {
 
   return (
     <main className="min-h-screen bg-[#08111F] text-[#f7ebcf]">
-      <Navbar />
       <div className="mx-auto grid min-h-[calc(100vh-5rem)] w-[92vw] max-w-[1400px] items-start gap-8 px-0 py-8 sm:py-10 lg:grid-cols-[minmax(0,1.16fr)_minmax(34rem,0.84fr)] lg:gap-12 lg:py-12">
         <SignupBrandStory accountType={accountType} />
         <div className="rounded-[28px] border border-[#cda64d]/55 bg-[#f7ebcf] p-8 text-[#0f2744] shadow-[0_18px_50px_rgba(6,16,33,0.22)] sm:p-10 lg:p-14">

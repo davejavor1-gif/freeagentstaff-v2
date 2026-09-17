@@ -197,7 +197,7 @@
 
 @layer components {
   .dashboard-kicker {
-    @apply text-[10px] font-semibold uppercase tracking-[0.24em] text-[#F7F4EC]/45;
+    @apply text-[10px] font-semibold uppercase tracking-[0.24em] text-[#2BD7EF];
   }
 
   .dashboard-talent .dashboard-kicker {

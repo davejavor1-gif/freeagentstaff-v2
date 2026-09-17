@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createUserServerSupabaseClient } from "@/lib/server-supabase";
+import { createServiceRoleSupabaseClient, createUserServerSupabaseClient } from "@/lib/server-supabase";
 import { normalizeAvailability } from "@/lib/talent-profile-options";
 import type {
   ConnectionErrorReason,
@@ -277,4 +277,152 @@ export async function revokeTalentConnection(
     revokedAt: row.revoked_at,
     revokedBy: row.revoked_by,
   };
+}
+
+export async function revokeEmployerConnection(
+  accessToken: string | null | undefined,
+  connectionId: string,
+): Promise<TalentConnectionMutationResponse> {
+  const userClient = getUserClient(accessToken);
+
+  if (!userClient) {
+    return { ok: false, reason: "not_signed_in", message: "Sign in required." };
+  }
+
+  if (!connectionId.trim()) {
+    return { ok: false, reason: "missing_connection_id", message: "Connection id is required." };
+  }
+
+  const { data: userData, error: userError } = await userClient.auth.getUser(accessToken ?? undefined);
+  if (userError || !userData.user) {
+    return { ok: false, reason: "not_signed_in", message: "Sign in required." };
+  }
+
+  const { data: profileRow } = await userClient
+    .from("profiles")
+    .select("account_type")
+    .eq("user_id", userData.user.id)
+    .maybeSingle<{ account_type: "talent" | "employer" }>();
+
+  if (profileRow?.account_type !== "employer") {
+    return { ok: false, reason: "wrong_account_type", message: "Employer account required." };
+  }
+
+  const listed = await listEmployerConnections(accessToken);
+  if (!listed.ok) {
+    return { ok: false, reason: listed.reason ?? "error", message: listed.message ?? "Unable to revoke connection." };
+  }
+
+  const item = listed.items.find((connection) => connection.connectionId === connectionId);
+  if (!item) {
+    return { ok: false, reason: "connection_not_found", message: "Connection not found." };
+  }
+
+  if (item.status === "revoked") {
+    return {
+      ok: true,
+      connectionId: item.connectionId,
+      status: item.status,
+      revokedAt: item.revokedAt,
+      revokedBy: null,
+    };
+  }
+
+  if (item.status !== "active") {
+    return { ok: false, reason: "invalid_state", message: "This connection cannot be disconnected." };
+  }
+
+  const serviceClient = createServiceRoleSupabaseClient();
+  if (!serviceClient) {
+    return { ok: false, reason: "error", message: "Unable to revoke connection." };
+  }
+
+  const now = new Date().toISOString();
+  const { data: updatedRow, error } = await serviceClient
+    .from("employer_talent_connections")
+    .update({
+      status: "revoked",
+      revoked_at: now,
+      revoked_by: null,
+    } as never)
+    .eq("id", connectionId)
+    .eq("employer_user_id", userData.user.id)
+    .eq("status", "active")
+    .select("id, status, revoked_at, revoked_by, talent_user_id")
+    .maybeSingle();
+
+  const updated = updatedRow as {
+    id: string;
+    status: "active" | "revoked";
+    revoked_at: string | null;
+    revoked_by: "talent" | null;
+    talent_user_id: string;
+  } | null;
+
+  if (error || !updated) {
+    return {
+      ok: false,
+      reason: mapConnectionReasonFromError(error?.message ?? "connection_not_found"),
+      message: error?.message ?? "Unable to revoke connection.",
+    };
+  }
+
+  const privateAccessClient = serviceClient as unknown as {
+    from: (table: "talent_private_access_requests") => {
+      update: (values: Record<string, unknown>) => {
+        eq: (column: string, value: string) => {
+          eq: (column: string, value: string) => {
+            eq: (column: string, value: string) => Promise<{ error: { message: string } | null }>;
+          };
+        };
+      };
+    };
+  };
+
+  await privateAccessClient
+    .from("talent_private_access_requests")
+    .update({
+      status: "revoked",
+      revoked_at: now,
+      updated_at: now,
+    })
+    .eq("employer_user_id", userData.user.id)
+    .eq("talent_user_id", updated.talent_user_id)
+    .eq("status", "accepted");
+
+  return {
+    ok: true,
+    connectionId: updated.id,
+    status: updated.status,
+    revokedAt: updated.revoked_at,
+    revokedBy: updated.revoked_by,
+  };
+}
+
+export async function revokeConnectionForViewer(
+  accessToken: string | null | undefined,
+  connectionId: string,
+): Promise<TalentConnectionMutationResponse> {
+  const userClient = getUserClient(accessToken);
+
+  if (!userClient) {
+    return { ok: false, reason: "not_signed_in", message: "Sign in required." };
+  }
+
+  const { data: userData, error: userError } = await userClient.auth.getUser(accessToken ?? undefined);
+  if (userError || !userData.user) {
+    return { ok: false, reason: "not_signed_in", message: "Sign in required." };
+  }
+
+  const { data: profileRow } = await userClient
+    .from("profiles")
+    .select("account_type")
+    .eq("user_id", userData.user.id)
+    .maybeSingle<{ account_type: "talent" | "employer" }>();
+
+  if (profileRow?.account_type === "employer") {
+    return revokeEmployerConnection(accessToken, connectionId);
+  }
+
+  return revokeTalentConnection(accessToken, connectionId);
 }

@@ -2,7 +2,6 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import BillingButton from "@/components/BillingButton";
 import EmployerPricingButton from "@/components/EmployerPricingButton";
@@ -115,7 +114,6 @@ export default function PricingPage() {
 
   return (
     <main className="flex min-h-screen flex-col bg-[#08111F] text-[#071426]">
-      <Navbar />
       <div className="flex-1 mx-auto w-full max-w-[86rem] px-6 py-12 sm:px-8 lg:px-8">
         <div className="mx-auto mb-14 max-w-4xl rounded-[36px] border border-[#cda64d]/40 bg-[#f7e8c6] p-6 text-center shadow-[0_18px_55px_rgba(6,16,33,0.12)] sm:p-8">
           <div className="space-y-3">

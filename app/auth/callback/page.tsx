@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { buildCanonicalTalentColumns } from "@/lib/talent-profile-columns";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
@@ -165,7 +164,6 @@ function AuthCallbackContent() {
 
   return (
     <main className="min-h-screen bg-[#08111F] text-[#f7ebcf]">
-      <Navbar />
       <div className="mx-auto flex min-h-[calc(100vh-80px)] max-w-2xl flex-col justify-center px-6 py-16 sm:px-10">
         <div className="rounded-3xl border border-[#cda64d]/55 bg-[#f7ebcf] p-8 text-[#0f2744] shadow-[0_18px_50px_rgba(6,16,33,0.22)] sm:p-10">
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">Secure sign in</p>

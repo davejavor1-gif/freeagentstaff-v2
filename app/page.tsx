@@ -1,7 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
-import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { IdCard, Lock, ShieldCheck, Search, Eye, ArrowRight } from "lucide-react";
 import TalentCard from "@/components/TalentCard";
@@ -466,7 +465,6 @@ export default function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(homepageStructuredData) }}
       />
-      <Navbar />
 
       <section className="relative isolate mb-8 overflow-hidden border-b border-[#2bd7ef]/12 max-sm:mb-5">
         <div className="absolute inset-0 bg-[#0B111D]" />

@@ -7,7 +7,6 @@ import {
   Check,
 } from "lucide-react";
 import type { ReactNode } from "react";
-import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 
 type Audience = "talent" | "employer";
@@ -37,7 +36,6 @@ export function DashboardShell({
 
   return (
     <div className={`min-h-screen bg-[#08111F] ${audience === "talent" ? "dashboard-talent" : ""}`} style={{ "--dashboard-accent": style.accent, "--dashboard-glow": style.glow } as React.CSSProperties}>
-      <Navbar />
       <main className={`mx-auto ${maxWidthClassName} px-5 py-8 sm:px-8 sm:py-10 lg:py-12`}>{children}</main>
       <Footer />
     </div>

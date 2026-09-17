@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Undo2, XCircle } from "lucide-react";
-import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import BillingButton from "@/components/BillingButton";
 import FreeAgentProBadge from "@/components/FreeAgentProBadge";
@@ -211,6 +210,14 @@ function resolveSignedInDisplayName(session: Session | null, profileName?: strin
   return emailName || "Free Agent";
 }
 
+function loginPathPreservingDashboardHash() {
+  const section = window.location.hash.replace(/^#/, "");
+  if (section === "introductions" || section === "connections") {
+    return `/login?next=${encodeURIComponent(`/dashboard#${section}`)}`;
+  }
+  return "/login";
+}
+
 export default function DashboardPage() {
   const [session, setSession] = useState<Session | null>(null);
   const [accountType, setAccountType] = useState<AccountType>("talent");
@@ -292,7 +299,7 @@ export default function DashboardPage() {
       }
 
       if (!activeSession) {
-        router.replace("/login");
+        router.replace(loginPathPreservingDashboardHash());
         return;
       }
 
@@ -381,7 +388,7 @@ export default function DashboardPage() {
       }
 
       if (!currentSession) {
-        router.replace("/login");
+        router.replace(loginPathPreservingDashboardHash());
         return;
       }
 
@@ -572,7 +579,7 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <><Navbar /><main className="min-h-screen bg-[#08111F] text-[#f7ebcf]">
+      <><main className="min-h-screen bg-[#08111F] text-[#f7ebcf]">
         <div className="mx-auto flex min-h-screen max-w-6xl items-center justify-center px-6 py-16">
           <div className="rounded-3xl border border-[#cda64d]/55 bg-[#f7ebcf] px-8 py-10 text-[#0f2744] shadow-[0_16px_40px_rgba(6,16,33,0.2)]">
             <p className="text-center text-sm font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">Loading dashboard</p>
@@ -626,7 +633,7 @@ export default function DashboardPage() {
   const talentConnectionPreview = talentSummary?.connectionPreview ?? [];
 
   return (
-    <><Navbar /><main className="min-h-screen bg-[#0f2744] text-[#f7ebcf]">
+    <><main className="min-h-screen bg-[#0f2744] text-[#f7ebcf]">
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-8 sm:py-12 lg:py-14">
         <div className="mb-6 rounded-3xl border border-[#cda64d]/55 bg-[#f7ebcf] p-6 text-[#0f2744] shadow-[0_16px_40px_rgba(6,16,33,0.18)] sm:p-8">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">

@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
 import type { AccountType, EmployerVerificationStatus } from "@/types/freeagent";
@@ -442,7 +441,6 @@ export default function EmployerOnboardingPage() {
   if (loading) {
     return (
       <main className="flex min-h-screen flex-col bg-[#08111F] text-[#071426]">
-        <Navbar />
         <div className="mx-auto max-w-5xl px-5 py-12 sm:px-8 lg:px-10">
           <div className="rounded-[32px] border border-[#cda64d]/55 bg-[#0f2744] p-8 text-[#f7ebcf] shadow-[0_20px_60px_rgba(6,16,33,0.16)]">
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#f2cc63]">Loading employer setup...</p>
@@ -459,7 +457,6 @@ export default function EmployerOnboardingPage() {
 
   return (
     <main className="flex min-h-screen flex-col bg-[#08111F] text-[#071426]">
-      <Navbar />
       <div className="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-10">
         <section className="rounded-[36px] border border-[#cda64d]/45 bg-[#f7e8c6] p-6 text-[#08111F] shadow-[0_20px_60px_rgba(6,16,33,0.16)] sm:p-8 lg:p-10">
           <div className="grid gap-8 pb-2 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.48fr)] lg:items-start">

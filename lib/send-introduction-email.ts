@@ -4,7 +4,7 @@ import { Resend } from "resend";
 import { createServiceRoleSupabaseClient } from "@/lib/server-supabase";
 
 const FROM_ADDRESS = "FreeAgentStaff <notifications@freeagentstaff.com>";
-const DASHBOARD_URL = "https://freeagentstaff.com/dashboard";
+const DASHBOARD_URL = "https://freeagentstaff.com/dashboard#introductions";
 const LOGO_URL = "https://freeagentstaff.com/FullLogo-clean-v2.png";
 
 function buildHtml(): string {

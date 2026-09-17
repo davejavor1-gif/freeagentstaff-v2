@@ -40,6 +40,14 @@ import type { EmployerSummaryPayload, TalentSummaryPayload } from "@/types/dashb
 type Audience = "talent" | "employer";
 type TalentDashboardSection = "overview" | "activity" | "notifications" | "introductions" | "connections" | "identity" | "journey";
 
+function talentSectionFromHash(hash: string): TalentDashboardSection | null {
+  const id = hash.replace(/^#/, "");
+  if (id === "introductions" || id === "connections") {
+    return id;
+  }
+  return null;
+}
+
 type Props = {
   audience: Audience;
   name: string;
@@ -175,7 +183,7 @@ function EmployerView(props: Props) {
 
         {canWork ? <section className="rounded-[24px] border border-[#cda64d]/45 bg-[#f7e8c6] p-6 text-[#08111F] shadow-[0_18px_45px_rgba(6,16,33,0.16)] sm:p-7"><p className="text-[10px] font-black uppercase tracking-[0.22em] text-[#08798a]">Employer metrics</p><div className="mt-6 grid divide-y divide-[#08111F]/12 border-t border-[#08111F]/12 pt-2 sm:grid-cols-2 sm:divide-x sm:divide-y-0 xl:grid-cols-4"><EmployerMetric label="Saved talent" value={summary?.savedTalentCount ?? 0} detail="People you bookmarked" icon={Bookmark} /><EmployerMetric label="Introductions" value={summary?.pendingIntroductionRequests ?? 0} detail="Waiting for a response" icon={Handshake} /><EmployerMetric label="Connections" value={summary?.activeConnections ?? 0} detail="Talent you can contact" icon={Users} /><EmployerMetric label="Shortlists" value={summary?.activeShortlists ?? 0} detail="Candidates you are considering" icon={ClipboardList} /></div></section> : null}
 
-        <section className="rounded-[24px] border border-[#cda64d]/45 bg-[#f7e8c6] p-6 text-[#08111F] shadow-[0_18px_45px_rgba(6,16,33,0.16)] sm:p-7"><p className="text-[10px] font-black uppercase tracking-[0.22em] text-[#08798a]">Account & employer actions</p><div className="mt-6 divide-y divide-[#08111F]/12 border-t border-[#08111F]/12">{!props.isVerifiedEmployer ? <div className="flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between"><div><h3 className="font-serif text-2xl">{props.verificationLabel}</h3><p className="mt-1 text-sm leading-6 text-[#08111F]/60">{props.verificationRejectionReason ?? "Submit your organisation details for review."}</p></div><DashboardAction href="/onboarding/employer" variant="accent">OPEN EMPLOYER ACCOUNT</DashboardAction></div> : null}{props.isVerifiedEmployer && !canWork ? <div className="flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between"><div><h3 className="font-serif text-2xl">Employer access is ready</h3><p className="mt-1 text-sm leading-6 text-[#08111F]/60">Activate Employer Access to begin discovering eligible talent.</p></div><BillingButton action="checkout" plan="employer" className="dashboard-employer-blue-action">CHOOSE PLAN</BillingButton></div> : null}<div className="flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between"><div><h3 className="font-serif text-2xl">Find talent</h3><p className="mt-1 text-sm leading-6 text-[#08111F]/60">Search eligible professional profiles.</p></div><DashboardAction href="/find-talent" variant="accent">OPEN TALENT SEARCH</DashboardAction></div><div className="flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between"><div><h3 className="font-serif text-2xl">Saved talent</h3><p className="mt-1 text-sm leading-6 text-[#08111F]/60">Review candidates you have saved.</p></div><DashboardAction href="/saved-talent" variant="accent">OPEN SAVED TALENT</DashboardAction></div><div className="flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between"><div><h3 className="font-serif text-2xl">Sign out</h3><p className="mt-1 text-sm leading-6 text-[#08111F]/60">Finished for now?</p></div><button type="button" onClick={props.signOut} className="dashboard-employer-blue-action">SIGN OUT <span aria-hidden="true">→</span></button></div></div></section>
+        <section className="rounded-[24px] border border-[#cda64d]/45 bg-[#f7e8c6] p-6 text-[#08111F] shadow-[0_18px_45px_rgba(6,16,33,0.16)] sm:p-7"><p className="text-[10px] font-black uppercase tracking-[0.22em] text-[#08798a]">Account & employer actions</p><div className="mt-6 divide-y divide-[#08111F]/12 border-t border-[#08111F]/12">{!props.isVerifiedEmployer ? <div className="flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between"><div><h3 className="font-serif text-2xl">{props.verificationLabel}</h3><p className="mt-1 text-sm leading-6 text-[#08111F]/60">{props.verificationRejectionReason ?? "Submit your organisation details for review."}</p></div><DashboardAction href="/onboarding/employer" variant="accent">OPEN EMPLOYER ACCOUNT</DashboardAction></div> : null}{props.isVerifiedEmployer && !canWork ? <div className="flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between"><div><h3 className="font-serif text-2xl">Employer access is ready</h3><p className="mt-1 text-sm leading-6 text-[#08111F]/60">Activate Employer Access to begin discovering eligible talent.</p></div><Link href="/pricing" className="dashboard-employer-blue-action">CHOOSE PLAN</Link></div> : null}<div className="flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between"><div><h3 className="font-serif text-2xl">Find talent</h3><p className="mt-1 text-sm leading-6 text-[#08111F]/60">Search eligible professional profiles.</p></div><DashboardAction href="/find-talent" variant="accent">OPEN TALENT SEARCH</DashboardAction></div><div className="flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between"><div><h3 className="font-serif text-2xl">Saved talent</h3><p className="mt-1 text-sm leading-6 text-[#08111F]/60">Review candidates you have saved.</p></div><DashboardAction href="/saved-talent" variant="accent">OPEN SAVED TALENT</DashboardAction></div><div className="flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between"><div><h3 className="font-serif text-2xl">Sign out</h3><p className="mt-1 text-sm leading-6 text-[#08111F]/60">Finished for now?</p></div><button type="button" onClick={props.signOut} className="dashboard-employer-blue-action">SIGN OUT <span aria-hidden="true">→</span></button></div></div></section>
       </> : null}
 
       {activeSection === "activity" ? <DashboardPanel title="Recent Activity" eyebrow="Live workspace"><DashboardActivity items={activity} empty="Your introduction and connection activity will appear here." /></DashboardPanel> : null}
@@ -252,7 +260,7 @@ function ProgressStep({ label, detail, complete }: { label: string; detail: stri
 }
 
 function TalentView(props: Props) {
-  const [activeSection, setActiveSection] = useState<TalentDashboardSection>("overview");
+  const [activeSection, setActiveSection] = useState<TalentDashboardSection>(() => talentSectionFromHash(typeof window === "undefined" ? "" : window.location.hash) ?? "overview");
   const [deleteAccountConfirmationOpen, setDeleteAccountConfirmationOpen] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
   const [deleteAccountError, setDeleteAccountError] = useState<string | null>(null);
@@ -278,6 +286,33 @@ function TalentView(props: Props) {
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
   }, [deletingAccount]);
+
+  useEffect(() => {
+    const applyHashSection = () => {
+      const section = talentSectionFromHash(window.location.hash);
+      if (section) {
+        setActiveSection(section);
+      }
+    };
+
+    applyHashSection();
+    window.addEventListener("hashchange", applyHashSection);
+    return () => window.removeEventListener("hashchange", applyHashSection);
+  }, []);
+
+  useEffect(() => {
+    if (activeSection !== "introductions" && activeSection !== "connections") {
+      return;
+    }
+    if (talentSectionFromHash(window.location.hash) !== activeSection) {
+      return;
+    }
+
+    const frameId = window.requestAnimationFrame(() => {
+      document.getElementById(activeSection)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    return () => window.cancelAnimationFrame(frameId);
+  }, [activeSection]);
 
   const closeDeleteAccountConfirmation = () => {
     if (deletingAccount) return;

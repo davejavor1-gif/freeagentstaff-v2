@@ -371,12 +371,12 @@ export default function EmployerTalentSearch() {
     <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-10 lg:py-12">
       <div className="rounded-[36px] border border-[#08111F]/15 bg-[#f7e8c6] p-5 shadow-[0_18px_55px_rgba(6,16,33,0.12)] sm:p-7 lg:p-8">
         <header className="border-b border-[#cda64d]/30 pb-7">
-          <div className="max-w-2xl">
+          <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">PREMIUM TALENT</p>
             <h1 className="mt-3 text-4xl font-black uppercase tracking-[0.12em] text-[#0f2744] sm:text-5xl">FIND TALENT</h1>
             <p className="mt-3 text-base font-semibold text-[#17355f] sm:text-lg">Discover people worth meeting.</p>
-            <p className="mt-3 max-w-2xl text-sm leading-7 text-[#27405f] sm:text-base">
-              Discover experienced professionals open to their next move - including talent exploring opportunities discreetly.
+            <p className="mt-3 text-sm leading-7 text-[#27405f] sm:text-base lg:whitespace-nowrap">
+              Discover experienced professionals open to their next move, including talent exploring opportunities discreetly.
             </p>
           </div>
         </header>

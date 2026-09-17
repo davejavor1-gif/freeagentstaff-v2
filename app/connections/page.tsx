@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
 import type {
@@ -37,6 +36,7 @@ export default function ConnectionsPage() {
   const [feedback, setFeedback] = useState<string | null>(null);
   const [busyConnectionId, setBusyConnectionId] = useState<string | null>(null);
   const [contactByConnectionId, setContactByConnectionId] = useState<Record<string, ContactState>>({});
+  const [disconnectConfirmId, setDisconnectConfirmId] = useState<string | null>(null);
 
   const loadConnections = useCallback(async () => {
     setLoading(true);
@@ -263,10 +263,48 @@ export default function ConnectionsPage() {
     }
   };
 
+  const disconnectEmployerConnection = async (connectionId: string) => {
+    if (busyConnectionId) {
+      return;
+    }
+
+    const session = await getSessionWithRetry();
+    if (!session?.access_token) {
+      setFeedback("Sign in required.");
+      return;
+    }
+
+    setBusyConnectionId(connectionId);
+    setFeedback(null);
+
+    try {
+      const response = await fetch(`/api/connections/${encodeURIComponent(connectionId)}/revoke`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      const payload = (await response.json().catch(() => null)) as TalentConnectionMutationResponse | null;
+
+      if (!response.ok || !payload?.ok) {
+        setFeedback(payload?.message ?? "Unable to disconnect from this Talent.");
+        return;
+      }
+
+      setDisconnectConfirmId(null);
+      await loadConnections();
+      setFeedback("Disconnected. Connection-derived access has been revoked.");
+    } catch {
+      setFeedback("Unable to disconnect from this Talent.");
+    } finally {
+      setBusyConnectionId(null);
+    }
+  };
+
   if (loading) {
     return (
       <main className="flex min-h-screen flex-col bg-[#08111F] text-[#071426]">
-        <Navbar />
         <section className="flex-1 mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-10">
           <div className="rounded-[32px] border border-[#08111F]/15 bg-[#f7e8c6] p-8 text-[#08111F] shadow-[0_18px_55px_rgba(6,16,33,0.12)]">
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#08111F]">Loading connections</p>
@@ -279,7 +317,6 @@ export default function ConnectionsPage() {
 
   return (
     <main className="flex min-h-screen flex-col bg-[#08111F] text-[#071426]">
-      <Navbar />
       <section className="flex-1 mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-10 lg:py-12">
         <div className="rounded-[36px] border border-[#08111F]/15 bg-[#f7e8c6] p-5 text-[#08111F] shadow-[0_18px_55px_rgba(6,16,33,0.12)] sm:p-7 lg:p-8">
           <header className="flex flex-col gap-4 border-b border-[#cda64d]/30 pb-7 sm:flex-row sm:items-end sm:justify-between">
@@ -384,6 +421,18 @@ export default function ConnectionsPage() {
                               {contactState?.loading ? "Loading contact" : "View contact details"}
                             </button>
                           ) : null}
+                          {item.status === "active" ? (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setDisconnectConfirmId(item.connectionId);
+                              }}
+                              disabled={busyConnectionId === item.connectionId}
+                              className="inline-flex min-h-11 items-center rounded-full border border-[#9f3a2b]/25 bg-[#9f3a2b] px-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf] transition hover:bg-[#8d3326] disabled:opacity-60"
+                            >
+                              {busyConnectionId === item.connectionId ? "Disconnecting" : "Disconnect"}
+                            </button>
+                          ) : null}
                         </div>
                       </div>
                     </article>
@@ -450,6 +499,49 @@ export default function ConnectionsPage() {
           ) : null}
         </div>
       </section>
+      {disconnectConfirmId ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#08111F]/70 p-5"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="disconnect-talent-title"
+          onClick={() => {
+            if (!busyConnectionId) {
+              setDisconnectConfirmId(null);
+            }
+          }}
+        >
+          <div
+            className="w-full max-w-lg rounded-2xl border border-[#cda64d]/45 bg-[#f7ebcf] p-6 text-[#08111F] shadow-2xl sm:p-8"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h2 id="disconnect-talent-title" className="font-serif text-2xl">Disconnect from this Talent?</h2>
+            <p className="mt-4 text-sm leading-7 text-[#27405f]">You will lose the access provided by your active connection.</p>
+            <div className="mt-6 flex flex-wrap justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setDisconnectConfirmId(null);
+                }}
+                disabled={Boolean(busyConnectionId)}
+                className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-[#0f2744]/20 bg-white px-5 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#0f2744]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  void disconnectEmployerConnection(disconnectConfirmId);
+                }}
+                disabled={Boolean(busyConnectionId)}
+                className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-[#9f3a2b]/25 bg-[#9f3a2b] px-5 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf] disabled:opacity-60"
+              >
+                {busyConnectionId ? "Disconnecting" : "Disconnect"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
       <Footer />
     </main>
   );

@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 import Footer from "@/components/layout/Footer";
 import FreeAgentProBadge from "@/components/FreeAgentProBadge";
-import Navbar from "@/components/layout/Navbar";
 import PassportFold from "@/components/PassportFold";
 import PassportProfileMedia from "@/components/PassportProfileMedia";
 import { canSharePublicPassport, getPublicPassportUrl } from "@/lib/passport-share";
@@ -138,6 +137,9 @@ export default function TalentProfileExperience({
   >("idle");
   const [introductionId, setIntroductionId] = useState<string | null>(null);
   const [introductionBusy, setIntroductionBusy] = useState(false);
+  const [activeConnectionId, setActiveConnectionId] = useState<string | null>(null);
+  const [disconnectConfirmOpen, setDisconnectConfirmOpen] = useState(false);
+  const [disconnectBusy, setDisconnectBusy] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const [emailCopyStatus, setEmailCopyStatus] = useState<"idle" | "rich" | "plain" | "error">("idle");
   const [shareInstructionTool, setShareInstructionTool] = useState<ShareInstructionTool>("word");
@@ -217,6 +219,18 @@ export default function TalentProfileExperience({
               : null;
             setIntroductionStatus(match?.status ?? "idle");
             setIntroductionId(match?.requestId ?? null);
+            const connectionsResponse = await fetch("/api/connections/employer", {
+              headers: { Authorization: `Bearer ${session.access_token}` },
+              cache: "no-store",
+            });
+            const connectionsPayload = (await connectionsResponse.json().catch(() => null)) as {
+              ok?: boolean;
+              items?: Array<{ connectionId: string; status: "active" | "revoked"; talent?: { slug?: string } | null }>;
+            } | null;
+            const activeConnection = connectionsPayload?.ok
+              ? connectionsPayload.items?.find((item) => item.status === "active" && item.talent?.slug === slug)
+              : null;
+            setActiveConnectionId(activeConnection?.connectionId ?? null);
           }
         }
       } catch (error) {
@@ -284,6 +298,43 @@ export default function TalentProfileExperience({
     setIntroductionBusy(false);
   };
 
+  const disconnectFromTalent = async () => {
+    const session = await getSessionWithRetry();
+    if (!session?.access_token || !activeConnectionId || disconnectBusy || isDemo) {
+      return;
+    }
+
+    setDisconnectBusy(true);
+    setRequestFeedback(null);
+    const response = await fetch(`/api/connections/${encodeURIComponent(activeConnectionId)}/revoke`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    });
+    const result = (await response.json().catch(() => null)) as {
+      ok?: boolean;
+      message?: string;
+    } | null;
+    if (!response.ok || !result?.ok) {
+      setRequestFeedback(result?.message ?? "Unable to disconnect from this Talent.");
+      setDisconnectBusy(false);
+      return;
+    }
+
+    setActiveConnectionId(null);
+    setDisconnectConfirmOpen(false);
+    await loadPrivateState(session.access_token);
+    const passportResponse = await fetch(`/api/talent/${encodeURIComponent(slug)}`, {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+      cache: "no-store",
+    });
+    const nextPayload = (await passportResponse.json().catch(() => null)) as TalentPassportApiResponse | null;
+    if (nextPayload) {
+      setPayload(nextPayload);
+    }
+    setRequestFeedback("Disconnected. Connection-derived access has been revoked.");
+    setDisconnectBusy(false);
+  };
+
   const updateRequest = async (
     request: PrivateAccessRequest,
     status: "accepted" | "declined" | "revoked",
@@ -345,7 +396,6 @@ export default function TalentProfileExperience({
   if (loading)
     return (
       <>
-        <Navbar />
         <main className="min-h-screen bg-[#08111F] px-6 py-12 text-[#0f2744]">
           <div className="mx-auto max-w-6xl rounded-[32px] bg-[#f7ebcf] p-8">
             <p className="font-semibold uppercase tracking-[0.24em]">
@@ -360,7 +410,6 @@ export default function TalentProfileExperience({
   if (!payload?.allowed || !payload.profile || !payload.accessScope)
     return (
       <>
-        <Navbar />
         <main className="min-h-screen bg-[#08111F] px-6 py-12 text-[#0f2744]">
           <div className="mx-auto max-w-6xl rounded-[32px] border border-[#cda64d]/60 bg-[#f7ebcf] p-8">
             <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">
@@ -448,7 +497,6 @@ export default function TalentProfileExperience({
 
   return (
     <>
-      <Navbar />
       <main className="min-h-screen overflow-x-hidden bg-[#08111F] px-4 py-8 text-[#0f2744] sm:px-6 lg:px-10">
         <div className="mx-auto max-w-7xl">
           <div className="mb-6 flex flex-wrap items-end justify-end gap-4">
@@ -679,9 +727,23 @@ export default function TalentProfileExperience({
                   </button>
                 ) : null}
                 {!isOwner && introductionStatus === "accepted" && access?.status !== "revoked" ? (
-                  <span className="inline-flex min-h-11 items-center rounded-full bg-[#8be4c5] px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#071426]">
-                    Connected
-                  </span>
+                  <>
+                    <span className="inline-flex min-h-11 items-center rounded-full bg-[#8be4c5] px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#071426]">
+                      Connected
+                    </span>
+                    {viewerAccountType === "employer" && activeConnectionId ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDisconnectConfirmOpen(true);
+                        }}
+                        disabled={disconnectBusy}
+                        className="inline-flex min-h-11 items-center rounded-full border border-[#9f3a2b]/25 bg-[#9f3a2b] px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#f7ebcf] transition hover:bg-[#8d3326] disabled:opacity-60"
+                      >
+                        Disconnect
+                      </button>
+                    ) : null}
+                  </>
                 ) : null}
                 {!isOwner &&
                 (introductionStatus === "declined" ||
@@ -705,7 +767,7 @@ export default function TalentProfileExperience({
             ) : null}
             {access &&
             (access.status === "accepted" || access.status === "owner_full") ? (
-              <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              <div className="mt-6 grid gap-4 lg:grid-cols-3">
                 <div className="rounded-[20px] border border-[#cda64d]/35 bg-[#fffaf0] p-4">
                   <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">
                     <Mail className="h-4 w-4" /> Contact email
@@ -798,6 +860,49 @@ export default function TalentProfileExperience({
           </section> : null}
             </div>
       </main>
+      {disconnectConfirmOpen ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#08111F]/70 p-5"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="disconnect-from-talent-title"
+          onClick={() => {
+            if (!disconnectBusy) {
+              setDisconnectConfirmOpen(false);
+            }
+          }}
+        >
+          <div
+            className="w-full max-w-lg rounded-2xl border border-[#cda64d]/45 bg-[#f7ebcf] p-6 text-[#08111F] shadow-2xl sm:p-8"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h2 id="disconnect-from-talent-title" className="font-serif text-2xl">Disconnect from this Talent?</h2>
+            <p className="mt-4 text-sm leading-7 text-[#27405f]">You will lose the access provided by your active connection.</p>
+            <div className="mt-6 flex flex-wrap justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setDisconnectConfirmOpen(false);
+                }}
+                disabled={disconnectBusy}
+                className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-[#0f2744]/20 bg-white px-5 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#0f2744]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  void disconnectFromTalent();
+                }}
+                disabled={disconnectBusy}
+                className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-[#9f3a2b]/25 bg-[#9f3a2b] px-5 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf] disabled:opacity-60"
+              >
+                {disconnectBusy ? "Disconnecting" : "Disconnect"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
       <Footer />
     </>
   );

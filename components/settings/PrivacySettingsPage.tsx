@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { Building2, LockKeyhole, ShieldCheck, Ban } from "lucide-react";
 import Image from "next/image";
 import type { Session } from "@supabase/supabase-js";
-import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { getSessionWithRetry } from "@/lib/supabase-client";
 import type { AccountType, AvailabilityStatus, ProfileVisibility } from "@/types/freeagent";
@@ -283,7 +282,6 @@ export default function PrivacySettingsPage() {
 
   return (
     <main className="privacy-page flex min-h-screen flex-col bg-[#08111F] text-[#08111F]">
-      <Navbar />
       <div className="flex-1 mx-auto w-full max-w-6xl px-4 py-8 sm:px-8 lg:px-12 lg:py-12">
         <div className="privacy-panel rounded-[32px] border border-[#cda64d]/45 bg-[#f7e8c6] p-5 text-[#08111F] shadow-[0_18px_55px_rgba(6,16,33,0.18)] sm:p-8 lg:p-10">
           <section className="relative overflow-hidden rounded-[28px] border border-[#cda64d]/35 bg-[#fffaf0] p-6 sm:p-8 lg:p-10">

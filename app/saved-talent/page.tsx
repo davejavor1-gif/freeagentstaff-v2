@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import TalentCard from "@/components/TalentCard";
 import { getSessionWithRetry } from "@/lib/supabase-client";
@@ -432,7 +431,6 @@ export default function SavedTalentPage() {
 
   return (
     <main className="flex min-h-screen flex-col bg-[#08111F] text-[#071426]">
-      <Navbar />
       <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-10 lg:py-12">
         <div className="rounded-[36px] border border-[#08111F]/15 bg-[#f7e8c6] p-5 shadow-[0_18px_55px_rgba(6,16,33,0.12)] sm:p-7 lg:p-8">
           <header className="grid gap-6 border-b border-[#cda64d]/30 pb-7 lg:grid-cols-[1.1fr_1fr] lg:items-end">
@@ -647,15 +645,20 @@ export default function SavedTalentPage() {
                           return (
                             <label key={`${item.savedTalentId}-${shortlist.id}`} className="flex items-center justify-between gap-2 text-sm text-[#27405f]">
                               <span>{shortlist.name}</span>
-                              <input
-                                type="checkbox"
-                                checked={isMember}
-                                onChange={() => {
+                              <button
+                                type="button"
+                                onClick={() => {
                                   void toggleShortlistMembership(item.slug, shortlist.id, isMember);
                                 }}
-                                className="h-4 w-4 rounded border-[#cda64d]/45 text-[#0f2744]"
+                                className={`inline-flex min-h-8 items-center rounded-full px-3 text-[10px] font-semibold uppercase tracking-[0.18em] transition ${
+                                  isMember
+                                    ? "border border-[#0f2744]/25 bg-[#0f2744] text-[#f7ebcf] hover:bg-[#17355f]"
+                                    : "border border-[#cda64d]/45 bg-[#fffdf7] text-[#0f2744] hover:bg-[#fff5db]"
+                                }`}
                                 disabled={isMutating}
-                              />
+                              >
+                                {isMember ? "In shortlist" : "Add"}
+                              </button>
                             </label>
                           );
                         })}

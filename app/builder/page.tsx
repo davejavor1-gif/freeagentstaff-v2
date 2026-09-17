@@ -9,7 +9,6 @@ import { freeAgentProfiles } from "@/data/freeagents";
 import { buildCanonicalTalentColumns, buildTalentProfileUpdateColumns } from "@/lib/talent-profile-columns";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
 import VideoIntroductionSection from "@/components/settings/VideoIntroductionSection";
-import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { availabilityToOpportunityStatus, normalizeAvailability, salaryExpectationOptions } from "@/lib/talent-profile-options";
 import { hasTalentProAccess, normalizeTalentSubscriptionSnapshot } from "@/lib/talent-subscription";
@@ -564,7 +563,7 @@ export default function BuilderPage() {
 
   if (isLoading) {
     return (
-      <><Navbar /><main className="min-h-screen bg-[#08111F] px-4 py-8 text-[#0f2744] sm:px-6 lg:px-8">
+      <><main className="min-h-screen bg-[#08111F] px-4 py-8 text-[#0f2744] sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-7xl items-center justify-center py-24">
           <div className="rounded-[32px] border border-[#cda64d]/70 bg-[#0f2744] px-8 py-12 text-center text-[#f7ebcf] shadow-[0_18px_55px_rgba(6,16,33,0.28)]">
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">Loading profile</p>
@@ -839,7 +838,7 @@ export default function BuilderPage() {
   };
 
   return (
-    <><Navbar /><main className="min-h-screen bg-[#08111F] px-3 py-4 text-[#0f2744] sm:px-6 lg:px-8 lg:py-8">
+    <><main className="min-h-screen bg-[#08111F] px-3 py-4 text-[#0f2744] sm:px-6 lg:px-8 lg:py-8">
       <div className="mx-auto grid max-w-[1500px] gap-4 lg:grid-cols-[230px_minmax(0,1fr)_320px] lg:items-start lg:gap-x-6 lg:gap-y-0">
         <aside className="rounded-[24px] border border-[#cda64d]/45 bg-[#f7ebcf] p-4 text-[#08111F] shadow-[0_18px_45px_rgba(6,16,33,0.2)] lg:row-span-3 lg:h-fit lg:self-start lg:sticky lg:top-24">
           <div className="flex items-start justify-between gap-3">

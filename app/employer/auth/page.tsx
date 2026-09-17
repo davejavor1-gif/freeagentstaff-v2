@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import OAuthButtons from "@/components/auth/OAuthButtons";
 import SignupBrandStory from "@/components/auth/SignupBrandStory";
@@ -216,7 +215,6 @@ function EmployerAuthContent() {
 
   return (
     <main className="min-h-screen bg-[#08111F] text-[#071426]">
-      <Navbar />
 
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute -left-16 top-10 h-40 w-40 rounded-full border border-[#2bd7ef]/18" />

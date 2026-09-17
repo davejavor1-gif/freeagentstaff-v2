@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { Bookmark, Building2, Clock, Search, Send, ShieldCheck, UserRound } from "lucide-react";
-import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import TalentCard from "@/components/TalentCard";
 import { homepagePassportProfiles } from "@/data/homepage-passports";
@@ -24,12 +23,6 @@ const danielProfile = {
   ...homepagePassportProfiles["daniel-brooks"],
   intro_video_url: "/videos/daniel-intro.mp4",
 };
-
-const peachTerracottaStyle = {
-  backgroundColor: "#A98F9E",
-  backgroundImage:
-    "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
-} as const;
 
 const employerSteps = [
   {
@@ -96,7 +89,6 @@ const shortStaySteps = [
 export default function EmployersPage() {
   return (
     <main className="min-h-screen bg-[#f7e8c6] text-[#071321]">
-      <Navbar />
 
       <section className="relative overflow-hidden bg-[#0B111D] text-[#f7e8c6]">
         <div className="pointer-events-none absolute -left-16 top-10 h-44 w-44 rounded-full border border-[#2bd7ef]/18" />
@@ -147,7 +139,7 @@ export default function EmployersPage() {
         <div className="mx-auto max-w-7xl px-6 py-14 sm:px-8 lg:px-12 lg:py-20">
           <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#aff546]">Responsible access</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#2BD7EF]">Responsible access</p>
               <h2 className="mt-3 max-w-[12ch] font-serif text-[2.7rem] font-semibold uppercase leading-[0.94] sm:text-[3.7rem]">Trust is part of the product.</h2>
             </div>
             <div className="grid gap-6 sm:grid-cols-2">
@@ -166,36 +158,13 @@ export default function EmployersPage() {
         </div>
       </section>
 
-      <section className="bg-[#f7e8c6]">
-        <div className="mx-auto max-w-7xl px-6 py-14 sm:px-8 lg:px-12 lg:py-20">
-          <div className="max-w-3xl">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#1bc8e4]">Ready when you are</p>
-            <h2 className="mt-3 font-serif text-[2.6rem] font-semibold uppercase leading-[0.94] sm:text-[3.6rem]">The right person may not be applying.</h2>
-            <p className="mt-5 max-w-2xl text-base leading-8 text-[#071321]/78">Join Free Agent Staff to discover professionals who are open to opportunity, while respecting the privacy controls and permissions that keep the connection thoughtful.</p>
-          </div>
-        </div>
-      </section>
-      <section className="bg-[#08111F] text-[#f7ebcf]">
-        <div className="mx-auto grid max-w-7xl items-center gap-10 px-6 py-16 sm:px-8 sm:py-20 lg:grid-cols-[minmax(0,1fr)_minmax(300px,0.8fr)] lg:gap-16 lg:px-12 lg:py-24">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#2BD7EF]">THE FIRST MOVE IS YOURS</p>
-            <h2 className="mt-5 max-w-4xl font-serif text-[2.6rem] font-semibold uppercase leading-[0.94] sm:text-[3.6rem]">STOP WAITING FOR APPLICATIONS.<br />START DISCOVERING.</h2>
-            <p className="mt-6 max-w-2xl text-base leading-8 text-[#dfe7ef] sm:text-lg">The people you need might not be looking for you yet. Find them on FreeAgentStaff, see their story, and make the first move.</p>
-            <p className="mt-7 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f2cc63]">TALENT CARDS · VIDEO INTRODUCTIONS · TALENT PASSPORTS</p>
-          </div>
-          <div className="flex items-center justify-center lg:justify-end">
-            <Image src="/great-people-build-great-things.png" alt="Great people build great things" width={1200} height={1200} className="h-auto w-full max-w-[341px] object-contain" />
-          </div>
-        </div>
-      </section>
-
-      <section id="short-stay" className="scroll-mt-24 text-[#08111F]" style={peachTerracottaStyle}>
+      <section id="short-stay" className="scroll-mt-24 bg-[#f7e8c6] text-[#08111F]">
         <div className="mx-auto max-w-7xl px-6 py-14 sm:px-8 lg:px-12 lg:py-16">
           <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.55fr] lg:gap-16">
             <div>
-              <span className="inline-flex items-center rounded-full border border-[#2BD7EF]/40 bg-[#2BD7EF]/10 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.28em] text-[#2BD7EF]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#2BD7EF]">
                 Short Stay Explained
-              </span>
+              </p>
               <h2 className="mt-5 font-serif text-4xl font-bold uppercase leading-[0.95] sm:text-5xl">
                 <span className="text-[#08111F]">Find great people</span>
                 <br />
@@ -227,10 +196,23 @@ export default function EmployersPage() {
                 );
               })}
             </div>
-            <div className="mt-10 flex flex-col items-center justify-center gap-4 text-center sm:flex-row">
-              <Link href="/employer/auth" className="inline-flex items-center rounded-full bg-[#2bd7ef] px-6 py-3 text-sm font-semibold text-[#071321] transition hover:bg-[#1fcce7]">Employer Sign In</Link>
-              <Link href="/pricing" className="text-sm font-semibold text-[#08111F] underline decoration-[#2bd7ef] underline-offset-4">View Employer Plans</Link>
-            </div>
+          </div>
+        </div>
+      </section>
+      <section className="bg-[#08111F] text-[#f7ebcf]">
+        <div className="mx-auto grid max-w-7xl items-center gap-10 px-6 py-16 sm:px-8 sm:py-20 lg:grid-cols-[minmax(0,1fr)_minmax(300px,0.8fr)] lg:gap-16 lg:px-12 lg:py-24">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#2BD7EF]">THE FIRST MOVE IS YOURS</p>
+            <h2 className="mt-5 max-w-4xl font-serif text-[2.6rem] font-semibold uppercase leading-[0.94] sm:text-[3.6rem]">STOP WAITING FOR APPLICATIONS.<br />START DISCOVERING.</h2>
+            <p className="mt-6 max-w-2xl text-base leading-8 text-[#dfe7ef] sm:text-lg">The people you need might not be looking for you yet. Find them on FreeAgentStaff, see their story, and make the first move.</p>
+            <p className="mt-7 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f2cc63]">TALENT CARDS · VIDEO INTRODUCTIONS · TALENT PASSPORTS</p>
+          </div>
+          <div className="flex items-center justify-center lg:justify-end">
+            <Image src="/great-people-build-great-things.png" alt="Great people build great things" width={1200} height={1200} className="h-auto w-full max-w-[341px] object-contain" />
+          </div>
+          <div className="flex flex-wrap items-center justify-start gap-4 lg:col-span-2">
+            <Link href="/employer/auth" className="inline-flex items-center rounded-full bg-[#2bd7ef] px-6 py-3 text-sm font-semibold text-[#071321] transition hover:bg-[#1fcce7]">Employer Sign In</Link>
+            <Link href="/pricing" className="text-sm font-semibold text-[#f7ebcf] underline decoration-[#2bd7ef] underline-offset-4">View Employer Plans</Link>
           </div>
         </div>
       </section>

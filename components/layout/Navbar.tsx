@@ -25,13 +25,33 @@ const talentNavItems = (talentSlug: string | null) => [
   { label: "Pricing", href: "/pricing" },
 ];
 
+type NavAccountType = "talent" | "employer";
+
+type ResolvedNavIdentity = {
+  sessionPresent: boolean;
+  accountType: NavAccountType | null;
+  talentSlug: string | null;
+  isSystemAdmin: boolean;
+};
+
+let lastResolvedNav: ResolvedNavIdentity = {
+  sessionPresent: false,
+  accountType: null,
+  talentSlug: null,
+  isSystemAdmin: false,
+};
+
+function rememberNavIdentity(next: ResolvedNavIdentity) {
+  lastResolvedNav = next;
+}
+
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [session, setSession] = useState<Session | null>(null);
   const [notificationCount, setNotificationCount] = useState(0);
-  const [accountType, setAccountType] = useState<"talent" | "employer" | null>(null);
-  const [talentSlug, setTalentSlug] = useState<string | null>(null);
-  const [isSystemAdmin, setIsSystemAdmin] = useState(false);
+  const [accountType, setAccountType] = useState<NavAccountType | null>(lastResolvedNav.accountType);
+  const [talentSlug, setTalentSlug] = useState<string | null>(lastResolvedNav.talentSlug);
+  const [isSystemAdmin, setIsSystemAdmin] = useState(lastResolvedNav.isSystemAdmin);
+  const [sessionPresent, setSessionPresent] = useState(lastResolvedNav.sessionPresent);
   const [signingOut, setSigningOut] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
@@ -42,6 +62,13 @@ export default function Navbar() {
     async function loadCurrentSession(currentSession: Session | null) {
       if (!currentSession) {
         if (mounted) {
+          rememberNavIdentity({
+            sessionPresent: false,
+            accountType: null,
+            talentSlug: null,
+            isSystemAdmin: false,
+          });
+          setSessionPresent(false);
           setNotificationCount(0);
           setAccountType(null);
           setTalentSlug(null);
@@ -78,8 +105,16 @@ export default function Navbar() {
       }
 
       if (mounted) {
+        const nextAccountType: NavAccountType = rowAccountType === "employer" ? "employer" : "talent";
+        rememberNavIdentity({
+          sessionPresent: true,
+          accountType: nextAccountType,
+          talentSlug: rowTalentSlug,
+          isSystemAdmin: lastResolvedNav.isSystemAdmin,
+        });
         setNotificationCount(count);
-        setAccountType(rowAccountType === "employer" ? "employer" : "talent");
+        setSessionPresent(true);
+        setAccountType(nextAccountType);
         setTalentSlug(rowTalentSlug);
       }
 
@@ -95,7 +130,13 @@ export default function Navbar() {
         const payload = (await response.json().catch(() => null)) as { ok?: boolean; isSystemAdmin?: boolean } | null;
 
         if (mounted) {
-          setIsSystemAdmin(Boolean(payload?.ok && payload.isSystemAdmin));
+          const nextIsSystemAdmin = Boolean(payload?.ok && payload.isSystemAdmin);
+          rememberNavIdentity({
+            ...lastResolvedNav,
+            sessionPresent: true,
+            isSystemAdmin: nextIsSystemAdmin,
+          });
+          setIsSystemAdmin(nextIsSystemAdmin);
         }
       }
     }
@@ -104,7 +145,9 @@ export default function Navbar() {
       if (!mounted) {
         return;
       }
-      setSession(data.session);
+      if (data.session) {
+        setSessionPresent(true);
+      }
       loadCurrentSession(data.session);
     });
 
@@ -112,7 +155,9 @@ export default function Navbar() {
       if (!mounted) {
         return;
       }
-      setSession(currentSession);
+      if (currentSession) {
+        setSessionPresent(true);
+      }
       loadCurrentSession(currentSession);
     });
 
@@ -132,15 +177,16 @@ export default function Navbar() {
     };
   }, []);
 
-  const isEmployerSession = Boolean(session) && accountType === "employer";
-  const isAdminSession = Boolean(session) && isSystemAdmin;
-  const isTalentSession = Boolean(session) && accountType !== "employer";
+  const isEmployerSession = sessionPresent && accountType === "employer";
+  const isAdminSession = sessionPresent && isSystemAdmin;
+  const isTalentSession = sessionPresent && accountType === "talent";
   const visibleNavItems = isEmployerSession
     ? [
       { label: "Dashboard", href: "/dashboard" },
         { label: "Find talent", href: "/find-talent" },
         { label: "Saved talent", href: "/saved-talent" },
         { label: "Employer account", href: "/onboarding/employer" },
+        { label: "Pricing", href: "/pricing" },
       ]
     : isAdminSession
       ? [
@@ -216,7 +262,7 @@ export default function Navbar() {
         </nav>
 
         <div className="flex items-center gap-3">
-          {session ? (
+          {sessionPresent ? (
             <Link
               href="/notifications"
               className={`hidden items-center gap-1.5 rounded-full px-3 py-2 transition sm:inline-flex ${isEmployerSession ? "bg-[#2bd7ef] hover:brightness-105" : "bg-[#aff546] hover:brightness-105"}`}

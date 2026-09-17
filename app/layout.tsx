@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Navbar from "@/components/layout/Navbar";
 import { PwaRegister } from "../components/PwaRegister";
 import "./globals.css";
 
@@ -28,7 +29,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  applicationName: "FreeAgentStaff",
+  applicationName: "Free Agent Staff",
   manifest: "/manifest.webmanifest",
   title: {
     default: siteTitle,
@@ -56,7 +57,7 @@ export const metadata: Metadata = {
   other: {
     "apple-mobile-web-app-capable": "yes",
     "apple-mobile-web-app-status-bar-style": "black-translucent",
-    "apple-mobile-web-app-title": "FreeAgentStaff",
+    "apple-mobile-web-app-title": "Free Agent Staff",
   },
   openGraph: {
     type: "website",
@@ -92,6 +93,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <Navbar />
         {children}
         <PwaRegister />
       </body>
