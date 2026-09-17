@@ -29,7 +29,7 @@ export const metadata: Metadata = {
 const sarah = homepagePassportProfiles["sarah-jones"];
 
 const peachTerracottaStyle = {
-  backgroundColor: "#C97F62",
+  backgroundColor: "#A98F9E",
   backgroundImage:
     "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
 } as const;
@@ -469,8 +469,8 @@ export default function AboutPage() {
             <p className="mt-4 text-base text-[#08111F]/70 sm:text-lg">One-off shifts. Real opportunities.</p>
           </div>
 
-          <div className="mt-14 grid gap-12 divide-y divide-[#08111F]/15 sm:mt-16 lg:grid-cols-2 lg:gap-0 lg:divide-y-0 lg:divide-x">
-            <div className="lg:pr-14">
+          <div className="mt-14 grid gap-12 divide-y divide-[#08111F]/15 sm:mt-16 lg:mx-auto lg:max-w-[calc(28rem*2+2rem)] lg:grid-cols-2 lg:gap-8 lg:divide-y-0">
+            <div>
               <span className="inline-flex items-center rounded-full border border-[#AFF546]/40 bg-[#AFF546]/10 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.28em] text-[#AFF546]">
                 For Talent
               </span>
@@ -491,7 +491,7 @@ export default function AboutPage() {
               </Link>
             </div>
 
-            <div className="pt-12 lg:pl-14 lg:pt-0">
+            <div className="pt-12 lg:pt-0">
               <span className="inline-flex items-center rounded-full border border-[#2BD7EF]/40 bg-[#2BD7EF]/10 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.28em] text-[#2BD7EF]">
                 For Employers
               </span>
