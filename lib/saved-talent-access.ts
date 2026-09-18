@@ -624,11 +624,40 @@ export async function getEmployerSavedTalentAndShortlistCounts(
     };
   }
 
+  const scope = await resolveActorDiscoveryScope(userClient, accessToken);
+
+  if (scope === "none") {
+    const { data, error } = await callRpc<Array<{ saved_talent_count: number | string; active_shortlist_count: number | string }>>(
+      userClient,
+      "employer_persisted_saved_shortlist_counts",
+    );
+
+    if (error) {
+      return {
+        ok: false,
+        reason: mapReasonFromError(error.message),
+        message: error.message,
+        savedTalentCount: 0,
+        activeShortlists: 0,
+      };
+    }
+
+    const row = data?.[0];
+    return {
+      ok: true,
+      savedTalentCount: Number(row?.saved_talent_count ?? 0),
+      activeShortlists: Number(row?.active_shortlist_count ?? 0),
+    };
+  }
+
+  const savedRpc = scope === "rockstar_only" ? "list_saved_talent_for_rockstar_employer" : "list_saved_talent_for_employer";
+  const shortlistRpc = scope === "rockstar_only" ? "list_employer_shortlists_for_rockstar_employer" : "list_employer_shortlists";
+
   const [savedResult, shortlistResult] = await Promise.all([
-    callRpc<ListSavedRow[]>(userClient, "list_saved_talent_for_employer", {
+    callRpc<ListSavedRow[]>(userClient, savedRpc, {
       p_shortlist_id: null,
     }),
-    callRpc<ListShortlistRow[]>(userClient, "list_employer_shortlists"),
+    callRpc<ListShortlistRow[]>(userClient, shortlistRpc),
   ]);
 
   if (savedResult.error) {

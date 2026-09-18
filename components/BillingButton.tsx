@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { getSessionWithRetry } from "@/lib/supabase-client";
 
 export default function BillingButton({
@@ -16,9 +16,11 @@ export default function BillingButton({
 }) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const submitLock = useRef(false);
 
   const handleClick = async () => {
-    if (busy) return;
+    if (submitLock.current || busy) return;
+    submitLock.current = true;
     setBusy(true);
     setMessage(null);
 
@@ -49,6 +51,7 @@ export default function BillingButton({
       setMessage("Unable to open billing.");
     } finally {
       setBusy(false);
+      submitLock.current = false;
     }
   };
 

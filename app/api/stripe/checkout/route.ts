@@ -10,6 +10,15 @@ import {
 } from "@/lib/stripe-billing";
 import { hasActiveShortStayAccess } from "@/lib/employer-entitlement";
 
+// Stripe idempotency keys last 24h. A short window suppresses concurrent duplicate
+// Checkout Sessions for one purchase attempt without blocking a later repurchase
+// after the 72-hour Short Stay pass expires.
+const SHORT_STAY_CHECKOUT_IDEMPOTENCY_WINDOW_MS = 15 * 60 * 1000;
+
+function shortStayCheckoutIdempotencyKey(userId: string, nowMs = Date.now()) {
+  return `short-stay-checkout:${userId}:${Math.floor(nowMs / SHORT_STAY_CHECKOUT_IDEMPOTENCY_WINDOW_MS)}`;
+}
+
 function normalizeAbn(value: string | null | undefined) {
   const digits = (value ?? "").replace(/\D/g, "");
 
@@ -140,6 +149,8 @@ export async function POST(request: Request) {
           account_type: profile.account_type,
           plan: "short_stay_employer",
         },
+      }, {
+        idempotencyKey: shortStayCheckoutIdempotencyKey(userData.user.id),
       });
 
       return NextResponse.json({ ok: true, url: session.url });

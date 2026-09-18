@@ -103,7 +103,7 @@ export async function GET(request: Request) {
   });
   const hasAccess = profileRow.employer_verification_status === "verified" && await hasEmployerPaidAccess(accessToken, subscription);
 
-  if (!hasAccess) {
+  if (profileRow.employer_verification_status !== "verified") {
     const payload: EmployerSummaryResponse = {
       ok: true,
       summary: {
