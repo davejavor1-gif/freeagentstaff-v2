@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, BicepsFlexed, BookOpen, CalendarCheck, Eye, IdCard, Lock, Search, Send, Settings2, ShieldCheck, Sparkles, ToggleRight, UserRound } from "lucide-react";
+import { ArrowRight, BicepsFlexed, CalendarCheck, Eye, IdCard, Lock, Search, Send, ShieldCheck } from "lucide-react";
 import Footer from "@/components/layout/Footer";
 import TalentCard from "@/components/TalentCard";
 import { homepagePassportProfiles } from "@/data/homepage-passports";
@@ -60,26 +60,129 @@ function RockstarStarIcon({ className }: { className?: string }) {
   );
 }
 
+const TALENT_BRAND_GREEN = "#AFF546";
+
+function TalentMaskedIcon({
+  src,
+  className,
+  sizePx,
+}: {
+  src: string;
+  className?: string;
+  sizePx: number;
+}) {
+  return (
+    <span className={`inline-flex shrink-0 items-center justify-center overflow-visible ${className ?? ""}`}>
+      <span
+        aria-hidden="true"
+        className="block shrink-0"
+        style={{
+          width: sizePx,
+          height: sizePx,
+          backgroundColor: TALENT_BRAND_GREEN,
+          maskImage: `url("${src}")`,
+          WebkitMaskImage: `url("${src}")`,
+          maskRepeat: "no-repeat",
+          WebkitMaskRepeat: "no-repeat",
+          maskPosition: "center",
+          WebkitMaskPosition: "center",
+          maskSize: "contain",
+          WebkitMaskSize: "contain",
+        }}
+      />
+    </span>
+  );
+}
+
+function DiscoverSearchIcon({ className, artworkSizePx }: { className?: string; artworkSizePx?: number }) {
+  return (
+    <span className={`inline-flex items-center justify-center overflow-visible ${className ?? ""}`}>
+      <Search
+        className={artworkSizePx ? "shrink-0" : "h-full w-full"}
+        style={artworkSizePx ? { width: artworkSizePx, height: artworkSizePx } : undefined}
+        strokeWidth={1.85}
+        aria-hidden="true"
+      />
+    </span>
+  );
+}
+
+function RockstarOnIcon({ className }: { className?: string }) {
+  return <TalentMaskedIcon src="/turniton.png" className={className} sizePx={38} />;
+}
+
+function StayInControlIcon({ className }: { className?: string }) {
+  return <TalentMaskedIcon src="/stayincontrol.png" className={className} sizePx={38} />;
+}
+
+function ShareYourStoryIcon({ className }: { className?: string }) {
+  return <TalentMaskedIcon src="/share your story.png" className={className} sizePx={70} />;
+}
+
+function VideoIntroIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className={className}>
+      <rect x="1.55" y="5.7" width="14.6" height="12.6" rx="2.35" stroke="currentColor" strokeWidth="1.85" />
+      <circle cx="8.85" cy="10.55" r="1.85" stroke="currentColor" strokeWidth="1.75" />
+      <path d="M5.45 16.55c.55-2.35 1.75-3.35 3.4-3.35 1.65 0 2.85 1 3.4 3.35" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+      <path d="M16.15 9.15 22.2 6.35v11.3L16.15 14.85Z" stroke="currentColor" strokeWidth="1.85" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function PassportSparkleIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className={className}>
+      <rect x="4.4" y="3.55" width="12.1" height="16.9" rx="1.7" stroke="currentColor" strokeWidth="1.85" />
+      <path d="M7.15 8.2h6.4M7.15 11.45h6.4M7.15 14.7h4.2" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+      <path
+        d="M19.15 1.85 20.05 5.15 23.35 6.05 20.05 6.95 19.15 10.25 18.25 6.95 14.95 6.05 18.25 5.15Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
+function PersonalityIcon({ className }: { className?: string }) {
+  return <TalentMaskedIcon src="/showpersonaility.png" className={className} sizePx={70} />;
+}
+
+function ReceiveOpportunitiesIcon({ className }: { className?: string }) {
+  return <CalendarCheck className={className} strokeWidth={1.85} aria-hidden="true" />;
+}
+
+function CareerProgressIcon({ className }: { className?: string }) {
+  return <TalentMaskedIcon src="/take yourcareer.png" className={className} sizePx={70} />;
+}
+
 const rockstarTalentSteps = [
   {
-    icon: ToggleRight,
+    icon: RockstarOnIcon,
+    iconClass: "h-11 w-11",
     title: "Turn it on",
     text: "Switch on Rockstar in your settings whenever you're open to one-off shifts.",
+    tone: "green" as const,
   },
   {
-    icon: UserRound,
+    icon: DiscoverSearchIcon,
+    iconClass: "h-5 w-5",
     title: "Get discovered",
     text: "Verified employers can see you're available for short-term opportunities.",
+    tone: "blue" as const,
   },
   {
-    icon: CalendarCheck,
+    icon: ReceiveOpportunitiesIcon,
+    iconClass: "h-5 w-5",
     title: "Receive opportunities",
     text: "Employers may reach out with shift opportunities that match your skills.",
+    tone: "green" as const,
   },
   {
-    icon: Settings2,
+    icon: StayInControlIcon,
+    iconClass: "h-11 w-11",
     title: "Stay in control",
     text: "You can switch it off anytime. Your existing privacy and visibility settings still apply.",
+    tone: "green" as const,
   },
 ];
 
@@ -160,7 +263,7 @@ export default function TalentPage() {
           </div>
           <div className="mt-10 grid gap-5 lg:grid-cols-3">
             <article className="border-t border-[#f7e8c6]/18 pt-5">
-              <UserRound className="h-6 w-6 text-[#aff546]" />
+              <VideoIntroIcon className="h-6 w-6 text-[#aff546]" />
               <h3 className="mt-5 font-serif text-[1.8rem] leading-tight">Introduce yourself</h3>
               <p className="mt-3 text-[0.98rem] leading-7 text-[#f7e8c6]/76">Share who you are and what excites you professionally.</p>
             </article>
@@ -170,7 +273,7 @@ export default function TalentPage() {
               <p className="mt-3 text-[0.98rem] leading-7 text-[#f7e8c6]/76">Talk about your best skills and the kind of work you do well.</p>
             </article>
             <article className="border-t border-[#f7e8c6]/18 pt-5">
-              <BookOpen className="h-6 w-6 text-[#aff546]" />
+              <PassportSparkleIcon className="h-6 w-6 text-[#aff546]" />
               <h3 className="mt-5 font-serif text-[1.8rem] leading-tight">Add personality to your Passport</h3>
               <p className="mt-3 text-[0.98rem] leading-7 text-[#f7e8c6]/76">Give employers more than a list of roles and experience.</p>
             </article>
@@ -260,8 +363,8 @@ export default function TalentPage() {
                 const Icon = step.icon;
                 return (
                   <div key={step.title} className="lg:px-6 lg:first:pl-0 lg:last:pr-0">
-                    <span className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#AFF546]/50 text-[#AFF546]">
-                      <Icon className="h-5 w-5" aria-hidden="true" />
+                    <span className={`inline-flex h-11 w-11 items-center justify-center ${step.tone === "blue" ? "text-[#2bd7ef]" : "text-[#AFF546]"}`}>
+                      <Icon className={step.iconClass} aria-hidden="true" />
                     </span>
                     <h4 className="mt-4 text-sm font-bold uppercase tracking-[0.16em] text-[#08111F]">{index + 1}. {step.title}</h4>
                     <p className="mt-3 text-sm leading-6 text-[#08111F]/70">{step.text}</p>
@@ -304,10 +407,10 @@ export default function TalentPage() {
             </article>
           </div>
           <div className="mt-12 grid gap-6 border-t border-[#f7e8c6]/20 pt-7 sm:grid-cols-2 lg:mt-10 lg:grid-cols-4 lg:gap-0 lg:divide-x lg:divide-[#f7e8c6]/20">
-            <div className="lg:px-6 lg:first:pl-0"><Search className="h-5 w-5 text-[#aff546]" aria-hidden="true" /><p className="mt-3 text-[10px] font-bold uppercase tracking-[0.18em] text-[#f7e8c6]">Get discovered</p><p className="mt-2 text-xs leading-5 text-[#f7e8c6]/65">Appear in employer searches</p></div>
-            <div className="lg:px-6"><BookOpen className="h-5 w-5 text-[#f2cc63]" aria-hidden="true" /><p className="mt-3 text-[10px] font-bold uppercase tracking-[0.18em] text-[#f7e8c6]">Share your story</p><p className="mt-2 text-xs leading-5 text-[#f7e8c6]/65">Show more than a résumé</p></div>
-            <div className="lg:px-6"><Sparkles className="h-5 w-5 text-[#f2cc63]" aria-hidden="true" /><p className="mt-3 text-[10px] font-bold uppercase tracking-[0.18em] text-[#f7e8c6]">Show your personality</p><p className="mt-2 text-xs leading-5 text-[#f7e8c6]/65">Help employers understand you</p></div>
-            <div className="lg:px-6 lg:last:pr-0"><ArrowUpRight className="h-5 w-5 text-[#aff546]" aria-hidden="true" /><p className="mt-3 text-[10px] font-bold uppercase tracking-[0.18em] text-[#f7e8c6]">Take your career further</p><p className="mt-2 text-xs leading-5 text-[#f7e8c6]/65">Your Passport goes beyond the platform</p></div>
+            <div className="lg:px-6 lg:first:pl-0"><DiscoverSearchIcon className="h-5 w-5 text-[#2bd7ef]" artworkSizePx={52} /><p className="mt-3 text-[10px] font-bold uppercase tracking-[0.18em] text-[#f7e8c6]">Get discovered</p><p className="mt-2 text-xs leading-5 text-[#f7e8c6]/65">Appear in employer searches</p></div>
+            <div className="lg:px-6"><ShareYourStoryIcon className="h-5 w-5 text-[#aff546]" /><p className="mt-3 text-[10px] font-bold uppercase tracking-[0.18em] text-[#f7e8c6]">Share your story</p><p className="mt-2 text-xs leading-5 text-[#f7e8c6]/65">Show more than a résumé</p></div>
+            <div className="lg:px-6"><PersonalityIcon className="h-5 w-5 text-[#aff546]" /><p className="mt-3 text-[10px] font-bold uppercase tracking-[0.18em] text-[#f7e8c6]">Show your personality</p><p className="mt-2 text-xs leading-5 text-[#f7e8c6]/65">Help employers understand you</p></div>
+            <div className="lg:px-6 lg:last:pr-0"><CareerProgressIcon className="h-5 w-5 text-[#aff546]" /><p className="mt-3 text-[10px] font-bold uppercase tracking-[0.18em] text-[#f7e8c6]">Take your career further</p><p className="mt-2 text-xs leading-5 text-[#f7e8c6]/65">Your Passport goes beyond the platform</p></div>
           </div>
           <div className="mt-12 flex flex-wrap items-center gap-4">
             <Link href="/login" className="inline-flex items-center rounded-full bg-[#aff546] px-6 py-3 text-sm font-semibold text-[#071321] transition hover:bg-[#9fea37]">Talent Sign In</Link>

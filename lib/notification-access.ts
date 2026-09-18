@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createUserServerSupabaseClient } from "@/lib/server-supabase";
+import { createServiceRoleSupabaseClient, createUserServerSupabaseClient } from "@/lib/server-supabase";
 import type {
   NotificationErrorReason,
   NotificationItem,
@@ -171,6 +171,57 @@ export async function markAllNotificationsRead(
   return {
     ok: true,
     updatedCount: row?.updated_count ?? 0,
+  };
+}
+
+export async function deleteMyNotification(
+  accessToken: string | null | undefined,
+  notificationId: string,
+): Promise<NotificationMutationResponse> {
+  const userClient = getUserClient(accessToken);
+
+  if (!userClient) {
+    return { ok: false, reason: "not_signed_in", message: "Sign in required." };
+  }
+
+  if (!notificationId.trim()) {
+    return { ok: false, reason: "missing_notification_id", message: "Notification id is required." };
+  }
+
+  const { data: userData, error: userError } = await userClient.auth.getUser(accessToken ?? undefined);
+  if (userError || !userData.user) {
+    return { ok: false, reason: "not_signed_in", message: "Sign in required." };
+  }
+
+  const serviceClient = createServiceRoleSupabaseClient();
+  if (!serviceClient) {
+    return { ok: false, reason: "error", message: "Unable to delete this notification." };
+  }
+
+  const { data, error } = await serviceClient
+    .from("notifications")
+    .delete()
+    .eq("id", notificationId)
+    .eq("recipient_user_id", userData.user.id)
+    .select("id")
+    .maybeSingle();
+
+  if (error) {
+    return {
+      ok: false,
+      reason: mapReasonFromError(error.message),
+      message: error.message,
+    };
+  }
+
+  if (!data) {
+    return { ok: false, reason: "notification_not_found", message: "Notification not found." };
+  }
+
+  return {
+    ok: true,
+    notificationId,
+    deletedCount: 1,
   };
 }
 
