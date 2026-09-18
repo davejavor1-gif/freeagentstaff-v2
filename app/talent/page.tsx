@@ -107,7 +107,27 @@ function DiscoverSearchIcon({ className, artworkSizePx }: { className?: string; 
 }
 
 function RockstarOnIcon({ className }: { className?: string }) {
-  return <TalentMaskedIcon src="/turniton.png" className={className} />;
+  return (
+    <span className={`inline-flex items-center justify-center ${className ?? ""}`}>
+      <span
+        aria-hidden="true"
+        className="block h-full w-auto max-h-full"
+        style={{
+          aspectRatio: "1774 / 887",
+          backgroundColor: TALENT_BRAND_GREEN,
+          maskImage: 'url("/new turn it on.png")',
+          WebkitMaskImage: 'url("/new turn it on.png")',
+          maskRepeat: "no-repeat",
+          WebkitMaskRepeat: "no-repeat",
+          maskPosition: "center",
+          WebkitMaskPosition: "center",
+          maskSize: "contain",
+          WebkitMaskSize: "contain",
+          maskMode: "luminance",
+        }}
+      />
+    </span>
+  );
 }
 
 function StayInControlIcon({ className }: { className?: string }) {
@@ -157,7 +177,7 @@ function CareerProgressIcon({ className }: { className?: string }) {
 const rockstarTalentSteps = [
   {
     icon: RockstarOnIcon,
-    iconClass: "h-14 w-14 sm:h-20 sm:w-20",
+    iconClass: "h-8 w-auto sm:h-12",
     title: "Turn it on",
     text: "Switch on Rockstar in your settings whenever you're open to one-off shifts.",
     tone: "green" as const,
@@ -180,7 +200,7 @@ const rockstarTalentSteps = [
     icon: StayInControlIcon,
     iconClass: "h-14 w-14 sm:h-20 sm:w-20",
     title: "Stay in control",
-    text: "You can switch it off anytime. Your existing privacy and visibility settings still apply.",
+    text: "Switch it off anytime. Your privacy settings still apply.",
     tone: "green" as const,
   },
 ];
@@ -356,7 +376,7 @@ export default function TalentPage() {
           </div>
 
           <div className="mt-8 pt-6">
-            <h3 className="text-center text-[11px] font-bold uppercase tracking-[0.32em] text-[#AFF546]">How Rockstar works</h3>
+            <h3 className="text-center text-[11px] font-bold uppercase tracking-[0.32em] text-[#9a6d15]">How Rockstar works</h3>
             <div className="mt-10 grid gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-[auto_auto_auto] lg:gap-0 lg:divide-x lg:divide-[#08111F]/15">
               {rockstarTalentSteps.map((step, index) => {
                 const Icon = step.icon;
@@ -377,7 +397,7 @@ export default function TalentPage() {
 
       <section className="bg-[#08111F] text-[#f7e8c6]">
         <div className="mx-auto max-w-[1450px] px-6 py-16 sm:px-8 sm:py-24 lg:px-12 lg:py-28">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#aff546]">One story, two impressions</p>
+          <p className="text-center text-[11px] font-semibold uppercase tracking-[0.3em] text-[#f7e8c6]">One story, two impressions</p>
           <div className="mt-10 grid gap-12 lg:grid-cols-2 lg:grid-rows-[auto_auto_auto_auto] lg:gap-0">
             <article className="min-w-0 lg:col-start-1 lg:row-span-4 lg:grid lg:grid-rows-subgrid lg:border-r lg:border-[#f7e8c6]/20 lg:pr-12 xl:pr-16">
               <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-[#aff546]">Talent Card</p>

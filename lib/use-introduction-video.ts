@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { resolveProfilePhotoUrl, resolveProfileVideoUrl } from "@/lib/profile-media";
 import type { FreeAgentProfile } from "@/types/freeagent";
 
@@ -41,38 +41,59 @@ export function useIntroductionVideo(
     };
   }, [profile, confidential]);
 
-  useEffect(() => {
-    if (!videoOpen) return;
+  useLayoutEffect(() => {
+    if (!videoOpen || !shouldAutoplay) return;
+
+    let retryTimer = 0;
+    let retries = 0;
+    let attachedVideo: HTMLVideoElement | null = null;
 
     const startPlayback = () => {
-      const video = videoRef.current;
-      if (!video || (!shouldAutoplay && !isPlaying)) return;
+      const video = attachedVideo ?? videoRef.current;
+      if (!video) return;
 
-      if (shouldAutoplay) {
-        video.muted = true;
-        video.currentTime = 0;
-      }
-      video.play().then(() => {
-        setIsPlaying(true);
-        setShouldAutoplay(false);
-      }).catch(() => {
-        setIsPlaying(false);
-        setShouldAutoplay(false);
-      });
-
-      return;
+      void video
+        .play()
+        .then(() => {
+          setIsPlaying(true);
+          setShouldAutoplay(false);
+        })
+        .catch(() => {
+          setIsPlaying(false);
+          setShouldAutoplay(false);
+        });
     };
 
-    const video = videoRef.current;
-    const retryTimer = window.setTimeout(startPlayback, 0);
-    video?.addEventListener("loadeddata", startPlayback);
-    startPlayback();
+    const attachAndPlay = () => {
+      const video = videoRef.current;
+      if (!video) {
+        if (retries >= 8) return;
+        retries += 1;
+        retryTimer = window.setTimeout(attachAndPlay, 0);
+        return;
+      }
+
+      attachedVideo = video;
+      video.muted = false;
+      video.currentTime = 0;
+
+      if (video.readyState >= 2) {
+        startPlayback();
+        return;
+      }
+
+      video.addEventListener("loadeddata", startPlayback, { once: true });
+      video.addEventListener("canplay", startPlayback, { once: true });
+    };
+
+    attachAndPlay();
 
     return () => {
       window.clearTimeout(retryTimer);
-      video?.removeEventListener("loadeddata", startPlayback);
+      attachedVideo?.removeEventListener("loadeddata", startPlayback);
+      attachedVideo?.removeEventListener("canplay", startPlayback);
     };
-  }, [videoOpen, isPlaying, shouldAutoplay]);
+  }, [videoOpen, shouldAutoplay]);
 
   const resetVideoState = useCallback(() => {
     setIsPlaying(false);
@@ -86,20 +107,38 @@ export function useIntroductionVideo(
     }
   }, []);
 
-  const handleOpenVideo = useCallback(async () => {
+  const handleOpenVideo = useCallback(() => {
     if (!hasVideo || confidential) return;
 
     setVideoOpen(true);
     setShowVideoControls(true);
-    setShouldAutoplay(false);
-    setIsMuted(true);
+    setIsMuted(false);
+
+    const video = videoRef.current;
+    if (video) {
+      video.muted = false;
+      video.currentTime = 0;
+      void video
+        .play()
+        .then(() => {
+          setIsPlaying(true);
+          setShouldAutoplay(false);
+        })
+        .catch(() => {
+          setIsPlaying(false);
+          setShouldAutoplay(true);
+        });
+      return;
+    }
+
+    setShouldAutoplay(true);
   }, [confidential, hasVideo]);
 
   useEffect(() => {
     if (playVideoRequest <= 0) return;
 
     const requestTimer = window.setTimeout(() => {
-      void handleOpenVideo();
+      handleOpenVideo();
     }, 0);
 
     return () => window.clearTimeout(requestTimer);

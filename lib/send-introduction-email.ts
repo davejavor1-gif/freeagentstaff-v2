@@ -154,14 +154,29 @@ export async function sendNewIntroductionRequestEmail(talentSlug: string): Promi
     }
 
     const resend = new Resend(apiKey);
-    await resend.emails.send({
+    const { data, error } = await resend.emails.send({
       from: FROM_ADDRESS,
       to: talentEmail,
       subject: "You have a new introduction on FreeAgentStaff",
       html: buildHtml(),
       text: buildText(),
     });
+
+    if (error) {
+      console.error("sendNewIntroductionRequestEmail: Resend rejected send.", {
+        name: error.name,
+        message: error.message,
+      });
+      return;
+    }
+
+    console.info("sendNewIntroductionRequestEmail: accepted by Resend.", {
+      emailId: data?.id ?? null,
+    });
   } catch (error) {
-    console.error("sendNewIntroductionRequestEmail: failed to send introduction request email.", error);
+    console.error("sendNewIntroductionRequestEmail: failed to send introduction request email.", {
+      name: error instanceof Error ? error.name : "unknown",
+      message: error instanceof Error ? error.message : "unknown",
+    });
   }
 }

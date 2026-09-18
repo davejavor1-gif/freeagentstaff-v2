@@ -173,8 +173,7 @@ function EmployerView(props: Props) {
         <section className="rounded-[24px] border border-[#cda64d]/45 bg-[#f7e8c6] p-6 text-[#08111F] shadow-[0_18px_45px_rgba(6,16,33,0.18)] sm:p-8">
           <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(220px,0.7fr)]">
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#08798a]">Welcome</p>
-              <h2 className="mt-5 font-serif text-5xl leading-[0.95] tracking-tight sm:text-6xl">Hello, {firstName(props.name)}</h2>
+              <p className="text-[60px] font-black uppercase leading-none tracking-[0.24em] text-[#08798a]">Welcome</p>
               <p className="mt-5 max-w-2xl text-base leading-8 text-[#08111F]/66">{props.isVerifiedEmployer ? "Your employer account is ready for you to connect with exceptional talent." : "Complete employer verification to begin discovering eligible talent."}</p>
               <div className="mt-6 flex flex-wrap gap-3">{canWork ? <><DashboardAction href="/find-talent" variant="accent">FIND TALENT</DashboardAction><BillingButton action="portal" className="dashboard-employer-blue-action">MANAGE SUBSCRIPTION</BillingButton></> : <DashboardAction href="/onboarding/employer" variant="accent">OPEN EMPLOYER ACCOUNT</DashboardAction>}</div>
             </div>
@@ -382,8 +381,7 @@ function TalentView(props: Props) {
           <div className="absolute right-[-5rem] top-[-7rem] h-72 w-72 rounded-full bg-[#AFF546]/20 blur-2xl" />
           <div className="relative z-10 grid min-h-full gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(220px,0.7fr)] lg:items-center">
             <div className="max-w-3xl">
-              <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#4b7f08]">Welcome back</p>
-              <h2 className="mt-5 font-serif text-5xl leading-[0.95] tracking-tight text-[#08111F] sm:text-6xl xl:text-7xl">Hello, {displayFirstName}</h2>
+              <p className="text-[60px] font-black uppercase leading-none tracking-[0.24em] text-[#4b7f08]">Welcome</p>
               <p className="mt-5 max-w-2xl text-base leading-8 text-[#08111F]/66">
                 {props.isPublished ? `Your profile is visible as ${props.visibility}. Keep your profile up to date to attract more opportunities.` : "Your profile is currently unpublished. Build and publish your profile when you are ready to be discovered."}
               </p>
