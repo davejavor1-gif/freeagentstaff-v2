@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "FreeAgentStaff",
-    short_name: "FreeAgent",
+    name: "Free Agent Staff",
+    short_name: "Free Agent Staff",
     description:
       "Free Agent Staff connects employers with talent through professional FreeAgent Cards and Talent Passports.",
     start_url: "/",
@@ -29,7 +29,7 @@ export default function manifest(): MetadataRoute.Manifest {
         purpose: "any",
       },
       {
-        src: "/favicon-v2.png",
+        src: "/pwa-maskable.png",
         sizes: "512x512",
         type: "image/png",
         purpose: "maskable",

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'freeagentstaff-shell-v1';
+const CACHE_NAME = 'freeagentstaff-shell-v2';
 const OFFLINE_URL = '/offline';
 const APP_SHELL_URLS = [
   '/',
@@ -6,7 +6,9 @@ const APP_SHELL_URLS = [
   '/favicon.ico',
   '/favicon-v2.png',
   '/favicon-192.png',
+  '/favicon-search.png',
   '/apple-touch-icon.png',
+  '/pwa-maskable.png',
   '/FullLogo-clean-v2.png',
 ];
 
