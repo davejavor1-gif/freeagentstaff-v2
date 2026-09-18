@@ -62,7 +62,7 @@ function mapReasonFromError(message: string): TalentContactErrorReason {
   if (message.includes("not_signed_in")) return "not_signed_in";
   if (message.includes("wrong_account_type")) return "wrong_account_type";
   if (message.includes("unverified_employer")) return "unverified_employer";
-  if (message.includes("invalid_abn")) return "invalid_abn";
+  if (message.includes("invalid_abn") || message.includes("invalid_employer_identifier")) return "invalid_abn";
   if (message.includes("missing_slug")) return "missing_slug";
   if (message.includes("contact_unavailable")) return "contact_unavailable";
   return "error";
@@ -72,7 +72,7 @@ function mapConnectionReasonFromError(message: string): ConnectionErrorReason {
   if (message.includes("not_signed_in")) return "not_signed_in";
   if (message.includes("wrong_account_type")) return "wrong_account_type";
   if (message.includes("unverified_employer")) return "unverified_employer";
-  if (message.includes("invalid_abn")) return "invalid_abn";
+  if (message.includes("invalid_abn") || message.includes("invalid_employer_identifier")) return "invalid_abn";
   if (message.includes("missing_connection_id")) return "missing_connection_id";
   if (message.includes("connection_not_found")) return "connection_not_found";
   if (message.includes("not_authorized_connection")) return "not_authorized_connection";

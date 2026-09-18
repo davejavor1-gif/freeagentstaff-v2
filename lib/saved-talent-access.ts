@@ -30,7 +30,7 @@ function mapReasonFromError(message: string): SavedTalentErrorReason {
   if (message.includes("not_signed_in")) return "not_signed_in";
   if (message.includes("wrong_account_type")) return "wrong_account_type";
   if (message.includes("unverified_employer")) return "unverified_employer";
-  if (message.includes("invalid_abn")) return "invalid_abn";
+  if (message.includes("invalid_abn") || message.includes("invalid_employer_identifier")) return "invalid_abn";
   if (message.includes("inactive_employer_subscription")) return "inactive_employer_subscription";
   if (message.includes("shortlist_not_found")) return "shortlist_not_found";
   if (message.includes("invalid_shortlist_ids")) return "invalid_shortlist_ids";

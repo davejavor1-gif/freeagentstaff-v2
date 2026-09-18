@@ -69,7 +69,7 @@ function mapReasonFromError(message: string): IntroductionRequestErrorReason {
   if (message.includes("not_signed_in")) return "not_signed_in";
   if (message.includes("wrong_account_type")) return "wrong_account_type";
   if (message.includes("unverified_employer")) return "unverified_employer";
-  if (message.includes("invalid_abn")) return "invalid_abn";
+  if (message.includes("invalid_abn") || message.includes("invalid_employer_identifier")) return "invalid_abn";
   if (message.includes("missing_slug")) return "missing_slug";
   if (message.includes("candidate_not_found")) return "candidate_not_found";
   if (message.includes("request_not_found")) return "request_not_found";

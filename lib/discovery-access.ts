@@ -497,13 +497,8 @@ export async function loadTalentPassport(accessToken: string | null | undefined,
     const hasFullAccess = await hasEmployerPaidAccess(accessToken, employerSubscription);
     employerDiscoveryScope = resolveEmployerDiscoveryScope(hasFullAccess, viewer.viewerRow.short_stay_access_expires_at);
 
-    if (employerDiscoveryScope === "none") {
-      return {
-        allowed: false,
-        reason: "inactive_employer_subscription",
-        message: "An active employer subscription is required before talent passports are available.",
-      };
-    }
+    // Discovery-none still allows an existing active connection passport.
+    // Arbitrary Talent is denied by talent_passport_for_connected_employer returning no row.
   } else if (viewer.viewerRow?.account_type !== "talent") {
     return {
       allowed: false,
@@ -513,10 +508,15 @@ export async function loadTalentPassport(accessToken: string | null | undefined,
   }
 
   const passportArgs: TalentPassportRpcArgs = { p_slug: slug };
-  const passportRpcName: "talent_passport_for_viewer_v3" | "talent_passport_for_rockstar_employer" = employerDiscoveryScope === "rockstar_only"
-    ? "talent_passport_for_rockstar_employer"
-    : "talent_passport_for_viewer_v3";
-  const { data, error } = await viewer.userClient.rpc(passportRpcName, passportArgs as never);
+  const passportRpcName =
+    employerDiscoveryScope === "none"
+      ? "talent_passport_for_connected_employer"
+      : employerDiscoveryScope === "rockstar_only"
+        ? "talent_passport_for_rockstar_employer"
+        : "talent_passport_for_viewer_v3";
+  const { data, error } = await (viewer.userClient as unknown as {
+    rpc: (name: string, params?: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }>;
+  }).rpc(passportRpcName, passportArgs as never);
 
   if (error) {
     return {
