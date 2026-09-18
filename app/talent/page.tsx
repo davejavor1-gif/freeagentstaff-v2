@@ -69,16 +69,15 @@ function TalentMaskedIcon({
 }: {
   src: string;
   className?: string;
-  sizePx: number;
+  sizePx?: number;
 }) {
   return (
     <span className={`inline-flex shrink-0 items-center justify-center overflow-visible ${className ?? ""}`}>
       <span
         aria-hidden="true"
-        className="block shrink-0"
+        className={`block shrink-0 ${sizePx ? "" : "h-full w-full"}`.trim()}
         style={{
-          width: sizePx,
-          height: sizePx,
+          ...(sizePx ? { width: sizePx, height: sizePx } : {}),
           backgroundColor: TALENT_BRAND_GREEN,
           maskImage: `url("${src}")`,
           WebkitMaskImage: `url("${src}")`,
@@ -108,11 +107,11 @@ function DiscoverSearchIcon({ className, artworkSizePx }: { className?: string; 
 }
 
 function RockstarOnIcon({ className }: { className?: string }) {
-  return <TalentMaskedIcon src="/turniton.png" className={className} sizePx={38} />;
+  return <TalentMaskedIcon src="/turniton.png" className={className} />;
 }
 
 function StayInControlIcon({ className }: { className?: string }) {
-  return <TalentMaskedIcon src="/stayincontrol.png" className={className} sizePx={38} />;
+  return <TalentMaskedIcon src="/stayincontrol.png" className={className} />;
 }
 
 function ShareYourStoryIcon({ className }: { className?: string }) {
@@ -158,28 +157,28 @@ function CareerProgressIcon({ className }: { className?: string }) {
 const rockstarTalentSteps = [
   {
     icon: RockstarOnIcon,
-    iconClass: "h-11 w-11",
+    iconClass: "h-14 w-14 sm:h-20 sm:w-20",
     title: "Turn it on",
     text: "Switch on Rockstar in your settings whenever you're open to one-off shifts.",
     tone: "green" as const,
   },
   {
     icon: DiscoverSearchIcon,
-    iconClass: "h-5 w-5",
+    iconClass: "h-8 w-8 sm:h-12 sm:w-12",
     title: "Get discovered",
     text: "Verified employers can see you're available for short-term opportunities.",
     tone: "blue" as const,
   },
   {
     icon: ReceiveOpportunitiesIcon,
-    iconClass: "h-5 w-5",
+    iconClass: "h-8 w-8 sm:h-12 sm:w-12",
     title: "Receive opportunities",
     text: "Employers may reach out with shift opportunities that match your skills.",
     tone: "green" as const,
   },
   {
     icon: StayInControlIcon,
-    iconClass: "h-11 w-11",
+    iconClass: "h-14 w-14 sm:h-20 sm:w-20",
     title: "Stay in control",
     text: "You can switch it off anytime. Your existing privacy and visibility settings still apply.",
     tone: "green" as const,
@@ -201,7 +200,7 @@ export default function TalentPage() {
               <span className="block">Create your Talent Card and Passport.</span>
               <span className="block">Record a video and let your personality and experience shine.</span>
             </h1>
-            <p className="mt-6 max-w-xl text-base leading-8 text-[#f7e8c6]/84 sm:text-lg">
+            <p className="mt-6 max-w-xl text-base leading-8 text-[#f7e8c6]/84">
               Free Agent Staff gives professionals a different way to present themselves to employers. Create a FreeAgent Card and Talent Passport that show what you can do, what you&apos;ve achieved and what makes you different.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
@@ -236,7 +235,7 @@ export default function TalentPage() {
                 <article key={step.title} className="border-t border-[#071321]/18 pt-5">
                   <Icon className="h-6 w-6 text-[#aff546]" />
                   <h3 className="mt-5 font-serif text-[1.8rem] leading-tight">{step.title}</h3>
-                  <p className="mt-3 text-[0.98rem] leading-7 text-[#071321]/76">{step.text}</p>
+                  <p className="mt-3 text-base leading-8 text-[#071321]/76">{step.text}</p>
                 </article>
               );
             })}
@@ -263,19 +262,19 @@ export default function TalentPage() {
           </div>
           <div className="mt-10 grid gap-5 lg:grid-cols-3">
             <article className="border-t border-[#f7e8c6]/18 pt-5">
-              <VideoIntroIcon className="h-6 w-6 text-[#aff546]" />
+              <VideoIntroIcon className="h-8 w-8 text-[#aff546] sm:h-12 sm:w-12" />
               <h3 className="mt-5 font-serif text-[1.8rem] leading-tight">Introduce yourself</h3>
-              <p className="mt-3 text-[0.98rem] leading-7 text-[#f7e8c6]/76">Share who you are and what excites you professionally.</p>
+              <p className="mt-3 text-base leading-8 text-[#f7e8c6]/76">Share who you are and what excites you professionally.</p>
             </article>
             <article className="border-t border-[#f7e8c6]/18 pt-5">
-              <BicepsFlexed className="h-6 w-6 text-[#aff546]" />
+              <BicepsFlexed className="h-8 w-8 text-[#aff546] sm:h-12 sm:w-12" />
               <h3 className="mt-5 font-serif text-[1.8rem] leading-tight">Show your strengths</h3>
-              <p className="mt-3 text-[0.98rem] leading-7 text-[#f7e8c6]/76">Talk about your best skills and the kind of work you do well.</p>
+              <p className="mt-3 text-base leading-8 text-[#f7e8c6]/76">Talk about your best skills and the kind of work you do well.</p>
             </article>
             <article className="border-t border-[#f7e8c6]/18 pt-5">
-              <PassportSparkleIcon className="h-6 w-6 text-[#aff546]" />
+              <PassportSparkleIcon className="h-8 w-8 text-[#aff546] sm:h-12 sm:w-12" />
               <h3 className="mt-5 font-serif text-[1.8rem] leading-tight">Add personality to your Passport</h3>
-              <p className="mt-3 text-[0.98rem] leading-7 text-[#f7e8c6]/76">Give employers more than a list of roles and experience.</p>
+              <p className="mt-3 text-base leading-8 text-[#f7e8c6]/76">Give employers more than a list of roles and experience.</p>
             </article>
           </div>
         </div>
@@ -286,7 +285,7 @@ export default function TalentPage() {
           <div className="min-w-0">
             <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#9a6d15]">Public when you want to be</p>
             <h2 className="mt-3 max-w-[16ch] font-serif text-[2.6rem] font-semibold uppercase leading-[0.94] sm:text-[3.7rem]">Take your Passport with you.</h2>
-            <p className="mt-6 max-w-xl text-base leading-8 text-[#071321]/78 sm:text-lg">
+            <p className="mt-6 max-w-xl text-base leading-8 text-[#071321]/78">
               Make your Talent Passport public and you&apos;ve got one link that tells employers the whole story. Add it to your résumé, email signature or portfolio and give people a better way to discover you.
             </p>
             <p className="mt-6 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#651D2A]">Public + published = your Passport link</p>
@@ -317,19 +316,19 @@ export default function TalentPage() {
         <div className="mx-auto grid max-w-7xl gap-10 px-6 py-14 sm:px-8 lg:grid-cols-[0.8fr_1.2fr] lg:px-12 lg:py-20">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#aff546]">Your privacy matters</p>
-            <h2 className="mt-3 max-w-[12ch] font-serif text-[2.7rem] font-semibold uppercase leading-[0.94] sm:text-[3.7rem]">Visible when you want to be.</h2>
+            <h2 className="mt-3 max-w-[12ch] font-serif text-[2.6rem] font-semibold uppercase leading-[0.94] sm:text-[3.7rem]">Visible when you want to be.</h2>
             <p className="mt-5 max-w-md text-base leading-8 text-[#f7e8c6]/78">Free Agent Staff is for people across professions and industries. Whether you work in technology, operations, hospitality, creative work or somewhere entirely different, your Talent Passport gives employers a more useful view of your potential.</p>
           </div>
           <div className="grid gap-6 sm:grid-cols-2">
             <div className="border-l border-[#2bd7ef]/35 pl-5">
               <Lock className="h-5 w-5 text-[#aff546]" />
               <h3 className="mt-4 font-serif text-[1.7rem]">Control your visibility</h3>
-              <p className="mt-3 text-sm leading-7 text-[#f7e8c6]/78">Explore opportunities openly or privately. Your profile visibility and the information employers can see remain under your control.</p>
+              <p className="mt-3 text-base leading-8 text-[#f7e8c6]/78">Explore opportunities openly or privately. Your profile visibility and the information employers can see remain under your control.</p>
             </div>
             <div className="border-l border-[#aff546]/35 pl-5">
               <Send className="h-5 w-5 text-[#aff546]" />
               <h3 className="mt-4 font-serif text-[1.7rem]">Connect with intention</h3>
-              <p className="mt-3 text-sm leading-7 text-[#f7e8c6]/78">When an employer is interested, introduction requests and connections create a considered next step instead of an unexpected handover of private details.</p>
+              <p className="mt-3 text-base leading-8 text-[#f7e8c6]/78">When an employer is interested, introduction requests and connections create a considered next step instead of an unexpected handover of private details.</p>
             </div>
           </div>
         </div>
@@ -342,12 +341,12 @@ export default function TalentPage() {
               <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#9a6d15]">
                 Rockstar Explained
               </p>
-              <h2 className="mt-5 font-serif text-4xl font-bold uppercase leading-[0.95] sm:text-5xl">
+              <h2 className="mt-5 font-serif text-[2.6rem] font-bold uppercase leading-[0.94] sm:text-[3.7rem]">
                 <span className="text-[#08111F]">More opportunities</span>
                 <br />
                 <span className="text-[#AFF546]">on your terms.</span>
               </h2>
-              <p className="mt-5 max-w-xl text-base leading-8 text-[#08111F]/78 sm:text-lg">
+              <p className="mt-5 max-w-xl text-base leading-8 text-[#08111F]/78">
                 Rockstar helps you get discovered for one-off shifts by verified employers. It&apos;s a simple way to show you&apos;re open to short-term work, while staying in control.
               </p>
             </div>
@@ -358,17 +357,16 @@ export default function TalentPage() {
 
           <div className="mt-8 pt-6">
             <h3 className="text-center text-[11px] font-bold uppercase tracking-[0.32em] text-[#AFF546]">How Rockstar works</h3>
-            <div className="mt-10 grid gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-0 lg:divide-x lg:divide-[#08111F]/15">
+            <div className="mt-10 grid gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-[auto_auto_auto] lg:gap-0 lg:divide-x lg:divide-[#08111F]/15">
               {rockstarTalentSteps.map((step, index) => {
                 const Icon = step.icon;
                 return (
-                  <div key={step.title} className="lg:px-6 lg:first:pl-0 lg:last:pr-0">
-                    <span className={`inline-flex h-11 w-11 items-center justify-center ${step.tone === "blue" ? "text-[#2bd7ef]" : "text-[#AFF546]"}`}>
+                  <div key={step.title} className="lg:row-span-3 lg:grid lg:grid-rows-subgrid lg:px-6 lg:first:pl-0 lg:last:pr-0">
+                    <span className={`flex h-14 items-center sm:h-20 ${step.tone === "blue" ? "text-[#2bd7ef]" : "text-[#AFF546]"}`}>
                       <Icon className={step.iconClass} aria-hidden="true" />
                     </span>
                     <h4 className="mt-4 text-sm font-bold uppercase tracking-[0.16em] text-[#08111F]">{index + 1}. {step.title}</h4>
-                    <p className="mt-3 text-sm leading-6 text-[#08111F]/70">{step.text}</p>
-                    <div className="mt-6 h-px bg-[#08111F]/15" />
+                    <p className="mt-3 text-base leading-8 text-[#08111F]/70">{step.text}</p>
                   </div>
                 );
               })}
@@ -380,29 +378,29 @@ export default function TalentPage() {
       <section className="bg-[#08111F] text-[#f7e8c6]">
         <div className="mx-auto max-w-[1450px] px-6 py-16 sm:px-8 sm:py-24 lg:px-12 lg:py-28">
           <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#aff546]">One story, two impressions</p>
-          <div className="mt-10 grid gap-12 lg:grid-cols-2 lg:gap-0">
-            <article className="min-w-0 lg:border-r lg:border-[#f7e8c6]/20 lg:pr-12 xl:pr-16">
+          <div className="mt-10 grid gap-12 lg:grid-cols-2 lg:grid-rows-[auto_auto_auto_auto] lg:gap-0">
+            <article className="min-w-0 lg:col-start-1 lg:row-span-4 lg:grid lg:grid-rows-subgrid lg:border-r lg:border-[#f7e8c6]/20 lg:pr-12 xl:pr-16">
               <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-[#aff546]">Talent Card</p>
-              <h2 className="mt-4 font-serif text-[2.6rem] font-semibold leading-[0.96] sm:text-[3.5rem]">Get <span className="text-[#aff546]">discovered</span><br />by employers.</h2>
-              <div className="mt-7 flex justify-center lg:h-[620px] lg:items-center lg:justify-start">
+              <h2 className="mt-4 font-serif text-[2.6rem] font-semibold uppercase leading-[0.94] sm:text-[3.7rem]">Get <span className="text-[#aff546]">discovered</span><br />by employers.</h2>
+              <div className="mt-7 flex justify-center lg:h-[620px] lg:items-start lg:justify-start">
                 <TalentCard profile={sarahProfile} href="/profile/sarah-jones" verificationStatus="verified" hasProAccess className="w-full max-w-[430px]" />
               </div>
               <div className="mt-8 max-w-xl border-l-2 border-[#aff546]/70 pl-5">
                 <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-[#aff546]">A first impression.</p>
-                <p className="mt-3 text-sm leading-7 text-[#f7e8c6]/80">Your Talent Card gets you in front of the right employers. It highlights your key skills, experience and availability so you can be discovered.</p>
+                <p className="mt-3 text-base leading-8 text-[#f7e8c6]/80">Your Talent Card gets you in front of the right employers. It highlights your key skills, experience and availability so you can be discovered.</p>
               </div>
             </article>
-            <article className="min-w-0 lg:pl-12 xl:pl-16">
+            <article className="min-w-0 lg:col-start-2 lg:row-span-4 lg:grid lg:grid-rows-subgrid lg:pl-12 xl:pl-16">
               <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-[#f2cc63]">Talent Passport</p>
-              <h2 className="mt-4 font-serif text-[2.6rem] font-semibold leading-[0.96] sm:text-[3.5rem]">Help employers<br /><span className="text-[#f2cc63]">get to know you.</span></h2>
-              <div className="mt-7 flex justify-center lg:h-[620px] lg:items-center lg:justify-start">
+              <h2 className="mt-4 font-serif text-[2.6rem] font-semibold uppercase leading-[0.94] sm:text-[3.7rem]">Help employers<br /><span className="text-[#f2cc63]">get to know you.</span></h2>
+              <div className="mt-7 flex justify-center lg:h-[620px] lg:items-start lg:justify-start">
                 <div className="w-full max-w-[310px] drop-shadow-[16px_24px_20px_rgba(0,0,0,0.3)] lg:h-[600px] lg:w-auto lg:max-w-full">
                   <Image src="/images/transparentpassportcover.png" alt="FreeAgentStaff Talent Passport" width={1024} height={1536} className="h-auto w-full lg:h-full lg:w-auto" />
                 </div>
               </div>
               <div className="mt-8 max-w-xl border-l-2 border-[#651D2A] pl-5">
                 <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-[#f2cc63]">A lasting impression.</p>
-                <p className="mt-3 text-sm leading-7 text-[#f7e8c6]/80">Your Talent Passport gives employers the fuller picture. It brings together your experience, personality and what makes you, you.</p>
+                <p className="mt-3 text-base leading-8 text-[#f7e8c6]/80">Your Talent Passport gives employers the fuller picture. It brings together your experience, personality and what makes you, you.</p>
               </div>
             </article>
           </div>

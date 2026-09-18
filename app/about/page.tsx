@@ -236,12 +236,12 @@ export default function AboutPage() {
             <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-[#AFF546]">
               ABOUT FREEAGENTSTAFF
             </p>
-            <h1 className="mt-6 max-w-4xl font-serif text-5xl font-bold uppercase leading-[0.92] tracking-[-0.03em] text-[#f7ebcf] sm:text-7xl">
+            <h1 className="mt-6 max-w-4xl font-serif text-[2.6rem] font-bold uppercase leading-[0.94] tracking-[-0.03em] text-[#f7ebcf] sm:text-[3.7rem]">
               WHERE TALENT
               <br />
               GETS DISCOVERED.
             </h1>
-            <p className="mt-7 max-w-3xl text-base leading-8 text-[#dfe7ef] sm:text-lg">
+            <p className="mt-7 max-w-3xl text-base leading-8 text-[#dfe7ef]">
               FreeAgentStaff flips traditional recruitment around. Build your professional story, introduce yourself through video, and let verified employers discover you and make the first move.
             </p>
           </div>
@@ -256,12 +256,12 @@ export default function AboutPage() {
             <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-[#9a6d15]">
               About FreeAgentStaff
             </p>
-            <h1 className="mt-7 max-w-xl font-serif text-5xl font-bold uppercase leading-[0.92] tracking-[-0.03em] sm:text-7xl">
+            <h1 className="mt-7 max-w-xl font-serif text-[2.6rem] font-bold uppercase leading-[0.94] tracking-[-0.03em] sm:text-[3.7rem]">
               YOU&apos;RE MORE THAN
               <br />
               WHAT&apos;S ON PAPER.
             </h1>
-            <p className="mt-8 max-w-xl text-base leading-8 text-[#27405f] sm:text-lg">
+            <p className="mt-8 max-w-xl text-base leading-8 text-[#27405f]">
               FreeAgentStaff is built around a simple idea: let people show who
               they are, then let the right opportunities find them.
             </p>
@@ -289,10 +289,10 @@ export default function AboutPage() {
             <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-[#f2cc63]">
               Why we exist
             </p>
-            <h2 className="mt-7 w-full max-w-3xl break-words font-serif text-5xl font-bold uppercase leading-[0.93] sm:text-7xl">
+            <h2 className="mt-7 w-full max-w-3xl break-words font-serif text-[2.6rem] font-bold uppercase leading-[0.94] sm:text-[3.7rem]">
               We don&apos;t want you on Free Agent Staff forever.
             </h2>
-            <p className="mt-8 max-w-xl text-base leading-8 text-[#dfe7ef] sm:text-lg">
+            <p className="mt-8 max-w-xl text-base leading-8 text-[#dfe7ef]">
               We want you to find your next role as quickly as possible. We
               aren&apos;t building a platform designed to keep you searching.
               We&apos;re building one designed to get you found.
@@ -320,7 +320,7 @@ export default function AboutPage() {
               <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-[#AFF546]">
                 The Talent Card
               </p>
-              <h2 className="mt-6 w-full max-w-lg font-serif text-5xl font-bold uppercase leading-[0.95] sm:text-6xl">
+              <h2 className="mt-6 w-full max-w-lg font-serif text-[2.6rem] font-bold uppercase leading-[0.94] sm:text-[3.7rem]">
                 Your first impression.
               </h2>
               <p className="mt-6 max-w-lg text-base leading-8 text-[#27405f]">
@@ -331,9 +331,9 @@ export default function AboutPage() {
                 {talentFeatures.map((feature) => (
                   <li
                     key={feature}
-                    className="flex items-start gap-2 text-sm text-[#27405f]"
+                    className="flex items-center gap-2 text-base leading-8 text-[#27405f]"
                   >
-                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#4c7f1d]" />
+                    <Check className="h-4 w-4 shrink-0 text-[#4c7f1d]" />
                     {feature}
                   </li>
                 ))}
@@ -350,7 +350,7 @@ export default function AboutPage() {
               <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-[#651D2A]">
                 The Talent Passport
               </p>
-              <h2 className="mt-6 w-full max-w-lg font-serif text-5xl font-bold uppercase leading-[0.95] sm:text-6xl">
+              <h2 className="mt-6 w-full max-w-lg font-serif text-[2.6rem] font-bold uppercase leading-[0.94] sm:text-[3.7rem]">
                 The full story.
               </h2>
               <p className="mt-6 max-w-lg text-base leading-8 text-[#27405f]">
@@ -361,9 +361,9 @@ export default function AboutPage() {
                 {passportFeatures.map((feature) => (
                   <li
                     key={feature}
-                    className="flex items-start gap-2 text-sm text-[#27405f]"
+                    className="flex items-center gap-2 text-base leading-8 text-[#27405f]"
                   >
-                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#651D2A]" />
+                    <Check className="h-4 w-4 shrink-0 text-[#651D2A]" />
                     {feature}
                   </li>
                 ))}
@@ -377,28 +377,30 @@ export default function AboutPage() {
       </section>
 
       <section className="bg-[#08111F]">
-        <div className="mx-auto max-w-7xl px-6 py-20 sm:px-8 sm:py-28 lg:px-12">
+        <div className="mx-auto max-w-[1600px] px-6 py-20 sm:px-8 sm:py-28 lg:px-6">
           <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-[#2BD7EF]">
             HOW IT WORKS
           </p>
-          <div className="mt-12 grid gap-0 md:grid-cols-2 lg:grid-cols-6">
+          <div className="mt-12 grid gap-0 md:grid-cols-2 lg:grid-cols-6 lg:grid-rows-[auto_auto_auto]">
             {journey.map((step, index) => (
               <div
                 key={step.title}
-                className="relative border-l border-[#dfe7ef]/25 px-5 py-5 first:border-l-0 lg:border-l lg:px-4 lg:py-0"
+                className="relative px-5 py-5 lg:row-span-3 lg:grid lg:grid-rows-subgrid lg:px-2 lg:py-0"
               >
-                <div className={`inline-flex h-11 w-11 items-center justify-center rounded-full border border-current bg-[#0f2744] ${step.tone}`}>
-                  <step.icon className="h-5 w-5" aria-hidden="true" />
+                <div className="relative flex h-11 items-center">
+                  <div className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-current bg-[#0f2744] ${step.tone}`}>
+                    <step.icon className="h-5 w-5" aria-hidden="true" />
+                  </div>
+                  {index < journey.length - 1 ? (
+                    <ArrowRight className="pointer-events-none absolute left-[calc(50%+1.875rem)] top-1/2 hidden h-4 w-4 -translate-x-1/2 -translate-y-1/2 text-[#f2cc63] lg:block" />
+                  ) : null}
                 </div>
                 <h3 className="mt-5 text-sm font-black uppercase tracking-[0.16em] text-[#f7ebcf]">
                   {step.title}
                 </h3>
-                <p className="mt-3 text-sm leading-6 text-[#dfe7ef]">
+                <p className="mt-3 text-base leading-8 text-[#dfe7ef]">
                   {step.text}
                 </p>
-                {index < journey.length - 1 ? (
-                  <ArrowRight className="absolute right-[-9px] top-6 hidden h-4 w-4 text-[#f2cc63] lg:block" />
-                ) : null}
               </div>
             ))}
           </div>
@@ -409,10 +411,10 @@ export default function AboutPage() {
         <div className="mx-auto max-w-7xl px-6 py-16 sm:px-8 sm:py-20 lg:px-12">
           <div className="flex flex-col items-center text-center">
             <RockstarStarIcon className="h-24 w-24 drop-shadow-[0_0_22px_rgba(175,245,70,0.4)] sm:h-[7.5rem] sm:w-[7.5rem]" />
-            <h2 className="mt-8 font-serif text-5xl font-bold uppercase leading-[0.95] sm:text-7xl">
+            <h2 className="mt-8 font-serif text-[2.6rem] font-bold uppercase leading-[0.94] sm:text-[3.7rem]">
               <span className="text-[#08111F]">Rockstar</span> <span className="text-[#AFF546]">Shifts</span>
             </h2>
-            <p className="mt-4 text-base text-[#08111F]/70 sm:text-lg">One-off shifts. Real opportunities.</p>
+            <p className="mt-4 text-base leading-8 text-[#08111F]/70">One-off shifts. Real opportunities.</p>
           </div>
 
           <div className="mt-14 grid gap-12 divide-y divide-[#08111F]/15 sm:mt-16 lg:mx-auto lg:max-w-[calc(28rem*2+2rem)] lg:grid-cols-2 lg:gap-8 lg:divide-y-0">
@@ -425,7 +427,7 @@ export default function AboutPage() {
               </h3>
               <div className="mt-5 flex items-start gap-5">
                 <RockstarStarIcon className="mt-1 h-12 w-12 shrink-0" />
-                <p className="max-w-sm text-sm leading-7 text-[#08111F]/75 sm:text-base">
+                <p className="max-w-sm text-base leading-8 text-[#08111F]/75">
                   Turn on Rockstar to let verified employers know you&apos;re open to short-term and one-off opportunities. You&apos;re always in control and can switch it on or off anytime.
                 </p>
               </div>
@@ -449,7 +451,7 @@ export default function AboutPage() {
                   <RockstarStarIcon className="relative z-0 h-12 w-12" />
                   <Search className="absolute -bottom-[10%] -right-[10%] z-10 h-7 w-7 text-[#2BD7EF]" strokeWidth={2.5} aria-hidden="true" />
                 </div>
-                <p className="max-w-sm text-sm leading-7 text-[#08111F]/75 sm:text-base">
+                <p className="max-w-sm text-base leading-8 text-[#08111F]/75">
                   Access Rockstar Talent who are available for one-off shifts through our Short Stay option. A simple, time-limited way to find great people, fast.
                 </p>
               </div>
@@ -468,14 +470,14 @@ export default function AboutPage() {
         <div className="mx-auto grid max-w-7xl gap-14 px-6 py-20 sm:px-8 sm:py-28 lg:grid-cols-[0.92fr_1.08fr] lg:items-center lg:gap-20 lg:px-12">
           <div className="min-w-0">
             <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-[#f2cc63]">Public Talent Passport</p>
-            <h2 className="mt-7 max-w-xl font-serif text-5xl font-bold uppercase leading-[0.9] sm:text-7xl">
+            <h2 className="mt-7 max-w-xl font-serif text-[2.6rem] font-bold uppercase leading-[0.94] sm:text-[3.7rem]">
               YOUR PASSPORT.
               <br />
               YOUR LINK.
               <br />
               YOUR STORY.
             </h2>
-            <p className="mt-8 max-w-xl text-base leading-8 text-[#dfe7ef] sm:text-lg">
+            <p className="mt-8 max-w-xl text-base leading-8 text-[#dfe7ef]">
               Your Talent Passport isn&apos;t limited to FreeAgentStaff. Make it public and share your personal Passport link wherever your career takes you, on your résumé, in your email signature, your portfolio or anywhere you want employers to discover more than what&apos;s on paper.
             </p>
             <p className="mt-6 text-[11px] font-bold uppercase tracking-[0.28em] text-[#f7ebcf]">You decide when it&apos;s public.</p>
@@ -516,7 +518,7 @@ export default function AboutPage() {
               <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-[#AFF546]">
                 For talent
               </p>
-              <h2 className="mt-7 max-w-lg font-serif text-5xl font-bold uppercase leading-[0.92] text-[#f7ebcf] sm:text-7xl">
+              <h2 className="mt-7 max-w-lg font-serif text-[2.6rem] font-bold uppercase leading-[0.94] text-[#f7ebcf] sm:text-[3.7rem]">
                 Be seen for what you can do.
               </h2>
               <Link
@@ -537,7 +539,7 @@ export default function AboutPage() {
               <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-[#2BD7EF]">
                 For employers
               </p>
-              <h2 className="mt-7 max-w-lg font-serif text-5xl font-bold uppercase leading-[0.92] text-[#f7ebcf] sm:text-7xl">
+              <h2 className="mt-7 max-w-lg font-serif text-[2.6rem] font-bold uppercase leading-[0.94] text-[#f7ebcf] sm:text-[3.7rem]">
                 Find people worth finding.
               </h2>
               <Link

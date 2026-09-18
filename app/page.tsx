@@ -62,21 +62,21 @@ const featureCards = [
 
 const howItWorksSteps = [
   {
-    number: "01",
+    number: "1",
     title: "Create your Talent Card",
     description:
       "Build a professional, visual profile that showcases your skills, experience and achievements beyond a traditional CV.",
     tone: "lime" as const,
   },
   {
-    number: "02",
+    number: "2",
     title: "Control your visibility",
     description:
       "Choose what employers can see and when. Explore opportunities openly or privately, on your terms.",
     tone: "cyan" as const,
   },
   {
-    number: "03",
+    number: "3",
     title: "Get discovered",
     description:
       "Verified employers can discover talent based on skills and experience, creating opportunities without relying solely on job applications.",
