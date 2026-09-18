@@ -5,9 +5,10 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Footer from "@/components/layout/Footer";
 import OAuthButtons from "@/components/auth/OAuthButtons";
+import PasswordRequirements from "@/components/auth/PasswordRequirements";
 import SignupBrandStory from "@/components/auth/SignupBrandStory";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
-import { getPublicAppUrl } from "@/lib/site-url";
+import { getPasswordPolicyError } from "@/lib/password-policy";
 import { PRIVACY_VERSION, TERMS_VERSION } from "@/lib/legal-versions";
 import type { AccountType, EmployerVerificationStatus } from "@/types/freeagent";
 
@@ -136,6 +137,15 @@ function EmployerAuthContent() {
       return;
     }
 
+    if (authMode === "sign-up") {
+      const policyError = getPasswordPolicyError(password);
+      if (policyError) {
+        setStatus(policyError);
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
     if (authMode === "sign-in") {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       setIsSubmitting(false);
@@ -169,27 +179,35 @@ function EmployerAuthContent() {
       return;
     }
 
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { account_type: "employer" },
-        emailRedirectTo: getPublicAppUrl("/onboarding/employer"),
-      },
+    const registerResponse = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password, accountType: "employer" }),
     });
+    const registerPayload = (await registerResponse.json().catch(() => null)) as {
+      ok?: boolean;
+      message?: string;
+      session?: { access_token: string; refresh_token: string } | null;
+    } | null;
     setIsSubmitting(false);
 
-    if (error) {
-      setStatus(error.message);
+    if (!registerResponse.ok || !registerPayload?.ok) {
+      setStatus(registerPayload?.message || "We couldn't create your account. Please try again.");
       return;
     }
 
-    if (data.session) {
+    if (registerPayload.session) {
+      const { data: sessionData, error: sessionError } = await supabase.auth.setSession(registerPayload.session);
+      if (sessionError || !sessionData.session) {
+        setStatus("Account created. Please sign in to continue.");
+        return;
+      }
+
       const acceptedAt = new Date().toISOString();
       const { error: insertError } = await supabase.from("profiles").upsert(
         [
           {
-            user_id: data.session.user.id,
+            user_id: sessionData.session.user.id,
             account_type: "employer",
             terms_accepted_at: acceptedAt,
             terms_version: TERMS_VERSION,
@@ -285,9 +303,11 @@ function EmployerAuthContent() {
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
                     className="mt-2 w-full rounded-2xl border border-[#cda64d]/45 bg-white px-4 py-3 text-sm text-[#071426] outline-none transition focus:border-[#0f2744] focus:ring-2 focus:ring-[#2bd7ef]/20"
-                    autoComplete="current-password"
+                    autoComplete={authMode === "sign-up" ? "new-password" : "current-password"}
+                    minLength={authMode === "sign-up" ? 10 : undefined}
                     required
                   />
+                  {authMode === "sign-up" ? <PasswordRequirements password={password} accentClassName="text-[#0f2744]" /> : null}
                 </div>
 
                 {status ? (

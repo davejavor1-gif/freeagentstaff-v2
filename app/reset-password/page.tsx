@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Footer from "@/components/layout/Footer";
+import PasswordRequirements from "@/components/auth/PasswordRequirements";
+import { getPasswordPolicyError } from "@/lib/password-policy";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
 import type { EmployerVerificationStatus } from "@/types/freeagent";
 
@@ -162,12 +164,34 @@ export default function ResetPasswordPage() {
       return;
     }
 
+    const policyError = getPasswordPolicyError(password);
+    if (policyError) {
+      setStatus(policyError);
+      return;
+    }
+
     setIsSubmitting(true);
-    const { error } = await supabase.auth.updateUser({ password });
+    const recoverySession = await getSessionWithRetry();
+    const accessToken = recoverySession?.access_token;
+    if (!accessToken) {
+      setIsSubmitting(false);
+      setStatus("A valid password recovery session is required.");
+      return;
+    }
+
+    const updateResponse = await fetch("/api/auth/update-password", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ password }),
+    });
+    const updatePayload = (await updateResponse.json().catch(() => null)) as { ok?: boolean; message?: string } | null;
     setIsSubmitting(false);
 
-    if (error) {
-      setStatus(error.message);
+    if (!updateResponse.ok || !updatePayload?.ok) {
+      setStatus(updatePayload?.message || "We couldn't update your password. Please try again.");
       return;
     }
 
@@ -225,8 +249,10 @@ export default function ResetPasswordPage() {
                   onChange={(event) => setPassword(event.target.value)}
                   className="mt-2 w-full rounded-2xl border border-[#cda64d]/45 bg-white px-4 py-3 text-sm text-[#071426] outline-none transition focus:border-[#2bd7ef] focus:ring-2 focus:ring-[#2bd7ef]/25"
                   autoComplete="new-password"
+                  minLength={10}
                   required
                 />
+                <PasswordRequirements password={password} />
               </div>
 
               <div>

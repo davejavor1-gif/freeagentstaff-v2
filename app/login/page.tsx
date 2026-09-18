@@ -5,10 +5,11 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Footer from "@/components/layout/Footer";
 import OAuthButtons from "@/components/auth/OAuthButtons";
+import PasswordRequirements from "@/components/auth/PasswordRequirements";
 import SignupBrandStory from "@/components/auth/SignupBrandStory";
+import { getPasswordPolicyError } from "@/lib/password-policy";
 import { buildCanonicalTalentColumns } from "@/lib/talent-profile-columns";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
-import { getPublicAppUrl } from "@/lib/site-url";
 import { PRIVACY_VERSION, TERMS_VERSION } from "@/lib/legal-versions";
 import type { AccountType, EmployerVerificationStatus, FreeAgentProfile } from "@/types/freeagent";
 
@@ -92,6 +93,15 @@ function LoginPageContent() {
       return;
     }
 
+    if (authMode === "sign-up") {
+      const policyError = getPasswordPolicyError(password);
+      if (policyError) {
+        setStatus(policyError);
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
     if (authMode === "sign-in") {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       setIsSubmitting(false);
@@ -112,24 +122,34 @@ function LoginPageContent() {
       return;
     }
 
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { account_type: accountType },
-        emailRedirectTo: getPublicAppUrl(accountType === "employer" ? "/onboarding/employer" : "/dashboard"),
-      },
+    const registerResponse = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password, accountType }),
     });
+    const registerPayload = (await registerResponse.json().catch(() => null)) as {
+      ok?: boolean;
+      message?: string;
+      userId?: string | null;
+      email?: string | null;
+      session?: { access_token: string; refresh_token: string } | null;
+    } | null;
     setIsSubmitting(false);
 
-    if (error) {
-      setStatus(error.message);
+    if (!registerResponse.ok || !registerPayload?.ok) {
+      setStatus(registerPayload?.message || "We couldn't create your account. Please try again.");
       return;
     }
 
-    if (data.session) {
+    if (registerPayload.session) {
+      const { data: sessionData, error: sessionError } = await supabase.auth.setSession(registerPayload.session);
+      if (sessionError || !sessionData.session) {
+        setStatus("Account created. Please sign in to continue.");
+        return;
+      }
+
       const blankTalentProfile = accountType === "talent"
-        ? createBlankTalentProfile(data.session.user.id, data.session.user.email)
+        ? createBlankTalentProfile(sessionData.session.user.id, sessionData.session.user.email)
         : null;
       const profilePayload = blankTalentProfile
         ? (blankTalentProfile as unknown as Record<string, unknown>)
@@ -140,7 +160,7 @@ function LoginPageContent() {
       const { error: insertError } = await supabase.from("profiles").upsert(
         [
           {
-            user_id: data.session.user.id,
+            user_id: sessionData.session.user.id,
             account_type: accountType,
             employer_contact_name: null,
             employer_contact_role: null,
@@ -155,7 +175,7 @@ function LoginPageContent() {
             privacy_acknowledged_at: acceptedAt,
             privacy_version: PRIVACY_VERSION,
             ...(accountType === "talent"
-              ? buildCanonicalTalentColumns(blankTalentProfile as FreeAgentProfile, data.session.user.email)
+              ? buildCanonicalTalentColumns(blankTalentProfile as FreeAgentProfile, sessionData.session.user.email)
               : {
                   slug: null,
                   profile: profilePayload,
@@ -243,9 +263,11 @@ function LoginPageContent() {
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 className="mt-2 w-full rounded-2xl border border-[#cda64d]/45 bg-white px-4 py-3 text-sm text-[#071426] outline-none transition focus:border-[#2bd7ef] focus:ring-2 focus:ring-[#2bd7ef]/25"
-                autoComplete="current-password"
+                autoComplete={authMode === "sign-up" ? "new-password" : "current-password"}
+                minLength={authMode === "sign-up" ? 10 : undefined}
                 required
               />
+              {authMode === "sign-up" ? <PasswordRequirements password={password} accentClassName="text-[#0f2744]" /> : null}
             </div>
 
             {status ? (
