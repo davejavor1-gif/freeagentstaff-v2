@@ -50,20 +50,6 @@ const blankForm: EmployerFormState = {
   industry: "",
 };
 
-const defaultEmployerProfile = {
-  employer_contact_name: null,
-  employer_contact_role: null,
-  employer_company_name: null,
-  employer_abn: null,
-  employer_acn: null,
-  employer_website: null,
-  employer_industry: null,
-  employer_company_size: null,
-  employer_verification_status: "unverified" as const,
-  slug: null,
-  profile: {},
-};
-
 const requiredFieldLabels: Record<keyof Omit<EmployerFormState, "identifierType" | "abn" | "acn">, string> = {
   contactName: "Contact name",
   contactRole: "Your role",
@@ -270,7 +256,7 @@ export default function EmployerOnboardingPage() {
 
         setCurrentUserId(session.user.id);
 
-        let row = await refreshEmployerRow(session.user.id);
+        const row = await refreshEmployerRow(session.user.id);
         const identity = resolveAccountIdentity({
           profileExists: Boolean(row),
           profileAccountType: row?.account_type,
@@ -283,25 +269,6 @@ export default function EmployerOnboardingPage() {
         }
 
         setAccountType("employer");
-
-        if (!row) {
-          const { error: createError } = await supabase.from("profiles").upsert(
-            [
-              {
-                user_id: session.user.id,
-                account_type: "employer",
-                ...defaultEmployerProfile,
-              } as never,
-            ],
-            { onConflict: "user_id" } as never,
-          );
-
-          if (createError) {
-            setFormError("We couldn't create your employer profile yet. You can still complete the form and save.");
-          } else {
-            row = await refreshEmployerRow(session.user.id);
-          }
-        }
 
         if (row) {
           hydrateFromRow(row);
@@ -354,60 +321,71 @@ export default function EmployerOnboardingPage() {
     return () => window.clearInterval(interval);
   }, [currentUserId]);
 
+  const persistEmployerDetails = async (accessToken: string) => {
+    const response = await fetch("/api/employer/account", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        contactName: form.contactName,
+        contactRole: form.contactRole,
+        companyName: form.companyName,
+        identifierType: form.identifierType,
+        abn: form.abn,
+        acn: form.acn,
+        website: form.website,
+        industry: form.industry,
+      }),
+    });
+
+    const payload = (await response.json().catch(() => null)) as {
+      ok?: boolean;
+      message?: string;
+      profile?: EmployerProfileRow;
+    } | null;
+
+    if (!response.ok || !payload?.ok || !payload.profile) {
+      return { ok: false as const, message: payload?.message ?? "We couldn't save your details right now. Please try again." };
+    }
+
+    hydrateFromRow(payload.profile);
+    return { ok: true as const };
+  };
+
   const saveDetails = async () => {
     const session = await getSessionWithRetry();
-    if (!session) {
+    if (!session?.access_token) {
       router.replace("/employer/auth");
-      return;
+      return false;
     }
 
     setSaving(true);
     setFormError(null);
     setStatusMessage(null);
 
-    const { error } = await supabase.from("profiles").upsert(
-      [
-        {
-          user_id: session.user.id,
-          account_type: "employer",
-          employer_contact_name: form.contactName.trim() || null,
-          employer_contact_role: form.contactRole.trim() || null,
-          employer_company_name: form.companyName.trim() || null,
-          employer_identifier_type: form.identifierType,
-          ...(form.identifierType === "abn"
-            ? { employer_abn: form.abn.trim() || null }
-            : { employer_acn: form.acn.trim() || null }),
-          employer_website: form.website.trim() || null,
-          employer_industry: form.industry.trim() || null,
-          profile: {},
-        } as never,
-      ],
-      { onConflict: "user_id" } as never,
-    );
-
-    if (error) {
-      setSaving(false);
-      setFormError("We couldn’t save your details right now. Please try again.");
-      return;
-    }
-
-    try {
-      const row = await refreshEmployerRow(session.user.id);
-      if (row) {
-        hydrateFromRow(row);
-      }
-    } catch {
-      // Keep existing optimistic form state; next refresh will reconcile.
-    }
+    const result = await persistEmployerDetails(session.access_token);
 
     setSaving(false);
-    setStatusMessage("Employer details saved.");
+
+    if (!result.ok) {
+      setFormError(result.message);
+      return false;
+    }
+
+    setStatusMessage("Your employer details have been saved.");
+    return true;
   };
 
   const submitVerification = async () => {
     setTouchedSubmit(true);
     setFormError(null);
     setStatusMessage(null);
+
+    if (verificationStatus === "pending" || verificationStatus === "verified") {
+      return;
+    }
 
     if (missingRequiredFields.length > 0) {
       setFormError("Please complete all required fields before submitting for verification.");
@@ -424,12 +402,19 @@ export default function EmployerOnboardingPage() {
     }
 
     const session = await getSessionWithRetry();
-    if (!session) {
+    if (!session?.access_token) {
       router.replace("/employer/auth");
       return;
     }
 
     setSubmitting(true);
+
+    const saved = await persistEmployerDetails(session.access_token);
+    if (!saved.ok) {
+      setSubmitting(false);
+      setFormError(saved.message);
+      return;
+    }
 
     const { error } = await supabase.rpc("submit_employer_verification");
 
@@ -443,13 +428,15 @@ export default function EmployerOnboardingPage() {
       const row = await refreshEmployerRow(session.user.id);
       if (row) {
         hydrateFromRow(row);
+      } else {
+        setVerificationStatus("pending");
       }
     } catch {
-      // If refresh fails, keep success state message only.
+      setVerificationStatus("pending");
     }
 
     setSubmitting(false);
-    setStatusMessage("Your employer account has been submitted for review.");
+    setStatusMessage("Verification in progress. We'll review your employer account before talent access is enabled.");
   };
 
   const cancelPendingEdit = async () => {
@@ -547,26 +534,26 @@ export default function EmployerOnboardingPage() {
           </div>
 
           {verificationStatus === "pending" ? (
-            <div className="mt-6 rounded-[24px] border border-[#08111F]/15 bg-[#fffaf0] p-5 text-sm leading-7 text-[#08111F]/70">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#08111F]">Under Review</p>
-              <p className="mt-2">Your details have been submitted to Free Agent Staff for review. We&apos;ll let you know once your business has been verified.</p>
-              <p className="mt-2 text-[#08111F]/60">Submitted: {requestedAt ? new Date(requestedAt).toLocaleString() : "Pending confirmation"}</p>
-              <p className="mt-2 text-[#08111F]/60">
+            <div className="mt-6 rounded-[24px] border border-[#08111F]/15 bg-[#fffaf0] p-5 text-sm leading-7 text-black">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-black">Under Review</p>
+              <p className="mt-2">Verification in progress. We&apos;ll review your employer account before talent access is enabled.</p>
+              <p className="mt-2 text-black">Submitted: {requestedAt ? new Date(requestedAt).toLocaleString() : "Pending confirmation"}</p>
+              <p className="mt-2 text-black">
                 If you edit company verification details like company name, ABN or ACN, your account may need to be reviewed again.
               </p>
             </div>
           ) : null}
 
           {verificationStatus === "more_info_required" ? (
-            <div className="mt-6 rounded-[24px] border border-[#08111F]/15 bg-[#fffaf0] p-5 text-sm leading-7 text-[#08111F]/70">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#08111F]">More Information Required</p>
+            <div className="mt-6 rounded-[24px] border border-[#08111F]/15 bg-[#fffaf0] p-5 text-sm leading-7 text-black">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-black">More Information Required</p>
               <p className="mt-2">We need some additional information before we can complete your business verification.</p>
-              {rejectionReason ? <p className="mt-2 text-[#08111F]/60">Reviewer message: {rejectionReason}</p> : null}
+              {rejectionReason ? <p className="mt-2 text-black">Reviewer message: {rejectionReason}</p> : null}
             </div>
           ) : null}
 
           {verificationStatus === "rejected" ? (
-            <div className="mt-6 rounded-[24px] border border-[#e19379]/45 bg-[#f4d5c8]/14 p-5 text-sm leading-7 text-[#ffe9df]">
+            <div className="mt-6 rounded-[24px] border border-[#e19379]/45 bg-[#f4d5c8]/14 p-5 text-sm leading-7 text-black">
               <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#ffc7b3]">Unable to Verify</p>
               <p className="mt-2">We weren&apos;t able to verify your organisation or your connection to it.</p>
               {rejectionReason ? <p className="mt-2">Reviewer message: {rejectionReason}</p> : null}
@@ -577,19 +564,19 @@ export default function EmployerOnboardingPage() {
           ) : null}
 
           {(verificationStatus === "pending" || verificationStatus === "verified") && identityChanged ? (
-            <div className="mt-6 rounded-[22px] border border-[#08111F]/15 bg-[#fffaf0] p-4 text-sm leading-7 text-[#08111F]/70">
+            <div className="mt-6 rounded-[22px] border border-[#08111F]/15 bg-[#fffaf0] p-4 text-sm leading-7 text-black">
               Changing your company name, ABN/ACN or company website will require your employer account to be verified again.
             </div>
           ) : null}
 
           {statusMessage ? (
-            <p role="status" className="mt-6 rounded-[18px] border border-[#2BD7EF]/45 bg-[#effcff] px-4 py-3 text-sm text-[#08111F]">
+            <p role="status" className="mt-6 rounded-[18px] border border-[#2BD7EF]/45 bg-[#effcff] px-4 py-3 text-sm text-black">
               {statusMessage}
             </p>
           ) : null}
 
           {formError ? (
-            <p role="alert" className="mt-6 rounded-[18px] border border-[#e19379]/40 bg-[#f4d5c8]/16 px-4 py-3 text-sm text-[#ffe9df]">
+            <p role="alert" className="mt-6 rounded-[18px] border border-[#e19379]/40 bg-[#f4d5c8]/16 px-4 py-3 text-sm text-black">
               {formError}
             </p>
           ) : null}
@@ -747,17 +734,26 @@ export default function EmployerOnboardingPage() {
 
             <div className="flex flex-wrap items-center gap-3 pt-2">
               {isPendingStatus && !isPendingEditing ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsPendingEditing(true);
-                    setFormError(null);
-                    setStatusMessage(null);
-                  }}
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsPendingEditing(true);
+                      setFormError(null);
+                      setStatusMessage(null);
+                    }}
                     className="min-h-[44px] rounded-full border border-[#08111F]/20 bg-[#fffaf0] px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#08111F] transition hover:bg-[#f0e1bc]"
-                >
-                  Edit submission
-                </button>
+                  >
+                    Edit submission
+                  </button>
+                  <button
+                    type="button"
+                    disabled
+                    className="min-h-[44px] cursor-not-allowed rounded-full border border-[#2BD7EF]/60 bg-[#2BD7EF] px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.24em] text-[#08111F] opacity-55"
+                  >
+                    Verification in progress
+                  </button>
+                </>
               ) : (
                 <>
                   <button
@@ -769,7 +765,19 @@ export default function EmployerOnboardingPage() {
                     {saving ? "Saving..." : "Save details"}
                   </button>
 
-                  {verificationStatus !== "pending" && verificationStatus !== "verified" ? (
+                  {verificationStatus === "pending" ? (
+                    <button
+                      type="button"
+                      disabled
+                      className="min-h-[44px] cursor-not-allowed rounded-full border border-[#2BD7EF]/60 bg-[#2BD7EF] px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.24em] text-[#08111F] opacity-55"
+                    >
+                      Verification in progress
+                    </button>
+                  ) : verificationStatus === "verified" ? (
+                    <span className="inline-flex min-h-[44px] items-center rounded-full border border-[#2BD7EF]/60 bg-[#2BD7EF] px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.24em] text-[#08111F]">
+                      ✓ Verified
+                    </span>
+                  ) : (
                     <button
                       type="button"
                       onClick={() => void submitVerification()}
@@ -784,7 +792,7 @@ export default function EmployerOnboardingPage() {
                           ? "Resubmit for verification"
                           : "Submit for Verification"}
                     </button>
-                  ) : null}
+                  )}
 
                   {isPendingStatus ? (
                     <button
@@ -797,10 +805,6 @@ export default function EmployerOnboardingPage() {
                   ) : null}
                 </>
               )}
-
-              <span className="inline-flex min-h-[44px] items-center rounded-full border border-[#2BD7EF]/60 bg-[#2BD7EF] px-5 py-2.5 text-[11px] font-black uppercase tracking-[0.24em] text-[#08111F]">
-                {verificationStatus === "verified" ? "✓ Verified" : "Verify →"}
-              </span>
             </div>
           </form>
         </div>

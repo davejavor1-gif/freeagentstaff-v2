@@ -307,13 +307,27 @@ export default function DashboardPage() {
       setSession(activeSession);
       setFeedback(null);
 
-      const { data: profileRow } = await supabase
+      const { data: profileRow, error: profileSelectError } = await supabase
         .from("profiles")
         .select("name, title, location, availability, opportunity_status, top_strength, experience_years, focus_area, summary, bio, skills, languages, passions, career_journey, education, current_employer, visibility, photo_url, photo_storage_path, intro_video_url, intro_video_storage_path, is_published, profile, slug, account_type, employer_company_name, employer_verification_status, verification_requested_at, verification_rejection_reason")
         .eq("user_id", activeSession.user.id)
         .maybeSingle();
 
       if (!mounted) {
+        return;
+      }
+
+      if (profileSelectError) {
+        console.error("dashboard profile select failed", {
+          code: profileSelectError.code,
+          message: profileSelectError.message,
+        });
+        setAccountType(null);
+        setDashboardTalentProfile(null);
+        setEmployerSummary(null);
+        setTalentSummary(null);
+        setFeedback("We couldn't load your profile right now. Please try again.");
+        setLoading(false);
         return;
       }
 
@@ -356,13 +370,51 @@ export default function DashboardPage() {
               }),
         };
 
-        const { error: insertError } = await supabase.from("profiles").upsert([insertPayload] as never, { onConflict: "user_id" } as never);
+        const { error: insertError } = await supabase.from("profiles").insert([insertPayload] as never);
 
         if (!mounted) {
           return;
         }
 
         if (insertError) {
+          console.error("dashboard profile insert failed", {
+            code: insertError.code,
+            message: insertError.message,
+          });
+
+          if (insertError.code === "23505") {
+            const { data: existingAfterConflict, error: refetchError } = await supabase
+              .from("profiles")
+              .select("name, title, location, availability, opportunity_status, top_strength, experience_years, focus_area, summary, bio, skills, languages, passions, career_journey, education, current_employer, visibility, photo_url, photo_storage_path, intro_video_url, intro_video_storage_path, is_published, profile, slug, account_type, employer_company_name, employer_verification_status, verification_requested_at, verification_rejection_reason")
+              .eq("user_id", activeSession.user.id)
+              .maybeSingle();
+
+            if (!refetchError && existingAfterConflict) {
+              const existingRow = existingAfterConflict as ProfileRow;
+              const recoveredIdentity = resolveAccountIdentity({
+                profileExists: true,
+                profileAccountType: existingRow.account_type,
+                metadataAccountType: activeSession.user.user_metadata?.account_type,
+              });
+
+              if (recoveredIdentity.status === "resolved") {
+                setAccountType(recoveredIdentity.accountType);
+                setProfileName(existingRow.name ?? "");
+                setTalentSlug(existingRow.slug ?? null);
+                setCardStatus(resolveProfileProductStatus(existingRow, Boolean(existingRow.is_published)));
+                setPassportStatus(resolveProfileProductStatus(existingRow, Boolean(existingRow.is_published)));
+                setDashboardTalentProfile(recoveredIdentity.accountType === "talent" ? buildDashboardTalentProfile(existingRow, activeSession) : null);
+                setVerificationStatus(existingRow.employer_verification_status ?? "unverified");
+                setVerificationRequestedAt(existingRow.verification_requested_at ?? null);
+                setVerificationRejectionReason(existingRow.verification_rejection_reason ?? null);
+                setEmployerCompanyName(existingRow.employer_company_name ?? "");
+                await loadDashboardSummary(activeSession, recoveredIdentity.accountType);
+                setLoading(false);
+                return;
+              }
+            }
+          }
+
           setFeedback("We couldn't create your profile right now. Please try again.");
           setAccountType(null);
           setLoading(false);
