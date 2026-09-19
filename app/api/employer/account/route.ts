@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { resolveAccountIdentity } from "@/lib/account-identity";
-import { createUserServerSupabaseClient } from "@/lib/server-supabase";
+import { createUserDataClient, createUserServerSupabaseClient } from "@/lib/server-supabase";
 
 type EmployerIdentifierType = "abn" | "acn";
 
@@ -48,11 +48,16 @@ function textOrNull(value: unknown) {
   return trimmed.length > 0 ? trimmed : null;
 }
 
-function logSaveError(stage: string, error: { code?: string; message?: string } | null) {
+function logSaveError(
+  stage: string,
+  error: { code?: string; message?: string; details?: string; hint?: string } | null,
+) {
   console.error("employer-account save failed", {
     stage,
     code: error?.code ?? null,
     message: error?.message ?? "unknown",
+    details: error?.details ?? null,
+    hint: error?.hint ?? null,
   });
 }
 
@@ -62,11 +67,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, message: "Sign in required." }, { status: 401 });
   }
 
-  const userClient = createUserServerSupabaseClient(accessToken);
-  const { data: userData, error: userError } = await userClient.auth.getUser(accessToken);
+  const authClient = createUserServerSupabaseClient(accessToken);
+  const { data: userData, error: userError } = await authClient.auth.getUser(accessToken);
   if (userError || !userData.user) {
     return NextResponse.json({ ok: false, message: "Unable to verify your account." }, { status: 401 });
   }
+
+  const db = createUserDataClient(accessToken);
 
   const body = (await request.json().catch(() => null)) as SaveBody | null;
   const identifierType: EmployerIdentifierType = body?.identifierType === "acn" ? "acn" : "abn";
@@ -81,7 +88,7 @@ export async function POST(request: Request) {
     employer_industry: textOrNull(body?.industry),
   };
 
-  const { data: existing, error: selectError } = await userClient
+  const { data: existing, error: selectError } = await db
     .from("profiles")
     .select("user_id, account_type")
     .eq("user_id", userData.user.id)
@@ -114,62 +121,60 @@ export async function POST(request: Request) {
     employer_industry: details.employer_industry,
   };
 
+  let saved: EmployerProfileRow | null = null;
+
   if (!existing) {
-    const { error: insertError } = await userClient.from("profiles").insert([
-      {
-        user_id: userData.user.id,
-        account_type: "employer",
-        employer_verification_status: "unverified",
-        profile: {},
-        employer_contact_name: details.employer_contact_name,
-        employer_contact_role: details.employer_contact_role,
-        employer_company_name: details.employer_company_name,
-        employer_identifier_type: details.employer_identifier_type,
-        employer_abn: details.employer_abn ?? null,
-        employer_acn: details.employer_acn ?? null,
-        employer_website: details.employer_website,
-        employer_industry: details.employer_industry,
-      } as never,
-    ]);
+    const { data: inserted, error: insertError } = await db
+      .from("profiles")
+      .insert([
+        {
+          user_id: userData.user.id,
+          account_type: "employer",
+          employer_verification_status: "unverified",
+          profile: {},
+          employer_contact_name: details.employer_contact_name,
+          employer_contact_role: details.employer_contact_role,
+          employer_company_name: details.employer_company_name,
+          employer_identifier_type: details.employer_identifier_type,
+          employer_abn: details.employer_abn ?? null,
+          employer_acn: details.employer_acn ?? null,
+          employer_website: details.employer_website,
+          employer_industry: details.employer_industry,
+        } as never,
+      ])
+      .select(EMPLOYER_PROFILE_COLUMNS)
+      .maybeSingle<EmployerProfileRow>();
 
     if (insertError) {
       if (insertError.code !== "23505") {
         logSaveError("insert", insertError);
         return NextResponse.json({ ok: false, message: "We couldn't save your details right now. Please try again." }, { status: 500 });
       }
-
-      const { error: racedUpdateError } = await userClient
-        .from("profiles")
-        .update(employerDetails as never)
-        .eq("user_id", userData.user.id)
-        .eq("account_type", "employer");
-
-      if (racedUpdateError) {
-        logSaveError("insert-unique-update", racedUpdateError);
-        return NextResponse.json({ ok: false, message: "We couldn't save your details right now. Please try again." }, { status: 500 });
-      }
-    }
-  } else {
-    const { error: updateError } = await userClient
-      .from("profiles")
-      .update(employerDetails as never)
-      .eq("user_id", userData.user.id);
-
-    if (updateError) {
-      logSaveError("update", updateError);
-      return NextResponse.json({ ok: false, message: "We couldn't save your details right now. Please try again." }, { status: 500 });
+    } else if (inserted) {
+      saved = inserted;
     }
   }
 
-  const { data: saved, error: savedError } = await userClient
-    .from("profiles")
-    .select(EMPLOYER_PROFILE_COLUMNS)
-    .eq("user_id", userData.user.id)
-    .maybeSingle<EmployerProfileRow>();
+  if (!saved) {
+    const { data: updated, error: updateError } = await db
+      .from("profiles")
+      .update(employerDetails as never)
+      .eq("user_id", userData.user.id)
+      .eq("account_type", "employer")
+      .select(EMPLOYER_PROFILE_COLUMNS)
+      .maybeSingle<EmployerProfileRow>();
 
-  if (savedError || !saved) {
-    logSaveError("reload", savedError);
-    return NextResponse.json({ ok: false, message: "Details were saved but we couldn't reload them. Refresh this page." }, { status: 500 });
+    if (updateError) {
+      logSaveError(existing ? "update" : "insert-unique-update", updateError);
+      return NextResponse.json({ ok: false, message: "We couldn't save your details right now. Please try again." }, { status: 500 });
+    }
+
+    saved = updated ?? null;
+  }
+
+  if (!saved || saved.account_type !== "employer") {
+    logSaveError("reload", { message: "write returned no employer row" });
+    return NextResponse.json({ ok: false, message: "We couldn't save your details right now. Please try again." }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true, profile: saved });
