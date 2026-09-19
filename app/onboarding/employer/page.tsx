@@ -50,6 +50,20 @@ const blankForm: EmployerFormState = {
   industry: "",
 };
 
+const defaultEmployerProfile = {
+  employer_contact_name: null,
+  employer_contact_role: null,
+  employer_company_name: null,
+  employer_abn: null,
+  employer_acn: null,
+  employer_website: null,
+  employer_industry: null,
+  employer_company_size: null,
+  employer_verification_status: "unverified" as const,
+  slug: null,
+  profile: {},
+};
+
 const requiredFieldLabels: Record<keyof Omit<EmployerFormState, "identifierType" | "abn" | "acn">, string> = {
   contactName: "Contact name",
   contactRole: "Your role",
@@ -148,6 +162,21 @@ export default function EmployerOnboardingPage() {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [touchedSubmit, setTouchedSubmit] = useState(false);
   const [isPendingEditing, setIsPendingEditing] = useState(false);
+  const [deleteAccountConfirmationOpen, setDeleteAccountConfirmationOpen] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
+  const [deleteAccountError, setDeleteAccountError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && !deletingAccount) {
+        setDeleteAccountConfirmationOpen(false);
+        setDeleteAccountError(null);
+      }
+    };
+
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [deletingAccount]);
 
   const isPendingStatus = verificationStatus === "pending";
   const isPendingReadOnly = isPendingStatus && !isPendingEditing;
@@ -230,55 +259,60 @@ export default function EmployerOnboardingPage() {
     let mounted = true;
 
     const load = async () => {
-      const session = await getSessionWithRetry();
-      if (!mounted) return;
+      try {
+        const session = await getSessionWithRetry();
+        if (!mounted) return;
 
-      if (!session) {
-        router.replace("/employer/auth");
-        return;
-      }
-
-      setCurrentUserId(session.user.id);
-
-      let row = await refreshEmployerRow(session.user.id);
-      const identity = resolveAccountIdentity({
-        profileExists: Boolean(row),
-        profileAccountType: row?.account_type,
-        metadataAccountType: session.user.user_metadata?.account_type,
-      });
-
-      if (identity.status !== "resolved" || identity.accountType !== "employer") {
-        router.replace(identity.status === "resolved" ? accountHomePath(identity.accountType) : "/dashboard");
-        return;
-      }
-
-      if (!row) {
-        const { error: createError } = await supabase.from("profiles").insert([
-          {
-            user_id: session.user.id,
-            account_type: "employer",
-            employer_verification_status: "unverified",
-            profile: {},
-          } as never,
-        ]);
-
-        if (createError) {
-          setFormError(createError.message);
-          setLoading(false);
+        if (!session) {
+          router.replace("/employer/auth");
           return;
         }
 
-        row = await refreshEmployerRow(session.user.id);
-      }
+        setCurrentUserId(session.user.id);
 
-      if (!row) {
-        setFormError("Unable to load your employer profile.");
+        let row = await refreshEmployerRow(session.user.id);
+        const identity = resolveAccountIdentity({
+          profileExists: Boolean(row),
+          profileAccountType: row?.account_type,
+          metadataAccountType: session.user.user_metadata?.account_type,
+        });
+
+        if (identity.status !== "resolved" || identity.accountType !== "employer") {
+          router.replace(identity.status === "resolved" ? accountHomePath(identity.accountType) : "/dashboard");
+          return;
+        }
+
+        setAccountType("employer");
+
+        if (!row) {
+          const { error: createError } = await supabase.from("profiles").upsert(
+            [
+              {
+                user_id: session.user.id,
+                account_type: "employer",
+                ...defaultEmployerProfile,
+              } as never,
+            ],
+            { onConflict: "user_id" } as never,
+          );
+
+          if (createError) {
+            setFormError("We couldn't create your employer profile yet. You can still complete the form and save.");
+          } else {
+            row = await refreshEmployerRow(session.user.id);
+          }
+        }
+
+        if (row) {
+          hydrateFromRow(row);
+        }
+
         setLoading(false);
-        return;
+      } catch {
+        if (!mounted) return;
+        setFormError("We couldn't load your employer account right now. Please try again.");
+        setLoading(false);
       }
-
-      hydrateFromRow(row);
-      setLoading(false);
     };
 
     void load();
@@ -331,22 +365,25 @@ export default function EmployerOnboardingPage() {
     setFormError(null);
     setStatusMessage(null);
 
-    const { error } = await supabase
-      .from("profiles")
-      .update({
-        employer_contact_name: form.contactName.trim() || null,
-        employer_contact_role: form.contactRole.trim() || null,
-        employer_company_name: form.companyName.trim() || null,
-        employer_identifier_type: form.identifierType,
-        // Only the active identifier field is written so switching identifier type
-        // never overwrites a previously recorded ABN or ACN.
-        ...(form.identifierType === "abn"
-          ? { employer_abn: form.abn.trim() || null }
-          : { employer_acn: form.acn.trim() || null }),
-        employer_website: form.website.trim() || null,
-        employer_industry: form.industry.trim() || null,
-      } as never)
-      .eq("user_id", session.user.id);
+    const { error } = await supabase.from("profiles").upsert(
+      [
+        {
+          user_id: session.user.id,
+          account_type: "employer",
+          employer_contact_name: form.contactName.trim() || null,
+          employer_contact_role: form.contactRole.trim() || null,
+          employer_company_name: form.companyName.trim() || null,
+          employer_identifier_type: form.identifierType,
+          ...(form.identifierType === "abn"
+            ? { employer_abn: form.abn.trim() || null }
+            : { employer_acn: form.acn.trim() || null }),
+          employer_website: form.website.trim() || null,
+          employer_industry: form.industry.trim() || null,
+          profile: {},
+        } as never,
+      ],
+      { onConflict: "user_id" } as never,
+    );
 
     if (error) {
       setSaving(false);
@@ -436,21 +473,57 @@ export default function EmployerOnboardingPage() {
     setStatusMessage(null);
   };
 
-  if (loading) {
+  const closeDeleteAccountConfirmation = () => {
+    if (deletingAccount) return;
+    setDeleteAccountConfirmationOpen(false);
+    setDeleteAccountError(null);
+  };
+
+  const deleteAccount = async () => {
+    if (deletingAccount) return;
+    setDeletingAccount(true);
+    setDeleteAccountError(null);
+
+    try {
+      const session = await getSessionWithRetry();
+
+      if (!session?.access_token) {
+        setDeleteAccountError("Your session has expired. Sign in again to delete your account.");
+        return;
+      }
+
+      const response = await fetch("/api/account/delete", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      const result = (await response.json().catch(() => null)) as { ok?: boolean; message?: string } | null;
+
+      if (!response.ok || !result?.ok) {
+        setDeleteAccountError(result?.message ?? "We could not delete your account. Please try again.");
+        return;
+      }
+
+      await supabase.auth.signOut().catch(() => undefined);
+      window.location.assign("/");
+    } catch {
+      setDeleteAccountError("We could not delete your account. Please try again.");
+    } finally {
+      setDeletingAccount(false);
+    }
+  };
+
+  if (loading || accountType !== "employer") {
     return (
       <main className="flex min-h-screen flex-col bg-[#08111F] text-[#071426]">
         <div className="mx-auto max-w-5xl px-5 py-12 sm:px-8 lg:px-10">
           <div className="rounded-[32px] border border-[#cda64d]/55 bg-[#0f2744] p-8 text-[#f7ebcf] shadow-[0_20px_60px_rgba(6,16,33,0.16)]">
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#f2cc63]">Loading employer setup...</p>
+            {formError ? <p className="mt-4 text-sm leading-6 text-[#f7ebcf]">{formError}</p> : null}
           </div>
         </div>
         <Footer />
       </main>
     );
-  }
-
-  if (accountType !== "employer") {
-    return null;
   }
 
   return (
@@ -731,8 +804,66 @@ export default function EmployerOnboardingPage() {
             </div>
           </form>
         </div>
+
+          <div className="mt-10 border-t border-[#08111F]/12 pt-8">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Account</p>
+            <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="font-serif text-2xl text-[#08111F]">Delete account</h2>
+                <p className="mt-1 max-w-xl text-sm leading-6 text-[#08111F]/60">Permanently delete your Employer account and associated data. This cannot be undone.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setDeleteAccountError(null);
+                  setDeleteAccountConfirmationOpen(true);
+                }}
+                className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-[#08111F]/25 bg-transparent px-5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#08111F] transition hover:bg-[#eadbb0]"
+              >
+                DELETE ACCOUNT
+              </button>
+            </div>
+          </div>
         </section>
       </div>
+      {deleteAccountConfirmationOpen ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#08111F]/70 p-5"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="delete-employer-account-title"
+          onClick={closeDeleteAccountConfirmation}
+        >
+          <div
+            className="w-full max-w-lg rounded-2xl border border-[#cda64d]/45 bg-[#f7ebcf] p-6 text-[#08111F] shadow-2xl sm:p-8"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h2 id="delete-employer-account-title" className="font-serif text-2xl">Delete your account?</h2>
+            <p className="mt-4 text-sm leading-7 text-[#27405f]">
+              This will permanently delete your FreeAgentStaff account and cannot be undone.
+            </p>
+            {deleteAccountError ? <p role="alert" className="mt-4 text-sm font-semibold text-[#8f2018]">{deleteAccountError}</p> : null}
+            <div className="mt-6 flex flex-wrap justify-end gap-3">
+              <button
+                type="button"
+                onClick={closeDeleteAccountConfirmation}
+                disabled={deletingAccount}
+                className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-[#0f2744]/20 bg-white px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-[#071426] transition hover:bg-[#fffaf0] disabled:opacity-50"
+              >
+                CANCEL
+              </button>
+              <button
+                type="button"
+                onClick={() => void deleteAccount()}
+                disabled={deletingAccount}
+                className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-[#d85a4f] px-5 py-3 text-sm font-semibold uppercase tracking-[0.16em] text-[#08111F] disabled:opacity-50"
+              >
+                {deletingAccount ? "DELETING..." : "DELETE ACCOUNT"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
       <Footer />
     </main>
   );

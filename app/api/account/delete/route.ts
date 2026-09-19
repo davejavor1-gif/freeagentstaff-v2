@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { resolveAccountIdentity } from "@/lib/account-identity";
 import { createServiceRoleSupabaseClient, createUserServerSupabaseClient } from "@/lib/server-supabase";
 import { getStripeClient } from "@/lib/stripe-billing";
 
@@ -10,7 +11,11 @@ type ProfileRow = {
   account_type: "talent" | "employer";
   stripe_talent_subscription_id: string | null;
   talent_subscription_status: "inactive" | "active" | "trialing" | "past_due" | "canceled" | null;
+  stripe_employer_subscription_id: string | null;
+  employer_subscription_status: "inactive" | "active" | "trialing" | "past_due" | "canceled" | null;
 };
+
+const RECURRING_STATUSES = new Set(["active", "trialing", "past_due"]);
 
 function getBearerToken(request: Request) {
   const authorization = request.headers.get("authorization");
@@ -63,7 +68,7 @@ export async function POST(request: Request) {
 
   const { data: profile, error: profileError } = await userClient
     .from("profiles")
-    .select("account_type, stripe_talent_subscription_id, talent_subscription_status")
+    .select("account_type, stripe_talent_subscription_id, talent_subscription_status, stripe_employer_subscription_id, employer_subscription_status")
     .eq("user_id", userId)
     .maybeSingle<ProfileRow>();
 
@@ -71,10 +76,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, message: "Your account could not be loaded." }, { status: 500 });
   }
 
-  if (profile && profile.account_type !== "talent") {
+  const identity = resolveAccountIdentity({
+    profileExists: Boolean(profile),
+    profileAccountType: profile?.account_type,
+    metadataAccountType: userData.user.user_metadata?.account_type,
+  });
+
+  if (identity.status !== "resolved") {
     return NextResponse.json(
-      { ok: false, message: "Employer accounts must be closed through support." },
-      { status: 403 },
+      { ok: false, message: "We couldn't confirm this account type. Your account has not been changed." },
+      { status: 409 },
     );
   }
 
@@ -85,11 +96,22 @@ export async function POST(request: Request) {
 
   // 1. Stripe first: a subscription left billing a deleted account is the worst outcome,
   // and a failure here is fully recoverable because nothing has been destroyed yet.
-  const subscriptionId = profile?.stripe_talent_subscription_id ?? null;
-  const subscriptionStatus = profile?.talent_subscription_status ?? null;
-  const needsCancellation =
-    Boolean(subscriptionId) &&
-    (subscriptionStatus === "active" || subscriptionStatus === "trialing" || subscriptionStatus === "past_due");
+  // Short Stay is one-time access and is never cancelled as a recurring subscription.
+  const subscriptionId = identity.accountType === "employer"
+    ? profile?.stripe_employer_subscription_id ?? null
+    : profile?.stripe_talent_subscription_id ?? null;
+  const subscriptionStatus = identity.accountType === "employer"
+    ? profile?.employer_subscription_status ?? null
+    : profile?.talent_subscription_status ?? null;
+  const hasRecurringStatus = Boolean(subscriptionStatus && RECURRING_STATUSES.has(subscriptionStatus));
+  const needsCancellation = Boolean(subscriptionId) && hasRecurringStatus;
+
+  if (identity.accountType === "employer" && hasRecurringStatus && !subscriptionId) {
+    return NextResponse.json(
+      { ok: false, message: "We could not cancel your subscription. Your account has not been changed." },
+      { status: 502 },
+    );
+  }
 
   if (needsCancellation && subscriptionId) {
     try {
