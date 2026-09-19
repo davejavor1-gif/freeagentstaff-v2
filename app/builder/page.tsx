@@ -7,6 +7,7 @@ import type { Session } from "@supabase/supabase-js";
 import TalentCard from "@/components/TalentCard";
 import { freeAgentProfiles } from "@/data/freeagents";
 import { buildCanonicalTalentColumns, buildTalentProfileUpdateColumns } from "@/lib/talent-profile-columns";
+import { accountHomePath, resolveAccountIdentity } from "@/lib/account-identity";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
 import VideoIntroductionSection from "@/components/settings/VideoIntroductionSection";
 import Footer from "@/components/layout/Footer";
@@ -271,22 +272,30 @@ export default function BuilderPage() {
 
       if (error) {
         setSaveError("We couldn't load your profile right now. Please try again.");
-        const blankProfile = createBlankProfile(supabaseSession.user.id, supabaseSession.user.email);
-        lastSavedAvailabilityRef.current = normalizeAvailability(blankProfile.availability);
-        setProfile(blankProfile);
-        setProfileLoaded(true);
         setIsLoading(false);
         return;
       }
 
-      if (data && typeof data === "object" && "profile" in data) {
-        const profileResult = data as ProfileSelectResult;
+      const profileResult = data && typeof data === "object" && "account_type" in data
+        ? data as ProfileSelectResult
+        : null;
+      const identity = resolveAccountIdentity({
+        profileExists: Boolean(profileResult),
+        profileAccountType: profileResult?.account_type,
+        metadataAccountType: supabaseSession.user.user_metadata?.account_type,
+      });
 
-        if (profileResult.account_type === "employer") {
-          router.replace("/dashboard");
+      if (identity.status !== "resolved" || identity.accountType !== "talent") {
+        if (identity.status === "resolved") {
+          router.replace(accountHomePath(identity.accountType));
           return;
         }
 
+        router.replace("/dashboard");
+        return;
+      }
+
+      if (profileResult) {
         const hydratedProfile = hydrateBuilderProfile(profileResult, supabaseSession.user.email);
         lastSavedAvailabilityRef.current = normalizeAvailability(hydratedProfile.availability, profileResult.opportunity_status);
         setProfile(hydratedProfile);
@@ -312,6 +321,8 @@ export default function BuilderPage() {
 
         if (insertError) {
           setSaveError("We couldn't create your profile right now. Please try again.");
+          setIsLoading(false);
+          return;
         }
 
         const { data: insertedProfile } = await supabase.from("profiles").select("slug").eq("user_id", supabaseSession.user.id).maybeSingle<{ slug: string | null }>();
@@ -561,13 +572,15 @@ export default function BuilderPage() {
     setResumeBusy(false);
   };
 
-  if (isLoading) {
+  if (isLoading || !profileLoaded) {
     return (
       <><main className="min-h-screen bg-[#08111F] px-4 py-8 text-[#0f2744] sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-7xl items-center justify-center py-24">
           <div className="rounded-[32px] border border-[#cda64d]/70 bg-[#0f2744] px-8 py-12 text-center text-[#f7ebcf] shadow-[0_18px_55px_rgba(6,16,33,0.28)]">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">Loading profile</p>
-            <p className="mt-4 text-lg font-semibold">Please wait while we load your profile.</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[#f2cc63]">{isLoading ? "Loading profile" : "Profile unavailable"}</p>
+            <p className="mt-4 text-lg font-semibold">
+              {isLoading ? "Please wait while we load your profile." : saveError ?? "We couldn't open Talent Builder for this account."}
+            </p>
           </div>
         </div>
       </main><Footer /></>

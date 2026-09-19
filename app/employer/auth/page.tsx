@@ -7,6 +7,7 @@ import Footer from "@/components/layout/Footer";
 import OAuthButtons from "@/components/auth/OAuthButtons";
 import PasswordRequirements from "@/components/auth/PasswordRequirements";
 import SignupBrandStory from "@/components/auth/SignupBrandStory";
+import { accountHomePath, resolveAccountIdentity } from "@/lib/account-identity";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
 import { getPasswordPolicyError } from "@/lib/password-policy";
 import { PRIVACY_VERSION, TERMS_VERSION } from "@/lib/legal-versions";
@@ -68,10 +69,14 @@ function EmployerAuthContent() {
       }
 
       const row = profileRow as EmployerProfileRow | null | undefined;
-      const accountType = row?.account_type ?? (session.user.user_metadata?.account_type === "employer" ? "employer" : "talent");
+      const identity = resolveAccountIdentity({
+        profileExists: Boolean(row),
+        profileAccountType: row?.account_type,
+        metadataAccountType: session.user.user_metadata?.account_type,
+      });
 
-      if (accountType !== "employer") {
-        router.replace("/login");
+      if (identity.status !== "resolved" || identity.accountType !== "employer") {
+        router.replace(identity.status === "resolved" ? accountHomePath(identity.accountType) : "/login");
         return;
       }
 
@@ -85,11 +90,11 @@ function EmployerAuthContent() {
     };
   }, [router]);
 
-  const loadEmployerProfile = async (userId: string) => {
+  const loadEmployerProfile = async (session: { user: { id: string; user_metadata?: { account_type?: unknown } } }) => {
     const { data: profileRow, error } = await supabase
       .from("profiles")
       .select("account_type, employer_verification_status")
-      .eq("user_id", userId)
+      .eq("user_id", session.user.id)
       .maybeSingle();
 
     if (error) {
@@ -97,11 +102,23 @@ function EmployerAuthContent() {
     }
 
     const row = profileRow as EmployerProfileRow | null | undefined;
+    const identity = resolveAccountIdentity({
+      profileExists: Boolean(row),
+      profileAccountType: row?.account_type,
+      metadataAccountType: session.user.user_metadata?.account_type,
+    });
+
+    if (identity.status !== "resolved" || identity.accountType !== "employer") {
+      return {
+        accountType: identity.status === "resolved" ? identity.accountType : null,
+        verificationStatus: "unverified" as const,
+      };
+    }
 
     if (!row) {
       const { error: insertError } = await supabase.from("profiles").insert([
         {
-          user_id: userId,
+          user_id: session.user.id,
           account_type: "employer",
           ...defaultEmployerProfile,
         } as never,
@@ -115,7 +132,7 @@ function EmployerAuthContent() {
     }
 
     return {
-      accountType: row.account_type ?? "employer",
+      accountType: "employer" as const,
       verificationStatus: row.employer_verification_status ?? "unverified",
     };
   };
@@ -163,7 +180,7 @@ function EmployerAuthContent() {
       }
 
       try {
-        const resolved = await loadEmployerProfile(session.user.id);
+        const resolved = await loadEmployerProfile(session);
 
         if (resolved.accountType !== "employer") {
           router.replace("/login");

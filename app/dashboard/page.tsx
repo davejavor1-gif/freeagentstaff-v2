@@ -9,6 +9,7 @@ import BillingButton from "@/components/BillingButton";
 import FreeAgentProBadge from "@/components/FreeAgentProBadge";
 import DashboardView from "@/components/dashboard/DashboardView";
 import type { Session } from "@supabase/supabase-js";
+import { resolveAccountIdentity } from "@/lib/account-identity";
 import { buildCanonicalTalentColumns } from "@/lib/talent-profile-columns";
 import { normalizeAvailability } from "@/lib/talent-profile-options";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
@@ -220,7 +221,7 @@ function loginPathPreservingDashboardHash() {
 
 export default function DashboardPage() {
   const [session, setSession] = useState<Session | null>(null);
-  const [accountType, setAccountType] = useState<AccountType>("talent");
+  const [accountType, setAccountType] = useState<AccountType | null>(null);
   const [verificationStatus, setVerificationStatus] = useState<EmployerVerificationStatus>("unverified");
   const [verificationRequestedAt, setVerificationRequestedAt] = useState<string | null>(null);
   const [verificationRejectionReason, setVerificationRejectionReason] = useState<string | null>(null);
@@ -306,9 +307,6 @@ export default function DashboardPage() {
       setSession(activeSession);
       setFeedback(null);
 
-      const metadataAccountType = activeSession.user.user_metadata?.account_type;
-      const fallbackAccountType: AccountType = metadataAccountType === "employer" ? "employer" : "talent";
-
       const { data: profileRow } = await supabase
         .from("profiles")
         .select("name, title, location, availability, opportunity_status, top_strength, experience_years, focus_area, summary, bio, skills, languages, passions, career_journey, education, current_employer, visibility, photo_url, photo_storage_path, intro_video_url, intro_video_storage_path, is_published, profile, slug, account_type, employer_company_name, employer_verification_status, verification_requested_at, verification_rejection_reason")
@@ -319,11 +317,29 @@ export default function DashboardPage() {
         return;
       }
 
+      const identity = resolveAccountIdentity({
+        profileExists: Boolean(profileRow),
+        profileAccountType: (profileRow as ProfileRow | null | undefined)?.account_type,
+        metadataAccountType: activeSession.user.user_metadata?.account_type,
+      });
+
+      if (identity.status !== "resolved") {
+        setAccountType(null);
+        setDashboardTalentProfile(null);
+        setEmployerSummary(null);
+        setTalentSummary(null);
+        setFeedback(identity.status === "mismatch"
+          ? "This account has conflicting identity records. Talent and Employer experiences are paused until the account type is resolved."
+          : "We couldn't determine whether this is a Talent or Employer account.");
+        setLoading(false);
+        return;
+      }
+
       if (!profileRow) {
         const defaultTalentProfile = createBlankTalentProfile(activeSession.user.id, activeSession.user.email);
         const insertPayload = {
           user_id: activeSession.user.id,
-          account_type: fallbackAccountType,
+          account_type: identity.accountType,
           employer_contact_name: null,
           employer_contact_role: null,
           employer_company_name: null,
@@ -332,7 +348,7 @@ export default function DashboardPage() {
           employer_industry: null,
           employer_company_size: null,
           employer_verification_status: "unverified",
-          ...(fallbackAccountType === "talent"
+          ...(identity.accountType === "talent"
             ? buildCanonicalTalentColumns(defaultTalentProfile, activeSession.user.email)
             : {
                 slug: null,
@@ -348,9 +364,12 @@ export default function DashboardPage() {
 
         if (insertError) {
           setFeedback("We couldn't create your profile right now. Please try again.");
+          setAccountType(null);
+          setLoading(false);
+          return;
         }
 
-        setAccountType(fallbackAccountType);
+        setAccountType(identity.accountType);
         setVerificationStatus("unverified");
         setVerificationRequestedAt(null);
         setVerificationRejectionReason(null);
@@ -358,13 +377,13 @@ export default function DashboardPage() {
         setCardStatus("Not started");
         setPassportStatus("Not started");
         setDashboardTalentProfile(null);
-        await loadDashboardSummary(activeSession, fallbackAccountType);
+        await loadDashboardSummary(activeSession, identity.accountType);
         setLoading(false);
         return;
       }
 
       const profileRowData = profileRow as ProfileRow | null | undefined;
-      const resolvedAccountType = profileRowData?.account_type === "employer" ? "employer" : "talent";
+      const resolvedAccountType = identity.accountType;
 
       setAccountType(resolvedAccountType);
       setProfileName(profileRowData?.name ?? "");
@@ -393,19 +412,15 @@ export default function DashboardPage() {
       }
 
       setSession(currentSession);
-      const sessionAccountType: AccountType = currentSession.user.user_metadata?.account_type === "employer"
-        ? "employer"
-        : "talent";
-      setAccountType(sessionAccountType);
       setFeedback(null);
-      void loadDashboardSummary(currentSession, sessionAccountType);
+      void hydrateDashboard();
     });
 
     return () => {
       mounted = false;
       listener.subscription.unsubscribe();
     };
-  }, [accountType, loadDashboardSummary, router]);
+  }, [loadDashboardSummary, router]);
 
   useEffect(() => {
     if (accountType !== "employer" || !session) {
@@ -464,6 +479,10 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get("checkout") !== "success" || !session) {
+      return;
+    }
+
+    if (!accountType) {
       return;
     }
 
@@ -577,12 +596,15 @@ export default function DashboardPage() {
     router.replace(accountType === "employer" ? "/employer/auth" : "/login");
   };
 
-  if (loading) {
+  if (loading || !accountType) {
     return (
       <><main className="min-h-screen bg-[#08111F] text-[#f7ebcf]">
         <div className="mx-auto flex min-h-screen max-w-6xl items-center justify-center px-6 py-16">
           <div className="rounded-3xl border border-[#cda64d]/55 bg-[#f7ebcf] px-8 py-10 text-[#0f2744] shadow-[0_16px_40px_rgba(6,16,33,0.2)]">
-            <p className="text-center text-sm font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">Loading dashboard</p>
+            <p className="text-center text-sm font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">
+              {loading ? "Loading dashboard" : "Account identity required"}
+            </p>
+            {!loading && feedback ? <p className="mt-4 text-center text-sm leading-6 text-[#27405f]">{feedback}</p> : null}
           </div>
         </div>
       </main><Footer /></>

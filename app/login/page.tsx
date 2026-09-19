@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Footer from "@/components/layout/Footer";
 import OAuthButtons from "@/components/auth/OAuthButtons";
 import PasswordRequirements from "@/components/auth/PasswordRequirements";
 import SignupBrandStory from "@/components/auth/SignupBrandStory";
+import { accountHomePath, resolveAccountIdentity } from "@/lib/account-identity";
 import { getPasswordPolicyError } from "@/lib/password-policy";
 import { buildCanonicalTalentColumns } from "@/lib/talent-profile-columns";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
@@ -54,19 +55,46 @@ function LoginPageContent() {
     router.push(mode === "sign-up" ? "/login?mode=signup" : "/login");
   };
 
+  const continueAuthenticatedSession = useCallback(async (currentSession: NonNullable<Awaited<ReturnType<typeof getSessionWithRetry>>>) => {
+    const { data: profileRow } = await supabase
+      .from("profiles")
+      .select("account_type, employer_verification_status")
+      .eq("user_id", currentSession.user.id)
+      .maybeSingle();
+
+    const identity = resolveAccountIdentity({
+      profileExists: Boolean(profileRow),
+      profileAccountType: (profileRow as { account_type?: AccountType } | null)?.account_type,
+      metadataAccountType: currentSession.user.user_metadata?.account_type,
+    });
+
+    if (identity.status !== "resolved") {
+      router.replace("/dashboard");
+      return;
+    }
+
+    if (identity.accountType === "talent") {
+      router.replace(postLoginPath);
+      return;
+    }
+
+    router.replace(accountHomePath(
+      identity.accountType,
+      (profileRow as { employer_verification_status?: EmployerVerificationStatus } | null)?.employer_verification_status,
+    ));
+  }, [postLoginPath, router]);
+
   useEffect(() => {
     let mounted = true;
 
     const restoreSession = async () => {
       const session = await getSessionWithRetry();
 
-      if (!mounted) {
+      if (!mounted || !session) {
         return;
       }
 
-      if (session) {
-        router.replace(postLoginPath);
-      }
+      await continueAuthenticatedSession(session);
     };
 
     restoreSession();
@@ -74,7 +102,7 @@ function LoginPageContent() {
     return () => {
       mounted = false;
     };
-  }, [postLoginPath, router]);
+  }, [continueAuthenticatedSession, postLoginPath, router]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -114,7 +142,7 @@ function LoginPageContent() {
       const session = data.session ?? (await getSessionWithRetry());
 
       if (session) {
-        router.replace(postLoginPath);
+        await continueAuthenticatedSession(session);
         return;
       }
 

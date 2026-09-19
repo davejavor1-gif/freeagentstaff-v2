@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Footer from "@/components/layout/Footer";
+import { accountHomePath, resolveAccountIdentity } from "@/lib/account-identity";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
 import type { AccountType, EmployerVerificationStatus } from "@/types/freeagent";
 
@@ -195,7 +196,7 @@ export default function EmployerOnboardingPage() {
 
   const hydrateFromRow = (row: EmployerProfileRow) => {
     const nextVerificationStatus = row.employer_verification_status ?? "unverified";
-    setAccountType(row.account_type ?? "talent");
+    setAccountType("employer");
     setVerificationStatus(nextVerificationStatus);
     if (nextVerificationStatus !== "pending") {
       setIsPendingEditing(false);
@@ -239,17 +240,19 @@ export default function EmployerOnboardingPage() {
 
       setCurrentUserId(session.user.id);
 
-      const metadataAccountType = session.user.user_metadata?.account_type;
-      const metadataType: AccountType = metadataAccountType === "employer" ? "employer" : "talent";
-
       let row = await refreshEmployerRow(session.user.id);
+      const identity = resolveAccountIdentity({
+        profileExists: Boolean(row),
+        profileAccountType: row?.account_type,
+        metadataAccountType: session.user.user_metadata?.account_type,
+      });
+
+      if (identity.status !== "resolved" || identity.accountType !== "employer") {
+        router.replace(identity.status === "resolved" ? accountHomePath(identity.accountType) : "/dashboard");
+        return;
+      }
 
       if (!row) {
-        if (metadataType !== "employer") {
-          router.replace("/dashboard");
-          return;
-        }
-
         const { error: createError } = await supabase.from("profiles").insert([
           {
             user_id: session.user.id,
@@ -271,11 +274,6 @@ export default function EmployerOnboardingPage() {
       if (!row) {
         setFormError("Unable to load your employer profile.");
         setLoading(false);
-        return;
-      }
-
-      if ((row.account_type ?? metadataType) !== "employer") {
-        router.replace("/dashboard");
         return;
       }
 

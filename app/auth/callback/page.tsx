@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Footer from "@/components/layout/Footer";
+import { accountHomePath, parseAccountType, resolveAccountIdentity } from "@/lib/account-identity";
 import { buildCanonicalTalentColumns } from "@/lib/talent-profile-columns";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
 import { PRIVACY_VERSION, TERMS_VERSION } from "@/lib/legal-versions";
@@ -36,14 +37,6 @@ function createBlankTalentProfile(userId: string, email: string | null): FreeAge
     careerJourney: [],
     email: email ?? "",
   };
-}
-
-function resolveDestination(accountType: AccountType, verificationStatus?: ProfileRow["employer_verification_status"]) {
-  if (accountType === "employer") {
-    return verificationStatus === "pending" || verificationStatus === "verified" ? "/dashboard" : "/onboarding/employer";
-  }
-
-  return "/dashboard";
 }
 
 function AuthCallbackContent() {
@@ -94,11 +87,36 @@ function AuthCallbackContent() {
 
       setSession(currentSession);
       setProfile(profileRow ?? null);
+      const identity = resolveAccountIdentity({
+        profileExists: Boolean(profileRow),
+        profileAccountType: profileRow?.account_type,
+        metadataAccountType: currentSession.user.user_metadata?.account_type,
+      });
+
+      if (identity.status === "mismatch") {
+        setStatus("This account has conflicting identity records. Return to the correct sign-in page and contact support if this continues.");
+        return;
+      }
+
+      const resolvedType = identity.status === "resolved"
+        ? identity.accountType
+        : parseAccountType(currentSession.user.user_metadata?.account_type) ?? (requestedAccountType === "talent" || requestedAccountType === "employer" ? requestedAccountType : null);
+
+      if (!resolvedType) {
+        setStatus("We couldn't determine this account type. Return to the sign-in page and try again.");
+        return;
+      }
+
+      if (identity.status === "unresolved" && parseAccountType(currentSession.user.user_metadata?.account_type) && parseAccountType(currentSession.user.user_metadata?.account_type) !== requestedAccountType) {
+        setStatus("This sign-in link does not match the account type on file.");
+        return;
+      }
+
       const consentRequired = !profileRow?.terms_accepted_at || !profileRow?.privacy_acknowledged_at;
       setNeedsConsent(consentRequired);
       if (profileRow && profileRow.account_type && !consentRequired) {
         setStatus("Sign in complete. Redirecting...");
-        window.setTimeout(() => router.replace(resolveDestination(profileRow.account_type, profileRow.employer_verification_status)), 300);
+        window.setTimeout(() => router.replace(accountHomePath(resolvedType, profileRow.employer_verification_status)), 300);
       } else {
         setStatus("Review and accept the Terms & Conditions and Privacy Policy to finish setting up your account.");
       }
@@ -116,7 +134,36 @@ function AuthCallbackContent() {
     setStatus("Setting up your account...");
 
     const acceptedAt = new Date().toISOString();
-    const accountType = profile?.account_type ?? requestedAccountType;
+
+    const metadataType = parseAccountType(session.user.user_metadata?.account_type);
+    const identity = resolveAccountIdentity({
+      profileExists: Boolean(profile),
+      profileAccountType: profile?.account_type,
+      metadataAccountType: session.user.user_metadata?.account_type,
+    });
+
+    if (identity.status === "mismatch") {
+      setStatus("This account has conflicting identity records. We can't finish setup until the account type is resolved.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    const accountType = identity.status === "resolved"
+      ? identity.accountType
+      : metadataType ?? (requestedAccountType === "talent" || requestedAccountType === "employer" ? requestedAccountType : null);
+
+    if (!accountType) {
+      setStatus("We couldn't determine this account type.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (identity.status === "unresolved" && metadataType && metadataType !== requestedAccountType) {
+      setStatus("This sign-in link does not match the account type on file.");
+      setIsSubmitting(false);
+      return;
+    }
+
     const existingProfile = profile;
 
     const { error: consentError } = await supabase
@@ -159,7 +206,7 @@ function AuthCallbackContent() {
       }
     }
 
-    router.replace(resolveDestination(accountType));
+    router.replace(accountHomePath(accountType, existingProfile?.employer_verification_status));
   };
 
   return (

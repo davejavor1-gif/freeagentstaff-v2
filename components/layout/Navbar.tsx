@@ -6,6 +6,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { Bell, Menu, X } from "lucide-react";
 import type { Session } from "@supabase/supabase-js";
+import { resolveAccountIdentity } from "@/lib/account-identity";
 import { supabase } from "@/lib/supabase-client";
 
 const guestNavItems = [
@@ -77,13 +78,33 @@ export default function Navbar() {
         return;
       }
 
+      if (mounted) {
+        rememberNavIdentity({
+          sessionPresent: true,
+          accountType: null,
+          talentSlug: null,
+          isSystemAdmin: false,
+        });
+        setSessionPresent(true);
+        setAccountType(null);
+        setTalentSlug(null);
+        setIsSystemAdmin(false);
+      }
+
       const { data: profileRow } = await supabase
         .from("profiles")
         .select("account_type, slug")
         .eq("user_id", currentSession.user.id)
         .maybeSingle();
-      const rowAccountType = (profileRow as { account_type?: string } | null | undefined)?.account_type;
-      const rowTalentSlug = (profileRow as { slug?: string | null } | null | undefined)?.slug ?? null;
+      const identity = resolveAccountIdentity({
+        profileExists: Boolean(profileRow),
+        profileAccountType: (profileRow as { account_type?: string } | null | undefined)?.account_type,
+        metadataAccountType: currentSession.user.user_metadata?.account_type,
+      });
+      const nextAccountType: NavAccountType | null = identity.status === "resolved" ? identity.accountType : null;
+      const rowTalentSlug = nextAccountType === "talent"
+        ? (profileRow as { slug?: string | null } | null | undefined)?.slug ?? null
+        : null;
       let count = 0;
 
       if (currentSession.access_token) {
@@ -105,7 +126,6 @@ export default function Navbar() {
       }
 
       if (mounted) {
-        const nextAccountType: NavAccountType = rowAccountType === "employer" ? "employer" : "talent";
         rememberNavIdentity({
           sessionPresent: true,
           accountType: nextAccountType,
@@ -145,18 +165,12 @@ export default function Navbar() {
       if (!mounted) {
         return;
       }
-      if (data.session) {
-        setSessionPresent(true);
-      }
       loadCurrentSession(data.session);
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange((_, currentSession) => {
       if (!mounted) {
         return;
-      }
-      if (currentSession) {
-        setSessionPresent(true);
       }
       loadCurrentSession(currentSession);
     });
@@ -195,7 +209,9 @@ export default function Navbar() {
         ]
     : isTalentSession
       ? talentNavItems(talentSlug)
-      : guestNavItems;
+      : sessionPresent
+        ? [{ label: "Dashboard", href: "/dashboard" }]
+        : guestNavItems;
 
   async function handleEmployerSignOut() {
     if (signingOut) {

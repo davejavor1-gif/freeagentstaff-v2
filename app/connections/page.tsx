@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Footer from "@/components/layout/Footer";
+import { resolveAccountIdentity } from "@/lib/account-identity";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
 import type {
   EmployerConnectionItem,
@@ -61,7 +62,19 @@ export default function ConnectionsPage() {
         employer_verification_status?: EmployerVerificationStatus;
       } | null | undefined) ?? null;
 
-      const resolvedAccountType: AccountType = row?.account_type === "employer" ? "employer" : "talent";
+      const identity = resolveAccountIdentity({
+        profileExists: Boolean(row),
+        profileAccountType: row?.account_type,
+        metadataAccountType: session.user.user_metadata?.account_type,
+      });
+
+      if (identity.status !== "resolved") {
+        setAccountType(null);
+        setFeedback("We couldn't determine this account type.");
+        return;
+      }
+
+      const resolvedAccountType = identity.accountType;
       const resolvedVerification = row?.employer_verification_status ?? "unverified";
 
       setAccountType(resolvedAccountType);

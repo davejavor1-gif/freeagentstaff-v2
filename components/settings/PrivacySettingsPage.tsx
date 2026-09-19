@@ -7,6 +7,7 @@ import Image from "next/image";
 import type { Session } from "@supabase/supabase-js";
 import Footer from "@/components/layout/Footer";
 import { getSessionWithRetry } from "@/lib/supabase-client";
+import { accountHomePath } from "@/lib/account-identity";
 import type { AccountType, AvailabilityStatus, ProfileVisibility } from "@/types/freeagent";
 import { availabilityOptions, availabilityStatusColors } from "@/lib/talent-profile-options";
 import type { TalentPrivacySettings } from "@/types/talent-privacy";
@@ -76,7 +77,7 @@ const normalizeVisibility = (value: ProfileVisibility | undefined): Exclude<Prof
 
 export default function PrivacySettingsPage() {
   const [session, setSession] = useState<Session | null>(null);
-  const [accountType, setAccountType] = useState<AccountType>("talent");
+  const [accountType, setAccountType] = useState<AccountType | null>(null);
   const [settings, setSettings] = useState<TalentPrivacySettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -122,12 +123,11 @@ export default function PrivacySettingsPage() {
 
       if (!payload?.ok) {
         if (payload?.reason === "wrong_account_type") {
-          setAccountType("employer");
-          setSettings(null);
-        } else {
-          setSaveMessage(payload?.message ?? "Unable to load your privacy settings.");
+          router.replace(accountHomePath("employer"));
+          return;
         }
 
+        setSaveMessage(payload?.message ?? "Unable to load your privacy settings.");
         setIsLoading(false);
         return;
       }
@@ -260,6 +260,20 @@ export default function PrivacySettingsPage() {
 
   const activeVisibility = normalizeVisibility(settings?.visibility);
 
+  if (isLoading || accountType !== "talent") {
+    return (
+      <main className="privacy-page flex min-h-screen flex-col bg-[#08111F] text-[#08111F]">
+        <div className="flex-1 mx-auto w-full max-w-6xl px-4 py-8 sm:px-8 lg:px-12 lg:py-12">
+          <div className="rounded-[32px] border border-[#cda64d]/45 bg-[#f7e8c6] p-8 text-[#08111F]">
+            <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-[#9a6d15]">Settings</p>
+            <p className="mt-4 text-sm">{isLoading ? "Loading privacy settings..." : "Privacy settings are available for Talent accounts only."}</p>
+          </div>
+        </div>
+        <Footer />
+      </main>
+    );
+  }
+
   const formatBlockedKey = (key: string) => {
     if (key.startsWith("abn:")) {
       return `ABN ${key.slice(4)}`;
@@ -293,17 +307,11 @@ export default function PrivacySettingsPage() {
             <Image src="/images/control.png" alt="" width={640} height={440} className="pointer-events-none absolute right-2 top-0 hidden h-auto w-[32rem] max-w-[45%] object-contain lg:block" priority />
           </section>
 
-          {accountType === "employer" ? (
-            <p className="mt-6 max-w-3xl text-base leading-8 text-[#08111F]/70">
-              These settings apply to Talent Passports. Employer profile controls stay in Dashboard.
-            </p>
-          ) : (
-            <p className="sr-only">Choose who can see your profile when it is published, how it appears in the employer marketplace, and which employer identities are blocked. Publishing is managed in Talent Builder.</p>
-          )}
+          <p className="sr-only">Choose who can see your profile when it is published, how it appears in the employer marketplace, and which employer identities are blocked. Publishing is managed in Talent Builder.</p>
 
-          {accountType === "talent" ? <div className="mt-5 flex items-start gap-3 rounded-2xl border border-[#8fca45]/45 bg-[#f1f8df] p-4 text-sm text-[#27405f]"><ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#527c1b]" /><div><p className="font-bold text-[#08111F]">Your information is safe with us.</p><p className="mt-1">We never share your data without your permission.</p></div></div> : null}
+          <div className="mt-5 flex items-start gap-3 rounded-2xl border border-[#8fca45]/45 bg-[#f1f8df] p-4 text-sm text-[#27405f]"><ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#527c1b]" /><div><p className="font-bold text-[#08111F]">Your information is safe with us.</p><p className="mt-1">We never share your data without your permission.</p></div></div>
 
-          {activeVisibility === "confidential" && accountType === "talent" ? (
+          {activeVisibility === "confidential" ? (
             <div className="privacy-light-row mt-8 rounded-[24px] border border-[#08111F]/15 bg-[#08111F]/[0.03] p-6 text-sm leading-7 text-[#08111F]/70">
               <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#08111F]/60">Confidential Mode active</p>
               <p className="mt-3">
@@ -313,20 +321,7 @@ export default function PrivacySettingsPage() {
           ) : null}
 
           <div className="mt-8 space-y-8">
-            {accountType === "employer" ? (
-              <div className="privacy-light-row rounded-[24px] border border-[#08111F]/15 bg-[#08111F]/[0.03] p-6 text-sm leading-7 text-[#08111F]/70">
-                Employer account detected. Use Dashboard to manage verification details.
-              </div>
-            ) : null}
-
-            {isLoading ? (
-              <div className="privacy-light-row rounded-[24px] border border-[#08111F]/15 bg-[#08111F]/[0.03] p-6 text-sm text-[#08111F]/70">
-                Loading your settings...
-              </div>
-            ) : null}
-
-            {accountType === "talent"
-              ? <section className="rounded-[26px] border border-[#cda64d]/35 bg-[#fffaf0] p-5 sm:p-7">
+            <section className="rounded-[26px] border border-[#cda64d]/35 bg-[#fffaf0] p-5 sm:p-7">
                   <div className="flex items-start gap-3">
                     <div><p className="text-[11px] font-bold uppercase tracking-[0.26em] text-[#9a6d15]">Profile Visibility</p><p className="mt-2 text-sm leading-6 text-[#52627a]">Choose who can see your profile in the employer marketplace.</p></div>
                   </div>
@@ -363,11 +358,9 @@ export default function PrivacySettingsPage() {
                 })}
                   </div>
                 </section>
-              : null}
           </div>
 
-          {accountType === "talent" && !isLoading ? (
-            <section className="rounded-[26px] border border-[#cda64d]/35 bg-[#fffaf0] p-5 sm:p-7">
+          <section className="rounded-[26px] border border-[#cda64d]/35 bg-[#fffaf0] p-5 sm:p-7">
               <div><p className="text-[11px] font-bold uppercase tracking-[0.26em] text-[#9a6d15]">Opportunity Status</p><p className="mt-2 text-sm leading-6 text-[#52627a]">Let employers know what opportunities you&apos;re open to.</p></div>
               <div className="mt-6 grid gap-3 lg:grid-cols-3">{opportunityOptions.map((option) => {
                 const active = (settings?.opportunityStatus ?? "Available Now") === option.value;
@@ -399,9 +392,7 @@ export default function PrivacySettingsPage() {
                 );
               })}</div>
             </section>
-          ) : null}
 
-          {accountType === "talent" && !isLoading ? (
             <section className="rounded-[26px] border border-[#cda64d]/35 bg-[#fffaf0] p-5 text-[#08111F] sm:p-7">
               <div className="flex items-start gap-3"><Ban className="mt-0.5 h-5 w-5 text-[#651D2A]" /><div><p className="text-[11px] font-bold uppercase tracking-[0.26em] text-[#9a6d15]">Blocked Companies</p><p className="mt-2 text-sm leading-6 text-[#52627a]">Block specific companies from viewing your profile.</p></div></div>
               <p className="mt-5 text-sm leading-7 text-[#52627a]">
@@ -454,8 +445,6 @@ export default function PrivacySettingsPage() {
                 </div>
               </div>
             </section>
-          ) : null}
-
         </div>
       </div>
       <Footer />
