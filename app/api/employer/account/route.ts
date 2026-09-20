@@ -70,6 +70,38 @@ function logSaveError(
   });
 }
 
+const SLUG_UNIQUE_CONSTRAINT = "profiles_slug_key";
+const MAX_SLUG_INSERT_ATTEMPTS = 20;
+
+function uniqueViolationConstraint(error: PostgrestLikeError) {
+  if (error?.code !== "23505") {
+    return null;
+  }
+
+  const haystack = `${error.message ?? ""} ${error.details ?? ""} ${error.hint ?? ""}`;
+  if (haystack.includes(SLUG_UNIQUE_CONSTRAINT) || haystack.includes("profiles_slug_unique_idx")) {
+    return "slug";
+  }
+
+  return "other";
+}
+
+function employerProfileSlug(companyName: string | null, attempt: number) {
+  const normalized = (companyName ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  const base = (normalized || "member").slice(0, 48);
+
+  if (attempt <= 1) {
+    return base;
+  }
+
+  const suffix = `-${attempt}`;
+  return `${base.slice(0, Math.max(1, 48 - suffix.length))}${suffix}`;
+}
+
 function pathnameOnly(input: RequestInfo | URL) {
   try {
     if (typeof input === "string") {
@@ -238,32 +270,67 @@ export async function POST(request: Request) {
   let saved: EmployerProfileRow | null = null;
 
   if (!existing) {
-    const { data: inserted, error: insertError } = await withObservedPostgrestFetch("profile_insert", () =>
-      db
-        .from("profiles")
-        .insert([
-          {
-            user_id: userData.user.id,
-            account_type: "employer",
-            employer_verification_status: "unverified",
-            profile: {},
-            employer_contact_name: details.employer_contact_name,
-            employer_contact_role: details.employer_contact_role,
-            employer_company_name: details.employer_company_name,
-            employer_identifier_type: details.employer_identifier_type,
-            employer_abn: details.employer_abn ?? null,
-            employer_acn: details.employer_acn ?? null,
-            employer_website: details.employer_website,
-            employer_industry: details.employer_industry,
-          } as never,
-        ])
-        .select(EMPLOYER_PROFILE_COLUMNS)
-        .maybeSingle<EmployerProfileRow>(),
-    );
-    logDbResult("profile_insert", "insert", inserted, insertError);
+    let inserted: EmployerProfileRow | null = null;
+    let insertError: PostgrestLikeError = null;
+
+    for (let attempt = 1; attempt <= MAX_SLUG_INSERT_ATTEMPTS; attempt += 1) {
+      const insertResult = await withObservedPostgrestFetch("profile_insert", () =>
+        db
+          .from("profiles")
+          .insert([
+            {
+              user_id: userData.user.id,
+              account_type: "employer",
+              employer_verification_status: "unverified",
+              profile: {},
+              slug: employerProfileSlug(details.employer_company_name, attempt),
+              employer_contact_name: details.employer_contact_name,
+              employer_contact_role: details.employer_contact_role,
+              employer_company_name: details.employer_company_name,
+              employer_identifier_type: details.employer_identifier_type,
+              employer_abn: details.employer_abn ?? null,
+              employer_acn: details.employer_acn ?? null,
+              employer_website: details.employer_website,
+              employer_industry: details.employer_industry,
+            } as never,
+          ])
+          .select(EMPLOYER_PROFILE_COLUMNS)
+          .maybeSingle<EmployerProfileRow>(),
+      );
+      inserted = insertResult.data;
+      insertError = insertResult.error;
+      logDbResult("profile_insert", "insert", inserted, insertError);
+
+      if (!insertError) {
+        if (inserted) {
+          saved = inserted;
+        }
+        break;
+      }
+
+      if (uniqueViolationConstraint(insertError) === "slug" && attempt < MAX_SLUG_INSERT_ATTEMPTS) {
+        continue;
+      }
+
+      break;
+    }
 
     if (insertError) {
-      if (insertError.code !== "23505") {
+      if (insertError.code === "23505") {
+        const ownLookup = await withObservedPostgrestFetch("profile_select", () =>
+          db
+            .from("profiles")
+            .select("user_id, account_type")
+            .eq("user_id", userData.user.id)
+            .maybeSingle<{ user_id: string; account_type: "talent" | "employer" }>(),
+        );
+        logDbResult("profile_select", "insert-unique-reselect", ownLookup.data, ownLookup.error);
+
+        if (ownLookup.error || ownLookup.data?.account_type !== "employer") {
+          logSaveError("insert", insertError);
+          return NextResponse.json({ ok: false, message: "We couldn't save your details right now. Please try again." }, { status: 500 });
+        }
+      } else {
         logSaveError("insert", insertError);
         return NextResponse.json({ ok: false, message: "We couldn't save your details right now. Please try again." }, { status: 500 });
       }
