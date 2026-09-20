@@ -31,6 +31,15 @@ type EmployerProfileRow = {
   verification_rejection_reason?: string | null;
 };
 
+type DiagnosticOperation = "profile_select" | "profile_insert" | "profile_update";
+
+type PostgrestLikeError = {
+  code?: string;
+  message?: string;
+  details?: string;
+  hint?: string;
+} | null;
+
 const EMPLOYER_PROFILE_COLUMNS =
   "user_id, account_type, employer_verification_status, employer_contact_name, employer_contact_role, employer_company_name, employer_abn, employer_acn, employer_identifier_type, employer_website, employer_industry, verification_requested_at, verification_rejection_reason";
 
@@ -61,6 +70,108 @@ function logSaveError(
   });
 }
 
+function pathnameOnly(input: RequestInfo | URL) {
+  try {
+    if (typeof input === "string") {
+      return new URL(input).pathname;
+    }
+    if (input instanceof URL) {
+      return input.pathname;
+    }
+    return new URL(input.url).pathname;
+  } catch {
+    return "(unparsed)";
+  }
+}
+
+function requestMethod(input: RequestInfo | URL, init?: RequestInit) {
+  if (init?.method) {
+    return init.method;
+  }
+  if (typeof Request !== "undefined" && input instanceof Request) {
+    return input.method;
+  }
+  return "GET";
+}
+
+function accountTypeOnly(value: unknown) {
+  if (value === "talent" || value === "employer") {
+    return value;
+  }
+  if (value == null) {
+    return null;
+  }
+  return "invalid";
+}
+
+function logDbResult(
+  operation: DiagnosticOperation,
+  stage: string,
+  data: unknown,
+  error: PostgrestLikeError,
+) {
+  const isArray = Array.isArray(data);
+  const row = !isArray && data && typeof data === "object"
+    ? data as { account_type?: unknown }
+    : isArray && data.length === 1 && data[0] && typeof data[0] === "object"
+      ? data[0] as { account_type?: unknown }
+      : null;
+
+  console.info("employer-account db result", {
+    operation,
+    stage,
+    errorExists: Boolean(error),
+    errorCode: error?.code ?? null,
+    errorMessage: error?.message ?? null,
+    errorDetails: error?.details ?? null,
+    errorHint: error?.hint ?? null,
+    dataIsNull: data == null,
+    dataIsArray: isArray,
+    dataArrayLength: isArray ? data.length : null,
+    rowExists: isArray ? data.length > 0 : data != null,
+    returnedAccountType: accountTypeOnly(row?.account_type),
+  });
+}
+
+async function withObservedPostgrestFetch<T>(
+  operation: DiagnosticOperation,
+  run: () => T | PromiseLike<T>,
+): Promise<T> {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const response = await originalFetch(input, init);
+    try {
+      const outgoing = new Headers(init?.headers);
+      const authorization = outgoing.get("authorization");
+      const bodyText = await response.clone().text();
+      console.info("employer-account postgrest", {
+        operation,
+        method: requestMethod(input, init),
+        pathname: pathnameOnly(input),
+        responseStatus: response.status,
+        responseBodyEmpty: bodyText.length === 0,
+        responseContentType: response.headers.get("content-type"),
+        prefer: outgoing.get("prefer"),
+        authorizationHeaderPresent: Boolean(authorization),
+        authorizationIsBearer: Boolean(authorization?.toLowerCase().startsWith("bearer ")),
+        apikeyHeaderPresent: outgoing.has("apikey"),
+      });
+    } catch {
+      console.info("employer-account postgrest", {
+        operation,
+        diagnosticFailed: true,
+      });
+    }
+    return response;
+  }) as typeof fetch;
+
+  try {
+    return await run();
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+}
+
 export async function POST(request: Request) {
   const accessToken = getBearerToken(request);
   if (!accessToken) {
@@ -88,11 +199,14 @@ export async function POST(request: Request) {
     employer_industry: textOrNull(body?.industry),
   };
 
-  const { data: existing, error: selectError } = await db
-    .from("profiles")
-    .select("user_id, account_type")
-    .eq("user_id", userData.user.id)
-    .maybeSingle<{ user_id: string; account_type: "talent" | "employer" }>();
+  const { data: existing, error: selectError } = await withObservedPostgrestFetch("profile_select", () =>
+    db
+      .from("profiles")
+      .select("user_id, account_type")
+      .eq("user_id", userData.user.id)
+      .maybeSingle<{ user_id: string; account_type: "talent" | "employer" }>(),
+  );
+  logDbResult("profile_select", "select", existing, selectError);
 
   if (selectError) {
     logSaveError("select", selectError);
@@ -124,26 +238,29 @@ export async function POST(request: Request) {
   let saved: EmployerProfileRow | null = null;
 
   if (!existing) {
-    const { data: inserted, error: insertError } = await db
-      .from("profiles")
-      .insert([
-        {
-          user_id: userData.user.id,
-          account_type: "employer",
-          employer_verification_status: "unverified",
-          profile: {},
-          employer_contact_name: details.employer_contact_name,
-          employer_contact_role: details.employer_contact_role,
-          employer_company_name: details.employer_company_name,
-          employer_identifier_type: details.employer_identifier_type,
-          employer_abn: details.employer_abn ?? null,
-          employer_acn: details.employer_acn ?? null,
-          employer_website: details.employer_website,
-          employer_industry: details.employer_industry,
-        } as never,
-      ])
-      .select(EMPLOYER_PROFILE_COLUMNS)
-      .maybeSingle<EmployerProfileRow>();
+    const { data: inserted, error: insertError } = await withObservedPostgrestFetch("profile_insert", () =>
+      db
+        .from("profiles")
+        .insert([
+          {
+            user_id: userData.user.id,
+            account_type: "employer",
+            employer_verification_status: "unverified",
+            profile: {},
+            employer_contact_name: details.employer_contact_name,
+            employer_contact_role: details.employer_contact_role,
+            employer_company_name: details.employer_company_name,
+            employer_identifier_type: details.employer_identifier_type,
+            employer_abn: details.employer_abn ?? null,
+            employer_acn: details.employer_acn ?? null,
+            employer_website: details.employer_website,
+            employer_industry: details.employer_industry,
+          } as never,
+        ])
+        .select(EMPLOYER_PROFILE_COLUMNS)
+        .maybeSingle<EmployerProfileRow>(),
+    );
+    logDbResult("profile_insert", "insert", inserted, insertError);
 
     if (insertError) {
       if (insertError.code !== "23505") {
@@ -156,13 +273,16 @@ export async function POST(request: Request) {
   }
 
   if (!saved) {
-    const { data: updated, error: updateError } = await db
-      .from("profiles")
-      .update(employerDetails as never)
-      .eq("user_id", userData.user.id)
-      .eq("account_type", "employer")
-      .select(EMPLOYER_PROFILE_COLUMNS)
-      .maybeSingle<EmployerProfileRow>();
+    const { data: updated, error: updateError } = await withObservedPostgrestFetch("profile_update", () =>
+      db
+        .from("profiles")
+        .update(employerDetails as never)
+        .eq("user_id", userData.user.id)
+        .eq("account_type", "employer")
+        .select(EMPLOYER_PROFILE_COLUMNS)
+        .maybeSingle<EmployerProfileRow>(),
+    );
+    logDbResult("profile_update", existing ? "update" : "insert-unique-update", updated, updateError);
 
     if (updateError) {
       logSaveError(existing ? "update" : "insert-unique-update", updateError);
