@@ -83,6 +83,22 @@ function SlipTypeIcon({ src }: { src: string }) {
   );
 }
 
+function introductionDestination(item: NotificationItem) {
+  if (item.notificationType !== "intro_request_received") {
+    return null;
+  }
+
+  if (item.entityId) {
+    return `/dashboard?intro=${encodeURIComponent(item.entityId)}#introductions`;
+  }
+
+  return "/dashboard#introductions";
+}
+
+function notificationDestination(item: NotificationItem) {
+  return introductionDestination(item) ?? item.actionPath;
+}
+
 function formatSlipDate(value: string) {
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) {
@@ -225,7 +241,8 @@ export default function NotificationsPage({ embedded = false }: { embedded?: boo
   };
 
   const openNotification = async (item: NotificationItem) => {
-    if (!item.actionPath) {
+    const destination = notificationDestination(item);
+    if (!destination) {
       return;
     }
 
@@ -233,7 +250,7 @@ export default function NotificationsPage({ embedded = false }: { embedded?: boo
       await markReadQuietly(item.notificationId);
     }
 
-    router.push(item.actionPath);
+    router.push(destination);
   };
 
   const deleteOneNotification = async (notificationId: string) => {
@@ -408,7 +425,7 @@ export default function NotificationsPage({ embedded = false }: { embedded?: boo
                   const unread = !item.readAt;
                   const tone = slipTone(item.notificationType);
                   const FallbackIcon = tone.Icon;
-                  const hasDestination = Boolean(item.actionPath);
+                  const hasDestination = Boolean(notificationDestination(item));
 
                   return (
                     <article

@@ -177,7 +177,7 @@ export default function Navbar() {
         ? [{ label: "Dashboard", href: "/dashboard" }]
         : guestNavItems;
 
-  async function handleEmployerSignOut() {
+  async function handleSignOut(destination: string) {
     if (signingOut) {
       return;
     }
@@ -188,7 +188,7 @@ export default function Navbar() {
     } finally {
       setSigningOut(false);
       setMenuOpen(false);
-      router.push("/employer/auth");
+      router.push(destination);
       router.refresh();
     }
   }
@@ -267,11 +267,11 @@ export default function Navbar() {
             </Link>
           ) : null}
 
-          {isEmployerSession ? (
+          {isEmployerSession || isTalentSession ? (
             <button
               type="button"
               onClick={() => {
-                void handleEmployerSignOut();
+                void handleSignOut(isEmployerSession ? "/employer/auth" : "/login");
               }}
               className="hidden rounded-full border border-[#0f2744]/25 bg-[#0f2744] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f7ebcf] transition hover:bg-[#17355f] lg:inline-flex"
               disabled={signingOut}
@@ -320,11 +320,11 @@ export default function Navbar() {
               Admin
             </Link>
           ) : null}
-          {isEmployerSession ? (
+          {isEmployerSession || isTalentSession ? (
             <button
               type="button"
               onClick={() => {
-                void handleEmployerSignOut();
+                void handleSignOut(isEmployerSession ? "/employer/auth" : "/login");
               }}
               className="block w-full rounded-2xl border border-[#0f2744]/20 bg-[#0f2744] px-4 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#f7ebcf] transition hover:bg-[#17355f]"
               disabled={signingOut}

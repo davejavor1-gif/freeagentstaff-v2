@@ -14,6 +14,19 @@ import type {
   TalentIntroductionRequestsResponse,
 } from "@/types/introduction-requests";
 
+function isIntroductionRequestId(value: string | null | undefined) {
+  return Boolean(value && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value));
+}
+
+function readHighlightedIntroductionId() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const intro = new URLSearchParams(window.location.search).get("intro");
+  return isIntroductionRequestId(intro) ? intro : null;
+}
+
 function formatDate(value: string | null | undefined) {
   if (!value) {
     return "Not available";
@@ -30,6 +43,7 @@ export default function TalentConnectionsSection({ view = "connections" }: { vie
   const [feedback, setFeedback] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [acceptingRequest, setAcceptingRequest] = useState<TalentIntroductionRequestItem | null>(null);
+  const [highlightedRequestId, setHighlightedRequestId] = useState<string | null>(null);
 
   const loadConnections = useCallback(async () => {
     const session = await getSessionWithRetry();
@@ -76,6 +90,35 @@ export default function TalentConnectionsSection({ view = "connections" }: { vie
 
     return () => clearTimeout(timeoutId);
   }, [loadConnections]);
+
+  useEffect(() => {
+    if (view !== "introductions") {
+      return;
+    }
+
+    const applyHighlight = () => {
+      setHighlightedRequestId(readHighlightedIntroductionId());
+    };
+
+    applyHighlight();
+    window.addEventListener("popstate", applyHighlight);
+    window.addEventListener("hashchange", applyHighlight);
+    return () => {
+      window.removeEventListener("popstate", applyHighlight);
+      window.removeEventListener("hashchange", applyHighlight);
+    };
+  }, [view]);
+
+  useEffect(() => {
+    if (view !== "introductions" || loading || !highlightedRequestId) {
+      return;
+    }
+
+    const frameId = window.requestAnimationFrame(() => {
+      document.getElementById(`intro-${highlightedRequestId}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+    return () => window.cancelAnimationFrame(frameId);
+  }, [highlightedRequestId, loading, requests, view]);
 
   const respondToRequest = async (request: TalentIntroductionRequestItem, action: "accept" | "decline") => {
     const session = await getSessionWithRetry();
@@ -172,7 +215,15 @@ export default function TalentConnectionsSection({ view = "connections" }: { vie
           {loading ? <p className="mt-3 text-sm text-[#08111F]/60">Loading connection requests...</p> : requests.filter((request) => request.status === "pending").length === 0 ? <p className="mt-3 text-sm text-[#08111F]/60">No incoming requests yet. Eligible employers can request introductions from your profile.</p> : (
             <div className="mt-2.5 space-y-3">
               {requests.filter((request) => request.status === "pending").map((request) => (
-                <article key={request.requestId} className="rounded-xl border border-[#08111F]/15 bg-[#08111F]/[0.04] p-4">
+                <article
+                  key={request.requestId}
+                  id={`intro-${request.requestId}`}
+                  className={`rounded-xl border p-4 ${
+                    highlightedRequestId === request.requestId
+                      ? "border-[#AFF546] bg-[#fffdf6] shadow-[0_0_0_3px_rgba(175,245,70,0.28)]"
+                      : "border-[#08111F]/15 bg-[#08111F]/[0.04]"
+                  }`}
+                >
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <p className="text-lg font-semibold text-[#08111F]">{request.employerCompanyName ?? "Verified employer"}</p>
