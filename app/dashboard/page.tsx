@@ -43,6 +43,34 @@ const createBlankTalentProfile = (userId: string, email?: string | null): FreeAg
   email: email ?? "",
 });
 
+const SLUG_UNIQUE_CONSTRAINT = "profiles_slug_key";
+const MAX_SLUG_INSERT_ATTEMPTS = 20;
+
+function isSlugUniqueViolation(error: { code?: string; message?: string; details?: string; hint?: string } | null) {
+  if (error?.code !== "23505") {
+    return false;
+  }
+
+  const haystack = `${error.message ?? ""} ${error.details ?? ""} ${error.hint ?? ""}`;
+  return haystack.includes(SLUG_UNIQUE_CONSTRAINT) || haystack.includes("profiles_slug_unique_idx");
+}
+
+function talentProfileSlug(name: string | null | undefined, attempt: number) {
+  const normalized = (name ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  const base = (normalized || "member").slice(0, 48);
+
+  if (attempt <= 1) {
+    return base;
+  }
+
+  const suffix = `-${attempt}`;
+  return `${base.slice(0, Math.max(1, 48 - suffix.length))}${suffix}`;
+}
+
 const verificationLabel: Record<EmployerVerificationStatus, string> = {
   unverified: "Unverified",
   pending: "Under Review",
@@ -351,26 +379,59 @@ export default function DashboardPage() {
 
       if (!profileRow) {
         const defaultTalentProfile = createBlankTalentProfile(activeSession.user.id, activeSession.user.email);
-        const insertPayload = {
-          user_id: activeSession.user.id,
-          account_type: identity.accountType,
-          employer_contact_name: null,
-          employer_contact_role: null,
-          employer_company_name: null,
-          employer_abn: null,
-          employer_website: null,
-          employer_industry: null,
-          employer_company_size: null,
-          employer_verification_status: "unverified",
-          ...(identity.accountType === "talent"
-            ? buildCanonicalTalentColumns(defaultTalentProfile, activeSession.user.email)
-            : {
-                slug: null,
-                profile: {},
-              }),
-        };
+        let insertError: { code?: string; message?: string; details?: string; hint?: string } | null = null;
 
-        const { error: insertError } = await supabase.from("profiles").insert([insertPayload] as never);
+        if (identity.accountType === "talent") {
+          const talentColumns = buildCanonicalTalentColumns(defaultTalentProfile, activeSession.user.email);
+
+          for (let attempt = 1; attempt <= MAX_SLUG_INSERT_ATTEMPTS; attempt += 1) {
+            const insertPayload = {
+              user_id: activeSession.user.id,
+              account_type: "talent" as const,
+              employer_contact_name: null,
+              employer_contact_role: null,
+              employer_company_name: null,
+              employer_abn: null,
+              employer_website: null,
+              employer_industry: null,
+              employer_company_size: null,
+              employer_verification_status: "unverified",
+              ...talentColumns,
+              slug: talentProfileSlug(talentColumns.name, attempt),
+            };
+
+            const insertResult = await supabase.from("profiles").insert([insertPayload] as never);
+            insertError = insertResult.error;
+
+            if (!insertError) {
+              break;
+            }
+
+            if (isSlugUniqueViolation(insertError) && attempt < MAX_SLUG_INSERT_ATTEMPTS) {
+              continue;
+            }
+
+            break;
+          }
+        } else {
+          const insertPayload = {
+            user_id: activeSession.user.id,
+            account_type: identity.accountType,
+            employer_contact_name: null,
+            employer_contact_role: null,
+            employer_company_name: null,
+            employer_abn: null,
+            employer_website: null,
+            employer_industry: null,
+            employer_company_size: null,
+            employer_verification_status: "unverified",
+            slug: null,
+            profile: {},
+          };
+
+          const insertResult = await supabase.from("profiles").insert([insertPayload] as never);
+          insertError = insertResult.error;
+        }
 
         if (!mounted) {
           return;
@@ -382,7 +443,7 @@ export default function DashboardPage() {
             message: insertError.message,
           });
 
-          if (insertError.code === "23505") {
+          if (insertError.code === "23505" && !isSlugUniqueViolation(insertError)) {
             const { data: existingAfterConflict, error: refetchError } = await supabase
               .from("profiles")
               .select("name, title, location, availability, opportunity_status, top_strength, experience_years, focus_area, summary, bio, skills, languages, passions, career_journey, education, current_employer, visibility, photo_url, photo_storage_path, intro_video_url, intro_video_storage_path, is_published, profile, slug, account_type, employer_company_name, employer_verification_status, verification_requested_at, verification_rejection_reason")
@@ -397,7 +458,10 @@ export default function DashboardPage() {
                 metadataAccountType: activeSession.user.user_metadata?.account_type,
               });
 
-              if (recoveredIdentity.status === "resolved") {
+              if (
+                recoveredIdentity.status === "resolved" &&
+                (identity.accountType !== "talent" || recoveredIdentity.accountType === "talent")
+              ) {
                 setAccountType(recoveredIdentity.accountType);
                 setProfileName(existingRow.name ?? "");
                 setTalentSlug(existingRow.slug ?? null);
