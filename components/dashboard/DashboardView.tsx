@@ -170,14 +170,14 @@ function EmployerView(props: Props) {
 
     <main className="min-w-0 space-y-5">
       {activeSection === "overview" ? <>
-        <section className="rounded-[24px] border border-[#cda64d]/45 bg-[#f7e8c6] p-6 text-[#08111F] shadow-[0_18px_45px_rgba(6,16,33,0.18)] sm:p-8">
-          <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(220px,0.7fr)]">
-            <div>
-              <p className="text-[60px] font-black uppercase leading-none tracking-[0.24em] text-[#08798a]">Welcome</p>
+        <section className="min-w-0 overflow-visible rounded-[24px] border border-[#cda64d]/45 bg-[#f7e8c6] p-6 text-[#08111F] shadow-[0_18px_45px_rgba(6,16,33,0.18)] sm:p-8">
+          <div className="grid min-w-0 items-center gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(220px,0.7fr)]">
+            <div className="min-w-0">
+              <p className="max-w-full font-black uppercase leading-none tracking-[0.08em] text-[#08798a] text-[clamp(2.15rem,10.5vw,3.75rem)] lg:text-[60px] lg:tracking-[0.24em]">Welcome</p>
               <p className="mt-5 max-w-2xl text-base leading-8 text-[#08111F]/66">{props.isVerifiedEmployer ? "Your employer account is ready for you to connect with exceptional talent." : "Complete employer verification to begin discovering eligible talent."}</p>
-              <div className="mt-6 flex flex-wrap gap-3">{canWork ? <><DashboardAction href="/find-talent" variant="accent">FIND TALENT</DashboardAction><BillingButton action="portal" className="dashboard-employer-blue-action">MANAGE SUBSCRIPTION</BillingButton></> : <DashboardAction href="/onboarding/employer" variant="accent">OPEN EMPLOYER ACCOUNT</DashboardAction>}</div>
+              <div className="mt-6 flex w-full min-w-0 flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center [&>a]:w-full [&>a]:justify-center [&>button]:w-full [&>button]:justify-center lg:[&>a]:w-auto lg:[&>button]:w-auto">{canWork ? <><DashboardAction href="/find-talent" variant="accent">FIND TALENT</DashboardAction><BillingButton action="portal" className="dashboard-employer-blue-action">MANAGE SUBSCRIPTION</BillingButton></> : <DashboardAction href="/onboarding/employer" variant="accent">OPEN EMPLOYER ACCOUNT</DashboardAction>}</div>
             </div>
-            <div className="flex min-h-[180px] items-center justify-center px-2 sm:min-h-[210px] lg:min-h-[250px] lg:px-4"><Image src="/images/discover.png" alt="Discover people and applications" width={1536} height={1024} className="h-full max-h-[250px] w-full max-w-[360px] object-contain" priority /></div>
+            <div className="flex w-full min-w-0 items-center justify-center px-0 sm:min-h-[210px] lg:min-h-[250px] lg:px-4"><Image src="/images/discover.png" alt="Discover people and applications" width={1536} height={1024} className="mx-auto h-auto w-full max-h-[200px] max-w-[min(100%,360px)] object-contain sm:max-h-[230px] lg:max-h-[250px]" priority /></div>
           </div>
         </section>
 
@@ -355,13 +355,13 @@ function TalentView(props: Props) {
 
   return <>
     <div className="mx-auto grid max-w-[1500px] gap-4 lg:grid-cols-[240px_minmax(0,1fr)] lg:items-start xl:gap-6">
-      <aside className="rounded-[24px] border border-[#cda64d]/45 bg-[#f7e8c6] p-5 text-[#08111F] shadow-[0_18px_45px_rgba(6,16,33,0.2)] lg:sticky lg:top-24 lg:h-fit">
-        <div className="flex items-start justify-between gap-4">
-          <div>
+      <aside className="min-w-0 rounded-[24px] border border-[#cda64d]/45 bg-[#f7e8c6] p-5 text-[#08111F] shadow-[0_18px_45px_rgba(6,16,33,0.2)] lg:sticky lg:top-24 lg:h-fit">
+        <div className="flex min-w-0 items-start justify-between gap-4">
+          <div className="min-w-0 flex-1">
             <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#4b7f08]">Talent Dashboard</p>
-            <h1 className="mt-3 font-serif text-4xl leading-[0.95] tracking-tight">Hello,<br />{displayFirstName}</h1>
+            <h1 className="mt-3 max-w-full font-serif text-4xl leading-[0.95] tracking-tight">Hello,<br /><span className="block max-w-full break-words [overflow-wrap:anywhere] [word-break:break-word] leading-[1.1]">{displayFirstName}</span></h1>
           </div>
-          <span className="mt-1 h-3 w-3 rounded-full bg-[#AFF546] shadow-[0_0_0_6px_rgba(175,245,70,0.14)]" />
+          <span className="mt-1 h-3 w-3 shrink-0 rounded-full bg-[#AFF546] shadow-[0_0_0_6px_rgba(175,245,70,0.14)]" />
         </div>
 
         <nav className="mt-7 space-y-1.5" aria-label="Dashboard sections">
@@ -377,21 +377,21 @@ function TalentView(props: Props) {
 
       <main className="min-w-0 space-y-5">
         {activeSection === "overview" ? <>
-          <section className="relative overflow-hidden rounded-[24px] border border-[#cda64d]/45 bg-[#f7e8c6] p-6 text-[#08111F] shadow-[0_18px_45px_rgba(6,16,33,0.18)] sm:p-8 lg:min-h-[310px]">
-          <div className="absolute right-[-5rem] top-[-7rem] h-72 w-72 rounded-full bg-[#AFF546]/20 blur-2xl" />
-          <div className="relative z-10 grid min-h-full gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(220px,0.7fr)] lg:items-center">
-            <div className="max-w-3xl">
-              <p className="text-[60px] font-black uppercase leading-none tracking-[0.24em] text-[#4b7f08]">Welcome</p>
+          <section className="relative min-w-0 overflow-visible rounded-[24px] border border-[#cda64d]/45 bg-[#f7e8c6] p-6 text-[#08111F] shadow-[0_18px_45px_rgba(6,16,33,0.18)] sm:p-8 lg:min-h-[310px] lg:overflow-hidden">
+          <div className="pointer-events-none absolute right-[-5rem] top-[-7rem] hidden h-72 w-72 rounded-full bg-[#AFF546]/20 blur-2xl lg:block" />
+          <div className="relative z-10 grid min-h-full min-w-0 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(220px,0.7fr)] lg:items-center">
+            <div className="min-w-0 max-w-3xl">
+              <p className="max-w-full font-black uppercase leading-none tracking-[0.08em] text-[#4b7f08] text-[clamp(2.15rem,10.5vw,3.75rem)] lg:text-[60px] lg:tracking-[0.24em]">Welcome</p>
               <p className="mt-5 max-w-2xl text-base leading-8 text-[#08111F]/66">
                 {props.isPublished ? `Your profile is visible as ${props.visibility}. Keep your profile up to date to attract more opportunities.` : "Your profile is currently unpublished. Build and publish your profile when you are ready to be discovered."}
               </p>
-              <div className="mt-6 flex flex-wrap gap-3">
+              <div className="mt-6 flex w-full min-w-0 flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center [&>a]:w-full [&>a]:justify-center lg:[&>a]:w-auto">
                 <DashboardAction href={props.talentPassportHref} variant="green">VIEW YOUR TALENT PASSPORT</DashboardAction>
                 <DashboardAction href="/builder" variant="outline">EDIT PROFILE</DashboardAction>
               </div>
             </div>
-            <div className="flex min-h-[180px] items-center justify-center px-2 sm:min-h-[210px] lg:min-h-[250px] lg:px-4">
-              <Image src="/images/moreopp.png" alt="More opportunities" width={1536} height={1024} className="h-full max-h-[250px] w-full max-w-[360px] object-contain" priority />
+            <div className="flex w-full min-w-0 items-center justify-center px-0 sm:min-h-[210px] lg:min-h-[250px] lg:px-4">
+              <Image src="/images/moreopp.png" alt="More opportunities" width={1536} height={1024} className="mx-auto h-auto w-full max-h-[200px] max-w-[min(100%,360px)] object-contain sm:max-h-[230px] lg:max-h-[250px]" priority />
             </div>
           </div>
           </section>
