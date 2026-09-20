@@ -156,8 +156,8 @@ function EmployerView(props: Props) {
   ].slice(0, 5);
 
   return <div className="mx-auto grid max-w-[1500px] gap-4 lg:grid-cols-[240px_minmax(0,1fr)] lg:items-start xl:gap-6">
-    <aside className="rounded-[24px] border border-[#cda64d]/45 bg-[#f7e8c6] p-5 text-[#08111F] shadow-[0_18px_45px_rgba(6,16,33,0.2)] lg:sticky lg:top-24 lg:h-fit">
-      <div className="flex items-start justify-between gap-4"><div><p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#08798a]">Employer Dashboard</p><h1 className="mt-3 font-serif text-4xl leading-[0.95] tracking-tight">Hello,<br />{firstName(props.name)}</h1></div><span className="mt-1 h-3 w-3 rounded-full bg-[#2BD7EF] shadow-[0_0_0_6px_rgba(43,215,239,0.14)]" /></div>
+    <aside className="min-w-0 rounded-[24px] border border-[#cda64d]/45 bg-[#f7e8c6] p-5 text-[#08111F] shadow-[0_18px_45px_rgba(6,16,33,0.2)] lg:sticky lg:top-24 lg:h-fit">
+      <div className="flex min-w-0 items-start justify-between gap-4"><div className="min-w-0 flex-1"><p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#08798a]">Employer Dashboard</p><h1 className="mt-3 max-w-full font-serif text-4xl leading-[0.95] tracking-tight">Hello,<br /><span className="block max-w-full break-words [overflow-wrap:anywhere] [word-break:break-word] leading-[1.1]">{firstName(props.name)}</span></h1></div><span className="mt-1 h-3 w-3 shrink-0 rounded-full bg-[#2BD7EF] shadow-[0_0_0_6px_rgba(43,215,239,0.14)]" /></div>
       <nav className="mt-7 space-y-1.5" aria-label="Employer dashboard sections">
         <EmployerMenuButton section="overview" activeSection={activeSection} icon={House} onSelect={setActiveSection}>Dashboard</EmployerMenuButton>
         <EmployerMenuButton section="activity" activeSection={activeSection} icon={History} onSelect={setActiveSection}>Recent Activity</EmployerMenuButton>

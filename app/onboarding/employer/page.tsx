@@ -416,7 +416,7 @@ export default function EmployerOnboardingPage() {
       return;
     }
 
-    const { error } = await supabase.rpc("submit_employer_verification");
+    const { data: rpcData, error } = await supabase.rpc("submit_employer_verification");
 
     if (error) {
       setSubmitting(false);
@@ -424,15 +424,40 @@ export default function EmployerOnboardingPage() {
       return;
     }
 
+    const rpcRow = (Array.isArray(rpcData) ? rpcData[0] : rpcData) as {
+      success?: boolean;
+      employer_verification_status?: EmployerVerificationStatus | null;
+      verification_requested_at?: string | null;
+    } | undefined;
+
+    const rpcSubmittedPending =
+      rpcRow?.success !== false &&
+      (rpcRow?.employer_verification_status == null || rpcRow.employer_verification_status === "pending");
+
+    setIsPendingEditing(false);
+    if (rpcSubmittedPending) {
+      setVerificationStatus("pending");
+      if (rpcRow?.verification_requested_at) {
+        setRequestedAt(rpcRow.verification_requested_at);
+      }
+    }
+
     try {
       const row = await refreshEmployerRow(session.user.id);
       if (row) {
+        const persistedStatus = row.employer_verification_status ?? "unverified";
         hydrateFromRow(row);
-      } else {
+        if (rpcSubmittedPending && persistedStatus !== "pending" && persistedStatus !== "verified") {
+          setVerificationStatus("pending");
+          setIsPendingEditing(false);
+        }
+      } else if (rpcSubmittedPending) {
         setVerificationStatus("pending");
       }
     } catch {
-      setVerificationStatus("pending");
+      if (rpcSubmittedPending) {
+        setVerificationStatus("pending");
+      }
     }
 
     setSubmitting(false);
