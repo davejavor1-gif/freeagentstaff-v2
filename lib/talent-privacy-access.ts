@@ -93,13 +93,20 @@ export async function getTalentPrivacySettings(
 ): Promise<TalentPrivacySettingsResponse> {
   const userClient = getUserClient(accessToken);
 
-  if (!userClient) {
+  if (!userClient || !accessToken) {
+    return { ok: false, reason: "not_signed_in", message: "Sign in required." };
+  }
+
+  const { data: userData, error: userError } = await userClient.auth.getUser(accessToken);
+
+  if (userError || !userData.user) {
     return { ok: false, reason: "not_signed_in", message: "Sign in required." };
   }
 
   const { data, error } = await userClient
     .from("profiles")
     .select("account_type, slug, visibility, opportunity_status, availability, is_published, blocked_companies")
+    .eq("user_id", userData.user.id)
     .maybeSingle<PrivacyRow>();
 
   if (error) {

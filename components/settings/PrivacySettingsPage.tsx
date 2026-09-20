@@ -6,8 +6,8 @@ import { Building2, LockKeyhole, ShieldCheck, Ban } from "lucide-react";
 import Image from "next/image";
 import type { Session } from "@supabase/supabase-js";
 import Footer from "@/components/layout/Footer";
-import { getSessionWithRetry } from "@/lib/supabase-client";
-import { accountHomePath } from "@/lib/account-identity";
+import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
+import { accountHomePath, resolveAccountIdentity } from "@/lib/account-identity";
 import type { AccountType, AvailabilityStatus, ProfileVisibility } from "@/types/freeagent";
 import { availabilityOptions, availabilityStatusColors } from "@/lib/talent-profile-options";
 import type { TalentPrivacySettings } from "@/types/talent-privacy";
@@ -78,6 +78,7 @@ const normalizeVisibility = (value: ProfileVisibility | undefined): Exclude<Prof
 export default function PrivacySettingsPage() {
   const [session, setSession] = useState<Session | null>(null);
   const [accountType, setAccountType] = useState<AccountType | null>(null);
+  const [identityMessage, setIdentityMessage] = useState<string | null>(null);
   const [settings, setSettings] = useState<TalentPrivacySettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -101,6 +102,48 @@ export default function PrivacySettingsPage() {
       }
 
       setSession(currentSession);
+
+      const { data: profileRow, error: profileSelectError } = await supabase
+        .from("profiles")
+        .select("account_type")
+        .eq("user_id", currentSession.user.id)
+        .maybeSingle<{ account_type?: string }>();
+
+      if (!mounted) {
+        return;
+      }
+
+      if (profileSelectError) {
+        setAccountType(null);
+        setIdentityMessage("We couldn't determine your account type right now. Please try again.");
+        setIsLoading(false);
+        return;
+      }
+
+      const identity = resolveAccountIdentity({
+        profileExists: Boolean(profileRow),
+        profileAccountType: profileRow?.account_type,
+        metadataAccountType: currentSession.user.user_metadata?.account_type,
+      });
+
+      if (identity.status === "mismatch") {
+        setAccountType(null);
+        setIdentityMessage("This account has conflicting identity records. Privacy settings are paused until the account type is resolved.");
+        setIsLoading(false);
+        return;
+      }
+
+      if (identity.status !== "resolved") {
+        setAccountType(null);
+        setIdentityMessage("We couldn't determine whether this is a Talent or Employer account.");
+        setIsLoading(false);
+        return;
+      }
+
+      if (identity.accountType !== "talent") {
+        router.replace(accountHomePath(identity.accountType));
+        return;
+      }
 
       const response = await fetch("/api/talent/privacy", {
         method: "GET",
@@ -127,12 +170,14 @@ export default function PrivacySettingsPage() {
           return;
         }
 
-        setSaveMessage(payload?.message ?? "Unable to load your privacy settings.");
+        setAccountType(null);
+        setIdentityMessage(payload?.message ?? "Unable to load your privacy settings.");
         setIsLoading(false);
         return;
       }
 
       setAccountType("talent");
+      setIdentityMessage(null);
       setSettings(payload.settings ?? null);
 
       setIsLoading(false);
@@ -266,7 +311,7 @@ export default function PrivacySettingsPage() {
         <div className="flex-1 mx-auto w-full max-w-6xl px-4 py-8 sm:px-8 lg:px-12 lg:py-12">
           <div className="rounded-[32px] border border-[#cda64d]/45 bg-[#f7e8c6] p-8 text-[#08111F]">
             <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-[#9a6d15]">Settings</p>
-            <p className="mt-4 text-sm">{isLoading ? "Loading privacy settings..." : "Privacy settings are available for Talent accounts only."}</p>
+            <p className="mt-4 text-sm">{isLoading ? "Loading privacy settings..." : (identityMessage ?? "Privacy settings are available for Talent accounts only.")}</p>
           </div>
         </div>
         <Footer />

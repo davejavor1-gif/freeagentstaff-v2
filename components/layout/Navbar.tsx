@@ -28,31 +28,15 @@ const talentNavItems = (talentSlug: string | null) => [
 
 type NavAccountType = "talent" | "employer";
 
-type ResolvedNavIdentity = {
-  sessionPresent: boolean;
-  accountType: NavAccountType | null;
-  talentSlug: string | null;
-  isSystemAdmin: boolean;
-};
-
-let lastResolvedNav: ResolvedNavIdentity = {
-  sessionPresent: false,
-  accountType: null,
-  talentSlug: null,
-  isSystemAdmin: false,
-};
-
-function rememberNavIdentity(next: ResolvedNavIdentity) {
-  lastResolvedNav = next;
-}
+let lastSessionPresent = false;
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
-  const [accountType, setAccountType] = useState<NavAccountType | null>(lastResolvedNav.accountType);
-  const [talentSlug, setTalentSlug] = useState<string | null>(lastResolvedNav.talentSlug);
-  const [isSystemAdmin, setIsSystemAdmin] = useState(lastResolvedNav.isSystemAdmin);
-  const [sessionPresent, setSessionPresent] = useState(lastResolvedNav.sessionPresent);
+  const [accountType, setAccountType] = useState<NavAccountType | null>(null);
+  const [talentSlug, setTalentSlug] = useState<string | null>(null);
+  const [isSystemAdmin, setIsSystemAdmin] = useState(false);
+  const [sessionPresent, setSessionPresent] = useState(lastSessionPresent);
   const [signingOut, setSigningOut] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
@@ -63,12 +47,7 @@ export default function Navbar() {
     async function loadCurrentSession(currentSession: Session | null) {
       if (!currentSession) {
         if (mounted) {
-          rememberNavIdentity({
-            sessionPresent: false,
-            accountType: null,
-            talentSlug: null,
-            isSystemAdmin: false,
-          });
+          lastSessionPresent = false;
           setSessionPresent(false);
           setNotificationCount(0);
           setAccountType(null);
@@ -79,29 +58,25 @@ export default function Navbar() {
       }
 
       if (mounted) {
-        rememberNavIdentity({
-          sessionPresent: true,
-          accountType: null,
-          talentSlug: null,
-          isSystemAdmin: false,
-        });
+        lastSessionPresent = true;
         setSessionPresent(true);
         setAccountType(null);
         setTalentSlug(null);
         setIsSystemAdmin(false);
       }
 
-      const { data: profileRow } = await supabase
+      const { data: profileRow, error: profileSelectError } = await supabase
         .from("profiles")
         .select("account_type, slug")
         .eq("user_id", currentSession.user.id)
         .maybeSingle();
       const identity = resolveAccountIdentity({
-        profileExists: Boolean(profileRow),
+        profileExists: !profileSelectError && Boolean(profileRow),
         profileAccountType: (profileRow as { account_type?: string } | null | undefined)?.account_type,
         metadataAccountType: currentSession.user.user_metadata?.account_type,
       });
-      const nextAccountType: NavAccountType | null = identity.status === "resolved" ? identity.accountType : null;
+      const nextAccountType: NavAccountType | null =
+        !profileSelectError && identity.status === "resolved" ? identity.accountType : null;
       const rowTalentSlug = nextAccountType === "talent"
         ? (profileRow as { slug?: string | null } | null | undefined)?.slug ?? null
         : null;
@@ -126,12 +101,7 @@ export default function Navbar() {
       }
 
       if (mounted) {
-        rememberNavIdentity({
-          sessionPresent: true,
-          accountType: nextAccountType,
-          talentSlug: rowTalentSlug,
-          isSystemAdmin: lastResolvedNav.isSystemAdmin,
-        });
+        lastSessionPresent = true;
         setNotificationCount(count);
         setSessionPresent(true);
         setAccountType(nextAccountType);
@@ -150,13 +120,7 @@ export default function Navbar() {
         const payload = (await response.json().catch(() => null)) as { ok?: boolean; isSystemAdmin?: boolean } | null;
 
         if (mounted) {
-          const nextIsSystemAdmin = Boolean(payload?.ok && payload.isSystemAdmin);
-          rememberNavIdentity({
-            ...lastResolvedNav,
-            sessionPresent: true,
-            isSystemAdmin: nextIsSystemAdmin,
-          });
-          setIsSystemAdmin(nextIsSystemAdmin);
+          setIsSystemAdmin(Boolean(payload?.ok && payload.isSystemAdmin));
         }
       }
     }
