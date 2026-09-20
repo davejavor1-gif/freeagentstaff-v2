@@ -42,15 +42,28 @@ export function createUserServerSupabaseClient(accessToken: string): SupabaseCli
 }
 
 /**
- * PostgREST client that sends the user JWT as Bearer via supabase-js `accessToken`.
- * Do not call `.auth` on this client; that option disables the Auth namespace.
+ * PostgREST client that always sends the user JWT as Bearer.
+ * Do not call `.auth` on this client; `accessToken` disables the Auth namespace.
  */
 export function createUserDataClient(accessToken: string): SupabaseClient<Database, "public"> {
+  const supabaseKey = getPublishableKey();
+
   return createClient<Database, "public">(
     getSupabaseUrl(),
-    getPublishableKey(),
+    supabaseKey,
     {
       accessToken: async () => accessToken,
+      global: {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        fetch: (input: RequestInfo | URL, init?: RequestInit) => {
+          const headers = new Headers(init?.headers);
+          headers.set("Authorization", `Bearer ${accessToken}`);
+          headers.set("apikey", supabaseKey);
+          return fetch(input, { ...init, headers });
+        },
+      },
       auth: {
         persistSession: false,
         autoRefreshToken: false,
