@@ -172,26 +172,21 @@ export default function ResetPasswordPage() {
 
     setIsSubmitting(true);
     const recoverySession = await getSessionWithRetry();
-    const accessToken = recoverySession?.access_token;
-    if (!accessToken) {
+    if (!recoverySession) {
       setIsSubmitting(false);
       setStatus("A valid password recovery session is required.");
       return;
     }
 
-    const updateResponse = await fetch("/api/auth/update-password", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-      body: JSON.stringify({ password }),
-    });
-    const updatePayload = (await updateResponse.json().catch(() => null)) as { ok?: boolean; message?: string } | null;
+    const { error: updateError } = await supabase.auth.updateUser({ password });
     setIsSubmitting(false);
 
-    if (!updateResponse.ok || !updatePayload?.ok) {
-      setStatus(updatePayload?.message || "We couldn't update your password. Please try again.");
+    if (updateError) {
+      setStatus(
+        updateError.message === "Auth session missing!"
+          ? "A valid password recovery session is required."
+          : (updateError.message || "We couldn't update your password. Please try again."),
+      );
       return;
     }
 
