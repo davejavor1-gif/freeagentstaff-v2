@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import Navbar from "@/components/layout/Navbar";
+import { MetaPixel } from "@/components/MetaPixel";
 import { PwaRegister } from "../components/PwaRegister";
 import "./globals.css";
 
@@ -96,6 +98,9 @@ export default function RootLayout({
         <Navbar />
         {children}
         <PwaRegister />
+        <Suspense fallback={null}>
+          <MetaPixel />
+        </Suspense>
       </body>
     </html>
   );
