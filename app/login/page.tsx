@@ -10,6 +10,7 @@ import SignupBrandStory from "@/components/auth/SignupBrandStory";
 import { accountHomePath, resolveAccountIdentity } from "@/lib/account-identity";
 import { getPasswordPolicyError } from "@/lib/password-policy";
 import { buildCanonicalTalentColumns } from "@/lib/talent-profile-columns";
+import { trackTalentCompleteRegistration } from "@/components/MetaPixel";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
 import { PRIVACY_VERSION, TERMS_VERSION } from "@/lib/legal-versions";
 import type { AccountType, EmployerVerificationStatus, FreeAgentProfile } from "@/types/freeagent";
@@ -218,10 +219,12 @@ function LoginPageContent() {
         return;
       }
 
+      trackTalentCompleteRegistration();
       router.replace(accountType === "employer" ? "/onboarding/employer" : "/dashboard");
       return;
     }
 
+    trackTalentCompleteRegistration();
     setStatus("Sign-up successful. Check your email for confirmation if required, then complete your account in the dashboard.");
   };
 

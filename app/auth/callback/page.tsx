@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Footer from "@/components/layout/Footer";
 import { accountHomePath, parseAccountType, resolveAccountIdentity } from "@/lib/account-identity";
 import { buildCanonicalTalentColumns } from "@/lib/talent-profile-columns";
+import { trackTalentCompleteRegistration } from "@/components/MetaPixel";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
 import { PRIVACY_VERSION, TERMS_VERSION } from "@/lib/legal-versions";
 import type { AccountType, FreeAgentProfile } from "@/types/freeagent";
@@ -203,6 +204,10 @@ function AuthCallbackContent() {
         setStatus("We couldn't finish setting up your account. Please try again.");
         setIsSubmitting(false);
         return;
+      }
+
+      if (accountType === "talent") {
+        trackTalentCompleteRegistration();
       }
     }
 

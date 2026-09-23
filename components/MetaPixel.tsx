@@ -12,6 +12,14 @@ declare global {
   }
 }
 
+export function trackTalentCompleteRegistration() {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.fbq?.("track", "CompleteRegistration", { content_name: "Talent Registration" });
+}
+
 export function MetaPixel() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
