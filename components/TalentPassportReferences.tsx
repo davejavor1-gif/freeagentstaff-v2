@@ -32,13 +32,13 @@ export default function TalentPassportReferences({
       {references.length === 0 ? (
         <p className="mt-1 text-sm text-[#27405f]">No references available.</p>
       ) : (
-        <div className="mt-2 space-y-3">
+        <div className="mt-2 grid grid-cols-1 gap-3 md:grid-cols-2">
           {references.map((reference, index) => {
             const subtitle = roleLine(reference);
             return (
               <article
                 key={`${reference.refereeName}-${index}`}
-                className={index > 0 ? "border-t border-[#cda64d]/25 pt-3" : undefined}
+                className="rounded-[20px] border border-[#cda64d]/35 bg-[#fffaf0] px-4 py-3"
               >
                 <p className="font-semibold text-[#0f2744]">{reference.refereeName}</p>
                 {subtitle ? <p className="mt-0.5 text-sm text-[#27405f]">{subtitle}</p> : null}
