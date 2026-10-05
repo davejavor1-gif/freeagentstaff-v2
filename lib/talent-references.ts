@@ -8,7 +8,9 @@ import {
   hashTalentReferenceInvitationToken,
 } from "@/lib/talent-reference-token";
 import type { Json } from "@/types/supabase";
+import { loadPrivateAccess } from "@/lib/private-access";
 import type {
+  PassportTalentReference,
   TalentReferenceAnswers,
   TalentReferenceOwnerStatus,
   TalentReferenceOwnerView,
@@ -432,5 +434,73 @@ export async function setTalentOwnerReferenceSharing(
     referenceId: row.reference_id,
     shareWithConnectedEmployers: row.share_with_connected_employers,
     status: row.status,
+  };
+}
+
+function toOwnerPassportReference(row: TalentReferenceOwnerView): PassportTalentReference {
+  return {
+    refereeName: row.refereeName,
+    jobTitle: row.jobTitle,
+    company: row.company,
+    answers: row.answers,
+    shareWithConnectedEmployers: row.shareWithConnectedEmployers,
+  };
+}
+
+export async function listPassportTalentReferences(
+  accessToken: string | null | undefined,
+  slug: string,
+): Promise<{ ok: true; viewer: "owner" | "employer" | null; references: PassportTalentReference[] }> {
+  const empty = { ok: true as const, viewer: null, references: [] as PassportTalentReference[] };
+  const trimmedSlug = slug.trim();
+  if (!accessToken || !trimmedSlug) {
+    return empty;
+  }
+
+  const access = await loadPrivateAccess(accessToken, trimmedSlug);
+  if (!access.ok || !access.state) {
+    return empty;
+  }
+
+  if (access.state.isOwner || access.state.status === "owner_full") {
+    const listed = await listTalentOwnerReferences(accessToken);
+    if (!listed.ok) {
+      return empty;
+    }
+
+    return {
+      ok: true,
+      viewer: "owner",
+      references: listed.references
+        .filter((row) => row.status === "submitted")
+        .map(toOwnerPassportReference),
+    };
+  }
+
+  if (access.state.status !== "accepted") {
+    return empty;
+  }
+
+  const userClient = createUserServerSupabaseClient(accessToken);
+  const { data, error } = await ownerRpc<Array<{
+    referee_name: string;
+    job_title: string | null;
+    company: string | null;
+    answers: Json | null;
+  }>>(userClient, "list_connected_talent_references", { p_talent_slug: trimmedSlug });
+
+  if (error) {
+    return empty;
+  }
+
+  return {
+    ok: true,
+    viewer: "employer",
+    references: (data ?? []).map((row) => ({
+      refereeName: row.referee_name,
+      jobTitle: row.job_title,
+      company: row.company,
+      answers: parseTalentReferenceAnswers(row.answers),
+    })),
   };
 }

@@ -18,6 +18,7 @@ import Footer from "@/components/layout/Footer";
 import FreeAgentProBadge from "@/components/FreeAgentProBadge";
 import PassportFold from "@/components/PassportFold";
 import PassportProfileMedia from "@/components/PassportProfileMedia";
+import TalentPassportReferences from "@/components/TalentPassportReferences";
 import { canSharePublicPassport, getPublicPassportUrl } from "@/lib/passport-share";
 import { copyLinkedPassportLogo } from "@/lib/passport-share-clipboard";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
@@ -28,6 +29,7 @@ import type {
   PrivateAccessState,
 } from "@/types/private-access";
 import type { FreeAgentProfile } from "@/types/freeagent";
+import type { PassportTalentReference } from "@/types/talent-references";
 
 function accessLabel(status: PrivateAccessState["status"]) {
   if (status === "accepted") return "Access approved";
@@ -143,6 +145,8 @@ export default function TalentProfileExperience({
   const [linkCopied, setLinkCopied] = useState(false);
   const [emailCopyStatus, setEmailCopyStatus] = useState<"idle" | "rich" | "plain" | "error">("idle");
   const [shareInstructionTool, setShareInstructionTool] = useState<ShareInstructionTool>("word");
+  const [passportReferences, setPassportReferences] = useState<PassportTalentReference[]>([]);
+  const [passportReferencesViewer, setPassportReferencesViewer] = useState<"owner" | "employer" | null>(null);
 
   async function loadPrivateState(sessionToken: string) {
     const response = await fetch(
@@ -252,6 +256,50 @@ export default function TalentProfileExperience({
       mounted = false;
     };
   }, [demoProfile, slug]);
+
+  useEffect(() => {
+    if (demoProfile) return;
+    const status = payload?.privateAccess?.status;
+    if (status !== "accepted" && status !== "owner_full") {
+      return;
+    }
+
+    let mounted = true;
+    async function loadPassportReferences() {
+      const session = await getSessionWithRetry();
+      if (!session?.access_token) {
+        if (mounted) {
+          setPassportReferences([]);
+          setPassportReferencesViewer(null);
+        }
+        return;
+      }
+
+      const response = await fetch(`/api/talent/${encodeURIComponent(slug)}/references`, {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+        cache: "no-store",
+      });
+      const result = (await response.json().catch(() => null)) as {
+        ok?: boolean;
+        viewer?: "owner" | "employer" | null;
+        references?: PassportTalentReference[];
+      } | null;
+
+      if (!mounted) return;
+      if (result?.ok) {
+        setPassportReferences(result.references ?? []);
+        setPassportReferencesViewer(result.viewer === "owner" || result.viewer === "employer" ? result.viewer : null);
+      } else {
+        setPassportReferences([]);
+        setPassportReferencesViewer(null);
+      }
+    }
+
+    void loadPassportReferences();
+    return () => {
+      mounted = false;
+    };
+  }, [demoProfile, slug, payload?.privateAccess?.status]);
 
   const requestIntroduction = async () => {
     const session = await getSessionWithRetry();
@@ -800,6 +848,13 @@ export default function TalentProfileExperience({
                   )}
                 </div>
               </div>
+            ) : null}
+            {access &&
+            (access.status === "accepted" || access.status === "owner_full") ? (
+              <TalentPassportReferences
+                references={passportReferences}
+                viewer={access.isOwner ? "owner" : passportReferencesViewer}
+              />
             ) : null}
             {access?.isOwner && access.requests?.length ? (
               <div className="mt-6 space-y-3">

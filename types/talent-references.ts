@@ -33,3 +33,12 @@ export type TalentReferenceOwnerView = {
   createdAt: string;
   updatedAt: string;
 };
+
+/** Submitted-reference payload for Talent Passport private details. Never includes email or invitation fields. */
+export type PassportTalentReference = {
+  refereeName: string;
+  jobTitle: string | null;
+  company: string | null;
+  answers: TalentReferenceAnswers | null;
+  shareWithConnectedEmployers?: boolean;
+};

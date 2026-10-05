@@ -63,7 +63,7 @@ export default async function ReferenceInvitationPage({
 
   return (
     <>
-      <main className="flex-1 bg-[#F2E9D3] px-4 py-10 text-[#071426] sm:px-6">
+      <main className="flex-1 min-h-screen bg-[#08111F] px-4 py-10 text-[#071426] sm:px-6">
         <div className="mx-auto w-full max-w-xl rounded-[28px] border border-[#cda64d]/45 bg-[#fffaf0] p-5 shadow-[0_18px_45px_rgba(6,16,33,0.1)] sm:p-8">
           {body}
         </div>
