@@ -24,15 +24,24 @@ export function MetaPixel() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const isInitialPageView = useRef(true);
+  const skipTracking = pathname.startsWith("/reference/");
 
   useEffect(() => {
+    if (skipTracking) {
+      return;
+    }
+
     if (isInitialPageView.current) {
       isInitialPageView.current = false;
       return;
     }
 
     window.fbq?.("track", "PageView");
-  }, [pathname, searchParams]);
+  }, [pathname, searchParams, skipTracking]);
+
+  if (skipTracking) {
+    return null;
+  }
 
   return (
     <Script

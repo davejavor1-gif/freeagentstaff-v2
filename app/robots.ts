@@ -17,6 +17,7 @@ const privateDisallowRules = [
   "/employer/auth",
   "/forgot-password",
   "/reset-password",
+  "/reference/",
 ];
 
 export default function robots(): MetadataRoute.Robots {

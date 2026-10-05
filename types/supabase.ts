@@ -351,6 +351,72 @@ export interface EmployerTalentConnectionsUpdate {
   created_at?: string;
 }
 
+export type TalentReferenceStatus = "pending" | "submitted" | "cancelled";
+
+export interface TalentReferencesRow {
+  id: string;
+  talent_user_id: string;
+  referee_name: string;
+  job_title: string | null;
+  company: string | null;
+  relationship: string | null;
+  referee_email: string;
+  invitation_token_hash: string | null;
+  invitation_expires_at: string | null;
+  invitation_sent_at: string | null;
+  invitation_revoked_at: string | null;
+  invitation_last_attempt_at: string | null;
+  status: TalentReferenceStatus;
+  submitted_at: string | null;
+  answers: Json | null;
+  share_with_connected_employers: boolean;
+  talent_display_name: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TalentReferencesInsert {
+  talent_user_id: string;
+  referee_name: string;
+  job_title?: string | null;
+  company?: string | null;
+  relationship?: string | null;
+  referee_email: string;
+  invitation_token_hash?: string | null;
+  invitation_expires_at?: string | null;
+  invitation_sent_at?: string | null;
+  invitation_revoked_at?: string | null;
+  invitation_last_attempt_at?: string | null;
+  status?: TalentReferenceStatus;
+  submitted_at?: string | null;
+  answers?: Json | null;
+  share_with_connected_employers?: boolean;
+  talent_display_name: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface TalentReferencesUpdate {
+  talent_user_id?: string;
+  referee_name?: string;
+  job_title?: string | null;
+  company?: string | null;
+  relationship?: string | null;
+  referee_email?: string;
+  invitation_token_hash?: string | null;
+  invitation_expires_at?: string | null;
+  invitation_sent_at?: string | null;
+  invitation_revoked_at?: string | null;
+  invitation_last_attempt_at?: string | null;
+  status?: TalentReferenceStatus;
+  submitted_at?: string | null;
+  answers?: Json | null;
+  share_with_connected_employers?: boolean;
+  talent_display_name?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface NotificationsRow {
   id: string;
   recipient_user_id: string;
@@ -431,6 +497,11 @@ export interface Database {
         Row: EmployerTalentConnectionsRow;
         Insert: EmployerTalentConnectionsInsert;
         Update: EmployerTalentConnectionsUpdate;
+      };
+      talent_references: {
+        Row: TalentReferencesRow;
+        Insert: TalentReferencesInsert;
+        Update: TalentReferencesUpdate;
       };
       notifications: {
         Row: NotificationsRow;
@@ -812,6 +883,122 @@ export interface Database {
           resume_original_filename: string | null;
           resume_uploaded_at: string | null;
           resume_storage_path: string | null;
+        }>;
+      };
+      list_talent_references: {
+        Args: Record<string, never>;
+        Returns: Array<{
+          reference_id: string;
+          referee_name: string;
+          job_title: string | null;
+          company: string | null;
+          relationship: string | null;
+          referee_email: string;
+          status: TalentReferenceStatus;
+          invitation_expires_at: string | null;
+          invitation_sent_at: string | null;
+          invitation_revoked_at: string | null;
+          invitation_pending: boolean;
+          submitted_at: string | null;
+          answers: Json | null;
+          share_with_connected_employers: boolean;
+          talent_display_name: string;
+          created_at: string;
+          updated_at: string;
+        }>;
+      };
+      create_talent_reference: {
+        Args: {
+          p_referee_name: string;
+          p_job_title?: string | null;
+          p_company?: string | null;
+          p_relationship?: string | null;
+          p_referee_email?: string | null;
+        };
+        Returns: Array<{
+          reference_id: string;
+          referee_name: string;
+          job_title: string | null;
+          company: string | null;
+          relationship: string | null;
+          referee_email: string;
+          status: TalentReferenceStatus;
+          invitation_expires_at: string | null;
+          invitation_sent_at: string | null;
+          invitation_revoked_at: string | null;
+          invitation_pending: boolean;
+          submitted_at: string | null;
+          answers: Json | null;
+          share_with_connected_employers: boolean;
+          talent_display_name: string;
+          created_at: string;
+          updated_at: string;
+        }>;
+      };
+      talent_delete_reference: {
+        Args: { p_reference_id: string };
+        Returns: Array<{
+          success: boolean;
+          action: "cancelled" | "deleted";
+          reference_id: string;
+          status: TalentReferenceStatus;
+        }>;
+      };
+      talent_set_reference_sharing: {
+        Args: { p_reference_id: string; p_share: boolean };
+        Returns: Array<{
+          success: boolean;
+          reference_id: string;
+          status: TalentReferenceStatus;
+          share_with_connected_employers: boolean;
+        }>;
+      };
+      list_connected_talent_references: {
+        Args: { p_talent_slug: string };
+        Returns: Array<{
+          reference_id: string;
+          referee_name: string;
+          job_title: string | null;
+          company: string | null;
+          relationship: string | null;
+          talent_display_name: string;
+          submitted_at: string | null;
+          answers: Json | null;
+        }>;
+      };
+      service_prepare_talent_reference_invitation: {
+        Args: { p_reference_id: string; p_talent_user_id: string };
+        Returns: Array<{
+          success: boolean;
+          reference_id: string;
+        }>;
+      };
+      service_activate_talent_reference_invitation: {
+        Args: {
+          p_reference_id: string;
+          p_talent_user_id: string;
+          p_token_hash: string;
+          p_expires_at: string;
+        };
+        Returns: Array<{
+          success: boolean;
+          reference_id: string;
+          invitation_sent_at: string;
+          invitation_expires_at: string;
+        }>;
+      };
+      service_lookup_talent_reference_invitation: {
+        Args: { p_token_hash: string };
+        Returns: Array<{
+          invitation_state: "valid" | "expired" | "invalid";
+          talent_display_name: string | null;
+          invitation_expires_at: string | null;
+        }>;
+      };
+      service_submit_talent_reference: {
+        Args: { p_token_hash: string; p_answers: Json };
+        Returns: Array<{
+          success: boolean;
         }>;
       };
       submit_employer_verification: {

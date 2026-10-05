@@ -10,6 +10,7 @@ import { buildCanonicalTalentColumns, buildTalentProfileUpdateColumns } from "@/
 import { accountHomePath, resolveAccountIdentity } from "@/lib/account-identity";
 import { getSessionWithRetry, supabase } from "@/lib/supabase-client";
 import VideoIntroductionSection from "@/components/settings/VideoIntroductionSection";
+import TalentBuilderReferences from "@/components/TalentBuilderReferences";
 import Footer from "@/components/layout/Footer";
 import { availabilityToOpportunityStatus, normalizeAvailability, salaryExpectationOptions } from "@/lib/talent-profile-options";
 import { hasTalentProAccess, normalizeTalentSubscriptionSnapshot } from "@/lib/talent-subscription";
@@ -1451,6 +1452,12 @@ export default function BuilderPage() {
                 )}
                 {resumeError ? <p className="text-sm font-semibold text-rose-700">{resumeError}</p> : null}
               </div>
+
+              {session ? (
+                <div className={sectionClass("details", "")}>
+                  <TalentBuilderReferences accessToken={session.access_token} />
+                </div>
+              ) : null}
 
               <div className={sectionClass("privacy", "rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#2bd7ef] bg-[#fffaf0] p-4 text-sm leading-6 text-[#27405f] shadow-[0_10px_24px_rgba(7,20,38,0.08)]")}>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Privacy & visibility</p>
