@@ -1393,13 +1393,11 @@ export default function BuilderPage() {
               </div>
 
               <div className={sectionClass("details", "space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#651D2A] bg-[#fffaf0] p-4 shadow-[0_10px_24px_rgba(7,20,38,0.08)]")}>
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Contact details</p>
-                    <p className="mt-1 text-sm text-[#27405f]">Your contact email is only shared with employers when your connection permissions allow access.</p>
-                  </div>
+                <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Contact details</p>
                   <DestinationPill tone="passport" label="Passport · After connection" />
                 </div>
+                <p className="text-sm text-[#27405f]">Your contact email is only shared with employers when your connection permissions allow access.</p>
                 <label htmlFor="contactEmail" className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Contact email</label>
                 <input
                   id="contactEmail"
@@ -1423,13 +1421,11 @@ export default function BuilderPage() {
               </div>
 
               <div className={sectionClass("details", "space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#651D2A] bg-[#fffaf0] p-4 text-[#071426] shadow-[0_10px_24px_rgba(7,20,38,0.08)]")}>
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Resume</p>
-                    <p className="mt-1 text-sm text-[#27405f]">Private PDF, DOC, or DOCX files up to 10 MB.</p>
-                  </div>
+                <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">Resume</p>
                   <DestinationPill tone="passport" label="Passport · After connection" />
                 </div>
+                <p className="text-sm text-[#27405f]">Private PDF, DOC, or DOCX files up to 10 MB.</p>
                 {profile.resumeOriginalFilename ? (
                   <div className="space-y-3 rounded-2xl border border-[#cda64d]/35 bg-white/80 p-3">
                     <p className="whitespace-nowrap text-sm font-semibold uppercase tracking-[0.18em] text-[#AFF546]">Resume uploaded ✓</p>

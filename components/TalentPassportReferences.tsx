@@ -14,7 +14,7 @@ function AnswerBlock({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <dt className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#9a6d15]">{label}</dt>
-      <dd className="mt-1 whitespace-pre-wrap text-sm leading-6 text-[#0f2744]">{value}</dd>
+      <dd className="mt-0.5 whitespace-pre-wrap text-sm leading-5 text-[#0f2744]">{value}</dd>
     </div>
   );
 }
@@ -27,26 +27,26 @@ export default function TalentPassportReferences({
   viewer: "owner" | "employer" | null;
 }) {
   return (
-    <div className="mt-4 rounded-[20px] border border-[#cda64d]/35 bg-[#fffaf0] p-4">
+    <div className="mt-4 rounded-[20px] border border-[#cda64d]/35 bg-[#fffaf0] px-4 py-3">
       <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#9a6d15]">References</p>
       {references.length === 0 ? (
-        <p className="mt-2 text-sm text-[#27405f]">No references available.</p>
+        <p className="mt-1 text-sm text-[#27405f]">No references available.</p>
       ) : (
-        <div className="mt-4 space-y-5">
+        <div className="mt-2 space-y-3">
           {references.map((reference, index) => {
             const subtitle = roleLine(reference);
             return (
               <article
                 key={`${reference.refereeName}-${index}`}
-                className={index > 0 ? "border-t border-[#cda64d]/25 pt-5" : undefined}
+                className={index > 0 ? "border-t border-[#cda64d]/25 pt-3" : undefined}
               >
                 <p className="font-semibold text-[#0f2744]">{reference.refereeName}</p>
                 {subtitle ? <p className="mt-0.5 text-sm text-[#27405f]">{subtitle}</p> : null}
-                <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#4C8C15]">
+                <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#4C8C15]">
                   Referee submitted
                 </p>
                 {reference.answers ? (
-                  <dl className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <dl className="mt-2 grid gap-x-4 gap-y-1.5 sm:grid-cols-2">
                     <AnswerBlock
                       label="Professional relationship"
                       value={reference.answers.professionalRelationship}
@@ -57,10 +57,12 @@ export default function TalentPassportReferences({
                     </div>
                     <AnswerBlock label="Reliability" value={`${reference.answers.reliabilityRating} / 5`} />
                     <AnswerBlock label="Working with others" value={`${reference.answers.teamworkRating} / 5`} />
-                    <AnswerBlock
-                      label="Would work with them again"
-                      value={wouldWorkAgainLabel(reference.answers.wouldWorkAgain)}
-                    />
+                    <div className="sm:col-span-2">
+                      <AnswerBlock
+                        label="Would work with them again"
+                        value={wouldWorkAgainLabel(reference.answers.wouldWorkAgain)}
+                      />
+                    </div>
                     {reference.answers.additionalComments ? (
                       <div className="sm:col-span-2">
                         <AnswerBlock label="Additional comments" value={reference.answers.additionalComments} />
@@ -69,7 +71,7 @@ export default function TalentPassportReferences({
                   </dl>
                 ) : null}
                 {viewer === "owner" ? (
-                  <p className="mt-3 text-sm text-[#27405f]">
+                  <p className="mt-2 text-sm text-[#27405f]">
                     {reference.shareWithConnectedEmployers
                       ? "Shared with connected Employers"
                       : "Private — not shared with connected Employers"}

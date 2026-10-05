@@ -147,14 +147,12 @@ export default function TalentBuilderReferences({ accessToken }: { accessToken: 
 
   return (
     <div className="space-y-3 rounded-[20px] border border-[#0f2744]/15 border-t-4 border-t-[#651D2A] bg-[#fffaf0] p-4 text-[#071426] shadow-[0_10px_24px_rgba(7,20,38,0.08)]">
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">References</p>
-          <p className="mt-1 text-sm text-[#27405f]">Request professional references and keep them securely in your Talent Passport.</p>
-          <p className="mt-2 text-sm text-[#27405f]">References are private. Only references you choose to share become visible to Employers after you accept their introduction.</p>
-        </div>
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a6d15]">References</p>
         <DestinationPill label="Passport · After connection" />
       </div>
+      <p className="text-sm text-[#27405f]">Request professional references and keep them securely in your Talent Passport.</p>
+      <p className="text-sm text-[#27405f]">References are private. Only references you choose to share become visible to Employers after you accept their introduction.</p>
 
       <button
         type="button"
