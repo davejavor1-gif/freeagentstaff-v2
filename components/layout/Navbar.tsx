@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
@@ -37,7 +37,9 @@ export default function Navbar() {
   const [talentSlug, setTalentSlug] = useState<string | null>(null);
   const [isSystemAdmin, setIsSystemAdmin] = useState(false);
   const [sessionPresent, setSessionPresent] = useState(lastSessionPresent);
+  const [identityReady, setIdentityReady] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
+  const resolvedSessionUserId = useRef<string | null>(null);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -48,7 +50,9 @@ export default function Navbar() {
       if (!currentSession) {
         if (mounted) {
           lastSessionPresent = false;
+          resolvedSessionUserId.current = null;
           setSessionPresent(false);
+          setIdentityReady(true);
           setNotificationCount(0);
           setAccountType(null);
           setTalentSlug(null);
@@ -60,9 +64,13 @@ export default function Navbar() {
       if (mounted) {
         lastSessionPresent = true;
         setSessionPresent(true);
-        setAccountType(null);
-        setTalentSlug(null);
-        setIsSystemAdmin(false);
+        if (resolvedSessionUserId.current !== currentSession.user.id) {
+          resolvedSessionUserId.current = null;
+          setAccountType(null);
+          setTalentSlug(null);
+          setIsSystemAdmin(false);
+          setIdentityReady(false);
+        }
       }
 
       const { data: profileRow, error: profileSelectError } = await supabase
@@ -102,10 +110,12 @@ export default function Navbar() {
 
       if (mounted) {
         lastSessionPresent = true;
+        resolvedSessionUserId.current = currentSession.user.id;
         setNotificationCount(count);
         setSessionPresent(true);
         setAccountType(nextAccountType);
         setTalentSlug(rowTalentSlug);
+        setIdentityReady(true);
       }
 
       if (currentSession.access_token) {
@@ -155,10 +165,13 @@ export default function Navbar() {
     };
   }, []);
 
-  const isEmployerSession = sessionPresent && accountType === "employer";
-  const isAdminSession = sessionPresent && isSystemAdmin;
-  const isTalentSession = sessionPresent && accountType === "talent";
-  const visibleNavItems = isEmployerSession
+  const isEmployerSession = sessionPresent && identityReady && accountType === "employer";
+  const isAdminSession = sessionPresent && identityReady && isSystemAdmin;
+  const isTalentSession = sessionPresent && identityReady && accountType === "talent";
+  const identityPending = sessionPresent && !identityReady;
+  const visibleNavItems = identityPending
+    ? []
+    : isEmployerSession
     ? [
       { label: "Dashboard", href: "/dashboard" },
         { label: "Find talent", href: "/find-talent" },
@@ -194,7 +207,7 @@ export default function Navbar() {
   }
 
   return (
-    <header className="border-b border-[#e8d9b6] bg-[#f7e8c6] text-[#071321]">
+    <header className="border-b border-[#e8d9b6] bg-[#f7e8c6] text-[#071321]" aria-busy={identityPending}>
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-1">
         <Link href="/" className="inline-flex items-center">
           <Image
@@ -207,7 +220,7 @@ export default function Navbar() {
           />
         </Link>
 
-        <nav className="hidden items-center gap-8 text-[1rem] font-semibold md:flex">
+        <nav className="hidden min-h-11 items-center gap-8 text-[1rem] font-semibold md:flex" aria-hidden={identityPending}>
           {visibleNavItems.map((item) => {
             const isActiveLink = pathname === item.href;
             const isTalentActive = isTalentSession && isActiveLink;
@@ -242,7 +255,7 @@ export default function Navbar() {
         </nav>
 
         <div className="flex items-center gap-3">
-          {sessionPresent ? (
+          {sessionPresent && identityReady ? (
             <Link
               href="/notifications"
               className={`hidden items-center gap-1.5 rounded-full px-3 py-2 transition sm:inline-flex ${isEmployerSession ? "bg-[#2bd7ef] hover:brightness-105" : "bg-[#aff546] hover:brightness-105"}`}
