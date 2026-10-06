@@ -17,7 +17,7 @@ export default function PrivacyPage() {
       titleColor="#AFF546"
       description="How Freeagentstaff collects, uses, and protects information across the platform."
     >
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#9a6d15]">Australia &middot; Effective: 17 September 2026</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#9a6d15]">Australia &middot; Effective: 7 October 2026</p>
           <div className="mt-8 space-y-7 text-sm leading-7 text-[#f7ebcf] sm:text-base">
             <section className="rounded-2xl border border-[#cda64d]/40 bg-[#f7ebcf]/[0.06] p-5 sm:p-6">
               <h2 className="text-lg font-bold text-[#f7ebcf]">Key points</h2>
@@ -26,6 +26,7 @@ export default function PrivacyPage() {
                 <li>Talent choose what information they add to their FreeAgent Card and Talent Passport and can control how their profile appears through available Privacy &amp; Visibility settings.</li>
                 <li>The three visibility settings are Public, Employer Network and Confidential. A published Public Talent Passport may be viewed without a FreeAgentStaff account through its public Passport URL.</li>
                 <li>Private contact details and private files are not automatically made available to employers simply because an employer can discover or view a Talent profile. Access may be provided when a Talent accepts an introduction, establishes a connection, or otherwise authorises access through FreeAgentStaff.</li>
+                <li>Talent may invite professional referees. Professional references are private by default. A submitted reference is only available to an Employer when the Talent explicitly enables sharing for that reference and the Employer has the required active or accepted connection. Referee email addresses are not displayed to Employers through the professional references feature.</li>
                 <li>Employers must be verified before accessing employer discovery features where verification is required by FreeAgentStaff.</li>
                 <li>FreeAgentStaff does not sell personal information.</li>
                 <li>Subscription payments are processed through third-party payment providers such as Stripe. FreeAgentStaff does not store full payment card numbers.</li>
@@ -45,7 +46,7 @@ export default function PrivacyPage() {
                 FreeAgentStaff provides a professional discovery platform that allows Talent to create a FreeAgent Card and Talent Passport and allows eligible employers to discover, save and connect with Talent.
               </p>
               <p className="mt-2">
-                This Privacy Policy explains how we collect, hold, use, disclose and protect personal information when you use FreeAgentStaff, including our website, accounts, Talent profiles, employer tools and related services.
+                This Privacy Policy explains how we collect, hold, use, disclose and protect personal information when you use or interact with FreeAgentStaff, including our website, accounts, Talent profiles, employer tools, professional-reference invitations and related services.
               </p>
               <p className="mt-2">
                 We handle personal information in accordance with applicable privacy laws, including the Privacy Act 1988 (Cth) and the Australian Privacy Principles where they apply.
@@ -54,7 +55,10 @@ export default function PrivacyPage() {
                 This Privacy Policy should be read together with our <a className="font-semibold text-[#f2cc63] underline underline-offset-4" href="/terms">Terms &amp; Conditions</a> and any specific notice displayed when information is collected.
               </p>
               <p className="mt-2">
-                Some parts of FreeAgentStaff can be viewed without creating an account. Core Talent and Employer features require an account because we need to identify users, operate profile and connection features, protect users and maintain the integrity of the platform.
+                This Privacy Policy applies to people who use FreeAgentStaff with an account and to people who interact with FreeAgentStaff without an account, including professional referees who respond to a reference invitation.
+              </p>
+              <p className="mt-2">
+                Some parts of FreeAgentStaff can be viewed without creating an account. Professional referees may respond to a reference invitation without creating a FreeAgentStaff account. Core Talent and Employer features require an account because we need to identify users, operate profile and connection features, protect users and maintain the integrity of the platform.
               </p>
             </section>
 
@@ -68,6 +72,15 @@ export default function PrivacyPage() {
               </p>
               <p className="mt-2">
                 Talent may also upload a resume, video introduction or other files where those features are available.
+              </p>
+              <p className="mt-2">
+                Talent may provide information about a professional referee in order to request a professional reference, including the referee&apos;s name, job title, company or organisation, professional relationship and email address. FreeAgentStaff may therefore collect personal information about a referee from the Talent before that referee directly interacts with FreeAgentStaff.
+              </p>
+              <p className="mt-2">
+                A referee does not need a FreeAgentStaff account. A referee who uses a secure invitation link may submit a professional reference themselves. Information supplied directly by the referee may include professional relationship, duration worked together, key strengths, ratings such as reliability and teamwork or working-with-others, whether they would work with the Talent again, optional additional comments, confirmation that the reference reflects their own professional experience, and associated submission information.
+              </p>
+              <p className="mt-2">
+                We may also hold operational and technical information generated through the invitation and reference process, such as invitation status, invitation sent or attempt timestamps, invitation expiry or revocation information, submission status, submission timestamp, sharing status and related security or support records.
               </p>
               <p className="mt-2">
                 We may collect information about the way a Talent profile is configured, including whether the Talent has selected Public, Employer Network or Confidential visibility, the Talent&apos;s current opportunity status and whether the Talent has enabled Rockstar availability for one-off shifts.
@@ -104,7 +117,7 @@ export default function PrivacyPage() {
                 Talent should not include information in a discoverable profile that they do not want available to the audience permitted by their selected visibility settings.
               </p>
               <p className="mt-2">
-                Selecting Public does not make a Talent&apos;s entire FreeAgentStaff account public. Only information designated as part of the public Talent Passport may be displayed publicly. Account or login email, private contact information, resume files, billing or subscription information, blocked companies, internal identifiers, authentication information, private account settings, connection-gated information and other information designated as private remain subject to the applicable privacy and access controls.
+                Selecting Public does not make a Talent&apos;s entire FreeAgentStaff account public. Only information designated as part of the public Talent Passport may be displayed publicly. Account or login email, private contact information, resume files, professional references, billing or subscription information, blocked companies, internal identifiers, authentication information, private account settings, connection-gated information and other information designated as private remain subject to the applicable privacy and access controls.
               </p>
             </section>
 
@@ -157,7 +170,10 @@ export default function PrivacyPage() {
                 Where the Talent is using Confidential visibility, accepting an introduction also reveals information that was previously withheld or anonymised, including the Talent&apos;s name, profile photo, location, professional title, summary, current employer, career information and introduction video where available.
               </p>
               <p className="mt-2">
-                No further approval step is required after the Talent accepts the introduction.
+                No further approval step is required after the Talent accepts the introduction for information that automatically becomes available through an accepted connection, such as the Talent&apos;s identity details, contact email and, where uploaded, resume.
+              </p>
+              <p className="mt-2">
+                Professional references are treated separately. Accepting an introduction or creating a connection does not automatically share professional references with that Employer. An Employer can see a submitted professional reference only if the Talent has explicitly enabled sharing for that particular reference and the Employer has the required active or accepted connection, as described in section 7.
               </p>
               <p className="mt-2">
                 A Talent may end a connection using available platform controls. Ending a connection removes future access within FreeAgentStaff in accordance with the platform&apos;s current rules, but may not remove information an employer lawfully obtained or separately retained before the connection ended.
@@ -179,6 +195,9 @@ export default function PrivacyPage() {
                 Once a Talent accepts an introduction and an active connection is created, the Talent&apos;s resume, where uploaded, becomes accessible to that connected employer automatically without a further approval step.
               </p>
               <p className="mt-2">
+                Professional references are not resume files and are not automatically made available through an accepted connection. They are described in section 7.
+              </p>
+              <p className="mt-2">
                 Other supported private files, where available, are made accessible according to the connection and access rules implemented by FreeAgentStaff.
               </p>
               <p className="mt-2">
@@ -188,7 +207,7 @@ export default function PrivacyPage() {
                 General upload fields should not be used to provide unnecessary sensitive information such as tax file numbers, bank account details, complete identity documents, health records or unrelated personal information.
               </p>
               <p className="mt-2">
-                Unless FreeAgentStaff expressly states that a document or credential has been independently verified, uploaded material should be treated as information supplied by the Talent.
+                Unless FreeAgentStaff expressly states that a document or credential has been independently verified, uploaded material should be treated as information supplied by the Talent. Professional references submitted through the invitation flow are treated as information submitted by the referee, as described in section 7.
               </p>
               <p className="mt-2">
                 Employers remain responsible for conducting any checks required before making an employment decision.
@@ -196,7 +215,38 @@ export default function PrivacyPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-[#f7ebcf]">7. Employer verification</h2>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">7. Professional references</h2>
+              <p className="mt-2">
+                Talent may invite a professional referee to submit a professional reference through FreeAgentStaff. A referee does not need a FreeAgentStaff account.
+              </p>
+              <p className="mt-2">
+                Talent may provide referee details, including name, job title, company or organisation, professional relationship and email address, so that FreeAgentStaff can send and manage a reference invitation. FreeAgentStaff uses the referee email address to operate the invitation and reference process.
+              </p>
+              <p className="mt-2">
+                A referee who receives a secure invitation link may submit a professional reference themselves. That submission may include professional relationship, duration worked together, key strengths, ratings, whether they would work with the Talent again, optional additional comments, confirmation that the reference reflects their own professional experience, and associated submission information. FreeAgentStaff may also hold operational information relating to the invitation or reference, such as invitation status, sent or attempt timestamps, expiry or revocation information, submission status, submission timestamp, sharing status and related security or support records.
+              </p>
+              <p className="mt-2">
+                We use professional-reference information only as reasonably necessary to send and manage reference invitations; receive, store and display submitted references; allow Talent to manage their references; apply Talent sharing choices; provide access to eligible connected Employers where authorised; maintain security, prevent misuse and support or audit the feature; and comply with legal obligations.
+              </p>
+              <p className="mt-2">
+                Professional references are not public and do not appear on a public Talent Passport. Pending invitations are not shown to Employers. A submitted reference is private by default.
+              </p>
+              <p className="mt-2">
+                Talent can view and manage their submitted references using the available platform controls, including choosing whether to share an individual submitted reference and stopping sharing. An Employer can see a submitted reference only where the Talent has explicitly enabled sharing for that reference and the Employer has the required active or accepted connection with that Talent. Referee email addresses are not displayed to Employers through the professional references feature.
+              </p>
+              <p className="mt-2">
+                Ending or removing the relevant connection removes the Employer&apos;s future in-platform access to the reference in accordance with the platform&apos;s existing connection rules. Stopping sharing or ending a connection does not necessarily retrieve copies of information that an Employer lawfully copied or retained while access was authorised.
+              </p>
+              <p className="mt-2">
+                The platform may label a submitted reference as &quot;Referee submitted&quot;. That label means the response was submitted through the FreeAgentStaff reference invitation flow. It does not mean that FreeAgentStaff has independently verified, authenticated or checked the referee or the reference.
+              </p>
+              <p className="mt-2">
+                Unless FreeAgentStaff expressly states otherwise, FreeAgentStaff does not independently verify the referee&apos;s identity, employment or position, relationship with the Talent, the truth or completeness of their answers, or the authenticity or accuracy of statements in the reference. Employers remain responsible for appropriate due diligence, including any independent reference checking they consider necessary.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">8. Employer verification</h2>
               <p className="mt-2">
                 FreeAgentStaff may require employers to complete business verification before accessing Talent discovery or other employer features.
               </p>
@@ -215,12 +265,12 @@ export default function PrivacyPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-[#f7ebcf]">8. How we use personal information</h2>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">9. How we use personal information</h2>
               <p className="mt-2">
                 We use personal information where reasonably necessary to operate, secure and improve FreeAgentStaff.
               </p>
               <p className="mt-2">
-                This includes creating and managing accounts; creating and displaying FreeAgent Cards and Talent Passports; applying Privacy &amp; Visibility settings; allowing eligible employers to search for and discover Talent; operating saved Talent and shortlist functionality; processing introductions and connections; providing authorised access to contact information or private files; verifying employer accounts; managing subscriptions and payments; providing customer support; sending account, security and service communications; preventing fraud, misuse and unauthorised access; maintaining security and audit records; analysing and improving platform performance; enforcing our <a className="font-semibold text-[#f2cc63] underline underline-offset-4" href="/terms">Terms &amp; Conditions</a>; and complying with legal obligations.
+                This includes creating and managing accounts; creating and displaying FreeAgent Cards and Talent Passports; applying Privacy &amp; Visibility settings; allowing eligible employers to search for and discover Talent; operating saved Talent and shortlist functionality; processing introductions and connections; providing authorised access to contact information or private files; operating the professional references feature, including sending transactional reference invitations; applying Talent sharing choices for professional references; verifying employer accounts; managing subscriptions and payments; providing customer support; sending account, security and service communications; preventing fraud, misuse and unauthorised access; maintaining security and audit records; analysing and improving platform performance; enforcing our <a className="font-semibold text-[#f2cc63] underline underline-offset-4" href="/terms">Terms &amp; Conditions</a>; and complying with legal obligations.
               </p>
               <p className="mt-2">
                 We will not use a Talent&apos;s private resume or other private files for unrelated advertising or public promotion without an appropriate basis or permission.
@@ -228,9 +278,9 @@ export default function PrivacyPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-[#f7ebcf]">9. Who we disclose information to</h2>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">10. Who we disclose information to</h2>
               <p className="mt-2">
-                Information may be disclosed between Talent and Employers where reasonably necessary to operate FreeAgentStaff and according to the relevant Privacy &amp; Visibility, introduction and connection rules. Where a Talent has selected Public visibility and published their Talent Passport, information designated as part of that public Passport may also be disclosed to members of the public who access its public URL. This is a disclosure initiated through the Talent&apos;s visibility choice, not a sale of personal information.
+                Information may be disclosed between Talent and Employers where reasonably necessary to operate FreeAgentStaff and according to the relevant Privacy &amp; Visibility, introduction and connection rules. Where a Talent has selected Public visibility and published their Talent Passport, information designated as part of that public Passport may also be disclosed to members of the public who access its public URL. This is a disclosure initiated through the Talent&apos;s visibility choice, not a sale of personal information. Professional references are not publicly disclosed through a public Talent Passport.
               </p>
               <p className="mt-2">
                 Employer Network information remains restricted according to the applicable employer access rules, and Confidential information remains governed by the existing Confidential discovery, introduction, connection and identity-reveal model.
@@ -242,7 +292,10 @@ export default function PrivacyPage() {
                 FreeAgentStaff may provide tools that help Talent copy their Passport URL, download a Passport logo or prepare or copy linked Passport content for supported applications. Compatibility with every browser, email client, résumé editor, document editor, website or other third-party application is not guaranteed. Third-party services are governed by their own functionality and terms.
               </p>
               <p className="mt-2">
-                We may also provide information to trusted service providers that help us operate the platform, including providers involved in hosting, databases, file storage, video delivery, website infrastructure, payment processing, email delivery, security, fraud prevention, analytics, customer support and professional services.
+                Submitted professional references are disclosed only according to the Professional references section of this Policy. An eligible connected Employer may see a submitted reference only where the Talent has explicitly enabled sharing for that reference and the required connection exists. Referee email addresses are not displayed to Employers through the professional references feature.
+              </p>
+              <p className="mt-2">
+                We may also provide information to trusted service providers that help us operate the platform, including providers involved in hosting, databases, file storage, video delivery, website infrastructure, payment processing, email delivery (including sending professional-reference invitations), security, fraud prevention, analytics, customer support and professional services.
               </p>
               <p className="mt-2">
                 These providers are only given access to information reasonably necessary for the services they provide, subject to their own terms, privacy obligations and applicable contractual or security controls.
@@ -259,7 +312,7 @@ export default function PrivacyPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-[#f7ebcf]">10. Payments and Stripe</h2>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">11. Payments and Stripe</h2>
               <p className="mt-2">
                 Paid FreeAgentStaff services may be processed through Stripe or another payment provider.
               </p>
@@ -275,7 +328,7 @@ export default function PrivacyPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-[#f7ebcf]">11. Cookies, analytics and platform information</h2>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">12. Cookies, analytics and platform information</h2>
               <p className="mt-2">
                 FreeAgentStaff may use cookies and similar technologies to maintain sessions, secure accounts, remember preferences, understand platform usage, measure performance and improve the service.
               </p>
@@ -286,7 +339,7 @@ export default function PrivacyPage() {
                 Where advertising or conversion measurement tools are used, they may receive technical information such as device identifiers, cookie identifiers, IP address, browser information, pages viewed and actions taken.
               </p>
               <p className="mt-2">
-                We do not provide private Talent resumes or private connected files to advertising providers for advertising purposes.
+                We do not provide private Talent resumes, professional references or private connected files to advertising providers for advertising purposes.
               </p>
               <p className="mt-2">
                 Users may be able to manage cookies through browser settings and any preference tools provided by FreeAgentStaff. Blocking essential cookies may prevent some platform functionality from working correctly.
@@ -294,9 +347,9 @@ export default function PrivacyPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-[#f7ebcf]">12. Security</h2>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">13. Security</h2>
               <p className="mt-2">
-                FreeAgentStaff takes reasonable technical and organisational measures to protect personal information against misuse, interference, loss and unauthorised access, modification or disclosure.
+                FreeAgentStaff takes reasonable technical and organisational measures to protect personal information, including professional-reference information, against misuse, interference, loss and unauthorised access, modification or disclosure.
               </p>
               <p className="mt-2">
                 Measures may include secure transmission, authentication controls, database and storage access controls, restrictions on private files, logging, monitoring, backups, security reviews and measures designed to detect suspicious or unauthorised activity.
@@ -310,7 +363,7 @@ export default function PrivacyPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-[#f7ebcf]">13. International processing</h2>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">14. International processing</h2>
               <p className="mt-2">
                 FreeAgentStaff is operated from Australia but may use technology providers that store, process or access information in other countries.
               </p>
@@ -323,7 +376,7 @@ export default function PrivacyPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-[#f7ebcf]">14. Retention, account closure and deletion</h2>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">15. Retention, account closure and deletion</h2>
               <p className="mt-2">
                 We retain personal information only for as long as reasonably necessary for the purposes for which it was collected, related legitimate purposes, fraud and security prevention, dispute resolution, legal claims or applicable record-keeping requirements.
               </p>
@@ -331,7 +384,10 @@ export default function PrivacyPage() {
                 Account and profile information may be retained while an account is active and for a reasonable period after account closure where required to complete deletion, protect the platform, resolve disputes or comply with legal obligations.
               </p>
               <p className="mt-2">
-                Security, audit, payment, introduction, connection and permission records may sometimes be retained after related profile information is removed where reasonably necessary for legitimate security, compliance or dispute-resolution purposes.
+                Security, audit, payment, introduction, connection, professional-reference invitation and permission records may sometimes be retained after related profile information is removed where reasonably necessary for legitimate security, compliance or dispute-resolution purposes.
+              </p>
+              <p className="mt-2">
+                Professional-reference and invitation information may be retained for as long as reasonably necessary to operate the professional references feature and for legitimate security, audit, dispute-resolution or legal purposes. Deleting a reference or withdrawing sharing does not necessarily delete copies of information that an Employer lawfully obtained, downloaded or separately retained while access was authorised.
               </p>
               <p className="mt-2">
                 Backups may temporarily retain deleted information until they are overwritten through normal backup processes.
@@ -345,7 +401,7 @@ export default function PrivacyPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-[#f7ebcf]">15. Access and correction</h2>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">16. Access and correction</h2>
               <p className="mt-2">
                 You may request access to personal information FreeAgentStaff holds about you and ask us to correct information that is inaccurate, incomplete, out of date, irrelevant or misleading.
               </p>
@@ -356,6 +412,9 @@ export default function PrivacyPage() {
                 You may also contact us at <a className="font-semibold text-[#f2cc63] underline underline-offset-4" href="mailto:support@freeagentstaff.com">support@freeagentstaff.com</a> regarding access or correction of your personal information.
               </p>
               <p className="mt-2">
+                This includes professional referees who do not have a FreeAgentStaff account. A referee may contact <a className="font-semibold text-[#f2cc63] underline underline-offset-4" href="mailto:support@freeagentstaff.com">support@freeagentstaff.com</a> to request access to or correction of personal information FreeAgentStaff holds about them, subject to applicable law and identity verification. A referee cannot edit a submitted reference through a FreeAgentStaff account, and Talent cannot edit answers submitted by a referee through the reference invitation flow.
+              </p>
+              <p className="mt-2">
                 We may need to verify your identity before providing access or making certain changes.
               </p>
               <p className="mt-2">
@@ -364,7 +423,7 @@ export default function PrivacyPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-[#f7ebcf]">16. Blocking employers</h2>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">17. Blocking employers</h2>
               <p className="mt-2">
                 FreeAgentStaff may allow Talent to block particular companies, domains or employer identities through Privacy &amp; Visibility controls.
               </p>
@@ -377,7 +436,7 @@ export default function PrivacyPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-[#f7ebcf]">17. Marketing communications</h2>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">18. Marketing communications</h2>
               <p className="mt-2">
                 FreeAgentStaff may send information about platform features, services or updates where permitted by law.
               </p>
@@ -385,12 +444,12 @@ export default function PrivacyPage() {
                 Marketing messages will include an unsubscribe or opt-out mechanism where required.
               </p>
               <p className="mt-2">
-                Operational communications concerning your account, security, subscription, introduction, connection or important service changes are not marketing communications and may still be sent where necessary to operate your account.
+                Operational communications concerning your account, security, subscription, introduction, connection, professional-reference invitation or important service changes are not marketing communications and may still be sent where necessary to operate the relevant service.
               </p>
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-[#f7ebcf]">18. Privacy complaints</h2>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">19. Privacy complaints</h2>
               <p className="mt-2">
                 If you believe FreeAgentStaff has mishandled your personal information, please contact the Privacy Officer at <a className="font-semibold text-[#f2cc63] underline underline-offset-4" href="mailto:support@freeagentstaff.com">support@freeagentstaff.com</a>.
               </p>
@@ -406,7 +465,7 @@ export default function PrivacyPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-[#f7ebcf]">19. Data breaches</h2>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">20. Data breaches</h2>
               <p className="mt-2">
                 FreeAgentStaff maintains processes for responding to suspected data breaches.
               </p>
@@ -416,7 +475,7 @@ export default function PrivacyPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-[#f7ebcf]">20. Changes to this Privacy Policy</h2>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">21. Changes to this Privacy Policy</h2>
               <p className="mt-2">
                 We may update this Privacy Policy where our products, technology, legal obligations, security practices or operations change.
               </p>
@@ -432,7 +491,7 @@ export default function PrivacyPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-[#f7ebcf]">21. Contact us</h2>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">22. Contact us</h2>
               <p className="mt-3 font-semibold text-[#f7ebcf]">Privacy Officer</p>
               <p className="mt-1 font-semibold text-[#f7ebcf]">Freeagentstaff</p>
               <p className="mt-1">ABN 26 572 935 109</p>

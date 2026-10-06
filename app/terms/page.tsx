@@ -17,7 +17,7 @@ export default function TermsPage() {
       titleColor="#2BD7EF"
       description="The terms that guide access to and use of the Freeagentstaff platform."
     >
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#9a6d15]">Last updated: 17 September 2026</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#9a6d15]">Last updated: 7 October 2026</p>
           <div className="mt-8 space-y-7 text-sm leading-7 text-[#f7ebcf] sm:text-base">
             <section>
               <h2 className="text-lg font-bold text-[#f7ebcf]">1. Who we are and what we do</h2>
@@ -28,7 +28,8 @@ export default function TermsPage() {
                 <li>an employer of Talent;</li>
                 <li>a recruiter or employment agency acting on behalf of Talent or Employers;</li>
                 <li>a labour hire provider;</li>
-                <li>a payroll or workforce management provider; or</li>
+                <li>a payroll or workforce management provider;</li>
+                <li>a reference-checking or background-checking provider; or</li>
                 <li>a legal, employment, tax or financial adviser.</li>
               </ul>
               <p className="mt-2">1.4 We do not employ Talent and do not guarantee:</p>
@@ -43,7 +44,7 @@ export default function TermsPage() {
                 <li>any particular hiring or career outcome.</li>
               </ul>
               <p className="mt-2">1.5 Any employment, engagement, interview, offer or other arrangement arising between Talent and an Employer is a matter between those parties.</p>
-              <p className="mt-2">1.6 By creating an account or using the platform, you agree to these Terms.</p>
+              <p className="mt-2">1.6 By creating an account, submitting a professional reference or otherwise using the platform, you agree to these Terms.</p>
               <p className="mt-2">1.7 If you use FreeAgentStaff on behalf of a business or organisation, you confirm that you are authorised to act for that business or organisation and to agree to these Terms on its behalf.</p>
               <p className="mt-2">1.8 Our <Link className="font-semibold text-[#f2cc63] underline underline-offset-4" href="/privacy">Privacy Policy</Link> explains how we collect, use, disclose and protect personal information and should be read together with these Terms.</p>
             </section>
@@ -72,12 +73,13 @@ export default function TermsPage() {
                 <li>employment preferences;</li>
                 <li>availability or opportunity status;</li>
                 <li>a video introduction;</li>
-                <li>a resume; and</li>
+                <li>a resume;</li>
+                <li>professional references; and</li>
                 <li>other supported professional information or files.</li>
               </ul>
               <p className="mt-2">3.3 Talent are responsible for the accuracy of the information they provide.</p>
               <p className="mt-2">3.4 Talent must not deliberately provide false, misleading, fraudulent or impersonated information.</p>
-              <p className="mt-2">3.5 Unless FreeAgentStaff expressly states that information, a qualification or a document has been independently verified, information appearing on a Talent profile should be treated as information supplied by the Talent.</p>
+              <p className="mt-2">3.5 Unless FreeAgentStaff expressly states that information, a qualification or a document has been independently verified, information appearing on a Talent profile should be treated as information supplied by the Talent. A professional reference submitted through the invitation flow described in section 11 is treated as information submitted by the referee, not as information independently verified by FreeAgentStaff.</p>
               <p className="mt-2">3.6 Talent are responsible for considering whether information they choose to include is appropriate for display to the audience permitted by their selected visibility setting.</p>
             </section>
 
@@ -91,7 +93,7 @@ export default function TermsPage() {
                 <li>Confidential.</li>
               </ul>
               <p className="mt-2">4.3 If a Talent selects Public visibility and publishes their Talent Passport, the public Talent Passport can be viewed without signing into FreeAgentStaff. FreeAgentStaff may provide a unique public Passport URL, such as <span className="break-all">https://freeagentstaff.com/talent/[slug]</span>, which the Talent may share outside FreeAgentStaff, including through a resume or CV, cover letter, email signature, website, portfolio, professional communication or another appropriate channel.</p>
-              <p className="mt-2">4.4 A public Talent Passport includes only information designated by FreeAgentStaff as part of the public Talent Passport. Public visibility does not automatically make account email, private contact information, resume files, internal identifiers, billing or subscription information, blocked-company information, private account settings, connection-gated information or other information designated as private publicly available.</p>
+              <p className="mt-2">4.4 A public Talent Passport includes only information designated by FreeAgentStaff as part of the public Talent Passport. Public visibility does not automatically make account email, private contact information, resume files, professional references, internal identifiers, billing or subscription information, blocked-company information, private account settings, connection-gated information or other information designated as private publicly available.</p>
               <p className="mt-2">4.5 Employer Network visibility is intended for visibility within the eligible or verified FreeAgentStaff employer network and remains subject to the platform&apos;s employer verification, subscription and access rules. It is not intended to provide anonymous public access to a Talent Passport.</p>
               <p className="mt-2">4.6 Talent can indicate an opportunity status such as:</p>
               <ul className="mt-2 list-disc space-y-1 pl-5">
@@ -116,6 +118,7 @@ export default function TermsPage() {
               <p className="mt-2">5.4 This includes the Talent&apos;s name, profile photograph, location, professional title, summary, current employer, career information, introduction video, contact information and resume where available.</p>
               <p className="mt-2">5.5 No separate private-access approval is required after the Talent accepts the introduction where the information is made available as part of an active connection.</p>
               <p className="mt-2">5.6 Talent should therefore only accept an introduction where they are comfortable establishing a connection with that Employer.</p>
+              <p className="mt-2">5.7 Professional references are not automatically unveiled as part of a Confidential connection. They remain subject to section 11.</p>
             </section>
 
             <section>
@@ -159,7 +162,7 @@ export default function TermsPage() {
                 <li>use Talent information for purposes unrelated to genuine professional or employment opportunities.</li>
               </ul>
               <p className="mt-2">7.3 Employers are responsible for conducting their own assessment and due diligence before interviewing, engaging or employing a Talent.</p>
-              <p className="mt-2">7.4 FreeAgentStaff does not guarantee the identity, qualifications, experience, suitability, availability or right to work of any Talent unless a particular item is expressly stated to have been verified by FreeAgentStaff or an approved verification provider.</p>
+              <p className="mt-2">7.4 FreeAgentStaff does not guarantee the identity, qualifications, experience, professional references, suitability, availability or right to work of any Talent unless a particular item is expressly stated to have been verified by FreeAgentStaff or an approved verification provider.</p>
               <p className="mt-2">7.5 Employers remain responsible for any checks required by law or reasonably appropriate for a role.</p>
               <p className="mt-2">7.6 FreeAgentStaff may offer a Short Stay access option that provides a verified Employer, subject to the Employer verification and ABN or ACN requirements in section 6, with a one-time, time-limited access period to search Talent who have enabled Rockstar availability as described in section 4.</p>
               <p className="mt-2">7.7 Short Stay access is limited to Talent who have enabled Rockstar availability and does not provide access to the full Talent discovery pool available under a standard Employer subscription.</p>
@@ -188,6 +191,7 @@ export default function TermsPage() {
               <p className="mt-2">8.8 A Talent can end a connection using available platform controls.</p>
               <p className="mt-2">8.9 Ending a connection will remove the Employer&apos;s future access to connection-gated information within FreeAgentStaff, but cannot necessarily remove information that the Employer lawfully obtained, downloaded or separately retained while access was authorised.</p>
               <p className="mt-2">8.10 Employers must continue to handle information obtained through a connection lawfully and responsibly after the connection ends.</p>
+              <p className="mt-2">8.11 Professional references are not automatically made available when an introduction is accepted or a connection becomes active. Unlike contact information and resumes, a submitted professional reference is available to a connected Employer only if the Talent has separately enabled sharing for that reference, as described in section 11.</p>
             </section>
 
             <section>
@@ -216,9 +220,33 @@ export default function TermsPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-[#f7ebcf]">11. User content</h2>
-              <p className="mt-2">11.1 Users retain ownership of content they submit to FreeAgentStaff, including profile information, photographs, videos, resumes, documents, business information and other material (&quot;User Content&quot;).</p>
-              <p className="mt-2">11.2 You grant FreeAgentStaff a worldwide, non-exclusive, royalty-free licence to host, store, reproduce, display, transmit, technically format and otherwise process your User Content to the extent reasonably necessary to:</p>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">11. Professional references</h2>
+              <p className="mt-2">11.1 Talent may invite a professional referee to submit a professional reference through FreeAgentStaff. Depending on available features, a Talent can enter the referee&apos;s name, job title, company or organisation, relationship and email address, send an invitation, receive a reference submitted by that referee, view a submitted reference, choose whether an eligible submitted reference is shared with connected Employers, stop sharing a reference, and delete or otherwise manage references using the available platform controls.</p>
+              <p className="mt-2">11.2 Professional references are not public and do not appear on a public Talent Passport. A submitted reference is private by default. Pending reference requests are not displayed to Employers.</p>
+              <p className="mt-2">11.3 A Talent must explicitly enable sharing for an individual submitted reference before it can be available to Employers. Even where sharing is enabled, the reference is only available to an Employer with the required active or accepted connection to that Talent. Ending or removing that connection removes the Employer&apos;s future in-platform access to the reference in accordance with the platform&apos;s existing connection rules. This cannot necessarily retract information an Employer lawfully copied or retained while access was authorised.</p>
+              <p className="mt-2">11.4 Referee email addresses are used to operate and manage the invitation and reference process. They are not displayed to Employers through the professional references feature. Detailed handling of referee personal information is governed by our <Link className="font-semibold text-[#f2cc63] underline underline-offset-4" href="/privacy">Privacy Policy</Link>.</p>
+              <p className="mt-2">11.5 Talent must provide referee contact details only where they have a lawful and appropriate basis to do so, and must not use the professional references feature for spam, harassment or unrelated purposes.</p>
+              <p className="mt-2">11.6 Talent must not impersonate a referee, submit a reference on a referee&apos;s behalf, manipulate the submission process or knowingly provide misleading referee details. Talent cannot edit the answers submitted by a referee through the reference invitation flow. Talent controls whether an eligible submitted reference is shared with connected Employers.</p>
+              <p className="mt-2">11.7 A referee does not need a FreeAgentStaff account. A referee accesses a secure invitation link and submits the reference themselves, including answers to professional-reference questions such as relationship, duration worked together, strengths, ratings, whether they would work with the Talent again, and optional comments, and confirms that the reference reflects their own professional experience.</p>
+              <p className="mt-2">11.8 A referee must submit information based on their own professional experience and must not knowingly provide false, misleading, defamatory, abusive or unlawful material.</p>
+              <p className="mt-2">11.9 A referee retains ownership of the reference they submit. By submitting a professional reference, the referee grants FreeAgentStaff the limited rights reasonably necessary to host, store, process and display that reference according to this feature and the Talent&apos;s permitted sharing settings, as further described in section 12.</p>
+              <p className="mt-2">11.10 The platform may label a submitted reference as &quot;Referee submitted&quot;. That label means the response was submitted through the FreeAgentStaff reference invitation flow. It does not mean that the referee or the reference has been independently verified, authenticated or checked by FreeAgentStaff.</p>
+              <p className="mt-2">11.11 Unless FreeAgentStaff expressly states otherwise, FreeAgentStaff does not independently verify:</p>
+              <ul className="mt-2 list-disc space-y-1 pl-5">
+                <li>the referee&apos;s identity;</li>
+                <li>the referee&apos;s employment or position;</li>
+                <li>the referee&apos;s relationship with the Talent;</li>
+                <li>the truth or completeness of the referee&apos;s answers; or</li>
+                <li>the authenticity or accuracy of statements in the reference.</li>
+              </ul>
+              <p className="mt-2">11.12 Submission through the invitation flow does not mean FreeAgentStaff independently verified the reference. Talent and Employers remain responsible for their own assessment and due diligence, including any appropriate independent reference checking.</p>
+              <p className="mt-2">11.13 Employers may access only submitted references that the Talent has explicitly chosen to share and that are permitted by the connection rules described in these Terms. Employers must use reference information only for genuine recruitment, hiring, employment or related professional purposes, and must not publish, sell, misuse or disclose reference information for unrelated purposes.</p>
+            </section>
+
+            <section>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">12. User content</h2>
+              <p className="mt-2">12.1 Users retain ownership of content they submit to FreeAgentStaff, including profile information, photographs, videos, resumes, documents, business information and other material (&quot;User Content&quot;).</p>
+              <p className="mt-2">12.2 You grant FreeAgentStaff a worldwide, non-exclusive, royalty-free licence to host, store, reproduce, display, transmit, technically format and otherwise process your User Content to the extent reasonably necessary to:</p>
               <ul className="mt-2 list-disc space-y-1 pl-5">
                 <li>operate FreeAgentStaff;</li>
                 <li>provide the features you select;</li>
@@ -226,9 +254,9 @@ export default function TermsPage() {
                 <li>maintain and secure the platform; and</li>
                 <li>provide technical and support services.</li>
               </ul>
-              <p className="mt-2">11.3 The licence in section 11.2 does not transfer ownership of your User Content to FreeAgentStaff.</p>
-              <p className="mt-2">11.4 We will not use a Talent&apos;s identifiable profile, photograph, video or resume in external advertising or public promotional material without separate permission from that Talent.</p>
-              <p className="mt-2">11.5 You must ensure your User Content:</p>
+              <p className="mt-2">12.3 The licence in section 12.2 does not transfer ownership of your User Content to FreeAgentStaff.</p>
+              <p className="mt-2">12.4 We will not use a Talent&apos;s identifiable profile, photograph, video or resume in external advertising or public promotional material without separate permission from that Talent.</p>
+              <p className="mt-2">12.5 You must ensure your User Content:</p>
               <ul className="mt-2 list-disc space-y-1 pl-5">
                 <li>is accurate where presented as factual;</li>
                 <li>is not misleading or fraudulent;</li>
@@ -237,46 +265,47 @@ export default function TermsPage() {
                 <li>is not defamatory, abusive or threatening; and</li>
                 <li>does not contain malicious code or material intended to compromise the platform.</li>
               </ul>
-              <p className="mt-2">11.6 We may remove, restrict or disable User Content where reasonably necessary to enforce these Terms, comply with law, protect users or protect FreeAgentStaff.</p>
-              <p className="mt-2">11.7 If you provide feedback, suggestions or ideas about FreeAgentStaff, we may use that feedback to improve the platform without payment or obligation to you.</p>
+              <p className="mt-2">12.6 We may remove, restrict or disable User Content where reasonably necessary to enforce these Terms, comply with law, protect users or protect FreeAgentStaff.</p>
+              <p className="mt-2">12.7 If you provide feedback, suggestions or ideas about FreeAgentStaff, we may use that feedback to improve the platform without payment or obligation to you.</p>
+              <p className="mt-2">12.8 User Content includes professional references submitted through the FreeAgentStaff reference invitation flow, including by a referee who does not have a FreeAgentStaff account. A referee retains ownership of the reference they submit. The licence in section 12.2 applies to that content to the extent reasonably necessary to operate the professional references feature and to display it according to the Talent&apos;s permitted sharing settings.</p>
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-[#f7ebcf]">12. Subscriptions and fees</h2>
-              <p className="mt-2">12.1 FreeAgentStaff may provide free and paid plans for Talent and Employers.</p>
-              <p className="mt-2">12.2 Current plan features and prices are displayed on our <Link className="font-semibold text-[#f2cc63] underline underline-offset-4" href="/pricing">Pricing page</Link> or otherwise communicated before purchase.</p>
-              <p className="mt-2">12.3 At the date of these Terms, paid services may include Free Agent Pro for Talent and an Employer subscription.</p>
-              <p className="mt-2">12.4 Subscription fees are charged in Australian dollars unless otherwise stated.</p>
-              <p className="mt-2">12.5 Unless expressly stated otherwise at checkout, displayed Australian prices include GST where GST is applicable.</p>
-              <p className="mt-2">12.6 Paid subscriptions automatically renew for successive billing periods unless cancelled before the next renewal date.</p>
-              <p className="mt-2">12.7 You can cancel a subscription through the available account or billing controls.</p>
-              <p className="mt-2">12.8 Unless otherwise stated, cancellation takes effect at the end of the current paid billing period and you can retain paid access until that time.</p>
-              <p className="mt-2">12.9 Fees already paid are generally non-refundable except where required by law or where FreeAgentStaff expressly agrees otherwise.</p>
-              <p className="mt-2">12.10 We may offer free plans, promotional periods, discounts or trials. Applicable conditions will be disclosed where relevant.</p>
-              <p className="mt-2">12.11 We may change subscription prices or paid-plan features. Where a price change affects an existing recurring subscriber, we will provide reasonable notice before the new price applies to a future renewal.</p>
-              <p className="mt-2">12.12 If you do not agree to a notified price change, you can cancel before the new price takes effect.</p>
-              <p className="mt-2">12.13 Nothing in this section limits rights that cannot lawfully be excluded under the Australian Consumer Law.</p>
-              <p className="mt-2">12.14 Short Stay is a one-time Employer access product rather than a recurring subscription. At the date of these Terms, a Short Stay access period provides 3 days of access as described in section 7.</p>
-              <p className="mt-2">12.15 Short Stay access does not automatically renew. A new Short Stay access period may be purchased after the current period expires, subject to FreeAgentStaff&apos;s then-current availability, pricing and terms.</p>
-              <p className="mt-2">12.16 Applicable fees for Short Stay access are displayed on our <Link className="font-semibold text-[#f2cc63] underline underline-offset-4" href="/pricing">Pricing page</Link> or otherwise communicated before purchase, consistent with section 12.2.</p>
-              <p className="mt-2">12.17 When a Short Stay access period expires, the Employer&apos;s access to Rockstar Talent discovery under that period ends. Expiry of Short Stay access does not automatically terminate an existing accepted or active connection between that Employer and a Talent.</p>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">13. Subscriptions and fees</h2>
+              <p className="mt-2">13.1 FreeAgentStaff may provide free and paid plans for Talent and Employers.</p>
+              <p className="mt-2">13.2 Current plan features and prices are displayed on our <Link className="font-semibold text-[#f2cc63] underline underline-offset-4" href="/pricing">Pricing page</Link> or otherwise communicated before purchase.</p>
+              <p className="mt-2">13.3 At the date of these Terms, paid services may include Free Agent Pro for Talent and an Employer subscription.</p>
+              <p className="mt-2">13.4 Subscription fees are charged in Australian dollars unless otherwise stated.</p>
+              <p className="mt-2">13.5 Unless expressly stated otherwise at checkout, displayed Australian prices include GST where GST is applicable.</p>
+              <p className="mt-2">13.6 Paid subscriptions automatically renew for successive billing periods unless cancelled before the next renewal date.</p>
+              <p className="mt-2">13.7 You can cancel a subscription through the available account or billing controls.</p>
+              <p className="mt-2">13.8 Unless otherwise stated, cancellation takes effect at the end of the current paid billing period and you can retain paid access until that time.</p>
+              <p className="mt-2">13.9 Fees already paid are generally non-refundable except where required by law or where FreeAgentStaff expressly agrees otherwise.</p>
+              <p className="mt-2">13.10 We may offer free plans, promotional periods, discounts or trials. Applicable conditions will be disclosed where relevant.</p>
+              <p className="mt-2">13.11 We may change subscription prices or paid-plan features. Where a price change affects an existing recurring subscriber, we will provide reasonable notice before the new price applies to a future renewal.</p>
+              <p className="mt-2">13.12 If you do not agree to a notified price change, you can cancel before the new price takes effect.</p>
+              <p className="mt-2">13.13 Nothing in this section limits rights that cannot lawfully be excluded under the Australian Consumer Law.</p>
+              <p className="mt-2">13.14 Short Stay is a one-time Employer access product rather than a recurring subscription. At the date of these Terms, a Short Stay access period provides 3 days of access as described in section 7.</p>
+              <p className="mt-2">13.15 Short Stay access does not automatically renew. A new Short Stay access period may be purchased after the current period expires, subject to FreeAgentStaff&apos;s then-current availability, pricing and terms.</p>
+              <p className="mt-2">13.16 Applicable fees for Short Stay access are displayed on our <Link className="font-semibold text-[#f2cc63] underline underline-offset-4" href="/pricing">Pricing page</Link> or otherwise communicated before purchase, consistent with section 13.2.</p>
+              <p className="mt-2">13.17 When a Short Stay access period expires, the Employer&apos;s access to Rockstar Talent discovery under that period ends. Expiry of Short Stay access does not automatically terminate an existing accepted or active connection between that Employer and a Talent.</p>
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-[#f7ebcf]">13. Payment processing</h2>
-              <p className="mt-2">13.1 Subscription payments may be processed by third-party providers such as Stripe.</p>
-              <p className="mt-2">13.2 Payment providers operate under their own terms and privacy policies.</p>
-              <p className="mt-2">13.3 You must provide valid payment information to the relevant payment provider.</p>
-              <p className="mt-2">13.4 FreeAgentStaff does not store complete payment card numbers.</p>
-              <p className="mt-2">13.5 If a subscription payment fails, the payment provider or FreeAgentStaff may retry the payment and paid features may be restricted or suspended until payment is successfully received.</p>
-              <p className="mt-2">13.6 FreeAgentStaff may receive information such as payment status, subscription status, customer identifiers, transaction references and billing information needed to administer your subscription.</p>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">14. Payment processing</h2>
+              <p className="mt-2">14.1 Subscription payments may be processed by third-party providers such as Stripe.</p>
+              <p className="mt-2">14.2 Payment providers operate under their own terms and privacy policies.</p>
+              <p className="mt-2">14.3 You must provide valid payment information to the relevant payment provider.</p>
+              <p className="mt-2">14.4 FreeAgentStaff does not store complete payment card numbers.</p>
+              <p className="mt-2">14.5 If a subscription payment fails, the payment provider or FreeAgentStaff may retry the payment and paid features may be restricted or suspended until payment is successfully received.</p>
+              <p className="mt-2">14.6 FreeAgentStaff may receive information such as payment status, subscription status, customer identifiers, transaction references and billing information needed to administer your subscription.</p>
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-[#f7ebcf]">14. Intellectual property</h2>
-              <p className="mt-2">14.1 FreeAgentStaff and its licensors own the platform and associated software, design, branding, trade marks, systems, features and content other than User Content.</p>
-              <p className="mt-2">14.2 Subject to these Terms, we grant you a limited, non-exclusive, non-transferable and revocable right to access and use FreeAgentStaff for its intended purpose.</p>
-              <p className="mt-2">14.3 You must not, except where permitted by law or with our written permission:</p>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">15. Intellectual property</h2>
+              <p className="mt-2">15.1 FreeAgentStaff and its licensors own the platform and associated software, design, branding, trade marks, systems, features and content other than User Content.</p>
+              <p className="mt-2">15.2 Subject to these Terms, we grant you a limited, non-exclusive, non-transferable and revocable right to access and use FreeAgentStaff for its intended purpose.</p>
+              <p className="mt-2">15.3 You must not, except where permitted by law or with our written permission:</p>
               <ul className="mt-2 list-disc space-y-1 pl-5">
                 <li>copy or reproduce substantial parts of the platform;</li>
                 <li>reverse engineer the platform;</li>
@@ -287,13 +316,13 @@ export default function TermsPage() {
                 <li>interfere with the operation or security of the platform; or</li>
                 <li>use our branding in a manner that suggests endorsement or affiliation without permission.</li>
               </ul>
-              <p className="mt-2">14.4 We may create and use aggregated or de-identified information derived from platform use for lawful purposes including analytics, security, research and product improvement, provided that information does not identify an individual.</p>
+              <p className="mt-2">15.4 We may create and use aggregated or de-identified information derived from platform use for lawful purposes including analytics, security, research and product improvement, provided that information does not identify an individual.</p>
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-[#f7ebcf]">15. Acceptable use</h2>
-              <p className="mt-2">15.1 You must use FreeAgentStaff lawfully and in accordance with its intended professional-discovery purpose.</p>
-              <p className="mt-2">15.2 You must not:</p>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">16. Acceptable use</h2>
+              <p className="mt-2">16.1 You must use FreeAgentStaff lawfully and in accordance with its intended professional-discovery purpose.</p>
+              <p className="mt-2">16.2 You must not:</p>
               <ul className="mt-2 list-disc space-y-1 pl-5">
                 <li>use FreeAgentStaff for unlawful activity;</li>
                 <li>provide deliberately false or deceptive information;</li>
@@ -309,20 +338,20 @@ export default function TermsPage() {
                 <li>use FreeAgentStaff to facilitate fraud or other harmful conduct; or</li>
                 <li>use information obtained through FreeAgentStaff for purposes materially unrelated to professional discovery, recruitment or employment.</li>
               </ul>
-              <p className="mt-2">15.3 Employers must respect the visibility, introduction and connection controls provided to Talent.</p>
+              <p className="mt-2">16.3 Employers must respect the visibility, introduction and connection controls provided to Talent.</p>
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-[#f7ebcf]">16. Privacy</h2>
-              <p className="mt-2">16.1 Our <Link className="font-semibold text-[#f2cc63] underline underline-offset-4" href="/privacy">Privacy Policy</Link> explains how FreeAgentStaff collects, uses, discloses and protects personal information.</p>
-              <p className="mt-2">16.2 By using FreeAgentStaff, you acknowledge that personal information will be handled in accordance with our <Link className="font-semibold text-[#f2cc63] underline underline-offset-4" href="/privacy">Privacy Policy</Link>.</p>
-              <p className="mt-2">16.3 Employers must comply with applicable privacy laws when accessing, downloading, storing or otherwise handling Talent information obtained through FreeAgentStaff.</p>
-              <p className="mt-2">16.4 Employers must not use connection-gated or confidential Talent information for an unrelated purpose.</p>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">17. Privacy</h2>
+              <p className="mt-2">17.1 Our <Link className="font-semibold text-[#f2cc63] underline underline-offset-4" href="/privacy">Privacy Policy</Link> explains how FreeAgentStaff collects, uses, discloses and protects personal information.</p>
+              <p className="mt-2">17.2 By using FreeAgentStaff, you acknowledge that personal information will be handled in accordance with our <Link className="font-semibold text-[#f2cc63] underline underline-offset-4" href="/privacy">Privacy Policy</Link>.</p>
+              <p className="mt-2">17.3 Employers must comply with applicable privacy laws when accessing, downloading, storing or otherwise handling Talent information and professional-reference information obtained through FreeAgentStaff.</p>
+              <p className="mt-2">17.4 Employers must not use connection-gated or confidential Talent information for an unrelated purpose.</p>
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-[#f7ebcf]">17. Moderation and enforcement</h2>
-              <p className="mt-2">17.1 We may review, restrict or remove content and may warn, restrict, suspend or terminate accounts where we reasonably believe:</p>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">18. Moderation and enforcement</h2>
+              <p className="mt-2">18.1 We may review, restrict or remove content and may warn, restrict, suspend or terminate accounts where we reasonably believe:</p>
               <ul className="mt-2 list-disc space-y-1 pl-5">
                 <li>these Terms have been breached;</li>
                 <li>an account presents a security risk;</li>
@@ -332,15 +361,15 @@ export default function TermsPage() {
                 <li>continued access may harm another user or FreeAgentStaff; or</li>
                 <li>action is required by law.</li>
               </ul>
-              <p className="mt-2">17.2 We are not required to monitor every user or every activity occurring through the platform.</p>
-              <p className="mt-2">17.3 Where reasonably practicable and appropriate, we may provide notice or an opportunity to respond before or after enforcement action.</p>
-              <p className="mt-2">17.4 We may act immediately where reasonably necessary to protect users, information, the platform or third parties.</p>
+              <p className="mt-2">18.2 We are not required to monitor every user or every activity occurring through the platform.</p>
+              <p className="mt-2">18.3 Where reasonably practicable and appropriate, we may provide notice or an opportunity to respond before or after enforcement action.</p>
+              <p className="mt-2">18.4 We may act immediately where reasonably necessary to protect users, information, the platform or third parties.</p>
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-[#f7ebcf]">18. Third-party services</h2>
-              <p className="mt-2">18.1 FreeAgentStaff relies on third-party services and technology providers to operate parts of the platform.</p>
-              <p className="mt-2">18.2 These may include services relating to:</p>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">19. Third-party services</h2>
+              <p className="mt-2">19.1 FreeAgentStaff relies on third-party services and technology providers to operate parts of the platform.</p>
+              <p className="mt-2">19.2 These may include services relating to:</p>
               <ul className="mt-2 list-disc space-y-1 pl-5">
                 <li>hosting;</li>
                 <li>databases;</li>
@@ -352,28 +381,28 @@ export default function TermsPage() {
                 <li>security; and</li>
                 <li>other technical infrastructure.</li>
               </ul>
-              <p className="mt-2">18.3 Third-party services may operate under their own terms and privacy policies.</p>
-              <p className="mt-2">18.4 FreeAgentStaff is not responsible for the availability, security, content or operation of an independent third-party service to the extent permitted by law.</p>
-              <p className="mt-2">18.5 Links to third-party websites do not necessarily constitute endorsement of those websites or their products or services.</p>
-              <p className="mt-2">18.6 FreeAgentStaff may provide tools that help Talent copy a public Passport link, download a Passport logo or prepare linked content for supported applications. Compatibility with every third-party browser, document editor, email client, website or other platform is not guaranteed, and third-party services remain subject to their own functionality and terms.</p>
+              <p className="mt-2">19.3 Third-party services may operate under their own terms and privacy policies.</p>
+              <p className="mt-2">19.4 FreeAgentStaff is not responsible for the availability, security, content or operation of an independent third-party service to the extent permitted by law.</p>
+              <p className="mt-2">19.5 Links to third-party websites do not necessarily constitute endorsement of those websites or their products or services.</p>
+              <p className="mt-2">19.6 FreeAgentStaff may provide tools that help Talent copy a public Passport link, download a Passport logo or prepare linked content for supported applications. Compatibility with every third-party browser, document editor, email client, website or other platform is not guaranteed, and third-party services remain subject to their own functionality and terms.</p>
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-[#f7ebcf]">19. Platform availability and changes</h2>
-              <p className="mt-2">19.1 We aim to provide a reliable platform but do not guarantee that FreeAgentStaff will always be uninterrupted, error-free or available.</p>
-              <p className="mt-2">19.2 Maintenance, technical problems, security incidents, provider outages or other circumstances may temporarily affect availability.</p>
-              <p className="mt-2">19.3 We may modify, add, remove or replace features as FreeAgentStaff develops.</p>
-              <p className="mt-2">19.4 We may change the features included in free plans.</p>
-              <p className="mt-2">19.5 If we materially reduce the core functionality of a paid subscription during a period for which you have already paid, your rights under applicable consumer law are not affected.</p>
-              <p className="mt-2">19.6 A public Passport URL remains part of the FreeAgentStaff service. We do not promise that a particular URL, slug, Passport or feature will remain permanently available, uninterrupted or unchanged, subject to any rights that cannot lawfully be excluded.</p>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">20. Platform availability and changes</h2>
+              <p className="mt-2">20.1 We aim to provide a reliable platform but do not guarantee that FreeAgentStaff will always be uninterrupted, error-free or available.</p>
+              <p className="mt-2">20.2 Maintenance, technical problems, security incidents, provider outages or other circumstances may temporarily affect availability.</p>
+              <p className="mt-2">20.3 We may modify, add, remove or replace features as FreeAgentStaff develops.</p>
+              <p className="mt-2">20.4 We may change the features included in free plans.</p>
+              <p className="mt-2">20.5 If we materially reduce the core functionality of a paid subscription during a period for which you have already paid, your rights under applicable consumer law are not affected.</p>
+              <p className="mt-2">20.6 A public Passport URL remains part of the FreeAgentStaff service. We do not promise that a particular URL, slug, Passport or feature will remain permanently available, uninterrupted or unchanged, subject to any rights that cannot lawfully be excluded.</p>
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-[#f7ebcf]">20. Employment relationships</h2>
-              <p className="mt-2">20.1 FreeAgentStaff facilitates professional discovery and connections but is not a party to an employment or engagement relationship formed between Talent and Employers.</p>
-              <p className="mt-2">20.2 Employers are solely responsible for their hiring decisions and for complying with applicable laws relating to employment, workplace relations, discrimination, wages, superannuation, tax, work health and safety and other workplace obligations.</p>
-              <p className="mt-2">20.3 Talent are responsible for assessing prospective Employers and employment opportunities and for information they provide concerning their experience, qualifications and work eligibility.</p>
-              <p className="mt-2">20.4 FreeAgentStaff does not determine:</p>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">21. Employment relationships</h2>
+              <p className="mt-2">21.1 FreeAgentStaff facilitates professional discovery and connections but is not a party to an employment or engagement relationship formed between Talent and Employers.</p>
+              <p className="mt-2">21.2 Employers are solely responsible for their hiring decisions and for complying with applicable laws relating to employment, workplace relations, discrimination, wages, superannuation, tax, work health and safety and other workplace obligations.</p>
+              <p className="mt-2">21.3 Talent are responsible for assessing prospective Employers and employment opportunities and for information they provide concerning their experience, qualifications and work eligibility.</p>
+              <p className="mt-2">21.4 FreeAgentStaff does not determine:</p>
               <ul className="mt-2 list-disc space-y-1 pl-5">
                 <li>whether a Talent should be hired;</li>
                 <li>employment terms;</li>
@@ -382,13 +411,13 @@ export default function TermsPage() {
                 <li>workplace conditions; or</li>
                 <li>termination of employment.</li>
               </ul>
-              <p className="mt-2">20.5 Any offer, contract or employment arrangement is between the relevant Talent and Employer.</p>
+              <p className="mt-2">21.5 Any offer, contract or employment arrangement is between the relevant Talent and Employer.</p>
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-[#f7ebcf]">21. Disclaimers</h2>
-              <p className="mt-2">21.1 To the maximum extent permitted by law, FreeAgentStaff is provided on an &quot;as is&quot; and &quot;as available&quot; basis.</p>
-              <p className="mt-2">21.2 We do not guarantee:</p>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">22. Disclaimers</h2>
+              <p className="mt-2">22.1 To the maximum extent permitted by law, FreeAgentStaff is provided on an &quot;as is&quot; and &quot;as available&quot; basis.</p>
+              <p className="mt-2">22.2 We do not guarantee:</p>
               <ul className="mt-2 list-disc space-y-1 pl-5">
                 <li>that Talent will be discovered;</li>
                 <li>that an Employer will contact a Talent;</li>
@@ -399,25 +428,25 @@ export default function TermsPage() {
                 <li>uninterrupted platform availability; or</li>
                 <li>any particular employment, recruitment or career outcome.</li>
               </ul>
-              <p className="mt-2">21.3 Information provided through FreeAgentStaff is not legal, employment, tax or financial advice.</p>
-              <p className="mt-2">21.4 Nothing in these Terms excludes, restricts or modifies rights or remedies that cannot lawfully be excluded, restricted or modified.</p>
+              <p className="mt-2">22.3 Information provided through FreeAgentStaff is not legal, employment, tax or financial advice.</p>
+              <p className="mt-2">22.4 Nothing in these Terms excludes, restricts or modifies rights or remedies that cannot lawfully be excluded, restricted or modified.</p>
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-[#f7ebcf]">22. Australian Consumer Law</h2>
-              <p className="mt-2">22.1 Our services may come with consumer guarantees that cannot be excluded under the Australian Consumer Law.</p>
-              <p className="mt-2">22.2 Nothing in these Terms excludes, restricts or modifies any guarantee, right or remedy that cannot lawfully be excluded, restricted or modified.</p>
-              <p className="mt-2">22.3 Where permitted by law, our liability for failure to comply with an applicable consumer guarantee in relation to services may be limited, at our option, to:</p>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">23. Australian Consumer Law</h2>
+              <p className="mt-2">23.1 Our services may come with consumer guarantees that cannot be excluded under the Australian Consumer Law.</p>
+              <p className="mt-2">23.2 Nothing in these Terms excludes, restricts or modifies any guarantee, right or remedy that cannot lawfully be excluded, restricted or modified.</p>
+              <p className="mt-2">23.3 Where permitted by law, our liability for failure to comply with an applicable consumer guarantee in relation to services may be limited, at our option, to:</p>
               <ul className="mt-2 list-disc space-y-1 pl-5">
                 <li>supplying the services again; or</li>
                 <li>paying the cost of having the services supplied again.</li>
               </ul>
-              <p className="mt-2">22.4 This limitation does not apply where it would be unlawful to limit liability in this way.</p>
+              <p className="mt-2">23.4 This limitation does not apply where it would be unlawful to limit liability in this way.</p>
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-[#f7ebcf]">23. Liability</h2>
-              <p className="mt-2">23.1 To the maximum extent permitted by law, FreeAgentStaff is not liable for loss arising from:</p>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">24. Liability</h2>
+              <p className="mt-2">24.1 To the maximum extent permitted by law, FreeAgentStaff is not liable for loss arising from:</p>
               <ul className="mt-2 list-disc space-y-1 pl-5">
                 <li>the acts or omissions of another user;</li>
                 <li>an Employer&apos;s hiring decision;</li>
@@ -429,18 +458,18 @@ export default function TermsPage() {
                 <li>circumstances outside our reasonable control,</li>
               </ul>
               <p className="mt-2">except to the extent liability cannot lawfully be excluded.</p>
-              <p className="mt-2">23.2 To the maximum extent permitted by law, FreeAgentStaff is not liable for indirect or consequential loss, loss of profit, revenue, goodwill, opportunity or data arising from use of the platform.</p>
-              <p className="mt-2">23.3 To the extent permitted by law, FreeAgentStaff&apos;s aggregate liability arising out of or relating to the platform or these Terms is limited to the greater of:</p>
+              <p className="mt-2">24.2 To the maximum extent permitted by law, FreeAgentStaff is not liable for indirect or consequential loss, loss of profit, revenue, goodwill, opportunity or data arising from use of the platform.</p>
+              <p className="mt-2">24.3 To the extent permitted by law, FreeAgentStaff&apos;s aggregate liability arising out of or relating to the platform or these Terms is limited to the greater of:</p>
               <ul className="mt-2 list-disc space-y-1 pl-5">
                 <li>the fees paid by you to FreeAgentStaff during the three months immediately preceding the event giving rise to the claim; and</li>
                 <li>AUD $200.</li>
               </ul>
-              <p className="mt-2">23.4 Sections 23.1&ndash;23.3 do not exclude or limit liability where doing so would be prohibited by law.</p>
+              <p className="mt-2">24.4 Sections 24.1&ndash;24.3 do not exclude or limit liability where doing so would be prohibited by law.</p>
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-[#f7ebcf]">24. Indemnity</h2>
-              <p className="mt-2">24.1 To the maximum extent permitted by law, you indemnify FreeAgentStaff against claims, losses, liabilities, damages and reasonable costs arising from:</p>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">25. Indemnity</h2>
+              <p className="mt-2">25.1 To the maximum extent permitted by law, you indemnify FreeAgentStaff against claims, losses, liabilities, damages and reasonable costs arising from:</p>
               <ul className="mt-2 list-disc space-y-1 pl-5">
                 <li>your material breach of these Terms;</li>
                 <li>your unlawful use of FreeAgentStaff;</li>
@@ -448,15 +477,15 @@ export default function TermsPage() {
                 <li>your infringement of another person&apos;s rights; or</li>
                 <li>your unlawful handling or misuse of information obtained through FreeAgentStaff.</li>
               </ul>
-              <p className="mt-2">24.2 For Employers, this includes claims arising from the Employer&apos;s handling of Talent information after it has been lawfully accessed or downloaded.</p>
-              <p className="mt-2">24.3 This indemnity does not apply to the extent a claim, loss or liability was caused by FreeAgentStaff&apos;s own unlawful conduct, negligence or breach of these Terms.</p>
+              <p className="mt-2">25.2 For Employers, this includes claims arising from the Employer&apos;s handling of Talent information, including shared professional references, after it has been lawfully accessed or downloaded.</p>
+              <p className="mt-2">25.3 This indemnity does not apply to the extent a claim, loss or liability was caused by FreeAgentStaff&apos;s own unlawful conduct, negligence or breach of these Terms.</p>
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-[#f7ebcf]">25. Termination and account closure</h2>
-              <p className="mt-2">25.1 You can stop using FreeAgentStaff and can close your account using available account controls or by contacting us.</p>
-              <p className="mt-2">25.2 Cancellation of a paid subscription is governed by section 12.</p>
-              <p className="mt-2">25.3 We may suspend, restrict or terminate access where:</p>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">26. Termination and account closure</h2>
+              <p className="mt-2">26.1 You can stop using FreeAgentStaff and can close your account using available account controls or by contacting us.</p>
+              <p className="mt-2">26.2 Cancellation of a paid subscription is governed by section 13.</p>
+              <p className="mt-2">26.3 We may suspend, restrict or terminate access where:</p>
               <ul className="mt-2 list-disc space-y-1 pl-5">
                 <li>you materially breach these Terms;</li>
                 <li>we reasonably believe an account presents a legal, security, fraud or safety risk;</li>
@@ -464,26 +493,26 @@ export default function TermsPage() {
                 <li>continued access may harm users or the platform; or</li>
                 <li>we are required to do so by law.</li>
               </ul>
-              <p className="mt-2">25.4 Where reasonably practicable, we will provide notice of suspension or termination.</p>
-              <p className="mt-2">25.5 Following termination or account closure, personal information will be handled in accordance with our <Link className="font-semibold text-[#f2cc63] underline underline-offset-4" href="/privacy">Privacy Policy</Link>.</p>
-              <p className="mt-2">25.6 Employers remain responsible for information they lawfully downloaded or separately retained before access ended and must handle that information in accordance with applicable law.</p>
-              <p className="mt-2">25.7 Provisions that by their nature are intended to continue after termination, including provisions concerning intellectual property, privacy obligations, liability, indemnities and governing law, continue to apply.</p>
+              <p className="mt-2">26.4 Where reasonably practicable, we will provide notice of suspension or termination.</p>
+              <p className="mt-2">26.5 Following termination or account closure, personal information will be handled in accordance with our <Link className="font-semibold text-[#f2cc63] underline underline-offset-4" href="/privacy">Privacy Policy</Link>.</p>
+              <p className="mt-2">26.6 Employers remain responsible for information they lawfully downloaded or separately retained before access ended and must handle that information in accordance with applicable law.</p>
+              <p className="mt-2">26.7 Provisions that by their nature are intended to continue after termination, including provisions concerning intellectual property, privacy obligations, liability, indemnities and governing law, continue to apply.</p>
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-[#f7ebcf]">26. Changes to these Terms</h2>
-              <p className="mt-2">26.1 We may update these Terms to reflect changes to FreeAgentStaff, our business, technology, applicable laws or other operational requirements.</p>
-              <p className="mt-2">26.2 The current version will display its last updated date.</p>
-              <p className="mt-2">26.3 If a change materially affects users, we may provide reasonable notice through FreeAgentStaff, by email or by another appropriate method.</p>
-              <p className="mt-2">26.4 Where a change materially affects an existing paid subscription, we will provide any notice required by applicable law.</p>
-              <p className="mt-2">26.5 If you do not agree to updated Terms, you can stop using FreeAgentStaff and cancel an applicable subscription before a change takes effect.</p>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">27. Changes to these Terms</h2>
+              <p className="mt-2">27.1 We may update these Terms to reflect changes to FreeAgentStaff, our business, technology, applicable laws or other operational requirements.</p>
+              <p className="mt-2">27.2 The current version will display its last updated date.</p>
+              <p className="mt-2">27.3 If a change materially affects users, we may provide reasonable notice through FreeAgentStaff, by email or by another appropriate method.</p>
+              <p className="mt-2">27.4 Where a change materially affects an existing paid subscription, we will provide any notice required by applicable law.</p>
+              <p className="mt-2">27.5 If you do not agree to updated Terms, you can stop using FreeAgentStaff and cancel an applicable subscription before a change takes effect.</p>
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-[#f7ebcf]">27. Disputes</h2>
-              <p className="mt-2">27.1 If you have a dispute or complaint relating to FreeAgentStaff, please contact us first at <a className="font-semibold text-[#f2cc63] underline underline-offset-4" href="mailto:support@freeagentstaff.com">support@freeagentstaff.com</a>.</p>
-              <p className="mt-2">27.2 We will attempt in good faith to resolve the issue directly with you.</p>
-              <p className="mt-2">27.3 Nothing in this section prevents either party from:</p>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">28. Disputes</h2>
+              <p className="mt-2">28.1 If you have a dispute or complaint relating to FreeAgentStaff, please contact us first at <a className="font-semibold text-[#f2cc63] underline underline-offset-4" href="mailto:support@freeagentstaff.com">support@freeagentstaff.com</a>.</p>
+              <p className="mt-2">28.2 We will attempt in good faith to resolve the issue directly with you.</p>
+              <p className="mt-2">28.3 Nothing in this section prevents either party from:</p>
               <ul className="mt-2 list-disc space-y-1 pl-5">
                 <li>seeking urgent interlocutory or injunctive relief;</li>
                 <li>exercising rights under the Australian Consumer Law;</li>
@@ -493,24 +522,24 @@ export default function TermsPage() {
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-[#f7ebcf]">28. Governing law</h2>
-              <p className="mt-2">28.1 These Terms are governed by the laws of New South Wales, Australia.</p>
-              <p className="mt-2">28.2 Subject to any rights you have under applicable consumer law, the courts and tribunals of New South Wales have non-exclusive jurisdiction in relation to disputes arising from these Terms or FreeAgentStaff.</p>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">29. Governing law</h2>
+              <p className="mt-2">29.1 These Terms are governed by the laws of New South Wales, Australia.</p>
+              <p className="mt-2">29.2 Subject to any rights you have under applicable consumer law, the courts and tribunals of New South Wales have non-exclusive jurisdiction in relation to disputes arising from these Terms or FreeAgentStaff.</p>
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-[#f7ebcf]">29. General</h2>
-              <p className="mt-2">29.1 These Terms, together with our Privacy Policy and any separate written agreement expressly entered into between you and FreeAgentStaff, form the agreement between you and FreeAgentStaff concerning use of the platform.</p>
-              <p className="mt-2">29.2 We may assign or transfer our rights or obligations under these Terms as part of a restructure, financing, sale, merger or transfer of the FreeAgentStaff business.</p>
-              <p className="mt-2">29.3 You must not assign your rights under these Terms without our written consent.</p>
-              <p className="mt-2">29.4 If any provision of these Terms is found to be invalid or unenforceable, the remaining provisions continue in effect.</p>
-              <p className="mt-2">29.5 A failure or delay in enforcing a right under these Terms does not waive that right.</p>
-              <p className="mt-2">29.6 We may provide notices through FreeAgentStaff or to the email address associated with your account.</p>
-              <p className="mt-2">29.7 Headings are for convenience and do not affect interpretation.</p>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">30. General</h2>
+              <p className="mt-2">30.1 These Terms, together with our Privacy Policy and any separate written agreement expressly entered into between you and FreeAgentStaff, form the agreement between you and FreeAgentStaff concerning use of the platform.</p>
+              <p className="mt-2">30.2 We may assign or transfer our rights or obligations under these Terms as part of a restructure, financing, sale, merger or transfer of the FreeAgentStaff business.</p>
+              <p className="mt-2">30.3 You must not assign your rights under these Terms without our written consent.</p>
+              <p className="mt-2">30.4 If any provision of these Terms is found to be invalid or unenforceable, the remaining provisions continue in effect.</p>
+              <p className="mt-2">30.5 A failure or delay in enforcing a right under these Terms does not waive that right.</p>
+              <p className="mt-2">30.6 We may provide notices through FreeAgentStaff or to the email address associated with your account.</p>
+              <p className="mt-2">30.7 Headings are for convenience and do not affect interpretation.</p>
             </section>
 
             <section>
-              <h2 className="text-lg font-bold text-[#f7ebcf]">30. Contact</h2>
+              <h2 className="text-lg font-bold text-[#f7ebcf]">31. Contact</h2>
               <p className="mt-3 font-semibold text-[#f7ebcf]">Freeagentstaff</p>
               <p className="mt-1">ABN 26 572 935 109</p>
               <p className="mt-1">
